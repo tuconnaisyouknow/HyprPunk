@@ -1,0 +1,23 @@
+# EZA config
+alias ls='eza --color=always --icons=always'
+alias tree='eza --color=always --icons=always --tree'
+
+# NVIM config
+alias vim='nvim'
+
+# SUDO config (keep user config en variable)
+alias sudo='sudo -E '
+
+# FASTFETCH config
+alias ff='fastfetch'
+
+# BAT config
+alias rcat='/usr/bin/cat'
+
+# YAY config
+alias i='yay -S'
+alias u='yay -Syu'
+alias r='yay -R'
+
+# MKDIR config
+alias mkdir='mkdir -p '

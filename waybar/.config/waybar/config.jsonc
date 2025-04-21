@@ -1,0 +1,255 @@
+{
+// General config
+    "layer": "top",
+    "position": "top",
+    "mod": "dock",
+    "height": 36,
+    "exclusive": true,
+    "passthrough": false,
+    "gtk-layer-shell": true,
+    "reload_style_on_change": true,
+
+// Modules position
+    "modules-left": ["custom/padd","custom/l_end","hyprland/workspaces","custom/r_end","custom/l_end","wlr/taskbar","custom/r_end","custom/l_end","cpu","memory","custom/cpuinfo","custom/r_end","custom/padd"],
+    "modules-center": ["custom/padd","custom/l_end","idle_inhibitor","clock","custom/r_end","custom/padd"],
+    "modules-right": ["custom/padd","custom/l_end","tray","custom/r_end","custom/l_end","network","backlight","pulseaudio","battery","custom/r_end","custom/l_end","custom/wallpapers","custom/cliphist","custom/monitors","custom/power","custom/r_end","custom/padd"],
+
+// Cpu usage module
+    "cpu": {
+        "interval": 10,
+        "format": "󰍛 {usage}%",
+        "rotate": 0,
+        "format-alt": "{icon0}{icon1}{icon2}{icon3}"
+    },
+
+// Memory usage module
+    "memory": {
+        "states": {
+            "c": 90,
+            "h": 60,
+            "m": 30
+        },
+        "interval": 30,
+        "format": "󰾆 {used}GB",
+        "rotate": 0,
+        "format-m": "󰾅 {used}GB",
+        "format-h": "󰓅 {used}GB",
+        "format-c": " {used}GB",
+        "format-alt": "󰾆 {percentage}%",
+        "max-length": 10,
+        "tooltip": true,
+        "tooltip-format": "󰾆 {percentage}%\n {used:0.1f}GB/{total:0.1f}GB"
+    },
+
+// Cpu temperature module
+    "custom/cpuinfo": {
+        "exec": "~/Scripts/cpuinfo.sh",
+        "return-type": "json",
+        "format": "{}",
+        "rotate": 0,
+        "interval": 5, // once every 5 seconds
+        "tooltip": true,
+        "max-length": 1000
+    },
+
+// Power button module
+    "custom/power": {
+        "format": "{}",
+        "rotate": 0,
+        "exec": "echo ; echo  logout",
+        "on-click": "wlogout",
+        "interval" : 86400, // once every day
+        "tooltip": true
+    },
+
+// Clipboard history button module
+    "custom/cliphist": {
+        "format": "{}",
+        "rotate": 0,
+        "exec": "echo ; echo 󰅇 clipboard history",
+        "on-click": "sleep 0.1 && ~/Scripts/cliphist.sh",
+        "interval" : 86400, // once every day
+        "tooltip": true
+    },
+
+    "custom/wallpapers": {
+        "format": "{}",
+        "rotate": 0,
+        "exec": "echo ; echo  wallpaper selector",
+        "on-click": "sleep 0.1 && ~/Scripts/wallpaper.sh",
+        "interval": 86400,
+        "tooltip": true
+    },
+
+// Monitor layout switch button module
+    "custom/monitors": {
+	"format": "{}",
+	"rotate": 0,
+	"exec": "echo ; echo   switch monitors layout",
+	"on-click": "sleep 0.1 && ~/Scripts/monitor-switch.sh home",
+	"on-click-right": "sleep 0.1 && ~/Scripts/monitor-switch.sh work",
+	"interval" : 86400, // once every day
+        "tooltip": true
+    },
+
+// Application module
+    "wlr/taskbar": {
+	"format": "{icon}",
+	"rotate": 0,
+	"icon-size": 18,
+	"icon-theme": "Tela-circle-dracula",
+    "spacing": 0,
+	"tooltip-format": "{title}",
+	"on-click": "activate",
+	"on-click-middle": "close",
+	"ignore-list": [
+		"Alacritty"
+	],
+	"app_ids-mapping": {
+		"firefoxdeveloperedition": "firefox-developer-edition"
+	}
+    },
+
+// Idle inhibitor module
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "rotate": 0,
+        "format-icons": {
+            "activated": "󰥔",
+            "deactivated": ""
+        }
+    },
+
+// Clock module
+    "clock": {
+            "format": "{:%R 󰃭 %d·%m·%y}",
+            "rotate": 0,
+            "tooltip-format": "<span>{calendar}</span>",
+            "calendar": {
+                "mode": "month",
+                "mode-mon-col": 3,
+                "on-scroll": 1,
+                "on-click-right": "mode",
+                "format": {
+                    "months": "<span color='#ffead3'><b>{}</b></span>",
+                    "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+                    "today": "<span color='#ff6699'><b>{}</b></span>"
+                }
+            },
+            "actions": {
+                "on-click-right": "mode",
+                "on-click-forward": "tz_up",
+                "on-click-backward": "tz_down",
+                "on-scroll-up": "shift_up",
+                "on-scroll-down": "shift_down"
+            }
+        },
+
+// Application tray module
+    "tray": {
+        "icon-size": 25,
+        "rotate": 0,
+        "spacing": 5
+    },
+
+// Battery module
+    "battery": {
+        "states": {
+            "good": 95,
+            "warning": 30,
+            "critical": 20
+        },
+        "format": "{icon} {capacity}%",
+	"interval": 1,
+        "rotate": 0,
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-alt": "{time} {icon}",
+        "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+    },
+
+// Backlight module
+    "backlight": {
+        "device": "intel_backlight",
+        "rotate": 0,
+        "format": "{icon} {percent}%",
+        "format-icons": ["", "", "", "", "", "", "", "", ""],
+        "on-scroll-up": "brightnessctl set 5%+",
+        "on-scroll-down": "brightnessctl set 5%-",
+        "min-length": 6
+    },
+
+// Network module
+    "network": {
+        "tooltip": true,
+        "format-wifi": " ",
+        "rotate": 0,
+        "format-ethernet": "󰈀 ",
+        "tooltip-format": "Network: <big><b>{essid}</b></big>\nSignal strength: <b>{signaldBm}dBm ({signalStrength}%)</b>\nFrequency: <b>{frequency}MHz</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>",
+        "format-linked": "󰈀 {ifname} (No IP)",
+        "format-disconnected": "󰖪 ",
+        "tooltip-format-disconnected": "Disconnected",
+        "format-alt": "<span foreground='#99ffdd'> {bandwidthDownBytes}</span> <span foreground='#ffcc66'> {bandwidthUpBytes}</span>",
+        "interval": 2
+    },
+
+// Volume module
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "rotate": 0,
+        "format-muted": " Mute",
+        "on-click": "mate-volume-control",
+        "on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-scroll-up": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-",
+        "tooltip-format": "{icon} {desc} // {volume}%",
+        "scroll-step": 5,
+        "format-icons": {
+            "default": ["", "", ""]
+        }
+    },
+
+// Esthetical modules
+    "custom/l_end": {
+        "format": " ",
+        "interval" : "once",
+        "tooltip": false
+    },
+
+    "custom/r_end": {
+        "format": " ",
+        "interval" : "once",
+        "tooltip": false
+    },
+
+    "custom/sl_end": {
+        "format": " ",
+        "interval" : "once",
+        "tooltip": false
+    },
+
+    "custom/sr_end": {
+        "format": " ",
+        "interval" : "once",
+        "tooltip": false
+    },
+
+    "custom/rl_end": {
+        "format": " ",
+        "interval" : "once",
+        "tooltip": false
+    },
+
+    "custom/rr_end": {
+        "format": " ",
+        "interval" : "once",
+        "tooltip": false
+    },
+
+    "custom/padd": {
+        "format": "  ",
+        "interval" : "once",
+        "tooltip": false
+    }
+
+}
