@@ -30,7 +30,7 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) to kee
 ## 📎 Related
 
 Looking for my Windows configuration (PowerShell, Windows Terminal, etc.)?  
-➡️ Check out [dotfiles-windows](https://github.com/yourusername/dotfiles-windows)
+➡️ Check out [dotfiles-windows](https://github.com/tuconnaisyouknow/dotfiles-windows)
 
 ---
 
