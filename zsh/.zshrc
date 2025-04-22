@@ -120,7 +120,6 @@ source ~/.aliasrc
 
 # FZF config
 source <(fzf --zsh)
-FZF_CTRL_T_OPTS="--preview 'bat --theme=rose-pine-moon --color=always -n --line-range :500 {}'"
-FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=always {} | head -200'"
-
-
+export FZF_CTRL_T_OPTS="--preview 'bat --theme=rose-pine-moon --color=always -n --line-range :500 {}'"
+export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=always {} | head -200'"
+export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
