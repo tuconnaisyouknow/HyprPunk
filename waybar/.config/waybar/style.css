@@ -95,32 +95,23 @@ tooltip {
     min-height: 10px;
 }
 
-#backlight,
-#battery,
-#bluetooth,
 #custom-cliphist,
 #custom-monitors,
-#clock,
 #custom-cpuinfo,
+#custom-power,
+#custom-wallpapers,
+#backlight,
+#battery,
+#clock,
 #cpu,
-#custom-gpuinfo,
 #idle_inhibitor,
-#custom-keybindhint,
 #language,
 #memory,
 #mpris,
 #network,
-#custom-notifications,
-#custom-power,
 #pulseaudio,
-#custom-spotify,
 #taskbar,
-#custom-wallpapers,
-#custom-theme,
 #tray,
-#custom-updates,
-#custom-wallchange,
-#custom-wbar,
 #window,
 #workspaces {
     color: @text;
@@ -151,7 +142,6 @@ tooltip {
     padding: 0px;
 }
 
-/* Coins personnalisés */
 #custom-r_end {
     border-radius: 0px 21px 21px 0px;
     margin-right: 9px;
@@ -187,4 +177,3 @@ tooltip {
     margin-left: 9px;
     padding-left: 3px;
 }
-
