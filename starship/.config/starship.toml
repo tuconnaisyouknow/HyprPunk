@@ -85,6 +85,7 @@ style_user = "bg:overlay fg:iris"
 
 [hostname]
 ssh_only = false
+ssh_symbol = "󰢹 "
 format = "[@$hostname ]($style)[$ssh_symbol]($style)[](fg:overlay) "
 style = "bg:overlay fg:iris"
 trim_at = '.companyname.com'
