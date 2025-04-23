@@ -21,3 +21,6 @@ alias r='yay -R'
 
 # MKDIR config
 alias mkdir='mkdir -p '
+
+# GIT config
+alias gbmcfg='git branch --set-upstream-to=origin/master master'
