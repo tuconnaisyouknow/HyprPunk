@@ -1,0 +1,93 @@
+@import "./rose-pine-moon.css";
+
+* {
+    border: none;
+    border-radius: 8px;
+    font-family: "JetBrainsMono Nerd Font", "Font Awesome 6 Free";
+    font-size: 13px;
+    min-height: 0;
+    padding: 0 8px;
+    margin: 0;
+}
+
+window#waybar {
+    background-color: @base;
+    color: @overlay;
+
+}
+
+#workspaces button {
+    padding: 0 10px;
+    background-color: transparent;
+    color: #6e6a86;
+    border-radius: 5px;
+}
+
+#workspaces button.active {
+    background-color: #26233a;
+    color: #c4a7e7;
+}
+
+#workspaces button:hover {
+    background-color: #1f1d2e;
+    color: #e0def4;
+}
+
+#clock,
+#cpu,
+#memory,
+#battery,
+#network,
+#pulseaudio,
+#backlight,
+#tray,
+#custom-launcher,
+#custom-weather {
+    background-color: #1f1d2e;
+    padding: 0 10px;
+    margin: 4px 6px;
+    color: #e0def4;
+}
+
+#clock {
+    color: #f6c177;
+}
+
+#cpu {
+    color: #eb6f92;
+}
+
+#memory {
+    color: #c4a7e7;
+}
+
+#battery {
+    color: #9ccfd8;
+}
+
+#battery.charging {
+    color: #31748f;
+}
+
+#network {
+    color: #9ccfd8;
+}
+
+#pulseaudio {
+    color: #ebbcba;
+}
+
+#pulseaudio.muted {
+    color: #6e6a86;
+}
+
+#tray {
+    background-color: #1f1d2e;
+}
+
+tooltip {
+    background: #26233a;
+    color: #e0def4;
+    border: 1px solid #6e6a86;
+}
+
