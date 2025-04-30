@@ -19,11 +19,26 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) to kee
 
 ---
 
+## ✅ Installation
+
+This script is designed to work for a minimal [Arch Linux](https://wiki.archlinux.org/title/Arch_Linux) install and it may break your system. Use it at your own risk.
+
+> [!CAUTION]
+> The script modifies your `grub` and `sddm` config to apply themes
+
+To install, execute the following commands :
+
+```shell
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/dotfiles/refs/heads/master/install.sh"
+```
+
+> [!IMPORTANT]
+> Please reboot after the install script completes.
+
 ## 🚧 Coming soon
 
 - 📸 **Screenshots** of my setup
 - 📃 **Explanations** of each component
-- 🧪 A simple **install script** to auto-setup the environment
 
 ---
 
