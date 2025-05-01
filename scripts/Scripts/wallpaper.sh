@@ -5,7 +5,7 @@ CONFIG_PATH="$HOME/.config/hypr/hyprpaper.conf"
 LOCK_CONFIG="$HOME/.config/hypr/hyprlock.conf"
 
 generate_rofi_list() {
-  find "$WALL_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | while read -r img; do
+  find -L "$WALL_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) | while read -r img; do
     name=$(basename "$img")
     echo -e "$name\0icon\x1f$img"
   done
