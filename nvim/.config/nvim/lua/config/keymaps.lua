@@ -5,25 +5,26 @@
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
--- 📦 Déplacement personnalisé en mode normal (jklm → hjkl)
+-- 📦 Custom movement in normal mode (jklm → hjkl)
 map("n", "j", "h", opts) -- Gauche
 map("n", "k", "j", opts) -- Bas
 map("n", "l", "k", opts) -- Haut
 map("n", "m", "l", opts) -- Droite
 
--- 📦 Déplacement personnalisé en mode visuel
+-- 📦 Custom movement in visual mode
 map("v", "j", "h", opts)
 map("v", "k", "j", opts)
 map("v", "l", "k", opts)
 map("v", "m", "l", opts)
 
--- 🏷️ Déplacement de la fonction "mark" de `m` vers `,`
+-- 🏷️ Move the "mark" function from `m` to `,`
 map("n", ",", "m", opts)
 
--- Inverser les marks : ` devient ' et vice versa
-map("n", "`", "'", opts) -- ` saute à la ligne (comportement original de ')
-map("n", "'", "`", opts) -- ' saute à la position exacte (comportement original de `)
+-- Swap marks: ` becomes ' and vice versa
+map("n", "`", "'", opts) -- ` jumps to the line (original behavior of ')
+map("n", "'", "`", opts) -- ' jumps to the exact position (original behavior of `)
 
+-- Use system clipboard for yank operations
 map({ "n", "v" }, "y", '"+y', opts)
 map("n", "Y", '"+Y', opts)
 map("n", "yy", '"+yy', opts)
