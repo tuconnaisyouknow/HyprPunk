@@ -4,6 +4,13 @@ alias tree='eza --color=always --icons=always --tree'
 
 # NVIM config
 alias vim='nvim'
+#alias vimsh='f() { echo "#!/bin/bash" > "$1" && chmod +x "$1" && vim "$1"; }; f'
+
+vimsh() {
+  echo "#!/bin/bash" > "$1"
+  chmod +x "$1"
+  vim "$1"
+}
 
 # SUDO config (keep user config en variable)
 alias sudo='sudo -E '
@@ -24,3 +31,13 @@ alias mkdir='mkdir -p '
 
 # GIT config
 alias gbmcfg='git branch --set-upstream-to=origin/master master'
+alias gpmstr='git push origin master'
+alias gpmain='git pussh origin main'
+
+# CLEAR config
+alias eclear='clear'
+alias clearr='clear'
+alias elclearr='clear'
+alias celar='clear'
+alias cclear='clear'
+alias cleazr='clear'
