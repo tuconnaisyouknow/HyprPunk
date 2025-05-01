@@ -32,13 +32,13 @@ tooltip {
     padding-left: 3px;
     padding-right: 3px;
     margin-right: 0px;
-    color: @text;
+    color: @iris;
     animation: ws_normal 20s ease-in-out 1;
 }
 
 #workspaces button.active {
-    background: @highlightMed;
-    color: @gold;
+    background: @iris;
+    color: black;
     margin-left: 3px;
     padding-left: 12px;
     padding-right: 12px;
@@ -109,12 +109,13 @@ tooltip {
 #memory,
 #mpris,
 #network,
+#custom-pacman,
 #pulseaudio,
 #taskbar,
 #tray,
 #window,
 #workspaces {
-    color: @text;
+    color: @iris;
     background: @surface;
     opacity: 1;
     margin: 4px 0px 4px 0px;

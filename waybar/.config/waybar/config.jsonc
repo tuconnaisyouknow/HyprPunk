@@ -11,7 +11,7 @@
 
 // Modules position
     "modules-left": ["custom/padd","custom/l_end","hyprland/workspaces","custom/r_end","custom/l_end","wlr/taskbar","custom/r_end","custom/l_end","cpu","memory","custom/cpuinfo","custom/r_end","custom/padd"],
-    "modules-center": ["custom/padd","custom/l_end","idle_inhibitor","clock","custom/r_end","custom/padd"],
+    "modules-center": ["custom/padd","custom/l_end","idle_inhibitor","clock","custom/r_end","custom/l_end","custom/pacman","custom/r_end","custom/padd"],
     "modules-right": ["custom/padd","custom/l_end","tray","custom/r_end","custom/l_end","network","backlight","pulseaudio","battery","custom/r_end","custom/l_end","custom/wallpapers","custom/cliphist","custom/monitors","custom/power","custom/r_end","custom/padd"],
 
 // Cpu usage module
@@ -207,6 +207,18 @@
         "format-icons": {
             "default": ["", "", ""]
         }
+    },
+
+    "custom/pacman": {
+        "format": "{} {icon}",
+        "return-type": "json",
+        "format-icons": {
+            "has-updates": " ",
+            "updated": ""
+        },
+        "exec-if": "which waybar-module-pacman-updates",
+        "exec": "waybar-module-pacman-updates --interval-seconds 5",
+        "on-click": "kitty -e yay -Syu"
     },
 
 // Esthetical modules
