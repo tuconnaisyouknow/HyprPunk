@@ -78,9 +78,9 @@ mkdir -p ~/.backup ~/.dotfiles
 cd ~/.dotfiles
 git clone https://github.com/tuconnaisyouknow/dotfiles.git .
 if [[ "$pc_type" == "laptop" ]]; then
-  stow bat cava fastfetch hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship waybar wlogout zsh
+  stow wallpapers avatars bat cava fastfetch hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship waybar wlogout zsh
 else
-  stow bat cava fastfetch hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship waybar-desktop wlogout zsh
+  stow wallpapers avatars bat cava fastfetch hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship waybar-desktop wlogout zsh
 fi
 
 # Applying GTK theme
