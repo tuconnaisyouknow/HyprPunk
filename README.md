@@ -3,7 +3,16 @@
 > ⚙️ My personal Arch Linux dotfiles – optimized for Hyprland + Wayland workflow.
 
 This repository contains my full system configuration for Arch Linux using **Hyprland**, designed to be clean, minimal, and efficient.  
-Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) to keep things modular and easy to maintain.
+Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) for modularity and ease of maintenance.
+
+> [!NOTE]
+> My dotfiles are designed for the **AZERTY** layout, so if you use a different keyboard layout you will need to adjust manually some of the following settings :
+> - `Less` config (~/.lesskey);
+>   - Remove this file to use US layout;
+> - `Nvim` config (~/.config/nvim/lua/config/keymaps.lua);
+>   - Remove the full content of this file;
+> - `Fzf` config (~/.zshrc);
+>   - Remove the following line `export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"`;
 
 ---
 
@@ -24,12 +33,12 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) to kee
 This script is designed to work for a minimal [Arch Linux](https://wiki.archlinux.org/title/Arch_Linux) install and it may break your system. Use it at your own risk.
 
 > [!CAUTION]
-> The script modifies your `grub` and `sddm` config to apply themes
+> The script modifies your `GRUB` and `SDDM` configurations to apply themes.
 
-To install, execute the following commands :
+To install, run the following command :
 
 ```shell
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/dotfiles/refs/heads/master/install.sh"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/dotfiles/refs/heads/master/install.sh)"
 ```
 
 > [!IMPORTANT]
