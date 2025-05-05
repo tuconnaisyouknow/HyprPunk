@@ -7,7 +7,7 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) for mo
 
 > [!NOTE]
 > My dotfiles are designed for the **AZERTY** layout, so if you use a different keyboard layout you will need to adjust manually some of the following settings :
-> - Hyprland config (~/.config/hypr/hyprland.conf);
+> - `Hyprland` config (~/.config/hypr/hyprland.conf);
 >   - Change `kb_layout = fr` by `kb_layout = us`
 > - `Less` config (~/.lesskey);
 >   - Remove this file to use US layout;
