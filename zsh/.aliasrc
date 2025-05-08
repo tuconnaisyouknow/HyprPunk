@@ -6,12 +6,6 @@ alias tree='eza --color=always --icons=always --tree'
 alias vim='nvim'
 #alias vimsh='f() { echo "#!/bin/bash" > "$1" && chmod +x "$1" && vim "$1"; }; f'
 
-vimsh() {
-  echo "#!/bin/bash" > "$1"
-  chmod +x "$1"
-  vim "$1"
-}
-
 # SUDO config (keep user config en variable)
 alias sudo='sudo -E '
 

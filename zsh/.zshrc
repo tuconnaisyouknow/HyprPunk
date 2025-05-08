@@ -117,6 +117,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 source ~/.aliasrc
+source ~/.functions
 
 # FZF config
 source <(fzf --zsh)

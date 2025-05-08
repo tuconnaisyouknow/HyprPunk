@@ -1,0 +1,56 @@
+vimsh() {
+  local add_shebang=1
+  local chmod_targets=""
+  local custom_chmod=0
+
+  while [[ "$1" == -* ]]; do
+    local opt="${1#-}"
+
+    for (( i=0; i<${#opt}; i++ )); do
+      char="${opt:$i:1}"
+      case "$char" in
+        c)
+          add_shebang=0
+          ;;
+        u)
+          chmod_targets+="u"
+          custom_chmod=1
+          ;;
+        g)
+          chmod_targets+="g"
+          custom_chmod=1
+          ;;
+        o)
+          chmod_targets+="o"
+          custom_chmod=1
+          ;;
+        *)
+          echo "Unknown option: -$char"
+          return 1
+          ;;
+      esac
+    done
+    shift
+  done
+
+  if [ -z "$1" ]; then
+    echo "Usage: vimsh [-c] [-u] [-g] [-o] <filename>"
+    return 1
+  fi
+
+  local filename="$1"
+
+  if [ "$add_shebang" -eq 1 ]; then
+    echo "#!/bin/bash\n\n" > "$filename"
+  else
+    : > "$filename"
+  fi
+
+  if [ "$custom_chmod" -eq 1 ]; then
+    chmod "${chmod_targets}+x" "$filename"
+  else
+    chmod +x "$filename"
+  fi
+
+  vim "$filename"
+}
