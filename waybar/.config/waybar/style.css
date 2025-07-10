@@ -11,7 +11,6 @@
 
 window#waybar {
     background: transparent;
-    border-radius: 0px 0px 10px 10px;
 }
 
 tooltip {
@@ -95,8 +94,9 @@ tooltip {
 }
 
 #custom-cliphist,
-#custom-monitors,
 #custom-cpuinfo,
+#custom-menu,
+#custom-monitors,
 #custom-power,
 #custom-wallpapers,
 #backlight,
