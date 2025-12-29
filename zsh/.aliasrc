@@ -8,6 +8,7 @@ alias vim='nvim'
 
 # SUDO config (keep user config en variable)
 alias sudo='sudo -E '
+alias sudoi='sudo -i'
 
 # FASTFETCH config
 alias ff='fastfetch'
@@ -35,3 +36,11 @@ alias elclearr='clear'
 alias celar='clear'
 alias cclear='clear'
 alias cleazr='clear'
+alias cleear='clear'
+alias cleaar='clear'
+
+# PERSONAL config
+alias :q='exit'
+
+# EXEGOL config
+alias exegol='sudo -E /home/tuconnais/.local/bin/exegol'
