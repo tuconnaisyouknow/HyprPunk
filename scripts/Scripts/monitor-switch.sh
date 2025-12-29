@@ -8,7 +8,8 @@ CONFIG_FILE="$HOME/.config/hypr/monitors.conf"
 }
 
 mode="$1"
-new_content=$(awk -v mode="$mode" '
+
+new_content="$(awk -v mode="$mode" '
   /^# Home/ { in_home=1; in_work=0; print; next }
   /^# Work/ { in_home=0; in_work=1; print; next }
 
@@ -23,7 +24,21 @@ new_content=$(awk -v mode="$mode" '
   }
 
   { print }
-' "$CONFIG_FILE")
+' "$CONFIG_FILE")"
 
-# ✍️ Écriture in-place (le fichier reste intact, le symlink aussi)
-printf "%s\n" "$new_content" >"$CONFIG_FILE"
+# --- Écriture atomique (évite fichier vide/partiel pendant le reload Hyprland) ---
+# Si monitors.conf est un symlink, on écrit dans la cible réelle (le symlink reste intact)
+TARGET="$(readlink -f "$CONFIG_FILE")"
+DIR="$(dirname "$TARGET")"
+TMP="$(mktemp --tmpdir="$DIR" monitors.conf.XXXXXX)"
+
+# Écrit le nouveau contenu dans un fichier temporaire
+printf '%s\n' "$new_content" >"$TMP"
+
+# Remplacement atomique
+mv -f "$TMP" "$TARGET"
+
+# (Optionnel mais souvent utile) Recharge Hyprland proprement
+hyprctl reload >/dev/null 2>&1
+
+exit 0
