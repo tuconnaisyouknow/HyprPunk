@@ -7,15 +7,15 @@
   min-height: 16px;
 }
 
-@import "./rose-pine-moon.css";
+@import "./mocha.conf";
 
 window#waybar {
   background: transparent;
 }
 
 tooltip {
-  background: @surface;
-  color: @text;
+  background: @surface0;
+  color: @mauve;
   border-width: 0px;
 }
 
@@ -30,13 +30,13 @@ tooltip {
   padding-left: 3px;
   padding-right: 3px;
   margin-right: 0px;
-  color: @iris;
+  color: @mauve;
   animation: ws_normal 20s ease-in-out 1;
 }
 
 #workspaces button.active {
-  background: @iris;
-  color: black;
+  background: @mauve;
+  color: @base;
   margin-left: 3px;
   padding-left: 12px;
   padding-right: 12px;
@@ -46,8 +46,8 @@ tooltip {
 }
 
 #workspaces button:hover {
-  background: @highlightHigh;
-  color: @iris;
+  background: @surface2;
+  color: @mauve;
   animation: ws_hover 20s ease-in-out 1;
   transition: all 0.3s cubic-bezier(.55, -0.68, .48, 1.682);
 }
@@ -63,13 +63,13 @@ tooltip {
   padding-left: 3px;
   padding-right: 3px;
   margin-right: 0px;
-  color: @text;
+  color: @base;
   animation: tb_normal 20s ease-in-out 1;
 }
 
 #taskbar button.active {
-  background: @highlightMed;
-  color: @pine;
+  background: @mauve;
+  color: @base;
   margin-left: 3px;
   padding-left: 12px;
   padding-right: 12px;
@@ -79,8 +79,8 @@ tooltip {
 }
 
 #taskbar button:hover {
-  background: @highlightHigh;
-  color: @foam;
+  background: @lavender;
+  color: @base;
   animation: tb_hover 20s ease-in-out 1;
   transition: all 0.3s cubic-bezier(.55, -0.68, .48, 1.682);
 }
@@ -114,8 +114,8 @@ tooltip {
 #tray,
 #window,
 #workspaces {
-  color: @iris;
-  background: @surface;
+  color: @mauve;
+  background: @surface0;
   opacity: 1;
   margin: 4px 0px 4px 0px;
   padding-left: 7px;
@@ -129,8 +129,8 @@ tooltip {
 #custom-sr_end,
 #custom-rl_end,
 #custom-rr_end {
-  color: @text;
-  background: @surface;
+  color: @mauve;
+  background: @surface0;
   opacity: 1;
   margin: 4px 0px 4px 0px;
   padding-left: 2px;
