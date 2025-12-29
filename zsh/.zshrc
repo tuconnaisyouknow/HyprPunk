@@ -118,6 +118,7 @@ source $ZSH/oh-my-zsh.sh
 
 source ~/.aliasrc
 source ~/.functionrc
+source ~/.highlightrc
 
 # FZF config
 source <(fzf --zsh)
