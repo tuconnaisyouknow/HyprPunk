@@ -22,7 +22,7 @@ else
 fi
 
 if [ "$state" == "enabled" ]; then
-  notify-send -u low -i /usr/share/icons/rose-pine-moon-icons/32x32/devices/gnome-dev-mouse-optical.svg "Mouse toogle" "✅ Enabled"
+  notify-send -u low -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-mouse-optical.svg "Mouse toogle" "✅ Enabled"
 else
-  notify-send -u low -i /usr/share/icons/rose-pine-moon-icons/32x32/devices/gnome-dev-mouse-optical.svg "Mouse toogle" "❌ Disabled"
+  notify-send -u low -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-mouse-optical.svg "Mouse toogle" "❌ Disabled"
 fi

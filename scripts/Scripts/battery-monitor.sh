@@ -7,7 +7,7 @@ while true; do
 
   if [ "$bat_lvl" -le 20 ]; then
     if [ "$already_warned" = false ]; then
-      notify-send -u critical -i /usr/share/icons/rose-pine-moon-icons/32x32/devices/gnome-dev-battery.svg "Battery Low" "Level: ${bat_lvl}%"
+      notify-send -u critical -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-battery.svg "Battery Low" "Level: ${bat_lvl}%"
       already_warned=true
     fi
   else
