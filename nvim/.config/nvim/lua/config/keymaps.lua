@@ -1,31 +1,40 @@
 -- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+-- Default keymaps that are always set:
+-- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
 -- Add any additional keymaps here
 
-local map = vim.keymap.set
-local opts = { noremap = true, silent = true }
+-- Custom movement in normal mode (jklm → hjkl)
+vim.keymap.set('n', 'j', 'h', { silent = true, desc = "Left" })
+vim.keymap.set('n', 'k', 'j', { silent = true, desc = "Down" })
+vim.keymap.set('n', 'l', 'k', { silent = true, desc = "Up" })
+vim.keymap.set('n', 'm', 'l', { silent = true, desc = "Right" })
 
--- 📦 Custom movement in normal mode (jklm → hjkl)
-map("n", "j", "h", opts) -- Gauche
-map("n", "k", "j", opts) -- Bas
-map("n", "l", "k", opts) -- Haut
-map("n", "m", "l", opts) -- Droite
+-- Custom movement in visual mode
+vim.keymap.set('v', 'j', 'h', { silent = true, desc = "Left" })
+vim.keymap.set('v', 'k', 'j', { silent = true, desc = "Down" })
+vim.keymap.set('v', 'l', 'k', { silent = true, desc = "Up" })
+vim.keymap.set('v', 'm', 'l', { silent = true, desc = "Right" })
 
--- 📦 Custom movement in visual mode
-map("v", "j", "h", opts)
-map("v", "k", "j", opts)
-map("v", "l", "k", opts)
-map("v", "m", "l", opts)
-
--- 🏷️ Move the "mark" function from `m` to `,`
-map("n", ",", "m", opts)
-
--- Swap marks: ` becomes ' and vice versa
-map("n", "`", "'", opts) -- ` jumps to the line (original behavior of ')
-map("n", "'", "`", opts) -- ' jumps to the exact position (original behavior of `)
+-- Move the "mark" function from `m` to `h`
+vim.keymap.set('n', 'h', 'm', { silent = true, desc = "Mark" })
 
 -- Use system clipboard for yank operations
-map({ "n", "v" }, "y", '"+y', opts)
-map("n", "Y", '"+Y', opts)
-map("n", "yy", '"+yy', opts)
-map("v", "Y", '"+y', opts)
+vim.keymap.set('n', 'y', '"+y', { silent = true, desc = "Yank" })
+vim.keymap.set('v', 'y', '"+y', { silent = true, desc = "Yank" })
+vim.keymap.set('n', 'Y', '"+Y', { silent = true, desc = "Yank the line" })
+vim.keymap.set('n', 'yy', '"+yy', { silent = true, desc = "Yank the line" })
+
+vim.keymap.set('n', '<leader>dd', '"+dd', { silent = true, desc = "Delete the line -> clipboard" })
+vim.keymap.set('v', '<leader>d', '"+d', { silent = true, desc = "Delete the selection -> clipboard" })
+
+-- New line without entering insert mode
+vim.keymap.set('n', '<leader>o', ":put =''<CR>",
+  { silent = true, desc = "New line before without insert" })
+vim.keymap.set('n', '<leader>O', ":put! =''<CR>",
+  { silent = true, desc = "New line after without insert" })
+
+-- Window navigation (splits) - jklm
+vim.keymap.set('n', '<C-j>', '<C-w>h', { silent = true, desc = 'Window left' })
+vim.keymap.set('n', '<C-k>', '<C-w>j', { silent = true, desc = 'Window down' })
+vim.keymap.set('n', '<C-l>', '<C-w>k', { silent = true, desc = 'Window up' })
+vim.keymap.set('n', '<C-m>', '<C-w>l', { silent = true, desc = 'Window right' })
