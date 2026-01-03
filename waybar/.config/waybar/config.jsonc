@@ -52,6 +52,7 @@
     "custom/cliphist",
     "custom/monitors",
     "custom/power",
+    "custom/notification",
     "custom/r_end",
     "custom/padd"
   ],
@@ -236,6 +237,14 @@
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval-seconds 5",
     "on-click": "kitty -e yay -Syu"
+  },
+  "custom/notification": {
+    "format": "{}",
+    "exec": "~/Scripts/notification.sh",
+    "return-type": "json",
+    "on-click": "swaync-client -t",
+    "interval": 1,
+    "tooltip": true
   },
   // Power button module
   "custom/power": {
