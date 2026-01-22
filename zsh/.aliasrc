@@ -8,13 +8,13 @@ alias vim='nvim'
 
 # SUDO config (keep user config en variable)
 alias sudo='sudo -E '
-alias sudoi='sudo -i'
+alias sudoi='command sudo -i'
 
 # FASTFETCH config
 alias ff='fastfetch'
 
 # BAT config
-alias rcat='/usr/bin/cat'
+alias rcat='\cat'
 
 # YAY config
 alias i='yay -S'
@@ -41,6 +41,9 @@ alias cleaar='clear'
 
 # PERSONAL config
 alias :q='exit'
+
+# YAZI config
+alias y='yazi'
 
 # EXEGOL config
 alias exegol='sudo -E /home/tuconnais/.local/bin/exegol'
