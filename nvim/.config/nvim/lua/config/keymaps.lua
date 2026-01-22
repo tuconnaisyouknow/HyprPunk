@@ -33,8 +33,20 @@ vim.keymap.set('n', '<leader>o', ":put =''<CR>",
 vim.keymap.set('n', '<leader>O', ":put! =''<CR>",
   { silent = true, desc = "New line after without insert" })
 
--- Window navigation (splits) - jklm
-vim.keymap.set('n', '<C-j>', '<C-w>h', { silent = true, desc = 'Window left' })
-vim.keymap.set('n', '<C-k>', '<C-w>j', { silent = true, desc = 'Window down' })
-vim.keymap.set('n', '<C-l>', '<C-w>k', { silent = true, desc = 'Window up' })
-vim.keymap.set('n', '<C-m>', '<C-w>l', { silent = true, desc = 'Window right' })
+-- Deleting window navigation keybindings
+vim.keymap.del('n', '<C-h>')
+vim.keymap.del('n', '<C-j>')
+vim.keymap.del('n', '<C-k>')
+vim.keymap.del('n', '<C-l>')
+
+-- Vim tmux navigator config
+vim.api.nvim_set_keymap('n', '<NL>', ':TmuxNavigateLeft<CR>',
+  { noremap = true, silent = true, desc = "Switch to left window" })
+vim.api.nvim_set_keymap('n', '<C-k>', ':TmuxNavigateDown<CR>',
+  { noremap = true, silent = true, desc = "Switch to lower window" })
+vim.api.nvim_set_keymap('n', '<C-l>', ':TmuxNavigateUp<CR>',
+  { noremap = true, silent = true, desc = "Switch to upper window" })
+vim.api.nvim_set_keymap('n', '<F12>', ':TmuxNavigateRight<CR>',
+  { noremap = true, silent = true, desc = "Switch to right window" })
+vim.api.nvim_set_keymap('n', '<C-\\>', ':TmuxNavigatePrevious<CR>',
+  { noremap = true, silent = true, desc = "Switch to previous window" })

@@ -30,9 +30,12 @@ return {
       win = {
         input = {
           keys = {
+            ["<c-h>"] = false,
             ["<c-j>"] = false,
-            ["<c-k>"] = { "list_down", mode = { "i", "n" } },
-            ["<c-l>"] = { "list_up", mode = { "i", "n" } },
+            ["<c-k>"] = false,
+            ["<c-l>"] = false,
+            ["<m-k>"] = { "list_down", mode = { "i", "n" } },
+            ["<m-l>"] = { "list_up", mode = { "i", "n" } },
           }
         }
       },
@@ -42,6 +45,10 @@ return {
           win = {
             list = {
               keys = {
+                ['<c-h>'] = false,
+                ['<c-j>'] = false,
+                ['<c-k>'] = false,
+                ['<c-l>'] = false,
                 ['j'] = 'explorer_close',
                 ['k'] = 'list_down',
                 ['l'] = 'list_up',
