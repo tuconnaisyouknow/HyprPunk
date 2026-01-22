@@ -36,6 +36,7 @@ wallpaper {
   monitor =
   path = $selected_path
 }
+splash = false
 EOF
 
 # 3) Mettre à jour hyprlock.conf (sans casser le symlink)
