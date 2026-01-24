@@ -18,9 +18,13 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) for mo
 ---
 
 > [!NOTE]
->These dotfiles are designed specifically for the AZERTY (FR) keyboard layout.
->To stay consistent with the French layout, all Vim-style keybindings (h j k l) have been adapted to j k l m across the entire configuration (Neovim, tmux, Hyprland, fzf, etc.).
->If you are using a different keyboard layout (e.g. QWERTY), you will need to manually adjust or remove some configurations listed below.
+> **Keyboard layout (AZERTY-FR)**
+>
+> These dotfiles are built for **AZERTY (FR)**.
+> To stay consistent with the layout, all Vim-style movements (`h j k l`) are remapped to **`j k l m`** across the config (Neovim, tmux, Hyprland, fzf, etc.).
+>
+> If you are using a different keyboard layout (e.g. QWERTY), you will need to manually adjust or remove some configurations listed below.
+>
 > - **Hyprland** config (~/.config/hypr/hyprland.conf);
 >   * Update the `kb_layout` option to match your keyboard layout.
 > - **Hyprland keybindings** config (~/.config/hypr/keybindings.conf)
