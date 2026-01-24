@@ -33,7 +33,7 @@ fi
 # Installing all needed packages
 yay -S --needed ttf-jetbrains-mono-nerd ttf-font-awesome ttf-apple-emoji kitty starship \
   zoxide fzf eza fastfetch bat \
-  zsh fd ripgrep lazygit neovim stow \
+  zsh npm cargo fd ripgrep lazygit neovim stow \
   wlogout sddm waybar-module-pacman-updates-git network-manager-applet blueman \
   cliphist rofi bc waybar hyprcursor \
   hypridle hyprlock hyprshot hyprpaper hyprland \
