@@ -285,10 +285,10 @@
   },
   // Menu button module
   "custom/menu": {
-    "format": "{}",
+    "format": "{}",
     "rotate": 0,
-    "exec": "echo ; echo  menu",
-    "on-click": "sleep 0.1 && rofi -show drun -show-icons -display-drun ' Apps '",
+    "exec": "echo ; echo  menu",
+    "on-click": "sleep 0.1 && rofi -show drun -show-icons -display-drun ' Apps '",
     "interval": 86400, // once every day
     "tooltip": true
   },
