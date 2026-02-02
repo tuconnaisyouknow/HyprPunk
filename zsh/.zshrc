@@ -1,8 +1,11 @@
 # STARSHIP init
 eval "$(starship init zsh)"
 
-# FASTFETCH
-fastfetch
+# # FASTFETCH
+if [[ -z "$TMUX" ]]; then
+  command -v fastfetch >/dev/null 2>&1 && fastfetch
+fi
+
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -29,6 +32,12 @@ export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
 
 # ZOXIDE config
 eval "$(zoxide init zsh)"
+
+# TMUXINATOR config
+export PATH="$(ruby -e "print Gem.user_dir")/bin:$PATH"
+fpath=(~/.zsh/completion $fpath)
+autoload -U compinit
+compinit
 
 # Created by `pipx` on 2025-12-26 20:22:29
 export PATH="$PATH:/home/tuconnais/.local/bin"
