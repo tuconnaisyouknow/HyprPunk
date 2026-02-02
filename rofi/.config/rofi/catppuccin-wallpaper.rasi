@@ -1,0 +1,150 @@
+/*************************************************
+ * Wallpapers – Row 5 Gallery (tight)
+ * Same colors, 1 row, 5 per page, big icons
+ *************************************************/
+
+* {
+  bg:           #1e1e2e;
+  bg2:          #1e1e2e;
+
+  fg:           #cdd6f4;
+  fg2:          #f38ba8;
+  muted:        #6c7086;
+  accent:       #89b4fa;
+
+  card-bg:      #1e1e2e;
+  selected-bg:  #cba6f7;
+
+  width:        1600;
+  font:         "JetBrainsMono Nerd Font 12";
+
+  radius:       18px;
+  gap:          14px;
+
+  /* Mets 160–200 pour du propre, 240 commence à être extrême */
+  icon-size:    300px;
+
+  columns:      5;
+  rows:         1;
+}
+
+configuration {
+  show-icons: true;
+  drun-display-format: "{name}";
+}
+
+/* Window */
+window {
+  width: @width;
+  background-color: @bg;
+  border: 0px;
+  border-radius: @radius;
+  padding: 16px;
+}
+
+mainbox {
+  background-color: transparent;
+  spacing: 14px;
+}
+
+/* Input */
+inputbar {
+  background-color: @bg2;
+  border-radius: @radius;
+  padding: 10px 12px;
+  text-color: @fg;
+  children: [ prompt, entry ];
+}
+
+prompt {
+  enabled: true;
+  background-color: transparent;
+  text-color: #cba6f7;
+  margin: 0px 10px 0px 0px;
+}
+
+textbox-prompt-colon { enabled: false; }
+
+entry {
+  background-color: transparent;
+  text-color: @fg;
+  placeholder: "Search…";
+  placeholder-color: @muted;
+}
+
+case-indicator { enabled: false; }
+
+/* List */
+listview {
+  background-color: transparent;
+
+  columns: @columns;
+  lines: @rows;
+
+  fixed-columns: true;
+  fixed-height: false;
+
+  spacing: @gap;
+  padding: 6px;
+
+  scrollbar: false;
+  border: 0px;
+  dynamic: false;
+}
+
+/* Elements */
+element {
+  orientation: vertical;
+
+  background-color: @card-bg;
+  border: 0px;
+  border-radius: @radius;
+
+  /* IMPORTANT : padding minimal pour coller à l'image */
+  padding: 0 8px 0 8px;
+  text-color: @fg;
+
+  /* Optionnel : force une carte quasi carrée autour de l’icône */
+  /* min-height: calc(@icon-size + 16px);  <-- pas supporté partout */
+}
+
+/* Force states */
+element normal.normal,
+element normal.active,
+element normal.urgent,
+element active.normal,
+element active.active,
+element active.urgent,
+element urgent.normal,
+element urgent.active,
+element urgent.urgent,
+element alternate.normal,
+element alternate.active,
+element alternate.urgent {
+  background-color: @card-bg;
+  border: 0px;
+  text-color: @fg;
+}
+
+element selected.normal,
+element selected.active,
+element selected.urgent,
+element selected.alternate {
+  background-color: @selected-bg;
+  border: 0px;
+  text-color: @fg;
+}
+
+/* Icon only */
+element-icon {
+  size: @icon-size;
+
+  /* IMPORTANT : pas de marge => pas de hauteur en trop */
+  margin: 0px;
+  background-color: transparent;
+}
+
+/* Cache le texte pour enlever la place réservée */
+element-text {
+  enabled: false;
+}

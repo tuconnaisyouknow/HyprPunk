@@ -1,0 +1,165 @@
+/*************************************************
+ * Catppuccin Grid – Clean (no borders)
+ *************************************************/
+
+* {
+  /* Colors */
+  bg:           #1e1e2e;
+  bg2:          #1e1e2e;
+
+  fg:           #cdd6f4;
+  fg2:          #f38ba8;
+  muted:        #6c7086;
+  accent:       #89b4fa;
+
+  card-bg:      #1e1e2e;
+  selected-bg:  #cba6f7;
+
+  /* Layout */
+  width:        600;
+  font:         "JetBrainsMono Nerd Font 18";
+
+  columns:      4;
+  rows:         3;
+
+  radius:       18px;
+  gap:          14px;
+
+  icon-size:    72px;
+}
+
+configuration {
+  show-icons: true;
+  drun-display-format: "{name}";
+  disable-history: false;
+}
+
+/* ================= Window ================= */
+
+window {
+  width: @width;
+  background-color: @bg;
+  border: 0px;
+  border-radius: @radius;
+  padding: 16px;
+}
+
+mainbox {
+  background-color: transparent;
+  spacing: 14px;
+}
+
+/* ================= Input ================= */
+
+inputbar {
+  background-color: @bg2;
+  border-radius: @radius;
+  padding: 10px 12px;
+  text-color: @fg;
+  children: [ prompt, entry ];
+}
+
+entry {
+  background-color: transparent;
+  text-color: @fg;
+  placeholder: "Search…";
+  placeholder-color: @muted;
+  cursor: text;
+}
+
+textbox {
+  background-color: transparent;
+  text-color: @fg;
+}
+
+/* Disable unused widgets */
+prompt {
+  enabled: true;
+  background-color: transparent;
+  text-color: #cba6f7;
+  margin: 0px 10px 0px 0px;
+}
+textbox-prompt-colon { enabled: false; }
+case-indicator { enabled: false; }
+
+/* ================= Grid ================= */
+
+listview {
+  background-color: transparent;
+
+  columns: @columns;
+  lines: @rows;
+
+  fixed-columns: true;
+  fixed-height: false;
+
+  spacing: @gap;
+  padding: 6px;
+
+  scrollbar: false;
+  border: 0px;
+}
+
+/* ================= Elements ================= */
+
+element {
+  orientation: vertical;
+
+  background-color: @card-bg;
+  border: 0px;
+  border-radius: @radius;
+
+  padding: 12px;
+  text-color: @fg;
+}
+
+/* All non-selected states */
+element normal.normal,
+element normal.active,
+element normal.urgent,
+element active.normal,
+element active.active,
+element active.urgent,
+element urgent.normal,
+element urgent.active,
+element urgent.urgent {
+  background-color: @card-bg;
+  border: 0px;
+  text-color: @fg;
+}
+
+/* Selected = background only */
+element selected.normal,
+element selected.active,
+element selected.urgent {
+  background-color: @selected-bg;
+  border: 0px;
+  text-color: @fg;
+}
+
+/* Icon + text */
+element-icon {
+  size: @icon-size;
+  background-color: transparent;
+  margin: 2px 0px 10px 0px;
+}
+
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+  horizontal-align: 0.5;
+  vertical-align: 0.5;
+  margin: 0px;
+}
+
+/* ================= Messages ================= */
+
+message {
+  background-color: transparent;
+  text-color: @fg2;
+}
+
+error-message {
+  background-color: transparent;
+  text-color: @fg2;
+}

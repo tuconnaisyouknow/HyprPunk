@@ -1,0 +1,81 @@
+/* list-compact.rasi — ultra compatible */
+
+window {
+  width: 700;
+  padding: 10;
+  border: 0;
+  border-radius: 14;
+  background-color: #1e1e2e;
+}
+
+mainbox {
+  spacing: 10;
+  background-color: transparent;
+}
+
+inputbar {
+  enabled: true;
+  padding: 8 10;
+  border-radius: 14;
+  background-color: #1e1e2e;
+  text-color: #cdd6f4;
+  children: [ prompt, entry ];
+}
+
+prompt {
+  enabled: true;
+  margin: 0 10 0 0;
+  background-color: transparent;
+  text-color: #cba6f7;
+}
+
+textbox-prompt-colon { enabled: false; }
+case-indicator { enabled: false; }
+
+entry {
+  background-color: transparent;
+  text-color: #cdd6f4;
+  placeholder: "Search…";
+  placeholder-color: #6c7086;
+}
+
+listview {
+  lines: 12;
+  fixed-height: false;
+  spacing: 2;
+  padding: 2;
+  scrollbar: false;
+  background-color: transparent;
+}
+
+element {
+  padding: 10 10;
+  border: 0;
+  border-radius: 10;
+  background-color: transparent;
+  text-color: #cdd6f4;
+}
+
+element selected {
+  background-color: #cba6f7;
+  text-color: #1e1e2e;
+}
+
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+}
+
+element-icon {
+  enabled: false;
+}
+
+message {
+  background-color: transparent;
+  text-color: #f38ba8;
+}
+
+error-message {
+  background-color: transparent;
+  text-color: #f38ba8;
+}
