@@ -13,6 +13,12 @@ alias sudoi='command sudo -i'
 # FASTFETCH config
 alias ff='fastfetch'
 
+# TMUX config
+alias t='tmux'
+alias tst='tmuxinator start'
+alias tstp='tmuxinator stop'
+alias mux='tmuxinator'
+
 # BAT config
 alias rcat='\cat'
 
