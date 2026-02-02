@@ -4,6 +4,7 @@ set -euo pipefail
 WALL_DIR="$HOME/Pictures/Wallpapers"
 CONFIG_PATH="$HOME/.config/hypr/hyprpaper.conf"
 LOCK_CONFIG="$HOME/.config/hypr/hyprlock.conf"
+THEME_PATH="$HOME/.config/rofi/catppuccin-wallpaper.rasi"
 
 generate_rofi_list() {
   find -L "$WALL_DIR" -type f \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' \) -print0 |
@@ -15,10 +16,8 @@ generate_rofi_list() {
 
 selection=$(
   generate_rofi_list | rofi -dmenu -show-icons \
-    -p '🎨 Choose wallpaper ' \
-    -theme-str '* {font: "JetBrainsMono Nerd Font 10";}' \
-    -theme-str 'element-icon { size: 64px; }' \
-    -theme-str 'listview { lines: 10; }'
+    -p ' Choose wallpaper' \
+    -theme "$THEME_PATH"
 )
 
 [ -z "${selection:-}" ] && exit 0
