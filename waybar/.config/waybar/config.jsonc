@@ -251,7 +251,7 @@
     "format": "{}",
     "rotate": 0,
     "exec": "echo ; echo  logout",
-    "on-click": "wlogout",
+    "on-click": "~/Scripts/Rofi/system.sh standalone",
     "interval": 86400, // once every day
     "tooltip": true
   },
@@ -260,7 +260,7 @@
     "format": "{}",
     "rotate": 0,
     "exec": "echo ; echo 󰅇 clipboard history",
-    "on-click": "sleep 0.1 && ~/Scripts/cliphist.sh",
+    "on-click": "sleep 0.1 && ~/Scripts/Rofi/cliphist.sh",
     "interval": 86400, // once every day
     "tooltip": true
   },
@@ -269,7 +269,7 @@
     "format": "{}",
     "rotate": 0,
     "exec": "echo ; echo  wallpaper selector",
-    "on-click": "sleep 0.1 && ~/Scripts/wallpaper.sh",
+    "on-click": "sleep 0.1 && ~/Scripts/Rofi/wallpaper.sh standalone",
     "interval": 86400,
     "tooltip": true
   },

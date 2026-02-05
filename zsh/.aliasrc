@@ -23,9 +23,9 @@ alias mux='tmuxinator'
 alias rcat='\cat'
 
 # YAY config
-alias i='yay -S'
+alias i='yay -S --needed'
 alias u='yay -Syu'
-alias r='yay -R'
+alias r='yay -Rns'
 
 # MKDIR config
 alias mkdir='mkdir -p '
