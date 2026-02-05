@@ -1,28 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Path to the Hyprland configuration directory
-CONFIG_DIR="$HOME/.config/hypr"
+CONFIG_FILE="$HOME/.config/hypr/touchpad.conf"
 
-# Name of the touchpad configuration file
-TOUCHPAD_CONFIG="touchpad.conf"
+# Résout la cible réelle du symlink (si c'est un vrai fichier, ça renvoie lui-même)
+TARGET="$(readlink -f "$CONFIG_FILE")"
 
-# Full path to the touchpad configuration file
-CONFIG_FILE="$CONFIG_DIR/$TOUCHPAD_CONFIG"
+enabled="$(grep -Eo 'enabled[[:space:]]*=[[:space:]]*[01]' "$TARGET" | head -n1 || true)"
 
-# Check if the touchpad is currently enabled or disabled
-enabled=$(grep -o "enabled\s*=\s*[01]" "$CONFIG_FILE")
-
-# Toggle the touchpad state
-if [ "$enabled" == "enabled = 0" ]; then
-  sed -i "s/enabled\s*=\s*0/enabled = 1/" "$CONFIG_FILE"
-  state="enabled"
+if [[ "$enabled" == *"= 0" ]]; then
+  perl -pi -e 's/(enabled\s*=\s*)0/${1}1/' "$TARGET"
+  notify-send -u low -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-mouse-optical.svg 'Mouse toggle' '✅ Enabled'
 else
-  sed -i "s/enabled\s*=\s*1/enabled = 0/" "$CONFIG_FILE"
-  state="disabled"
-fi
-
-if [ "$state" == "enabled" ]; then
-  notify-send -u low -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-mouse-optical.svg "Mouse toogle" "✅ Enabled"
-else
-  notify-send -u low -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-mouse-optical.svg "Mouse toogle" "❌ Disabled"
+  perl -pi -e 's/(enabled\s*=\s*)1/${1}0/' "$TARGET"
+  notify-send -u low -i /usr/share/icons/Papirus-Dark/32x32/devices/gnome-dev-mouse-optical.svg 'Mouse toggle' '❌ Disabled'
 fi
