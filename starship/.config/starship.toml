@@ -109,23 +109,23 @@ truncation_symbol = "…/"
 "Videos" = " "
 
 [git_branch]
-symbol = ""
+symbol = ""
 style = "bg:lavender"
 format = '[[ $symbol $branch ](fg:base bg:lavender)]($style)'
 
 [git_status]
 style = "bg:lavender"
 format = '[[($all_status$ahead_behind )](fg:base bg:lavender)]($style)'
-up_to_date = '[ ](bg:lavender fg:base)'
+up_to_date = '[ ✓](bg:lavender fg:base)'
 untracked = '[?\($count\)](bg:lavender fg:base)'
 stashed = '[\$](bg:lavender fg:base)'
 modified = '[!\($count\)](bg:lavender fg:base)'
-renamed = '[\($count\)](bg:lavender fg:base)'
-deleted = '[\($count\)](bg:lavender fg:base)'
+renamed = '[»\($count\)](bg:lavender fg:base)'
+deleted = '[✘\($count\)](bg:lavender fg:base)'
 staged = '[++\($count\)](bg:lavender fg:base)'
-ahead = '[\(${count}\)](bg:lavender fg:base)'
-diverged = '[\[](bg:lavender fg:base)[⇡\(${ahead_count}\)](bg:lavender fg:base)[⇣\(${behind_count}\)](bg:lavender fg:base)[\]](bg:lavender fg:base)'
-behind = '[\(${count}\)](bg:lavender fg:base)'
+ahead = '[⇡\(${count}\)](bg:lavender fg:base)'
+diverged = '⇕[\[](bg:lavender fg:base)[⇡\(${ahead_count}\)](bg:lavender fg:base)[⇣\(${behind_count}\)](bg:lavender fg:base)[\]](bg:lavender fg:base)'
+behind = '[⇣\(${count}\)](bg:lavender fg:base)'
 
 [nodejs]
 symbol = ""
@@ -133,7 +133,7 @@ style = "bg:sky"
 format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
 
 #[c]
-#symbol = ""
+#symbol = " "
 #style = "bg:sky"
 #format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
 
@@ -176,16 +176,16 @@ format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
 disabled = false
 time_format = "%R"
 style = "bg:sapphire"
-format = '[[  $time ](fg:base bg:sapphire)]($style)'
+format = '[[  $time ](fg:base bg:sapphire)]($style)'
 
 [line_break]
 disabled = false
 
 [character]
 disabled = false
-success_symbol = '[](bold fg:mauve)'
-error_symbol = '[](bold fg:red)'
-vimcmd_symbol = '[](bold fg:mauve)'
-vimcmd_replace_one_symbol = '[](bold fg:maroon)'
-vimcmd_replace_symbol = '[](bold fg:maroon)'
-vimcmd_visual_symbol = '[](bold fg:green)'
+success_symbol = '[](bold fg:mauve)'
+error_symbol = '[](bold fg:red)'
+vimcmd_symbol = '[](bold fg:mauve)'
+vimcmd_replace_one_symbol = '[](bold fg:maroon)'
+vimcmd_replace_symbol = '[](bold fg:maroon)'
+vimcmd_visual_symbol = '[](bold fg:green)'
