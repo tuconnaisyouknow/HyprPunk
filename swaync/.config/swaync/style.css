@@ -40,7 +40,7 @@ trough {
 .notification-background {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8);
   border-radius: 18px;
-  margin: 18px;
+  margin: 10px;
   background: rgba(24, 24, 37, 0.4);
   color: #cdd6f4;
   padding: 0;
@@ -156,7 +156,7 @@ trough {
 .control-center .notification-background {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8);
   border-radius: 18px;
-  margin: 18px;
+  margin: 10px;
   background: #181825;
 }
 
