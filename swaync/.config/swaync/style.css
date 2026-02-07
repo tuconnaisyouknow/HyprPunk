@@ -1,3 +1,5 @@
+@import 'catppuccin.css';
+
 * {
   all: unset;
   font-size: 14px;
@@ -6,7 +8,7 @@
 }
 
 trough highlight {
-  background: #cdd6f4;
+  background: @text;
 }
 
 scale {
@@ -25,15 +27,15 @@ trough slider {
   border-radius: 18px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
   transition: all 0.2s ease;
-  background-color: #89b4fa;
+  background-color: @blue;
 }
 
 trough slider:hover {
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.8), 0 0 8px #89b4fa;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.8), 0 0 8px @blue;
 }
 
 trough {
-  background-color: #313244;
+  background-color: @surface0;
 }
 
 /* notifications */
@@ -41,8 +43,7 @@ trough {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8);
   border-radius: 18px;
   margin: 10px;
-  background: rgba(24, 24, 37, 0.4);
-  color: #cdd6f4;
+  background: @surface0-sec;
   padding: 0;
 }
 
@@ -72,16 +73,16 @@ trough {
 }
 
 .notification-content .summary {
-  color: #cdd6f4;
+  color: @mauve;
   font-size: 1.4rem;
 }
 
 .notification-content .time {
-  color: #a6adc8;
+  color: @mauve-sec;
 }
 
 .notification-content .body {
-  color: #bac2de;
+  color: @mauve;
   font-size: 1.3rem;
 }
 
@@ -89,9 +90,8 @@ trough {
 .notification.critical .notification-content .summary,
 .notification.critical .notification-content .time,
 .notification.critical .notification-content .body {
-  color: #f38ba8;
+  color: @red;
 }
-
 
 .notification>*:last-child>* {
   min-height: 3.4em;
@@ -101,21 +101,17 @@ trough {
   margin: 7px;
   padding: 2px;
   border-radius: 10px;
-  color: #1e1e2e;
-  background-color: #f38ba8;
+  color: @base;
+  background-color: @red;
 }
 
 .notification-background .close-button:hover {
-  background-color: #eba0ac;
-}
-
-.notification-background .close-button:active {
-  background-color: #f5c2e7;
+  background-color: @mauve;
 }
 
 .notification .notification-action {
   border-radius: 12px;
-  color: #cdd6f4;
+  color: @base;
   box-shadow: none;
   margin: 4px;
   padding: 8px;
@@ -124,24 +120,20 @@ trough {
 }
 
 .notification .notification-action {
-  background-color: #313244;
+  background-color: @mauve;
 }
 
 .notification .notification-action:hover {
-  background-color: #45475a;
-}
-
-.notification .notification-action:active {
-  background-color: #585b70;
+  background-color: @mauve-sec;
 }
 
 .notification.critical progress {
-  background-color: #f38ba8;
+  background-color: @red;
 }
 
 .notification.low progress,
 .notification.normal progress {
-  background-color: #89b4fa;
+  background-color: @blue;
 }
 
 .notification progress,
@@ -155,27 +147,21 @@ trough {
 .control-center {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8);
   border-radius: 18px;
-  background-color: rgba(30, 30, 46, 0.4);
-  color: #cdd6f4;
+  background-color: rgba(49, 50, 68, 0.4);
+  color: @text;
   margin: 18px;
   padding: 14px;
 }
 
-.control-center .notification-background {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8);
-  border-radius: 18px;
-  margin: 10px;
-  background: #181825;
-}
-
 .control-center .notification-background .notification {
-  padding: 7px;
+  padding: 10px;
   border-radius: 18px;
 }
 
 .control-center .widget-title>label {
-  color: #cdd6f4;
+  color: @mauve;
   font-size: 1.3em;
+  font-weight: bold;
 }
 
 .control-center .widget-title {
@@ -184,18 +170,18 @@ trough {
 
 .control-center .widget-title button {
   border-radius: 12px;
-  color: #cdd6f4;
-  background-color: #313244;
+  color: @base;
+  background-color: @mauve;
   box-shadow: none;
   padding: 8px;
 }
 
 .control-center .widget-title button:hover {
-  background-color: #45475a;
+  background-color: @mauve-sec;
 }
 
 .control-center .widget-title button:active {
-  background-color: #585b70;
+  background-color: @surface2;
 }
 
 .control-center .notification-group {
@@ -204,13 +190,12 @@ trough {
 
 /* Collapsed stacks: keep solid backgrounds (no opacity) */
 .control-center .notification-group.collapsed .notification-background {
-  background: #181825;
+  background: @mantle;
 }
 
 .control-center .notification-group.collapsed .notification-background .notification {
-  background-color: #181825;
+  background-color: @mantle;
 }
-
 
 scrollbar slider {
   margin: -3px;
@@ -223,133 +208,85 @@ scrollbar trough {
 
 /* dnd */
 .widget-dnd {
-  margin-top: 5px;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  margin: 6px;
+  font-size: 1.2rem;
+}
+
+.widget-dnd>label {
+  color: @mauve;
 }
 
 .widget-dnd>switch {
+  background: @surface0;
   font-size: initial;
-  border-radius: 12px;
-  background: #313244;
+  border-radius: 8px;
   box-shadow: none;
+  padding: 2px;
+}
+
+.widget-dnd>switch:hover {
+  background: @mauve-sec;
 }
 
 .widget-dnd>switch:checked {
-  background: #cba6f7;
+  background: @mauve;
+}
+
+.widget-dnd>switch:checked:hover {
+  background: @mauve-sec;
 }
 
 .widget-dnd>switch slider {
-  background: #45475a;
-  border-radius: 12px;
+  background: @base;
+  border-radius: 6px;
 }
 
 /* mpris */
 .widget-mpris-player {
-  background: #313244;
+  margin-top: 20px;
   border-radius: 18px;
-  color: #cdd6f4;
 }
 
 .mpris-overlay {
-  background-color: #313244;
+  background-color: @surface0;
   opacity: 0.9;
-  padding: 15px 10px;
+  padding: 10px;
 }
 
 .widget-mpris-album-art {
   -gtk-icon-size: 100px;
   border-radius: 18px;
-  margin: 0 10px;
 }
 
 .widget-mpris-title {
   font-size: 1.2rem;
-  color: #cdd6f4;
+  font-weight: bold;
+  color: @mauve;
 }
 
 .widget-mpris-subtitle {
   font-size: 1rem;
-  color: #bac2de;
+  color: @mauve;
 }
 
 .widget-mpris button {
   border-radius: 18px;
-  color: #cdd6f4;
-  margin: 0 5px;
+  color: @mauve;
   padding: 2px;
 }
 
 .widget-mpris button image {
-  -gtk-icon-size: 1.8rem;
+  -gtk-icon-size: 2.0rem;
 }
 
 .widget-mpris button:hover {
-  background-color: #313244;
+  background-color: @mauve-sec;
 }
 
 .widget-mpris button:active {
-  background-color: #45475a;
+  background-color: @mauve;
 }
 
 .widget-mpris button:disabled {
   opacity: 0.5;
-}
-
-.widget-menubar>box>.menu-button-bar>button>label {
-  font-size: 3rem;
-  padding: 0.5rem 2rem;
-}
-
-.widget-menubar>box>.menu-button-bar> :last-child {
-  color: #f38ba8;
-}
-
-.power-buttons button:hover,
-.powermode-buttons button:hover,
-.screenshot-buttons button:hover {
-  background: #313244;
-}
-
-.control-center .widget-label>label {
-  color: #cdd6f4;
-  font-size: 2rem;
-}
-
-.widget-buttons-grid {
-  padding-top: 1rem;
-}
-
-.widget-buttons-grid>flowbox>flowboxchild>button label {
-  font-size: 2.5rem;
-}
-
-.widget-volume {
-  padding: 1rem 0;
-}
-
-.widget-volume label {
-  color: #74c7ec;
-  padding: 0 1rem;
-}
-
-.widget-volume trough highlight {
-  background: #74c7ec;
-}
-
-.widget-backlight trough highlight {
-  background: #f9e2af;
-}
-
-.widget-backlight label {
-  font-size: 1.5rem;
-  color: #f9e2af;
-}
-
-.widget-backlight .KB {
-  padding-bottom: 1rem;
-}
-
-.image {
-  padding-right: 0.5rem;
 }

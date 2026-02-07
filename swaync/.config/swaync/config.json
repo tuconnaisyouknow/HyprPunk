@@ -1,0 +1,37 @@
+{
+  "$schema": "/etc/xdg/swaync/configSchema.json",
+  "positionX": "right",
+  "positionY": "top",
+  "layer": "overlay",
+  "control-center-layer": "top",
+  "control-center-width": 420,
+  "control-center-height": 800,
+  "fit-to-screen": true,
+  "widgets": [
+    "title",
+    "dnd",
+    "mpris",
+    "notifications"
+  ],
+  "widget-config": {
+    "title": {
+      "text": "󰕮 Control Center",
+      "clear-all-button": true,
+      "button-text": "󰎟 Clear"
+    },
+    "dnd": {
+      "text": "  Do Not Disturb"
+    },
+    "mpris": {
+      "blacklist": [
+        "^(?!org\\.mpris\\.MediaPlayer2\\.spotify$).*"
+      ],
+      "autohide": true,
+      "show-album-art": "always",
+      "loop-carousel": true
+    },
+    "notifications": {
+      "vexpand": true
+    }
+  }
+}
