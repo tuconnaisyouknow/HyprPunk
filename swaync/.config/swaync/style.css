@@ -154,17 +154,15 @@ trough {
 }
 
 .control-center .notification-background {
-  border-radius: 12px;
-  box-shadow: none;
-  margin: 4px 10px;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.8);
+  border-radius: 18px;
+  margin: 18px;
+  background: #181825;
 }
 
 .control-center .notification-background .notification {
-  border-radius: 12px;
-}
-
-.control-center .notification-background .notification.low {
-  opacity: 0.8;
+  padding: 7px;
+  border-radius: 18px;
 }
 
 .control-center .widget-title>label {
@@ -196,9 +194,15 @@ trough {
   margin-top: 2rem;
 }
 
-.control-center .notification-group:focus .notification-background {
-  background-color: #313244;
+/* Collapsed stacks: keep solid backgrounds (no opacity) */
+.control-center .notification-group.collapsed .notification-background {
+  background: #181825;
 }
+
+.control-center .notification-group.collapsed .notification-background .notification {
+  background-color: #181825;
+}
+
 
 scrollbar slider {
   margin: -3px;
