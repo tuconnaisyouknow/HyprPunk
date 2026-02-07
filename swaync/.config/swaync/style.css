@@ -85,6 +85,14 @@ trough {
   font-size: 1.3rem;
 }
 
+/* Critical notifications text color */
+.notification.critical .notification-content .summary,
+.notification.critical .notification-content .time,
+.notification.critical .notification-content .body {
+  color: #f38ba8;
+}
+
+
 .notification>*:last-child>* {
   min-height: 3.4em;
 }
@@ -228,7 +236,7 @@ scrollbar trough {
 }
 
 .widget-dnd>switch:checked {
-  background: #89b4fa;
+  background: #cba6f7;
 }
 
 .widget-dnd>switch slider {
