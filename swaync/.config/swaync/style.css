@@ -52,22 +52,12 @@ trough {
   border-radius: 18px;
 }
 
-.notification-background .notification.critical {
-  box-shadow: none;
-}
-
-.notification .notification-content {
-  margin: 7px;
-}
-
 .notification .notification-content .image {
-  /* notification images */
   margin: 10px;
   -gtk-icon-size: 80px;
 }
 
 .notification .notification-content .app-icon {
-  /* app icons */
   margin: 5px;
   -gtk-icon-size: 40px;
 }
@@ -77,19 +67,18 @@ trough {
   font-size: 1.4rem;
 }
 
-.notification-content .time {
-  color: @mauve-sec;
-}
-
 .notification-content .body {
   color: @mauve;
   font-size: 1.3rem;
 }
 
-/* Critical notifications text color */
+.notification-content .time {
+  color: @mauve-sec;
+}
+
 .notification.critical .notification-content .summary,
-.notification.critical .notification-content .time,
-.notification.critical .notification-content .body {
+.notification.critical .notification-content .body,
+.notification.critical .notification-content .time {
   color: @red;
 }
 
@@ -153,8 +142,9 @@ trough {
   padding: 14px;
 }
 
-/* .control-center .notification-background .notification { */
-/* } */
+.control-center .notification-background .notification {
+  background-color: @surface0;
+}
 
 .control-center .widget-title>label {
   color: @mauve;
@@ -186,22 +176,15 @@ trough {
   margin-top: 2rem;
 }
 
-/* Collapsed stacks: keep solid backgrounds (no opacity) */
-.control-center .notification-group.collapsed .notification-background {
-  background: @surface0;
-}
-
-.control-center .notification-group.collapsed .notification-background .notification {
-  background-color: @surface0;
+scrollbar trough {
+  margin-top: 60px;
+  margin-bottom: 16px;
 }
 
 scrollbar slider {
-  margin: -3px;
-  opacity: 0.8;
-}
-
-scrollbar trough {
-  margin: 2px 0;
+  background: @mauve;
+  border-radius: 10px;
+  margin: -2px;
 }
 
 /* dnd */
