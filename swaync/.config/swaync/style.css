@@ -62,13 +62,13 @@ trough {
 
 .notification .notification-content .image {
   /* notification images */
-  margin: 4px;
+  margin: 10px;
   -gtk-icon-size: 80px;
 }
 
 .notification .notification-content .app-icon {
   /* app icons */
-  margin: 4px;
+  margin: 5px;
   -gtk-icon-size: 40px;
 }
 
@@ -153,10 +153,8 @@ trough {
   padding: 14px;
 }
 
-.control-center .notification-background .notification {
-  padding: 10px;
-  border-radius: 18px;
-}
+/* .control-center .notification-background .notification { */
+/* } */
 
 .control-center .widget-title>label {
   color: @mauve;
@@ -190,11 +188,11 @@ trough {
 
 /* Collapsed stacks: keep solid backgrounds (no opacity) */
 .control-center .notification-group.collapsed .notification-background {
-  background: @mantle;
+  background: @surface0;
 }
 
 .control-center .notification-group.collapsed .notification-background .notification {
-  background-color: @mantle;
+  background-color: @surface0;
 }
 
 scrollbar slider {
