@@ -86,7 +86,8 @@ trough {
   min-height: 3.4em;
 }
 
-.notification-background .close-button {
+.notification-background .close-button,
+.notification-group .notification-group-close-button .close-button {
   margin: 7px;
   padding: 2px;
   border-radius: 10px;
@@ -94,8 +95,37 @@ trough {
   background-color: @red;
 }
 
-.notification-background .close-button:hover {
+.notification-background .close-button:hover,
+.notification-group .notification-group-close-button .close-button:hover {
   background-color: @mauve;
+}
+
+.notification-group:not(.collapsed) .notification-group-headers .notification-group-header {
+  color: @mauve;
+}
+
+/* Expanded group collapse button */
+.notification-group:not(.collapsed) .notification-group-buttons>button {
+  background: @surface0;
+  color: @mauve;
+  border-radius: 10px;
+  padding: 4px 8px;
+}
+
+.notification-group:not(.collapsed) .notification-group-buttons>button:hover {
+  background: @mauve-sec;
+}
+
+/* Group delete button */
+.notification-group .notification-group-close-button .close-button {
+  background: @red;
+  color: @base;
+  border-radius: 10px;
+  padding: 2px;
+}
+
+.notification-group .notification-group-close-button .close-button:hover {
+  background: @mauve;
 }
 
 .notification .notification-action {
