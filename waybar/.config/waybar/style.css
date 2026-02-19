@@ -23,7 +23,7 @@ tooltip {
   box-shadow: none;
   text-shadow: none;
   padding: 0px;
-  border-radius: 9px;
+  border-radius: 21px;
   margin-top: 3px;
   margin-bottom: 3px;
   margin-left: 0px;
@@ -32,6 +32,11 @@ tooltip {
   margin-right: 0px;
   color: @mauve;
   animation: ws_normal 20s ease-in-out 1;
+}
+
+#workspaces button * {
+  font-family: "Font Awesome 7 Brands", "Font Awesome 7 Free";
+  font-weight: normal;
 }
 
 #workspaces button.active {
@@ -97,7 +102,9 @@ tooltip {
 #custom-cpuinfo,
 #custom-menu,
 #custom-monitors,
+#custom-music,
 #custom-notification,
+#custom-pacman,
 #custom-power,
 #custom-wallpapers,
 #backlight,
@@ -109,7 +116,6 @@ tooltip {
 #memory,
 #mpris,
 #network,
-#custom-pacman,
 #pulseaudio,
 #taskbar,
 #tray,
@@ -119,9 +125,7 @@ tooltip {
   background: @surface0;
   opacity: 1;
   margin: 4px 0px 4px 0px;
-  padding-left: 7px;
-  padding-right: 7px;
-
+  padding: 4px 7px 4px 7px;
 }
 
 #custom-l_end,
