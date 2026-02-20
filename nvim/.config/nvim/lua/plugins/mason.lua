@@ -66,6 +66,9 @@ return {
           -- JSON config
           "jsonls",
           "fixjson",
+
+          -- Hyprland config
+          "hyprls",
         },
       })
     end,
