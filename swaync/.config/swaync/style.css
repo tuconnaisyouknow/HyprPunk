@@ -1,5 +1,6 @@
 @import 'catppuccin.css';
 
+/* general */
 * {
   all: unset;
   font-size: 14px;
@@ -206,6 +207,7 @@ trough {
   margin-top: 2rem;
 }
 
+/* scrollbar */
 scrollbar trough {
   margin-top: 60px;
   margin-bottom: 16px;
@@ -220,6 +222,7 @@ scrollbar slider {
 /* dnd */
 .widget-dnd {
   margin: 6px;
+  margin-bottom: 20px;
   font-size: 1.2rem;
 }
 
@@ -250,6 +253,27 @@ scrollbar slider {
 .widget-dnd>switch slider {
   background: @base;
   border-radius: 6px;
+}
+
+/* buttons-grid */
+.widget-buttons-grid {
+  padding: 6px 2px;
+  margin: 6px;
+  border-radius: 18px;
+  background: @surface0-sec;
+}
+
+.widget-buttons-grid>flowbox>flowboxchild>button {
+  min-width: 57px;
+  margin: 4px 10px;
+  padding: 6px 12px;
+  background: @mauve;
+  color: @base;
+  border-radius: 18px;
+}
+
+.widget-buttons-grid>flowbox>flowboxchild>button:hover {
+  background: @mauve-sec;
 }
 
 /* mpris */

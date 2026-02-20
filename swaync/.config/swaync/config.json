@@ -10,6 +10,7 @@
   "widgets": [
     "title",
     "dnd",
+    "buttons-grid",
     "mpris",
     "notifications"
   ],
@@ -21,6 +22,26 @@
     },
     "dnd": {
       "text": "  Do Not Disturb"
+    },
+    "buttons-grid": {
+      "actions": [
+        {
+          "label": "",
+          "command": "swaync-client -t && rofi -show drun -show-icons -display-drun ' Apps '"
+        },
+        {
+          "label": "",
+          "command": "swaync-client -t && ~/Scripts/Rofi/wallpaper.sh standalone"
+        },
+        {
+          "label": "󰅇",
+          "command": "swaync-client -t && ~/Scripts/Rofi/cliphist.sh standalone"
+        },
+        {
+          "label": "󰍹",
+          "command": "swaync-client -t && ~/Scripts/monitor-switch.sh toggle"
+        }
+      ]
     },
     "mpris": {
       "blacklist": [
