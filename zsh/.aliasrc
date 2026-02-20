@@ -25,6 +25,7 @@ alias rcat='\cat'
 # YAY config
 alias i='yay -S --needed'
 alias u='yay -Syu'
+alias update='yay -Sy --needed'
 alias r='yay -Rns'
 
 # MKDIR config
