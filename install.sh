@@ -42,7 +42,7 @@ yay -S --needed ttf-jetbrains-mono-nerd ttf-font-awesome ttf-apple-emoji kitty s
   xdg-desktop-portal xdg-desktop-portal-hyprland xwayland-satellite catppuccin-gtk-theme-mocha papirus-icon-theme papirus-folders-catppuccin-git \
   kvantum-theme-catppuccin-git rose-pine-cursor rose-pine-hyprcursor nwg-look vlc vlc-plugins-all \
   thunar ark brave-bin gcr gnome-keyring seahorse \
-  btop cava
+  btop cava swaync swayosd
 
 # Changing catppuccin icon theme
 papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
@@ -143,6 +143,7 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 # Enabling sddm & xwayland-satellite
 sudo systemctl enable sddm
+sudo systemctl enable swayosd-libinput-backend.service
 systemctl --user enable xwayland-satellite.service
 
 # Asking if the user want to reboot now
