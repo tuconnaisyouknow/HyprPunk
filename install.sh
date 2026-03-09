@@ -34,7 +34,7 @@ fi
 yay -S --needed ttf-jetbrains-mono-nerd ttf-font-awesome ttf-apple-emoji kitty starship \
   zoxide fzf eza fastfetch bat \
   zsh npm cargo fd ripgrep lazygit neovim stow \
-  wlogout sddm waybar-module-pacman-updates-git network-manager-applet blueman \
+  sddm waybar-module-pacman-updates-git network-manager-applet blueman \
   cliphist rofi bc waybar hyprcursor \
   hypridle hyprlock hyprshot hyprpaper hyprland \
   qt5ct qt5-wayland qt5-tools qt5-quickcontrols2 layer-shell-qt5 \
@@ -83,7 +83,6 @@ mkdir -p ~/.backup ~/.dotfiles
 [[ -d ~/.config/tmux ]] && mv ~/.config/tmux ~/.backup
 [[ -d ~/Pictures/Wallpapers ]] && mv ~/Pictures/Wallpapers ~/.backup
 [[ -d ~/.config/waybar ]] && mv ~/.config/waybar ~/.backup
-[[ -d ~/.config/wlogout ]] && mv ~/.config/wlogout ~/.backup
 [[ -d ~/.config/yazi ]] && mv ~/.config/yazi ~/.backup
 [[ -f ~/.zshrc ]] && mv ~/.zshrc ~/.backup
 [[ -f ~/.aliasrc ]] && mv ~/.aliasrc ~/.backup
@@ -96,9 +95,9 @@ mkdir -p ~/.backup ~/.dotfiles
 cd ~/.dotfiles
 git clone https://github.com/tuconnaisyouknow/dotfiles.git .
 if [[ "$pc_type" == "laptop" ]]; then
-  stow avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar wlogout yazi zsh
+  stow avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
 else
-  stow avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop wlogout yazi zsh
+  stow avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
 fi
 
 # Applying GTK theme
