@@ -23,6 +23,7 @@ source $ZSH/oh-my-zsh.sh
 source ~/.aliasrc
 source ~/.functionrc
 source ~/.highlightrc
+[[ -f ~/.personalrc ]] && source ~/.personalrc
 
 # FZF config
 source <(fzf --zsh)
@@ -32,16 +33,3 @@ export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
 
 # ZOXIDE config
 eval "$(zoxide init zsh)"
-
-# TMUXINATOR config
-export PATH="$(ruby -e "print Gem.user_dir")/bin:$PATH"
-fpath=(~/.zsh/completion $fpath)
-autoload -U compinit
-compinit
-
-# Created by `pipx` on 2025-12-26 20:22:29
-export PATH="$PATH:/home/tuconnais/.local/bin"
-
-# EXEGOL config
-autoload -U compinit && compinit
-eval "$(register-python-argcomplete --no-default exegol)"
