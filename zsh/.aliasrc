@@ -34,7 +34,7 @@ alias mkdir='mkdir -p '
 # GIT config
 alias gbmcfg='git branch --set-upstream-to=origin/master master'
 alias gpmstr='git push origin master'
-alias gpmain='git pussh origin main'
+alias gpmain='git push origin main'
 
 # CLEAR config
 alias eclear='clear'
@@ -45,6 +45,9 @@ alias cclear='clear'
 alias cleazr='clear'
 alias cleear='clear'
 alias cleaar='clear'
+
+# SYSTEMCTL config
+alias sc='sudo systemctl'
 
 # PERSONAL config
 alias :q='exit'
