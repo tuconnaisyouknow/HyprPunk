@@ -17,6 +17,9 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) for mo
 
 ---
 
+> [!WARNING]
+> Desktop version of configuration isn't updated yet so if you are on a desktop PC wait for this warning to disappear before installing this configuration.
+
 > [!NOTE]
 > **Keyboard layout (AZERTY-FR)**
 >
