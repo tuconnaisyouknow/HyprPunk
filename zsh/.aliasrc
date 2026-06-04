@@ -23,10 +23,10 @@ alias mux='tmuxinator'
 alias rcat='\cat'
 
 # YAY config
-alias i='yay -S --needed'
-alias u='yay -Syu'
-alias update='yay -Sy --needed'
-alias r='yay -Rns'
+alias i='yay -S --needed --noconfirm --removemake'
+alias u='yay -Syu --noconfirm --removemake'
+alias update='yay -Sy --needed --noconfirm --removemake'
+alias r='yay -Rns --noconfirm --removemake'
 
 # MKDIR config
 alias mkdir='mkdir -p '
