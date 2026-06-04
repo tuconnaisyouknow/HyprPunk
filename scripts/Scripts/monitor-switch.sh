@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-CONFIG_FILE="$HOME/.config/hypr/monitors.conf"
+CONFIG_FILE="$HOME/.config/hypr/monitors.lua"
+TARGET="$(readlink -f "$CONFIG_FILE")"
 
 usage() {
   echo "Usage: $0 [home|work|toggle]"
@@ -11,23 +12,18 @@ usage() {
 [[ $# -ne 1 ]] && usage
 [[ "$1" != "home" && "$1" != "work" && "$1" != "toggle" ]] && usage
 
-# Détecte le mode actif en regardant s'il existe au moins une ligne "monitor="
-# non commentée dans chaque bloc (# Home / # Work).
+# Detecte le mode actif en regardant la variable ACTIVE_MODE.
 detect_active_mode() {
-  awk '
-    /^# Home/ { in_home=1; in_work=0; next }
-    /^# Work/ { in_home=0; in_work=1; next }
+  local active_line
 
-    in_home && $0 ~ /^[[:space:]]*monitor[[:space:]]*=/ && $0 !~ /^[[:space:]]*#/ { home_on=1 }
-    in_work && $0 ~ /^[[:space:]]*monitor[[:space:]]*=/ && $0 !~ /^[[:space:]]*#/ { work_on=1 }
+  active_line="$(grep -E '^[[:space:]]*local[[:space:]]+ACTIVE_MODE[[:space:]]*=[[:space:]]*"(home|work)"[[:space:]]*$' "$TARGET" | head -n1 || true)"
 
-    END {
-      if (home_on && !work_on) { print "home"; exit 0 }
-      if (work_on && !home_on) { print "work"; exit 0 }
-      if (home_on && work_on)  { print "ambiguous"; exit 0 }
-      print "none"
-    }
-  ' "$CONFIG_FILE"
+  if [[ -z "$active_line" ]]; then
+    echo "none"
+    return 0
+  fi
+
+  echo "$active_line" | grep -Eo '(home|work)' | tail -n1
 }
 
 mode="$1"
@@ -36,13 +32,8 @@ if [[ "$mode" == "toggle" ]]; then
   case "$active" in
   home) mode="work" ;;
   work) mode="home" ;;
-  ambiguous)
-    echo "Error: both Home and Work blocks appear active (non-commented monitor lines in both)."
-    echo "Fix monitors.conf or run explicitly: $0 home  /  $0 work"
-    exit 2
-    ;;
   none)
-    echo "Error: no active monitor config detected (no non-commented monitor= lines in Home/Work blocks)."
+    echo "Error: no active monitor config detected in monitors.lua."
     echo "Run explicitly once: $0 home  /  $0 work"
     exit 2
     ;;
@@ -54,29 +45,20 @@ if [[ "$mode" == "toggle" ]]; then
 fi
 
 new_content="$(awk -v mode="$mode" '
-  /^# Home/ { in_home=1; in_work=0; print; next }
-  /^# Work/ { in_home=0; in_work=1; print; next }
-
-  in_home {
-    if (mode == "home") sub(/^[[:space:]]*# ?/, ""); else if ($0 !~ /^[[:space:]]*#/) $0="#" $0
-    print; next
-  }
-
-  in_work {
-    if (mode == "work") sub(/^[[:space:]]*# ?/, ""); else if ($0 !~ /^[[:space:]]*#/) $0="#" $0
-    print; next
+  /^[[:space:]]*local[[:space:]]+ACTIVE_MODE[[:space:]]*=/ {
+    print "local ACTIVE_MODE = \"" mode "\""
+    next
   }
 
   { print }
-' "$CONFIG_FILE")"
+' "$TARGET")"
 
-# --- Écriture atomique (évite fichier vide/partiel pendant le reload Hyprland) ---
-TARGET="$(readlink -f "$CONFIG_FILE")"
+# --- Ecriture atomique (evite fichier vide/partiel pendant le reload Hyprland) ---
 DIR="$(dirname "$TARGET")"
-TMP="$(mktemp --tmpdir="$DIR" monitors.conf.XXXXXX)"
+TMP="$(mktemp --tmpdir="$DIR" monitors.lua.XXXXXX)"
 
 printf '%s\n' "$new_content" >"$TMP"
 mv -f "$TMP" "$TARGET"
 
-hyprctl reload >/dev/null 2>&1
+hyprctl reload >/dev/null 2>&1 || true
 exit 0
