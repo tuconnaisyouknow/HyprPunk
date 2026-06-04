@@ -1,0 +1,18 @@
+# AUTOSUGGESTIONS config
+bindkey -v
+bindkey -M viins '^[^?' backward-kill-word
+bindkey -M viins '^[^H' backward-kill-word
+bindkey -M vicmd 'j' backward-char
+bindkey -M vicmd 'm' forward-char
+bindkey -M vicmd 'l' up-line-or-history
+bindkey -M vicmd 'k' down-line-or-history
+bindkey -M visual 'j' backward-char
+bindkey -M visual 'm' forward-char
+bindkey -M visual 'l' up-line-or-history
+bindkey -M visual 'k' down-line-or-history
+bindkey -r '^ '
+bindkey -r '^[l'
+bindkey -r '^[k'
+bindkey '^ ' autosuggest-accept
+bindkey '^[l' history-beginning-search-backward
+bindkey '^[k' history-beginning-search-forward
