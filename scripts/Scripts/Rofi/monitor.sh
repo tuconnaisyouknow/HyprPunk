@@ -7,6 +7,7 @@ fi
 
 THEME_PATH="$HOME/.config/rofi/catppuccin-script.rasi"
 SCRIPT_DIR="$HOME/Scripts/Rofi"
+SCRIPT_ROOT="$HOME/Scripts"
 
 MODE="${1:-menu}"
 BACK="${2:-menu}"
@@ -23,10 +24,10 @@ fi
 
 case "$options" in
 *Home*)
-  "$SCRIPT_DIR/monitor-switch.sh" home
+  "$SCRIPT_ROOT/monitor-switch.sh" home
   ;;
 *Work*)
-  "$SCRIPT_DIR/monitor-switch.sh" work
+  "$SCRIPT_ROOT/monitor-switch.sh" work
   ;;
 *)
   notify-send -u normal "This option doesn't exist."
