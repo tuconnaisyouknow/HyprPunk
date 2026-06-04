@@ -7,11 +7,12 @@ fi
 
 THEME_PATH="$HOME/.config/rofi/catppuccin-script.rasi"
 SCRIPT_DIR="$HOME/Scripts/Rofi"
+SCRIPT_ROOT="$HOME/Scripts"
 
 MODE="${1:-menu}"
 BACK="${2:-menu}"
 
-options=$(printf " Screenshot\n󰍹 Monitor" | rofi -i -dmenu -p " Action" -theme "$THEME_PATH")
+options=$(printf " Screenshot\n󰍹 Monitor\n󰟸 Toggle touchpad" | rofi -i -dmenu -p " Action" -theme "$THEME_PATH")
 
 if [[ -z "$options" ]]; then
   if [[ "$MODE" == "menu" ]]; then
@@ -27,6 +28,9 @@ case "$options" in
   ;;
 *Monitor*)
   "$SCRIPT_DIR/monitor.sh" menu action
+  ;;
+*Toggle\ touchpad*)
+  "$SCRIPT_ROOT/touchpad.sh"
   ;;
 *)
   notify-send -u normal "This option doesn't exist."
