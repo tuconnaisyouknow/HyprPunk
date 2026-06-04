@@ -126,7 +126,7 @@
     },
     "exec-if": "which waybar-module-pacman-updates",
     "exec": "waybar-module-pacman-updates --interval-seconds 5",
-    "on-click": "kitty -e yay -Syu"
+    "on-click": "kitty -e yay -Syu --noconfirm --removemake"
   },
   "tray": {
     "icon-size": 25,
