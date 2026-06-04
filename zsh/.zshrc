@@ -1,11 +1,13 @@
 # STARSHIP init
-eval "$(starship init zsh)"
+type starship_zle-keymap-select >/dev/null || \
+  {
+    eval "$(starship init zsh)"
+  }
 
-# # FASTFETCH
+# FASTFETCH
 if [[ -z "$TMUX" ]]; then
   command -v fastfetch >/dev/null 2>&1 && fastfetch
 fi
-
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -23,6 +25,7 @@ source $ZSH/oh-my-zsh.sh
 source ~/.aliasrc
 source ~/.functionrc
 source ~/.highlightrc
+source ~/.bindingrc
 [[ -f ~/.personalrc ]] && source ~/.personalrc
 
 # FZF config
