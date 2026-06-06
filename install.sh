@@ -42,7 +42,7 @@ yay -S --needed ttf-jetbrains-mono-nerd ttf-font-awesome ttf-apple-emoji kitty s
   xdg-desktop-portal xdg-desktop-portal-hyprland xwayland-satellite catppuccin-gtk-theme-mocha papirus-icon-theme papirus-folders-catppuccin-git \
   kvantum-theme-catppuccin-git rose-pine-cursor rose-pine-hyprcursor nwg-look vlc vlc-plugins-all \
   thunar ark brave-bin gcr gnome-keyring seahorse \
-  btop cava swaync swayosd
+  btop cava swaync swayosd yazi tmux
 
 # Changing catppuccin icon theme
 papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
