@@ -10,11 +10,6 @@ local menu = 'rofi -show drun -show-icons -display-drun " Apps "'
 local browser = "brave"
 local music = "spotify-launcher"
 
-local home = os.getenv("HOME") or ""
-local configHome = os.getenv("XDG_CONFIG_HOME") or (home .. "/.config")
-local configDir = configHome .. "/hypr"
-local scriptsDir = configDir .. "/scripts"
-
 local function bind(keys, dispatcher, description, opts)
   opts = opts or {}
   opts.description = description
@@ -62,11 +57,11 @@ bind("ALT + SPACE", hl.dsp.exec_cmd(menu), "[" .. launcher .. "|rofi menus] open
 bind("CTRL + ALT + SPACE", hl.dsp.exec_cmd("~/Scripts/Rofi/menu.sh"), "[" .. launcher .. "|rofi menus] open global menu")
 bind("CTRL + ugrave", hl.dsp.exec_cmd("~/Scripts/Rofi/cliphist.sh standalone"),
   "[" .. launcher .. "|rofi menus] open clipboard history")
-bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd(scriptsDir .. "/wallpaper.sh standalone"),
+bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("~/Scripts/Rofi/wallpaper.sh standalone"),
   "[" .. launcher .. "|rofi menus] open wallpaper selector")
 bind(mainMod .. " + semicolon",
   hl.dsp.exec_cmd(
-  'rofi -modi emoji -show emoji -theme ~/.config/rofi/catppuccin-list.rasi -display-emoji "󰱨 Emoji " -kb-accept-entry "" -kb-custom-1 Return'),
+    'rofi -modi emoji -show emoji -theme ~/.config/rofi/catppuccin-list.rasi -display-emoji "󰱨 Emoji " -kb-accept-entry "" -kb-custom-1 Return'),
   "[" .. launcher .. "|rofi menus] open emoji selector")
 
 bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region -o ~/Pictures/Screenshots"),
@@ -166,7 +161,7 @@ bind("XF86AudioMute", hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggl
   "[" .. hardwareControls .. "|audio] toogle mute volume", { locked = true, repeating = true })
 bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toogle"),
   "[" .. hardwareControls .. "|audio] toogle mute microphone", { locked = true, repeating = true })
-bind("XF86TouchpadToggle", hl.dsp.exec_cmd(scriptsDir .. "/touchpad.sh"),
+bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpad.sh"),
   "[" .. hardwareControls .. "|audio] toogle touchpad", { locked = true, repeating = true })
 
 bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("swayosd-client --brightness raise"),
