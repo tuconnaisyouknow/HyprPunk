@@ -31,7 +31,7 @@ if ! command -v yay &>/dev/null; then
 fi
 
 # Installing all needed packages
-yay -S --needed ttf-jetbrains-mono-nerd ttf-font-awesome ttf-apple-emoji kitty starship \
+yay -S --needed --noconfirm --removemake ttf-jetbrains-mono-nerd ttf-font-awesome ttf-apple-emoji kitty starship \
   zoxide fzf eza fastfetch bat \
   zsh npm cargo fd ripgrep lazygit neovim stow \
   sddm waybar-module-pacman-updates-git network-manager-applet blueman \
