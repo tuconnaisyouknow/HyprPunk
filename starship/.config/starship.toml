@@ -191,3 +191,11 @@ vimcmd_symbol = '[](bold fg:mauve)'
 vimcmd_replace_one_symbol = '[](bold fg:maroon)'
 vimcmd_replace_symbol = '[](bold fg:maroon)'
 vimcmd_visual_symbol = '[](bold fg:green)'
+
+[profiles]
+transient = """
+$character\
+"""
+
+rtransient = """
+"""
