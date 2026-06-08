@@ -1,9 +1,3 @@
-# STARSHIP init
-type starship_zle-keymap-select >/dev/null || \
-  {
-    eval "$(starship init zsh)"
-  }
-
 # FASTFETCH
 if [[ -z "$TMUX" ]]; then
   command -v fastfetch >/dev/null 2>&1 && fastfetch
@@ -36,3 +30,9 @@ export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
 
 # ZOXIDE config
 eval "$(zoxide init zsh)"
+
+# STARSHIP init
+type starship_zle-keymap-select >/dev/null || \
+  {
+    eval "$(starship init zsh)"
+  }
