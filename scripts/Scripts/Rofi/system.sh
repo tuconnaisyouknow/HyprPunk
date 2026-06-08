@@ -26,7 +26,7 @@ case "$options" in
   pidof hyprlock || loginctl lock-session
   ;;
 **Logout**)
-  hyprctl dispatch exit
+  hyprctl dispatch 'hl.dsp.exit()'
   ;;
 **Reboot**)
   systemctl reboot
