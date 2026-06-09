@@ -23,10 +23,10 @@ fi
 
 case "$options" in
 *General*)
-  kitty nvim "$HOME/.config/hypr/hyprland.conf"
+  kitty nvim "$HOME/.config/hypr/hyprland.lua"
   ;;
 *Keybindings*)
-  kitty nvim "$HOME/.config/hypr/keybindings.conf"
+  kitty nvim "$HOME/.config/hypr/keybindings.lua"
   ;;
 *Hyprlock*)
   kitty nvim "$HOME/.config/hypr/hyprlock.conf"
@@ -38,7 +38,7 @@ case "$options" in
   kitty nvim "$HOME/.config/hypr/hypridle.conf"
   ;;
 *Monitors*)
-  kitty nvim "$HOME/.config/hypr/monitors.conf"
+  kitty nvim "$HOME/.config/hypr/monitors.lua"
   ;;
 *)
   notify-send -u normal "This option doesn't exist."
