@@ -59,12 +59,15 @@ hl.workspace_rule({ workspace = "5", monitor = "eDP-1" })    -- Assign workspace
 -- ####################
 
 -- Applications
-hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" })   -- Assign Brave to workspace 2
-hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })         -- Assign Spotify to workspace 3
-hl.window_rule({ match = { class = "obsidian" }, workspace = "4" })        -- Assign Obsidian to workspace 4
-hl.window_rule({ match = { class = "discord" }, workspace = "5" })         -- Assign Discord to workspace 5
-hl.window_rule({ match = { class = "thunar" }, workspace = "6" })          -- Assign Thunar to workspace 6
-hl.window_rule({ match = { class = "teams-for-linux" }, workspace = "6" }) -- Assign Teams to workspace 6
+hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" })                -- Assign Brave to workspace 2
+hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })                      -- Assign Spotify to workspace 3
+hl.window_rule({ match = { class = "obsidian" }, workspace = "4" })                     -- Assign Obsidian to workspace 4
+hl.window_rule({ match = { class = "discord" }, workspace = "5" })                      -- Assign Discord to workspace 5
+hl.window_rule({ match = { class = "thunar" }, workspace = "6" })                       -- Assign Thunar to workspace 6
+hl.window_rule({ match = { class = "teams-for-linux" }, workspace = "6" })              -- Assign Teams to workspace 6
+hl.window_rule({ match = { class = "gns3" }, workspace = "7" })                         -- Assign GNS3 to workspace 7
+hl.window_rule({ match = { class = "virt-manager" }, workspace = "9" })                 -- Assign Virtual Machine Manager to workspace 9
+hl.window_rule({ match = { class = "org.qbittorrent.qBittorrent" }, workspace = "10" }) -- Assign qBittorrent to workspace 10
 
 -- Making satty windows float
 hl.window_rule({ match = { class = "com.gabm.satty" }, float = true })
