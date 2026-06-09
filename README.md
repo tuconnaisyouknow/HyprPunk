@@ -58,10 +58,12 @@ Everything is managed with [GNU Stow](https://www.gnu.org/software/stow/) for mo
 
 ## ✅ Installation
 
-This script is designed to work for a minimal [Arch Linux](https://wiki.archlinux.org/title/Arch_Linux) install and it may break your system. Use it at your own risk.
-
 > [!CAUTION]
-> The script modifies your `GRUB` and `SDDM` configurations to apply themes.
+> This installer assumes a fresh minimal Arch Linux installation.
+>
+> - Existing user configurations may be overwritten.
+> - GRUB and SDDM configuration files will be modified.
+> - Not intended for existing desktop setups.
 
 To install, run the following command:
 
