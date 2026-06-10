@@ -1,0 +1,136 @@
+/*************************************************
+ * SDDM theme gallery
+ * 1 row, 3 per page, large previews
+ *************************************************/
+
+* {
+  bg:           #1e1e2e;
+  bg2:          #1e1e2e;
+
+  fg:           #cdd6f4;
+  fg2:          #f38ba8;
+  muted:        #6c7086;
+  accent:       #89b4fa;
+
+  card-bg:      #1e1e2e;
+  selected-bg:  #cba6f7;
+
+  width:        1600;
+  font:         "JetBrainsMono Nerd Font 12";
+
+  radius:       18px;
+  gap:          14px;
+
+  icon-size:    450px;
+
+  columns:      3;
+  rows:         1;
+}
+
+configuration {
+  show-icons: true;
+  drun-display-format: "{name}";
+}
+
+window {
+  width: @width;
+  background-color: @bg;
+  border: 0px;
+  border-radius: @radius;
+  padding: 12px;
+}
+
+mainbox {
+  background-color: transparent;
+  spacing: 12px;
+}
+
+inputbar {
+  background-color: @bg2;
+  border-radius: @radius;
+  padding: 10px 12px;
+  text-color: @fg;
+  children: [ prompt, entry ];
+}
+
+prompt {
+  enabled: true;
+  background-color: transparent;
+  text-color: #cba6f7;
+  margin: 0px 10px 0px 0px;
+}
+
+textbox-prompt-colon { enabled: false; }
+
+entry {
+  background-color: transparent;
+  text-color: @fg;
+  placeholder: "Search...";
+  placeholder-color: @muted;
+}
+
+case-indicator { enabled: false; }
+
+listview {
+  background-color: transparent;
+
+  columns: @columns;
+  lines: @rows;
+
+  fixed-columns: true;
+  fixed-height: false;
+
+  spacing: @gap;
+  padding: 0px;
+
+  scrollbar: false;
+  border: 0px;
+  dynamic: false;
+}
+
+element {
+  orientation: vertical;
+
+  background-color: @card-bg;
+  border: 0px;
+  border-radius: @radius;
+
+  padding: 0px;
+  text-color: @fg;
+}
+
+element normal.normal,
+element normal.active,
+element normal.urgent,
+element active.normal,
+element active.active,
+element active.urgent,
+element urgent.normal,
+element urgent.active,
+element urgent.urgent,
+element alternate.normal,
+element alternate.active,
+element alternate.urgent {
+  background-color: @card-bg;
+  border: 0px;
+  text-color: @fg;
+}
+
+element selected.normal,
+element selected.active,
+element selected.urgent,
+element selected.alternate {
+  background-color: @selected-bg;
+  border: 0px;
+  text-color: @fg;
+}
+
+element-icon {
+  size: @icon-size;
+  margin: 0px;
+  background-color: transparent;
+}
+
+element-text {
+  enabled: false;
+}
