@@ -3,6 +3,9 @@ if [[ -z "$TMUX" ]]; then
   command -v fastfetch >/dev/null 2>&1 && fastfetch
 fi
 
+# OPTIONAL (if you don't need a ~/.completionrc file you can remove this line)
+[[ -f ~/.completionrc ]] && source ~/.completionrc
+
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -20,6 +23,8 @@ source ~/.aliasrc
 source ~/.functionrc
 source ~/.highlightrc
 source ~/.bindingrc
+
+# OPTIONAL (if you don't need a ~/.personalrc file you can remove this line)
 [[ -f ~/.personalrc ]] && source ~/.personalrc
 
 # FZF config
