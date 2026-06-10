@@ -11,7 +11,7 @@ SCRIPT_DIR="$HOME/Scripts/Rofi"
 MODE="${1:-menu}"
 BACK="${2:-menu}"
 
-options=$(printf " Wallpaper" | rofi -i -dmenu -p " Style" -theme "$THEME_PATH" -p "Style ")
+options=$(printf " Wallpaper\n󰔎 SDDM" | rofi -i -dmenu -p " Style" -theme "$THEME_PATH" -p "Style ")
 
 if [[ -z "$options" ]]; then
   if [[ "$MODE" == "menu" ]]; then
@@ -24,6 +24,9 @@ fi
 case "$options" in
 *Wallpaper*)
   "$SCRIPT_DIR/wallpaper.sh" menu style
+  ;;
+*SDDM*)
+  "$SCRIPT_DIR/sddm.sh" menu style
   ;;
 *)
   notify-send -u normal "This option doesn't exist."
