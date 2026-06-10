@@ -1,0 +1,8 @@
+[SddmGreeterTheme]
+Name=welcome-to-the-metro
+Description=Welcome To The Metro SDDM Theme
+Author=tuconnais
+Type=sddm-theme
+MainScript=Main.qml
+ConfigFile=theme.conf
+QtVersion=6
