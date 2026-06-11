@@ -51,9 +51,15 @@ install_yay() {
     mkdir -p "$GITHUB_DIR"
     clone_or_pull "https://aur.archlinux.org/yay.git" "$GITHUB_DIR/yay"
 
-    cd "$GITHUB_DIR/yay"
-    makepkg -si --noconfirm --rmdeps
+    (
+      cd "$GITHUB_DIR/yay"
+      makepkg -si --noconfirm --rmdeps
+    )
   fi
+}
+
+update_system() {
+  sudo pacman -Syyu --noconfirm
 }
 
 install_packages() {
@@ -70,7 +76,8 @@ install_packages() {
     kvantum-theme-catppuccin-git rose-pine-cursor rose-pine-hyprcursor nwg-look \
     vlc vlc-plugins-all thunar ark brave-bin \
     gcr gnome-keyring seahorse \
-    btop cava swaync swayosd yazi tmux
+    btop cava swaync swayosd yazi tmux \
+    qt6-multimedia qt6-multimedia-ffmpeg gst-plugins-bad gst-plugins-ugly
 }
 
 clean_user_configs() {
@@ -142,12 +149,10 @@ install_dotfiles() {
   rm -rf "$DOTFILES_DIR"
   git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
 
-  cd "$DOTFILES_DIR"
-
   if [[ "$pc_type" == "laptop" ]]; then
-    stow avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
   else
-    stow avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
 }
 
@@ -180,19 +185,10 @@ install_locale() {
 }
 
 install_sddm_theme() {
-  mkdir -p "$GITHUB_DIR"
+  local sddm_script="$DOTFILES_DIR/scripts/Scripts/sddm.sh"
 
-  clone_or_pull "https://github.com/Davi-S/sddm-theme-minesddm.git" \
-    "$GITHUB_DIR/sddm-theme-minesddm"
-
-  sudo rm -rf /usr/share/sddm/themes/minesddm
-  sudo cp -r "$GITHUB_DIR/sddm-theme-minesddm/minesddm" /usr/share/sddm/themes/
-
-  sudo mkdir -p /etc/sddm.conf.d
-  sudo tee /etc/sddm.conf.d/theme.conf >/dev/null <<EOF
-[Theme]
-Current=minesddm
-EOF
+  "$sddm_script" install
+  "$sddm_script" welcome-to-the-metro
 }
 
 install_grub_theme() {
@@ -244,6 +240,7 @@ ask_reboot() {
 
 main() {
   require_arch
+  update_system
   ask_pc_type
 
   mkdir -p "$GITHUB_DIR"
