@@ -67,7 +67,7 @@ install_packages() {
     zsh kitty starship zoxide \
     fzf eza bat fd \
     ripgrep fastfetch btop tmux \
-    yazi cava bc stow \
+    yazi cava bc stow brightnessctl \
     neovim lazygit cargo npm \
     \
     sddm networkmanager network-manager-applet blueman \
