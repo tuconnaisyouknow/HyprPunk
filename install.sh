@@ -64,20 +64,48 @@ update_system() {
 
 install_packages() {
   yay -S --needed --noconfirm --removemake \
-    ttf-jetbrains-mono-nerd otf-font-awesome ttf-apple-emoji \
-    kitty starship zoxide fzf eza fastfetch bat zsh npm cargo fd ripgrep lazygit neovim stow \
+    zsh kitty starship zoxide \
+    fzf eza bat fd \
+    ripgrep fastfetch btop tmux \
+    yazi cava bc stow \
+    neovim lazygit cargo npm \
+    \
     sddm networkmanager network-manager-applet blueman \
-    waybar waybar-module-pacman-updates-git cliphist rofi bc \
-    hyprcursor hypridle hyprlock hyprshot hyprpaper hyprland \
-    qt5ct qt5-wayland qt5-tools qt5-quickcontrols2 layer-shell-qt5 \
-    qt6ct qt6-wayland qt6-tools layer-shell-qt kvantum-qt6-git \
-    xdg-desktop-portal xdg-desktop-portal-hyprland xwayland-satellite \
-    catppuccin-gtk-theme-mocha papirus-icon-theme papirus-folders-catppuccin-git \
-    kvantum-theme-catppuccin-git rose-pine-cursor rose-pine-hyprcursor nwg-look \
-    vlc vlc-plugins-all thunar ark brave-bin \
     gcr gnome-keyring seahorse \
-    btop cava swaync swayosd yazi tmux \
-    qt6-multimedia qt6-multimedia-ffmpeg gst-plugins-bad gst-plugins-ugly
+    \
+    hyprland hyprpaper hyprlock hypridle \
+    hyprshot hyprcursor waybar swaync \
+    swayosd cliphist rofi \
+    waybar-module-pacman-updates-git \
+    \
+    qt5ct qt5-wayland qt5-tools \
+    qt5-quickcontrols2 layer-shell-qt5 \
+    qt6ct qt6-wayland qt6-tools \
+    layer-shell-qt kvantum-qt6-git \
+    \
+    xdg-desktop-portal \
+    xdg-desktop-portal-hyprland \
+    xwayland-satellite \
+    \
+    catppuccin-gtk-theme-mocha \
+    papirus-icon-theme \
+    papirus-folders-catppuccin-git \
+    kvantum-theme-catppuccin-git \
+    rose-pine-cursor \
+    rose-pine-hyprcursor nwg-look \
+    \
+    ttf-jetbrains-mono-nerd \
+    otf-font-awesome \
+    ttf-apple-emoji \
+    \
+    thunar ark loupe papers \
+    mpv celluloid mate-media \
+    libreoffice-fresh brave-bin \
+    \
+    qt6-multimedia \
+    qt6-multimedia-ffmpeg \
+    gst-plugins-bad \
+    gst-plugins-ugly
 }
 
 clean_user_configs() {
@@ -154,6 +182,67 @@ install_dotfiles() {
   else
     stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
+}
+
+set_default_apps() {
+  echo "Setting default applications..."
+
+  local loupe="org.gnome.Loupe.desktop"
+  local papers="org.gnome.Papers.desktop"
+  local mpv="mpv.desktop"
+  local celluloid="io.github.celluloid_player.Celluloid.desktop"
+  local writer="libreoffice-writer.desktop"
+  local calc="libreoffice-calc.desktop"
+  local impress="libreoffice-impress.desktop"
+
+  set_default() {
+    local desktop_file="$1"
+    shift
+
+    if [[ ! -f "/usr/share/applications/$desktop_file" && ! -f "$HOME/.local/share/applications/$desktop_file" ]]; then
+      echo "Warning: $desktop_file not found, skipping."
+      return
+    fi
+
+    for mime in "$@"; do
+      xdg-mime default "$desktop_file" "$mime"
+    done
+  }
+
+  set_default "$loupe" \
+    image/avif image/bmp image/x-dds image/gif image/heif image/vnd.microsoft.icon \
+    image/jpeg image/jxl image/x-exr image/png image/x-portable-anymap \
+    image/x-portable-bitmap image/x-portable-graymap image/x-portable-pixmap \
+    image/qoi image/svg+xml image/x-tga image/tiff image/webp
+
+  set_default "$papers" \
+    application/pdf
+
+  set_default "$mpv" \
+    video/mp4 video/x-msvideo video/x-matroska video/webm video/ogg \
+    video/quicktime video/mpeg video/x-ms-wmv video/x-flv video/3gpp \
+    video/3gpp2 video/mp2t video/x-ogm+ogg video/x-theora+ogg \
+    video/x-ms-asf video/x-m4v video/x-f4v video/x-fli video/x-mng \
+    video/x-nsv video/vnd.rn-realvideo
+
+  set_default "$celluloid" \
+    audio/mpeg audio/mp4 audio/aac audio/x-aac audio/flac audio/x-flac \
+    audio/ogg audio/opus audio/vorbis audio/webm audio/wav audio/x-wav \
+    audio/x-aiff audio/aiff audio/basic audio/midi audio/x-midi \
+    audio/x-ms-wma audio/x-m4a audio/x-mpegurl audio/vnd.rn-realaudio
+
+  set_default "$writer" \
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document \
+    application/msword application/vnd.oasis.opendocument.text \
+    application/rtf text/rtf
+
+  set_default "$calc" \
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet \
+    application/vnd.ms-excel application/vnd.oasis.opendocument.spreadsheet
+
+  set_default "$impress" \
+    application/vnd.openxmlformats-officedocument.presentationml.presentation \
+    application/vnd.ms-powerpoint application/vnd.oasis.opendocument.presentation
 }
 
 install_tmux_plugins() {
@@ -251,6 +340,7 @@ main() {
   clean_user_configs
   install_oh_my_zsh
   install_dotfiles
+  set_default_apps
   install_tmux_plugins
   apply_themes
   install_locale
