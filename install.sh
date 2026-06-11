@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-DOTFILES_REPO="https://github.com/tuconnaisyouknow/dotfiles.git"
+DOTFILES_REPO="https://github.com/tuconnaisyouknow/HyprPunk.git"
 DOTFILES_DIR="$HOME/.dotfiles"
 GITHUB_DIR="$HOME/GitHub"
 BACKUP_DIR="$HOME/.backup/system-$(date +%Y-%m-%d_%H-%M-%S)"
