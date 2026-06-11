@@ -3,7 +3,7 @@
   "logo": {
     "type": "kitty-icat",
     "source": "~/.config/fastfetch/logos/david-martinez.png",
-    "width": 33,
+    "width": 31,
   },
   "display": {
     "separator": " ❯ ",
