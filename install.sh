@@ -281,25 +281,29 @@ install_sddm_theme() {
 }
 
 install_grub_theme() {
+  local grub_theme_dir="$DOTFILES_DIR/grub/themes/CyberEXS"
+  local grub_theme_target="/boot/grub/themes/CyberEXS"
+  local grub_theme_config="$grub_theme_target/theme.txt"
+
   if [[ ! -d /boot/grub ]]; then
     echo "GRUB directory not found, skipping GRUB theme."
     return
   fi
 
-  mkdir -p "$GITHUB_DIR"
-
-  clone_or_pull "https://github.com/Lxtharia/minegrub-theme.git" \
-    "$GITHUB_DIR/minegrub-theme"
+  if [[ ! -f "$grub_theme_dir/theme.txt" ]]; then
+    echo "GRUB theme not found: $grub_theme_dir/theme.txt"
+    exit 1
+  fi
 
   sudo mkdir -p /boot/grub/themes
-  sudo cp -ru "$GITHUB_DIR/minegrub-theme/minegrub" /boot/grub/themes/
+  sudo cp -ru "$grub_theme_dir" /boot/grub/themes/
 
   if grep -q '^#GRUB_THEME=' /etc/default/grub; then
-    sudo sed -i 's|^#GRUB_THEME=.*|GRUB_THEME=/boot/grub/themes/minegrub/theme.txt|' /etc/default/grub
+    sudo sed -i "s|^#GRUB_THEME=.*|GRUB_THEME=$grub_theme_config|" /etc/default/grub
   elif grep -q '^GRUB_THEME=' /etc/default/grub; then
-    sudo sed -i 's|^GRUB_THEME=.*|GRUB_THEME=/boot/grub/themes/minegrub/theme.txt|' /etc/default/grub
+    sudo sed -i "s|^GRUB_THEME=.*|GRUB_THEME=$grub_theme_config|" /etc/default/grub
   else
-    echo 'GRUB_THEME=/boot/grub/themes/minegrub/theme.txt' | sudo tee -a /etc/default/grub >/dev/null
+    echo "GRUB_THEME=$grub_theme_config" | sudo tee -a /etc/default/grub >/dev/null
   fi
 
   sudo grub-mkconfig -o /boot/grub/grub.cfg
