@@ -1,3 +1,6 @@
+> [!WARNING]
+> The README isn't updated yet. These dotfiles' aesthetic has changed a lot, so if you don't want any surprises, wait until the README is updated to see whether it matches what you're looking for.
+
 # 🧪 dotfiles
 
 > ⚙️ My personal Arch Linux dotfiles – optimized for Hyprland + Wayland workflow.
