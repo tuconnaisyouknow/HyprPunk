@@ -111,6 +111,7 @@ stow --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprlan
 ├── btop/                # Btop configuration and theme
 ├── cava/                # Audio visualizer configuration, shaders, and themes
 ├── fastfetch/           # Fastfetch system summary configuration and logo
+├── grub/                # GRUB CyberEXS theme
 ├── gtk3/                # GTK 3 theme settings
 ├── gtk4/                # GTK 4 theme settings
 ├── hypridle/            # Hypridle idle behavior
@@ -197,7 +198,7 @@ The installer enables or configures:
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
 - 📁 Papirus Dark icons with Catppuccin Mocha Mauve folders
-- 🕹️ Minegrub GRUB theme when GRUB is present
+- 🕹️ CyberEXS GRUB theme when GRUB is present
 
 ---
 
@@ -219,6 +220,13 @@ The main files to adapt to your machine are:
 - 🩺 Add troubleshooting notes for SDDM, Waybar, Rofi, and Hyprland.
 - 🌆 Update the installer to use the `HyprPunk` name everywhere.
 - ♻️ Add uninstall or backup restore instructions.
+
+---
+
+## 🙏 Credits
+
+- 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
+- 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
 
 ---
 
