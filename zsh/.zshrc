@@ -46,14 +46,15 @@ type starship_zle-keymap-select >/dev/null || \
 autoload -Uz add-zle-hook-widget
 
 _transient_prompt() {
-    PROMPT=$'\n%F{#cba6f7}❯%f '
-    RPROMPT=''
-    zle reset-prompt
+  PROMPT='$(starship prompt --profile transient --terminal-width=$COLUMNS --keymap=${KEYMAP:-})'
+  RPROMPT=''
+  zle reset-prompt
 }
 
 _restore_prompt() {
-    eval "$(starship init zsh)"
-    zle reset-prompt
+  PROMPT='$(starship prompt --terminal-width=$COLUMNS --keymap=${KEYMAP:-})'
+  RPROMPT='$(starship prompt --right --terminal-width=$COLUMNS --keymap=${KEYMAP:-})'
+  zle reset-prompt
 }
 
 add-zle-hook-widget zle-line-finish _transient_prompt
