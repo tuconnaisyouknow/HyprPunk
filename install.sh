@@ -68,6 +68,7 @@ install_packages() {
     fzf eza bat fd \
     ripgrep fastfetch btop tmux \
     yazi cava bc stow brightnessctl \
+    webp-pixbuf-loader gvfs \
     neovim lazygit cargo npm \
     \
     sddm networkmanager network-manager-applet blueman \
@@ -104,6 +105,7 @@ install_packages() {
     \
     qt6-multimedia \
     qt6-multimedia-ffmpeg \
+    gst-plugin-pipewire \
     gst-plugins-bad \
     gst-plugins-ugly
 }
