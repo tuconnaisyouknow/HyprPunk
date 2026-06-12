@@ -1,11 +1,13 @@
 #!/bin/bash
 
-BACKLIGHT_PATH="/sys/class/backlight/intel_backlight"
-max=$(cat "$BACKLIGHT_PATH/max_brightness")
-current=$(cat "$BACKLIGHT_PATH/brightness")
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=../lib/system-info.sh
+source "$script_dir/../lib/system-info.sh"
 
-# Calcul du pourcentage de luminosité
-percent=$((current * 100 / max))
+if ! percent=$(backlight_percent); then
+    echo " N/A"
+    exit 0
+fi
 
 # Icônes de luminosité, du plus faible au plus fort
 icons=("" "" "" "" "" "" "" "" "")
@@ -19,4 +21,3 @@ index=$((percent * 8 / 100))
 icon=${icons[$index]}
 
 echo "$icon $percent%"
-

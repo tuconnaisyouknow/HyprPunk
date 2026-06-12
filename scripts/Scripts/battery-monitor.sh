@@ -1,9 +1,15 @@
 #!/bin/bash
 
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=lib/system-info.sh
+source "$script_dir/lib/system-info.sh"
+
 already_warned=false
 
 while true; do
-  bat_lvl=$(cat /sys/class/power_supply/BAT0/capacity)
+  if ! bat_lvl=$(battery_capacity); then
+    exit 0
+  fi
 
   if [ "$bat_lvl" -le 20 ]; then
     if [ "$already_warned" = false ]; then
