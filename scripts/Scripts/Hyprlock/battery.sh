@@ -1,12 +1,19 @@
 #!/bin/bash
 
-BATTERY_PATH="/sys/class/power_supply/BAT0"
-capacity=$(cat "$BATTERY_PATH/capacity")
-status=$(cat "$BATTERY_PATH/status")
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=../lib/system-info.sh
+source "$script_dir/../lib/system-info.sh"
+
+if ! capacity=$(battery_capacity); then
+    echo " AC"
+    exit 0
+fi
+
+status=$(battery_status)
 
 # Icônes de batterie par tranche de 10%
 # De 󰁹 (0-9%) à 󰂎 (100%)
-icons=( "󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" )
+icons=( "󰁹" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰂎" )
 
 # Calcule l'index d'icône à afficher
 index=$((capacity / 10))
@@ -22,4 +29,3 @@ fi
 
 # Affiche l'icône suivie du pourcentage
 echo "$icon $capacity%"
-
