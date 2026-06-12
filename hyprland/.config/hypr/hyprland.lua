@@ -13,6 +13,9 @@ require("touchpad")             -- Touchpad toogle conf
 -- #################
 
 hl.on("hyprland.start", function()
+  -- Exporting the Wayland session environment before starting user services
+  hl.exec_cmd("dbus-update-activation-environment --systemd --all")
+
   -- Starting essential hyprland programs
   hl.exec_cmd("hyprpaper")
   hl.exec_cmd("waybar")
@@ -23,7 +26,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("blueman-applet")
 
   -- Starting swaync and swayosd servers for notifications and OSD
-  hl.exec_cmd("swaync")
+  hl.exec_cmd("systemctl --user start swaync.service")
   hl.exec_cmd("swayosd-server")
 
   -- Stopping bluetooth by default on startup
@@ -34,9 +37,6 @@ hl.on("hyprland.start", function()
 
   -- Starting clipboard monitoring to store clipboard history
   hl.exec_cmd("wl-paste --watch cliphist store")
-
-  -- Starting synchronization of environment variables
-  hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 
   -- Starting xwayland-satellite instead of XWayland
   hl.exec_cmd("systemctl --user start xwayland-satellite.service")
