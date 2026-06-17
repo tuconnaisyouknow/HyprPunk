@@ -36,6 +36,8 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 - 📝 **Neovim** with a Lua-based configuration.
 - 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** themed around Catppuccin Mocha.
 - 🛠️ **SwayNC**, **SwayOSD**, **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
+> [!WARNING]
+> There is currently an issue with how the SwayNC player buttons are rendered. I'm working on a fix.
 - 📦 Modular configuration managed with GNU Stow.
 
 ---
