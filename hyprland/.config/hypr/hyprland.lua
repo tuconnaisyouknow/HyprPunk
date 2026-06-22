@@ -26,7 +26,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("blueman-applet")
 
   -- Starting swaync and swayosd servers for notifications and OSD
-  hl.exec_cmd("systemctl --user start swaync.service")
+  hl.exec_cmd("systemctl --user restart swaync.service")
   hl.exec_cmd("swayosd-server")
 
   -- Stopping bluetooth by default on startup
@@ -39,7 +39,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("wl-paste --watch cliphist store")
 
   -- Starting xwayland-satellite instead of XWayland
-  hl.exec_cmd("systemctl --user start xwayland-satellite.service")
+  hl.exec_cmd("systemctl --user restart xwayland-satellite.service")
 
   -- Starting gnome keyring for some applications
   hl.exec_cmd("/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh")
