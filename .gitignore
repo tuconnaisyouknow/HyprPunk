@@ -1,2 +1,7 @@
 tmux/.config/tmux/plugins
 zsh/.personalrc
+avatars/Pictures/Avatars/.nextcloudsync.log
+avatars/Pictures/Avatars/.sync_*
+wallpapers/Pictures/Wallpapers/.nextcloudsync.log
+wallpapers/Pictures/Wallpapers/.sync_*
+gtk3/.config/gtk-3.0/bookmarks
