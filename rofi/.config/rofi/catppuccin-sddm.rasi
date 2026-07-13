@@ -4,15 +4,15 @@
  *************************************************/
 
 * {
-  bg:           #1e1e2e;
-  bg2:          #1e1e2e;
+  bg:           #313244;
+  bg2:          #313244;
 
   fg:           #cdd6f4;
   fg2:          #f38ba8;
   muted:        #6c7086;
   accent:       #89b4fa;
 
-  card-bg:      #1e1e2e;
+  card-bg:      #313244;
   selected-bg:  #cba6f7;
 
   width:        1600;

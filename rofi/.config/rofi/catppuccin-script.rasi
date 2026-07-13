@@ -5,7 +5,7 @@ window {
   padding: 10;
   border: 0;
   border-radius: 14;
-  background-color: #1e1e2e;
+  background-color: #313244;
 }
 
 mainbox {
@@ -17,7 +17,7 @@ inputbar {
   enabled: true;
   padding: 8 10;
   border-radius: 14;
-  background-color: #1e1e2e;
+  background-color: #313244;
   text-color: #cdd6f4;
   children: [ prompt, entry ];
 }
