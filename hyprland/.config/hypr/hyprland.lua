@@ -7,6 +7,7 @@ require("monitors")             -- Monitors config
 require("keybindings")          -- Keybindings
 require("env")                  -- Environement variables
 require("touchpad")             -- Touchpad toogle conf
+pcall(require, "personal")      -- OPTIONAL (if you don't need a ~/.config/hypr/personal.lua file you can remove this line)
 
 -- #################
 -- ### AUTOSTART ###
