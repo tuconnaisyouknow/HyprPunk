@@ -90,7 +90,7 @@ listview {
   columns: @columns;
   lines: @rows;
 
-  fixed-columns: true;
+  fixed-columns: false;
   fixed-height: false;
 
   spacing: @gap;

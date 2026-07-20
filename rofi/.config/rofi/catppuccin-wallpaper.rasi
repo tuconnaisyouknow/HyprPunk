@@ -53,7 +53,7 @@ inputbar {
   border-radius: @radius;
   padding: 10px 12px;
   text-color: @fg;
-  children: [ prompt, entry ];
+  children: [ prompt ];
 }
 
 prompt {
@@ -66,6 +66,7 @@ prompt {
 textbox-prompt-colon { enabled: false; }
 
 entry {
+  enabled: false;
   background-color: transparent;
   text-color: @fg;
   placeholder: "Search…";
