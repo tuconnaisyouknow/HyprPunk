@@ -287,8 +287,8 @@ install_grub_theme() {
   local grub_theme_target="/boot/grub/themes/CyberEXS"
   local grub_theme_config="$grub_theme_target/theme.txt"
 
-  if [[ ! -d /boot/grub ]]; then
-    echo "GRUB directory not found, skipping GRUB theme."
+  if ! command -v grub-mkconfig >/dev/null 2>&1; then
+    echo "grub-mkconfig not found, skipping GRUB theme."
     return
   fi
 
