@@ -122,6 +122,7 @@ clean_user_configs() {
     "$HOME/.config/btop" \
     "$HOME/.config/cava" \
     "$HOME/.config/fastfetch" \
+    "$HOME/.config/fontconfig" \
     "$HOME/.config/gtk-3.0" \
     "$HOME/.config/gtk-4.0" \
     "$HOME/.config/hypr/hypridle.conf" \
@@ -180,9 +181,9 @@ install_dotfiles() {
   git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
 
   if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
   else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
 }
 
