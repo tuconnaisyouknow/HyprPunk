@@ -41,6 +41,9 @@ fi
 
 selected_path="$WALL_DIR/$selection"
 
+tilde='~'
+selected_config_path="${tilde}/${selected_path#"$HOME"/}"
+
 # 1) Appliquer tout de suite (fallback = tous les écrans)
 # Pas besoin de restart hyprpaper.
 hyprctl hyprpaper wallpaper ",$selected_path" >/dev/null
@@ -50,7 +53,7 @@ hyprctl hyprpaper wallpaper ",$selected_path" >/dev/null
 cat >"$CONFIG_PATH" <<EOF
 wallpaper {
   monitor =
-  path = $selected_path
+  path = $selected_config_path
 }
 splash = false
 EOF
@@ -70,7 +73,7 @@ while IFS= read -r line; do
 
   if [[ $inside_background -eq 1 && "$trimmed" == path\ =* ]]; then
     indent="$(echo "$line" | grep -o '^[[:space:]]*' || true)"
-    line="${indent}path = $selected_path"
+    line="${indent}path = $selected_config_path"
   fi
 
   new_content+="$line"$'\n'
