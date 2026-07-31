@@ -67,7 +67,7 @@ install_packages() {
     zsh kitty starship zoxide \
     fzf eza bat fd \
     ripgrep fastfetch btop tmux \
-    yazi cava bc stow brightnessctl \
+    yazi cava bc stow brightnessctl jq \
     webp-pixbuf-loader gvfs \
     neovim lazygit cargo npm \
     \
@@ -185,6 +185,10 @@ install_dotfiles() {
   else
     stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
+}
+
+configure_monitors() {
+  "$HOME/Scripts/displayctl.sh" init preferred
 }
 
 set_default_apps() {
@@ -347,6 +351,7 @@ main() {
   clean_user_configs
   install_oh_my_zsh
   install_dotfiles
+  configure_monitors
   set_default_apps
   install_tmux_plugins
   apply_themes

@@ -18,6 +18,7 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 
   -- Starting essential hyprland programs
+  hl.exec_cmd("~/Scripts/displayctl.sh bootstrap")
   hl.exec_cmd("hyprpaper")
   hl.exec_cmd("waybar")
   hl.exec_cmd("hypridle")
@@ -44,6 +45,18 @@ hl.on("hyprland.start", function()
 
   -- Starting gnome keyring for some applications
   hl.exec_cmd("/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh")
+end)
+
+-- Initialize unknown outputs as soon as Hyprland has finished adding them.
+-- Existing output-specific modes are left untouched by displayctl.sh.
+hl.on("monitor.added", function()
+  hl.exec_cmd("~/Scripts/displayctl.sh sync")
+end)
+
+-- Recalculate only the active part of a saved layout when an output vanishes.
+-- The persistent relationships remain intact and are restored on reconnection.
+hl.on("monitor.removed", function()
+  hl.exec_cmd("~/Scripts/displayctl.sh reflow")
 end)
 
 -- ##################

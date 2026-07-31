@@ -39,7 +39,7 @@
         },
         {
           "label": "󰍹",
-          "command": "swaync-client -t && ~/Scripts/monitor-switch.sh toggle"
+          "command": "swaync-client -t && ~/Scripts/Rofi/monitor.sh standalone"
         }
       ]
     },

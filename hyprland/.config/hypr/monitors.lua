@@ -2,27 +2,26 @@
 -- ### MONITORS ###
 -- ################
 
-local ACTIVE_MODE = "home"
+-- Hyprland wraps `require` to isolate configuration files. monitor_state is a
+-- regular Lua module returning a table, so it must use the original loader.
+-- Clear its cache because monitor-state.conf can change between config reloads.
+package.loaded["monitor_state"] = nil
+local state = __require("monitor_state")
 
-local monitor_sets = {
-  home = {
-    -- Home
-    { output = "eDP-1",    mode = "1920x1080@60",  position = "1920x0", scale = 1 },
-    { output = "HDMI-A-1", mode = "1920x1080@165", position = "0x0",    scale = 1 },
-  },
-  work = {
-    -- Work
-    { output = "eDP-1",    mode = "1920x1080@60",  position = "0x0",    scale = 1 },
-    { output = "HDMI-A-1", mode = "1920x1080@165", position = "1920x0", scale = 1 },
-  },
-}
+-- Catch new displays and provide the complete automatic configuration when no
+-- output-specific state has been saved yet.
+hl.monitor({
+  output = "",
+  mode = state.default_mode or "preferred",
+  position = "auto",
+  scale = state.default_scale or "auto",
+})
 
-local selected_monitor_set = monitor_sets[ACTIVE_MODE]
-
-if selected_monitor_set == nil then
-  error(("Unknown ACTIVE_MODE in monitors.lua: %s"):format(tostring(ACTIVE_MODE)))
-end
-
-for _, monitor in ipairs(selected_monitor_set) do
-  hl.monitor(monitor)
+for _, monitor in ipairs(state.monitors) do
+  hl.monitor({
+    output = state.selectors[monitor],
+    mode = state.modes[monitor] or state.default_mode or "preferred",
+    position = state.layout == "custom" and (state.positions[monitor] or "auto-right") or "auto-right",
+    scale = state.scales[monitor] or state.default_scale or "auto",
+  })
 end
