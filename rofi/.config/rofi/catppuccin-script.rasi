@@ -64,6 +64,7 @@ element selected {
 element-text {
   background-color: transparent;
   text-color: inherit;
+  padding: 0 0 2 0;
 }
 
 element-icon {
