@@ -191,6 +191,10 @@ configure_monitors() {
   "$HOME/Scripts/displayctl.sh" init preferred
 }
 
+configure_wallpaper() {
+  "$HOME/Scripts/wallpaperctl.sh" init
+}
+
 set_default_apps() {
   echo "Setting default applications..."
 
@@ -352,6 +356,7 @@ main() {
   install_oh_my_zsh
   install_dotfiles
   configure_monitors
+  configure_wallpaper
   set_default_apps
   install_tmux_plugins
   apply_themes
