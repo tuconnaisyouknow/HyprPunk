@@ -25,7 +25,7 @@ back_to() {
 }
 
 show_main_menu() {
-  local options=$' Apps\n Action\n Clipboard\n Style\n Configuration\n System'
+  local options=$' Apps\n Action\n Keybindings\n Clipboard\n Style\n Configuration\n System'
   local choice
   choice="$(menu '󰍜 Menu' "$options")"
 
@@ -39,6 +39,9 @@ show_main_menu() {
     ;;
   *Action*)
     "$SCRIPT_DIR/action.sh" menu menu
+    ;;
+  *Keybindings*)
+    "$SCRIPT_DIR/keybindings.sh" menu menu
     ;;
   *Clipboard*)
     "$SCRIPT_DIR/cliphist.sh" menu menu

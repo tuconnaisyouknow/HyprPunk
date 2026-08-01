@@ -1,0 +1,14 @@
+@import "catppuccin-script.rasi"
+
+window {
+  width: 1000;
+}
+
+listview {
+  lines: 16;
+  fixed-height: true;
+}
+
+element-text {
+  tab-stops: [ 350px ];
+}
