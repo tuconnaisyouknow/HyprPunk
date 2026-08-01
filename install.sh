@@ -75,7 +75,7 @@ install_packages() {
     gcr gnome-keyring seahorse \
     \
     hyprland hyprpaper hyprlock hypridle \
-    hyprshot hyprcursor waybar swaync \
+    hyprshot satty hyprcursor waybar swaync \
     swayosd cliphist rofi \
     waybar-module-pacman-updates-git \
     \
