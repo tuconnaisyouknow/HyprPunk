@@ -102,6 +102,7 @@ install_packages() {
     thunar ark loupe papers \
     mpv celluloid mate-media \
     libreoffice-fresh brave-bin \
+    spotify-launcher obsidian \
     \
     qt6-multimedia \
     qt6-multimedia-ffmpeg \
