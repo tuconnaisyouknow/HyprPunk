@@ -81,43 +81,22 @@ Reboot after the installation completes.
 
 ---
 
-## 🧩 Manual Installation
-
-Clone the repository:
-
-```sh
-git clone https://github.com/tuconnaisyouknow/HyprPunk.git ~/.dotfiles
-cd ~/.dotfiles
-```
-
-Install the modules with Stow:
-
-```sh
-stow --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
-```
-
-For a desktop machine, use the desktop variants:
-
-```sh
-stow --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
-```
-
----
-
 ## 📁 Structure
 
 ```text
 .
+├── assets/screenshots/  # Images used by this README
 ├── avatars/             # User avatars
 ├── bat/                 # Bat configuration and Catppuccin theme
 ├── btop/                # Btop configuration and theme
 ├── cava/                # Audio visualizer configuration, shaders, and themes
 ├── fastfetch/           # Fastfetch system summary configuration and logo
-├── grub/                # GRUB CyberEXS theme
+├── fontconfig/          # JetBrainsMono Nerd Font preference
+├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 theme settings
 ├── gtk4/                # GTK 4 theme settings
-├── hypridle/            # Hypridle idle behavior
-├── hyprland/            # Hyprland Lua configuration
+├── hypridle/            # Idle and suspend behavior
+├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── hyprlock/            # Laptop lock screen
 ├── hyprlock-desktop/    # Desktop lock screen
 ├── hyprpaper/           # Wallpaper daemon configuration
@@ -127,11 +106,11 @@ stow --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprlan
 ├── nvim/                # Neovim Lua configuration
 ├── qt5/                 # Qt5 theme settings
 ├── qt6/                 # Qt6 theme settings
-├── rofi/                # Rofi menus and themes
-├── scripts/             # System, Rofi, and Hyprlock helper scripts
-├── sddm/                # SDDM cyberpunk video themes
+├── rofi/                # Shared Rofi configuration and menu themes
+├── scripts/             # System, Rofi, display, and lock-screen helpers
+├── sddm/themes/         # Cyberpunk video themes installed system-wide
 ├── starship/            # Starship prompt configuration
-├── swaync/              # SwayNC notification center configuration
+├── swaync/              # Notification center configuration
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Cyberpunk wallpapers
 ├── waybar/              # Laptop Waybar configuration
@@ -140,7 +119,7 @@ stow --target "$HOME" avatars bat btop cava fastfetch gtk3 gtk4 hypridle hyprlan
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Each directory is a Stow module that symlinks into `$HOME`.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `grub/`, and `sddm/` are repository or system-wide resources handled separately by the installer.
 
 ---
 
@@ -170,22 +149,31 @@ kb_layout = "fr"
 
 ## 🚀 Rofi Scripts
 
-HyprPunk includes several Rofi menus to control the system from the keyboard:
+The main menu opens with `Ctrl + Alt + Space` and groups the available tools as follows:
 
-- ⚙️ system menu
-- 📸 screenshots
-- 📋 clipboard history
-- 🖼️ wallpaper selection
-- 🎬 SDDM theme selection
-- 🪟 Hyprland configuration
-- 🖥️ monitor management
-- ⏻ power options
+- 🚀 **Apps** — launch desktop applications with `drun`.
+- ▶️ **Action** — take or annotate screenshots, configure monitors, and toggle the touchpad.
+- ⌨️ **Keybindings** — display the active, documented Hyprland bindings reported by `hyprctl`.
+- 📋 **Clipboard** — browse the Cliphist history and copy an entry back to the Wayland clipboard.
+- 🎨 **Style** — choose a wallpaper or apply an SDDM theme from visual previews.
+- ⚙️ **Configuration** — open the Hyprland, Hyprlock, Hyprpaper, Hypridle, Neovim, Starship, and Kitty configuration files in Neovim.
+- ⏻ **System** — lock, log out, reboot, or shut down the session.
+
+The monitor menu supports per-output resolution, refresh rate, scale, and relative positioning. It can also build an automatic layout or reset all saved display settings. Changes are applied through `~/Scripts/displayctl.sh` and persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`).
+
+Frequently used menus also have direct shortcuts:
+
+- `Ctrl + ù` — clipboard history
+- `Super + Ctrl + W` — wallpaper selector
+- `Super + Ctrl + K` — keybinding viewer
 
 Scripts are located in:
 
 ```text
 scripts/Scripts/Rofi/
 ```
+
+The top-level menu scripts accept a `standalone` mode for direct shortcuts and a `menu` mode that returns to their parent menu when cancelled. Rofi themes live in `rofi/.config/rofi/`; SDDM preview images live in `scripts/Scripts/Rofi/preview/`.
 
 ---
 
