@@ -66,6 +66,7 @@ end)
 -- ####################
 
 -- Applications
+hl.window_rule({ match = { class = "kitty" }, workspace = "1" })         -- Assign Kitty to workspace 1
 hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" }) -- Assign Brave to workspace 2
 hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })       -- Assign Spotify to workspace 3
 hl.window_rule({ match = { class = "obsidian" }, workspace = "4" })      -- Assign Obsidian to workspace 4
