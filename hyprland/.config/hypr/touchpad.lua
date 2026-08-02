@@ -1,6 +1,9 @@
-local TOUCHPAD_ENABLED = false
+package.loaded["touchpad_state"] = nil
+local state = __require("touchpad_state")
 
-hl.device({
-  name = "asue140a:00-04f3:3134-touchpad",
-  enabled = TOUCHPAD_ENABLED,
-})
+for _, device in ipairs(state.devices) do
+  hl.device({
+    name = device,
+    enabled = state.enabled,
+  })
+end

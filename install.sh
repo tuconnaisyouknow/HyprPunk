@@ -195,6 +195,10 @@ configure_wallpaper() {
   "$HOME/Scripts/wallpaperctl.sh" init
 }
 
+configure_touchpad() {
+  "$HOME/Scripts/touchpadctl.sh" init true
+}
+
 set_default_apps() {
   echo "Setting default applications..."
 
@@ -357,6 +361,7 @@ main() {
   install_dotfiles
   configure_monitors
   configure_wallpaper
+  configure_touchpad
   set_default_apps
   install_tmux_plugins
   apply_themes

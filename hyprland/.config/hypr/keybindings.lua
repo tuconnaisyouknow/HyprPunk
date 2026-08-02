@@ -168,7 +168,7 @@ bind("XF86AudioMute", hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggl
   "Mute or unmute the audio output", { locked = true, repeating = true })
 bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toogle"),
   "Mute or unmute the microphone", { locked = true, repeating = true })
-bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpad.sh"),
+bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpadctl.sh toggle"),
   "Enable or disable the touchpad", { locked = true, repeating = true })
 
 bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("swayosd-client --brightness raise"),

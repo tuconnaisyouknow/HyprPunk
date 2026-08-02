@@ -30,7 +30,7 @@ case "$options" in
   "$SCRIPT_DIR/monitor.sh" menu action
   ;;
 *Toggle\ touchpad*)
-  "$SCRIPT_ROOT/touchpad.sh"
+  "$SCRIPT_ROOT/touchpadctl.sh" toggle
   ;;
 *)
   notify-send -u normal "This option doesn't exist."

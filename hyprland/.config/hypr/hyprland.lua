@@ -19,6 +19,7 @@ hl.on("hyprland.start", function()
 
   -- Starting essential hyprland programs
   hl.exec_cmd("~/Scripts/displayctl.sh bootstrap")
+  hl.exec_cmd("~/Scripts/touchpadctl.sh sync")
   hl.exec_cmd("hyprpaper")
   hl.exec_cmd("waybar")
   hl.exec_cmd("hypridle")
