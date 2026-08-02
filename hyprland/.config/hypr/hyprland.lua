@@ -7,6 +7,7 @@ require("monitors")             -- Monitors config
 require("keybindings")          -- Keybindings
 require("env")                  -- Environement variables
 require("touchpad")             -- Touchpad toogle conf
+require("workspaces")           -- Per-computer workspace assignments
 pcall(require, "personal")      -- OPTIONAL (if you don't need a ~/.config/hypr/personal.lua file you can remove this line)
 
 -- #################
@@ -60,29 +61,16 @@ hl.on("monitor.removed", function()
   hl.exec_cmd("~/Scripts/displayctl.sh reflow")
 end)
 
--- ##################
--- ### WORKSPACES ###
--- ##################
-
--- Monitors
-hl.workspace_rule({ workspace = "1", monitor = "HDMI-A-1" }) -- Assign workspace 1 to the first monitor
-hl.workspace_rule({ workspace = "2", monitor = "eDP-1" })    -- Assign workspace 2 to the laptop monitor
-hl.workspace_rule({ workspace = "5", monitor = "eDP-1" })    -- Assign workspace 5 to the laptop monitor
-
 -- ####################
 -- ### WINDOW RULES ###
 -- ####################
 
 -- Applications
-hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" })                -- Assign Brave to workspace 2
-hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })                      -- Assign Spotify to workspace 3
-hl.window_rule({ match = { class = "obsidian" }, workspace = "4" })                     -- Assign Obsidian to workspace 4
-hl.window_rule({ match = { class = "discord" }, workspace = "5" })                      -- Assign Discord to workspace 5
-hl.window_rule({ match = { class = "thunar" }, workspace = "6" })                       -- Assign Thunar to workspace 6
-hl.window_rule({ match = { class = "teams-for-linux" }, workspace = "6" })              -- Assign Teams to workspace 6
-hl.window_rule({ match = { class = "gns3" }, workspace = "7" })                         -- Assign GNS3 to workspace 7
-hl.window_rule({ match = { class = "virt-manager" }, workspace = "9" })                 -- Assign Virtual Machine Manager to workspace 9
-hl.window_rule({ match = { class = "org.qbittorrent.qBittorrent" }, workspace = "10" }) -- Assign qBittorrent to workspace 10
+hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" }) -- Assign Brave to workspace 2
+hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })       -- Assign Spotify to workspace 3
+hl.window_rule({ match = { class = "obsidian" }, workspace = "4" })      -- Assign Obsidian to workspace 4
+hl.window_rule({ match = { class = "discord" }, workspace = "5" })       -- Assign Discord to workspace 5
+hl.window_rule({ match = { class = "thunar" }, workspace = "6" })        -- Assign Thunar to workspace 6
 
 -- Making satty windows float
 hl.window_rule({ match = { class = "com.gabm.satty" }, float = true })

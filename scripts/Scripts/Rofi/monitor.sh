@@ -27,6 +27,8 @@ choice="$(
     "󰓅 Change refresh rate" \
     "󰩨 Change scale" \
     "󰍺 Position an output" \
+    "󰓡 Number outputs" \
+    "󰖲 Assign workspaces" \
     "󱣲 Automatic layout" \
     "󰑓 Reset all settings" |
     rofi -i -dmenu -p "󰍹 Monitors" -theme "$THEME_PATH"
@@ -44,6 +46,8 @@ case "$choice" in
 *refresh*) exec "$SCRIPT_DIR/monitor-frequency.sh" ;;
 *scale*) exec "$SCRIPT_DIR/monitor-scale.sh" ;;
 *Position*) exec "$SCRIPT_DIR/monitor-position.sh" ;;
+*Number*) exec "$SCRIPT_DIR/monitor-slot.sh" ;;
+*workspaces*) exec "$SCRIPT_DIR/monitor-workspaces.sh" ;;
 *Automatic*) "$DISPLAYCTL" auto-layout ;;
 *Reset*) exec "$SCRIPT_DIR/monitor-reset.sh" ;;
 *) notify-send -u normal "This option doesn't exist." ;;

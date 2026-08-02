@@ -44,6 +44,11 @@ Usage:
   $(basename "$0") mode <output> <resolution[@refresh]>
   $(basename "$0") refresh <output> <frequency>
   $(basename "$0") scale <output> <auto|factor>
+  $(basename "$0") slot-get <output>
+  $(basename "$0") slot <output> <number>
+  $(basename "$0") workspace-get <output>
+  $(basename "$0") workspace-owners
+  $(basename "$0") workspace-set <output> <list|none>
   $(basename "$0") position <output> <left|right|above|below> <reference>
   $(basename "$0") reflow
   $(basename "$0") auto-layout
@@ -306,6 +311,119 @@ would_create_layout_cycle() {
   return 1
 }
 
+next_monitor_slot() {
+  awk -F= '
+    $1 ~ /^slot\./ && $2 ~ /^[0-9]+$/ { used[$2] = 1 }
+    END {
+      for (slot = 1; slot <= 10; slot++) {
+        if (!used[slot]) {
+          print slot
+          exit
+        }
+      }
+    }
+  ' "$STATE_FILE"
+}
+
+workspace_is_assigned() {
+  local wanted="$1"
+  awk -F= -v wanted="$wanted" '
+    $1 ~ /^workspaces\./ {
+      count = split($2, values, ",")
+      for (i = 1; i <= count; i++) {
+        if (values[i] == wanted) found = 1
+      }
+    }
+    END { exit !found }
+  ' "$STATE_FILE"
+}
+
+write_monitor_slot() {
+  local monitor_id="$1" new_slot="$2" current_slot occupant_id dir tmp
+  current_slot="$(read_value "slot.$monitor_id" || true)"
+  [[ "$current_slot" == "$new_slot" ]] && return 0
+  occupant_id="$(
+    awk -F= -v slot="$new_slot" '
+      $1 ~ /^slot\./ && $2 == slot { sub(/^slot\./, "", $1); print $1; exit }
+    ' "$STATE_FILE"
+  )"
+
+  dir="$(dirname "$STATE_FILE")"
+  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
+  awk -F= \
+    -v target="slot.$monitor_id" \
+    -v occupant="${occupant_id:+slot.$occupant_id}" \
+    -v new_slot="$new_slot" \
+    -v old_slot="$current_slot" '
+      $1 == target {
+        print target "=" new_slot
+        target_written = 1
+        next
+      }
+      occupant != "" && $1 == occupant {
+        if (old_slot != "") print occupant "=" old_slot
+        occupant_written = 1
+        next
+      }
+      { print }
+      END {
+        if (!target_written) print target "=" new_slot
+        if (occupant != "" && old_slot != "" && !occupant_written) {
+          print occupant "=" old_slot
+        }
+      }
+    ' "$STATE_FILE" >"$tmp"
+  mv -f "$tmp" "$STATE_FILE"
+}
+
+normalize_workspace_list() {
+  local list="$1"
+  [[ "$list" == "none" ]] && return 0
+  [[ "$list" =~ ^[0-9,[:space:]]+$ ]] || return 1
+  [[ "$list" =~ [0-9] ]] || return 1
+  printf '%s\n' "$list" |
+    tr ', ' '\n\n' |
+    awk '
+      NF == 0 { next }
+      /^[0-9]+$/ && $1 >= 1 && $1 <= 2147483647 { print $1 + 0; next }
+      { invalid = 1 }
+      END { if (invalid) exit 1 }
+    ' |
+    sort -nu |
+    paste -sd, -
+}
+
+write_workspace_list() {
+  local monitor_id="$1" requested="$2" dir tmp
+  dir="$(dirname "$STATE_FILE")"
+  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
+  awk -F= -v target="workspaces.$monitor_id" -v requested="$requested" '
+    BEGIN {
+      count = split(requested, requested_values, ",")
+      for (i = 1; i <= count; i++) {
+        if (requested_values[i] != "") claimed[requested_values[i]] = 1
+      }
+    }
+    $1 ~ /^workspaces\./ {
+      if ($1 == target) next
+      output = ""
+      count = split($2, existing, ",")
+      for (i = 1; i <= count; i++) {
+        if (!(existing[i] in claimed) && existing[i] != "") {
+          output = output (output == "" ? "" : ",") existing[i]
+        }
+      }
+      print $1 "=" (output == "" ? "none" : output)
+      next
+    }
+    { print }
+    END {
+      print target "=" (requested == "" ? "none" : requested)
+    }
+  ' "$STATE_FILE" >"$tmp"
+  mv -f "$tmp" "$STATE_FILE"
+}
+
 reflow_layout() {
   local fields output make model serial description x y logical_width logical_height
   local moved_id updates="" min_x min_y normalized_x normalized_y
@@ -500,6 +618,24 @@ sync | optimize)
     set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
     migrate_monitor_state "$output" "$MONITOR_ID" "$MONITOR_SELECTOR"
     [[ "$MIGRATED" == "false" ]] || changed=true
+    monitor_slot="$(read_value "slot.$MONITOR_ID" || true)"
+    if [[ ! "$monitor_slot" =~ ^([1-9]|10)$ ]]; then
+      monitor_slot="$(next_monitor_slot)"
+      [[ -n "$monitor_slot" ]] || {
+        echo "Unable to assign an output number: all numbers from 1 to 10 are already used." >&2
+        exit 1
+      }
+      write_value "slot.$MONITOR_ID" "$monitor_slot"
+      changed=true
+    fi
+    if [[ -z "$(read_value "workspaces.$MONITOR_ID" || true)" ]]; then
+      if workspace_is_assigned "$monitor_slot"; then
+        write_value "workspaces.$MONITOR_ID" none
+      else
+        write_value "workspaces.$MONITOR_ID" "$monitor_slot"
+      fi
+      changed=true
+    fi
     if [[ -z "$(read_value "scale.$MONITOR_ID" || true)" ]]; then
       write_value "scale.$MONITOR_ID" "auto"
       changed=true
@@ -550,7 +686,7 @@ status)
   printf 'default_mode=%s\n' "${current_default:-preferred}"
   printf 'default_scale=%s\n' "${current_scale:-auto}"
   [[ -f "$STATE_FILE" ]] &&
-    awk -F= '$1 ~ /^(selector|mode|scale|position|relative)\./ { print }' "$STATE_FILE"
+    awk -F= '$1 ~ /^(selector|mode|scale|position|relative|slot|workspaces)\./ { print }' "$STATE_FILE"
   ;;
 outputs)
   load_monitors
@@ -682,6 +818,62 @@ scale)
   if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
     reflow_layout
   fi
+  ;;
+slot-get)
+  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  load_monitors
+  resolve_monitor "$2"
+  read_value "slot.$MONITOR_ID"
+  ;;
+slot)
+  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ "$3" =~ ^([1-9]|10)$ ]] || { echo "Output number must be between 1 and 10." >&2; exit 1; }
+  acquire_lock
+  load_monitors
+  resolve_monitor "$2"
+  write_monitor_slot "$MONITOR_ID" "$((10#$3))"
+  reload_hyprland
+  ;;
+workspace-get)
+  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  load_monitors
+  resolve_monitor "$2"
+  current_workspaces="$(read_value "workspaces.$MONITOR_ID" || true)"
+  [[ "$current_workspaces" != "none" ]] && printf '%s\n' "$current_workspaces"
+  ;;
+workspace-owners)
+  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  load_monitors
+  while IFS=$'\x1f' read -r output make model serial description; do
+    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
+    current_workspaces="$(read_value "workspaces.$MONITOR_ID" || true)"
+    [[ -n "$current_workspaces" && "$current_workspaces" != "none" ]] || continue
+    tr ',' '\n' <<<"$current_workspaces" |
+      awk -v output="$output" 'NF { print $1 "\t" output }'
+  done < <(
+    jq -r '
+      .[] |
+      select(.disabled != true) |
+      [.name, (.make // ""), (.model // ""), (.serial // ""), .description] |
+      join("\u001f")
+    ' <<<"$MONITORS_JSON"
+  ) | sort -n
+  ;;
+workspace-set)
+  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  acquire_lock
+  normalized_workspaces="$(normalize_workspace_list "$3")" || {
+    echo "Invalid workspace list: $3" >&2
+    exit 1
+  }
+  load_monitors
+  resolve_monitor "$2"
+  write_workspace_list "$MONITOR_ID" "$normalized_workspaces"
+  reload_hyprland
   ;;
 position)
   [[ $# -eq 4 ]] || { usage >&2; exit 1; }

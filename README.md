@@ -159,7 +159,7 @@ The main menu opens with `Ctrl + Alt + Space` and groups the available tools as 
 - ⚙️ **Configuration** — open the Hyprland, Hyprlock, Hyprpaper, Hypridle, Neovim, Starship, and Kitty configuration files in Neovim.
 - ⏻ **System** — lock, log out, reboot, or shut down the session.
 
-The monitor menu supports per-output resolution, refresh rate, scale, and relative positioning. It can also build an automatic layout or reset all saved display settings. Changes are applied through `~/Scripts/displayctl.sh` and persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`).
+The monitor menu supports per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment. It can also build an automatic layout or reset all saved display settings. Changes are applied through `~/Scripts/displayctl.sh` and persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`).
 
 Frequently used menus also have direct shortcuts:
 

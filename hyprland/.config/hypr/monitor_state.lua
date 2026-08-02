@@ -6,6 +6,8 @@ local state = {
   modes = {},
   scales = {},
   positions = {},
+  slots = {},
+  workspaces = {},
   monitors = {},
 }
 
@@ -37,6 +39,17 @@ for line in state_file:lines() do
     state.scales[key:sub(7)] = value
   elseif key and key:match("^position%.") then
     state.positions[key:sub(10)] = value
+  elseif key and key:match("^slot%.") then
+    state.slots[key:sub(6)] = tonumber(value)
+  elseif key and key:match("^workspaces%.") then
+    local monitor = key:sub(12)
+    state.workspaces[monitor] = {}
+    for workspace in value:gmatch("[^,]+") do
+      local number = tonumber(workspace)
+      if number ~= nil then
+        table.insert(state.workspaces[monitor], number)
+      end
+    end
   end
 end
 
