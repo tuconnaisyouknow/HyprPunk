@@ -40,7 +40,8 @@ if [[ "$keyboard_layout" != "fr" ]]; then
 else
   export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
 fi
-export LESSKEY="$HOME/.local/state/hyprpunk/keyboard/lesskey"
+unset LESSKEY
+export LESSKEYIN="$HOME/.local/state/hyprpunk/keyboard/lesskey"
 export YAZI_CONFIG_HOME="$HOME/.local/state/hyprpunk/keyboard/yazi"
 unset keyboard_layout keyboard_state_home
 
