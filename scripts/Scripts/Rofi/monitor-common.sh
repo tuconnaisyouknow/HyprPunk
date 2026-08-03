@@ -11,7 +11,7 @@ monitor_choose() {
 }
 
 monitor_back_to_main() {
-  exec "$SCRIPT_DIR/monitor.sh" "${MONITOR_ROOT_MODE:-menu}" action
+  exec "$SCRIPT_DIR/monitor.sh" "${MONITOR_ROOT_MODE:-menu}" "${MONITOR_ROOT_BACK:-config}"
 }
 
 monitor_outputs() {

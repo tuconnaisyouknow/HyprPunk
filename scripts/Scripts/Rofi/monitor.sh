@@ -15,6 +15,7 @@ BACK="${2:-menu}"
 # Child monitor menus use this to return here while preserving whether the
 # monitor menu was originally opened standalone or from the global menu.
 export MONITOR_ROOT_MODE="${MONITOR_ROOT_MODE:-$MODE}"
+export MONITOR_ROOT_BACK="${MONITOR_ROOT_BACK:-$BACK}"
 
 if ! "$DISPLAYCTL" bootstrap; then
   notify-send -u critical "Unable to initialize the monitor state."

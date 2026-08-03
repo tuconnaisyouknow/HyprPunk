@@ -11,7 +11,7 @@ SCRIPT_DIR="$HOME/Scripts/Rofi"
 MODE="${1:-menu}"
 BACK="${2:-menu}"
 
-options=$(printf " General\n Keybindings\n󰷛 Hyprlock\n Hyprpaper\n Hypridle\n󰍹 Monitors" | rofi -i -dmenu -p " Hyprland" -theme "$THEME_PATH")
+options=$(printf " General\n Keybindings\n󰷛 Hyprlock\n Hyprpaper\n Hypridle" | rofi -i -dmenu -p " Hyprland" -theme "$THEME_PATH")
 
 if [[ -z "$options" ]]; then
   if [[ "$MODE" == "menu" ]]; then
@@ -36,9 +36,6 @@ case "$options" in
   ;;
 *Hypridle*)
   kitty nvim "$HOME/.config/hypr/hypridle.conf"
-  ;;
-*Monitors*)
-  kitty nvim "$HOME/.config/hypr/monitors.lua"
   ;;
 *)
   notify-send -u normal "This option doesn't exist."
