@@ -1,3 +1,5 @@
+local keyboard = require('config.keyboard')
+
 return {
   'snacks.nvim',
   opts = {
@@ -34,8 +36,8 @@ return {
             ["<c-j>"] = false,
             ["<c-k>"] = false,
             ["<c-l>"] = false,
-            ["<m-k>"] = { "list_down", mode = { "i", "n" } },
-            ["<m-l>"] = { "list_up", mode = { "i", "n" } },
+            ["<m-" .. keyboard.down .. ">"] = { "list_down", mode = { "i", "n" } },
+            ["<m-" .. keyboard.up .. ">"] = { "list_up", mode = { "i", "n" } },
           }
         }
       },
@@ -49,11 +51,11 @@ return {
                 ['<c-j>'] = false,
                 ['<c-k>'] = false,
                 ['<c-l>'] = false,
-                ['j'] = 'explorer_close',
-                ['k'] = 'list_down',
-                ['l'] = 'list_up',
-                ['m'] = 'confirm',
-                ['h'] = 'explorer_move'
+                [keyboard.left] = 'explorer_close',
+                [keyboard.down] = 'list_down',
+                [keyboard.up] = 'list_up',
+                [keyboard.right] = 'confirm',
+                [keyboard.extra] = 'explorer_move'
               },
             },
           },

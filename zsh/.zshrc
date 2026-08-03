@@ -31,7 +31,18 @@ source ~/.bindingrc
 source <(fzf --zsh)
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always -n --line-range :500 {}'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=always {} | head -200'"
-export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
+keyboard_state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+keyboard_layout="us"
+[[ -r "$keyboard_state_home/hyprpunk/keyboard-layout" ]] &&
+  IFS= read -r keyboard_layout <"$keyboard_state_home/hyprpunk/keyboard-layout"
+if [[ "$keyboard_layout" != "fr" ]]; then
+  export FZF_DEFAULT_OPTS="--bind=ctrl-j:down,ctrl-k:up"
+else
+  export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
+fi
+export LESSKEY="$HOME/.local/state/hyprpunk/keyboard/lesskey"
+export YAZI_CONFIG_HOME="$HOME/.local/state/hyprpunk/keyboard/yazi"
+unset keyboard_layout keyboard_state_home
 
 # ZOXIDE config
 eval "$(zoxide init zsh)"

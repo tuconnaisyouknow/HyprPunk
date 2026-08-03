@@ -3,6 +3,7 @@
 -- ###############
 
 local colors = require("mocha") -- Color theme
+local keyboard = __require("keyboard_state") -- Reloadable keyboard profile
 require("monitors")             -- Monitors config
 require("keybindings")          -- Keybindings
 require("env")                  -- Environement variables
@@ -193,7 +194,7 @@ hl.config({
 
 hl.config({
   input = {
-    kb_layout = "fr",
+    kb_layout = keyboard.xkb,
     kb_variant = "",
     kb_model = "",
     kb_options = "",

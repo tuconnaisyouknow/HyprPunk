@@ -9,6 +9,7 @@ local notepad = "obsidian"
 local menu = 'rofi -show drun -show-icons -display-drun " Apps "'
 local browser = "brave"
 local music = "spotify-launcher"
+local keyboard = __require("keyboard_state")
 
 local keybindingActions = {}
 
@@ -94,18 +95,18 @@ bind(mainMod .. " + ALT + W", hl.dsp.exec_cmd("killall waybar ; waybar"), "Reloa
 bind(mainMod .. " + ALT + I", hl.dsp.exec_cmd("killall hypridle ; hypridle"),
   "Reload Hypridle")
 
-bind(mainMod .. " + j", hl.dsp.focus({ direction = "l" }), "Focus the window on the left")
-bind(mainMod .. " + m", hl.dsp.focus({ direction = "r" }), "Focus the window on the right")
-bind(mainMod .. " + l", hl.dsp.focus({ direction = "u" }), "Focus the window above")
-bind(mainMod .. " + k", hl.dsp.focus({ direction = "d" }), "Focus the window below")
+bind(mainMod .. " + " .. keyboard.left, hl.dsp.focus({ direction = "l" }), "Focus the window on the left")
+bind(mainMod .. " + " .. keyboard.right, hl.dsp.focus({ direction = "r" }), "Focus the window on the right")
+bind(mainMod .. " + " .. keyboard.up, hl.dsp.focus({ direction = "u" }), "Focus the window above")
+bind(mainMod .. " + " .. keyboard.down, hl.dsp.focus({ direction = "d" }), "Focus the window below")
 
-bind(mainMod .. " + SHIFT + j", move_active_window_or_dispatch("l", { x = -30, y = 0 }),
+bind(mainMod .. " + SHIFT + " .. keyboard.left, move_active_window_or_dispatch("l", { x = -30, y = 0 }),
   "Move the active window left", { repeating = true })
-bind(mainMod .. " + SHIFT + m", move_active_window_or_dispatch("r", { x = 30, y = 0 }),
+bind(mainMod .. " + SHIFT + " .. keyboard.right, move_active_window_or_dispatch("r", { x = 30, y = 0 }),
   "Move the active window right", { repeating = true })
-bind(mainMod .. " + SHIFT + l", move_active_window_or_dispatch("u", { x = 0, y = -30 }),
+bind(mainMod .. " + SHIFT + " .. keyboard.up, move_active_window_or_dispatch("u", { x = 0, y = -30 }),
   "Move the active window up", { repeating = true })
-bind(mainMod .. " + SHIFT + k", move_active_window_or_dispatch("d", { x = 0, y = 30 }),
+bind(mainMod .. " + SHIFT + " .. keyboard.down, move_active_window_or_dispatch("d", { x = 0, y = 30 }),
   "Move the active window down", { repeating = true })
 
 bind(mainMod .. " + code:10", hl.dsp.focus({ workspace = 1 }),

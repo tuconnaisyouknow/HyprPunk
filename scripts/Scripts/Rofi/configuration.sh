@@ -11,7 +11,7 @@ SCRIPT_DIR="$HOME/Scripts/Rofi"
 MODE="${1:-menu}"
 BACK="${2:-menu}"
 
-options=$(printf " Hyprland\n Neovim\n Starship\n Kitty" | rofi -i -dmenu -p " Configuration" -theme "$THEME_PATH")
+options=$(printf " Hyprland\n Keyboard\n Neovim\n Starship\n Kitty" | rofi -i -dmenu -p " Configuration" -theme "$THEME_PATH")
 
 if [[ -z "$options" ]]; then
   if [[ "$MODE" == "menu" ]]; then
@@ -24,6 +24,9 @@ fi
 case "$options" in
 *Hyprland*)
   "$SCRIPT_DIR/hyprland-config.sh" menu config
+  ;;
+*Keyboard*)
+  "$SCRIPT_DIR/keyboard-layout.sh" menu config
   ;;
 *Neovim*)
   kitty nvim +'lua Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath("config") })'

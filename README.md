@@ -100,9 +100,9 @@ Reboot after the installation completes.
 ├── hyprlock/            # Laptop lock screen
 ├── hyprlock-desktop/    # Desktop lock screen
 ├── hyprpaper/           # Wallpaper daemon configuration
+├── keyboard/            # Layout-specific application keymaps
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum Catppuccin Mocha Mauve theme
-├── less/                # Less keybindings
 ├── nvim/                # Neovim Lua configuration
 ├── qt5/                 # Qt5 theme settings
 ├── qt6/                 # Qt6 theme settings
@@ -126,23 +126,43 @@ Most top-level configuration directories are GNU Stow modules that symlink into 
 ## ⌨️ Keyboard Layout
 
 > [!NOTE]
-> These dotfiles are designed for an **AZERTY FR** keyboard layout.
+> These dotfiles support **AZERTY FR** and **QWERTY US** keyboard layouts.
 
-To keep the workflow consistent with this layout, Vim-style movements are remapped from `h j k l` to `j k l m` across several tools.
+The installer offers two keyboard profiles:
 
-If you use QWERTY or another layout, check at least:
+- `FR` — AZERTY layout with Vim-style movements remapped from `h j k l` to `j k l m`.
+- `US` — QWERTY layout with the standard `h j k l` Vim-style movements.
+
+`US` is the default when no profile has been selected yet or when the installer prompt is left empty.
+
+The active profile can be changed later from **Rofi → Configuration → Keyboard**.
+
+```bash
+~/Scripts/keyboard-layoutctl.sh set us
+~/Scripts/keyboard-layoutctl.sh set fr
+```
+
+The selection is stored in `$XDG_STATE_HOME/hyprpunk/keyboard-layout` (or `~/.local/state/hyprpunk/keyboard-layout`).
+Hyprland, Kitty, tmux, and Rofi pick up the change immediately. New Zsh and Yazi processes use it on startup;
+an existing Neovim instance can reload its movement mappings with `:KeyboardLayoutReload` (restart Neovim to
+also rebuild plugin-specific mappings such as Snacks Explorer).
+
+The layout integration covers:
 
 - 🪟 `hyprland/.config/hypr/hyprland.lua`
 - ⌨️ `hyprland/.config/hypr/keybindings.lua`
-- 📖 `less/.lesskey`
+- 📖 `scripts/Scripts/keyboard-layoutctl.sh` (generated less bindings)
 - 📝 `nvim/.config/nvim/lua/config/keymaps.lua`
 - 💻 `tmux/.config/tmux/tmux.conf`
-- 🐚 `zsh/.zshrc`
+- 📁 `keyboard/yazi/fr.toml`
+- 🚀 `rofi/.config/rofi/config.rasi`
+- ⌨️ `kitty/.config/kitty/kitty.conf`
+- 🐚 `zsh/.bindingrc` and `zsh/.zshrc`
 
-In Hyprland, also adjust:
+Hyprland reads the selected XKB layout dynamically instead of hard-coding:
 
 ```lua
-kb_layout = "fr"
+kb_layout = keyboard.xkb
 ```
 
 ---

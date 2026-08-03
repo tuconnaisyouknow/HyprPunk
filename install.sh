@@ -44,6 +44,25 @@ ask_pc_type() {
   done
 }
 
+ask_keyboard_layout() {
+  while true; do
+    read -rp "Keyboard layout [us/fr] (default: us): " keyboard_layout
+    keyboard_layout="${keyboard_layout,,}"
+    case "$keyboard_layout" in
+    "" | us)
+      keyboard_layout="us"
+      break
+      ;;
+    fr)
+      break
+      ;;
+    *)
+      echo "Invalid layout. Please enter 'fr' or 'us'."
+      ;;
+    esac
+  done
+}
+
 install_yay() {
   if ! command -v yay &>/dev/null; then
     sudo pacman -S --needed --noconfirm git base-devel
@@ -143,6 +162,7 @@ clean_user_configs() {
     "$HOME/.config/yazi" \
     "$HOME/.lesskey" \
     "$HOME/.zshrc" \
+    "$HOME/.bindingrc" \
     "$HOME/.aliasrc" \
     "$HOME/.functionrc" \
     "$HOME/.highlightrc"
@@ -182,10 +202,14 @@ install_dotfiles() {
   git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
 
   if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
   else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum less nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
+}
+
+configure_keyboard() {
+  "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
 }
 
 configure_monitors() {
@@ -351,6 +375,7 @@ main() {
   require_arch
   update_system
   ask_pc_type
+  ask_keyboard_layout
 
   mkdir -p "$GITHUB_DIR"
 
@@ -360,6 +385,7 @@ main() {
   clean_user_configs
   install_oh_my_zsh
   install_dotfiles
+  configure_keyboard
   configure_monitors
   configure_wallpaper
   configure_touchpad

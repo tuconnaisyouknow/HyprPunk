@@ -5,10 +5,7 @@ configuration {
   kb-remove-to-eol: "";
   kb-mode-complete: "";
   kb-accept-entry: "Return,KP_Enter";
-  kb-move-char-back: "Ctrl+j,Left";
-  kb-move-char-forward: "Ctrl+m,Right";
-  kb-row-down: "Ctrl+k,Down";
-  kb-row-up: "Ctrl+l,Up";
 }
 
+@import "~/.local/state/hyprpunk/keyboard/rofi.rasi"
 @theme "~/.config/rofi/catppuccin-mocha.rasi"

@@ -2,15 +2,35 @@
 bindkey -v
 bindkey -M viins '^[^?' backward-kill-word
 bindkey -M viins '^[^H' backward-kill-word
-bindkey -M vicmd 'j' backward-char
-bindkey -M vicmd 'm' forward-char
-bindkey -M vicmd 'l' up-line-or-history
-bindkey -M vicmd 'k' down-line-or-history
-bindkey -M vicmd 'h' vi-set-mark
-bindkey -M visual 'j' backward-char
-bindkey -M visual 'm' forward-char
-bindkey -M visual 'l' up-line-or-history
-bindkey -M visual 'k' down-line-or-history
+
+keyboard_state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+keyboard_layout="us"
+[[ -r "$keyboard_state_home/hyprpunk/keyboard-layout" ]] &&
+  IFS= read -r keyboard_layout <"$keyboard_state_home/hyprpunk/keyboard-layout"
+
+if [[ "$keyboard_layout" != "fr" ]]; then
+  bindkey -M vicmd 'h' backward-char
+  bindkey -M vicmd 'j' down-line-or-history
+  bindkey -M vicmd 'k' up-line-or-history
+  bindkey -M vicmd 'l' forward-char
+  bindkey -M vicmd 'm' vi-set-mark
+  bindkey -M visual 'h' backward-char
+  bindkey -M visual 'j' down-line-or-history
+  bindkey -M visual 'k' up-line-or-history
+  bindkey -M visual 'l' forward-char
+else
+  bindkey -M vicmd 'j' backward-char
+  bindkey -M vicmd 'k' down-line-or-history
+  bindkey -M vicmd 'l' up-line-or-history
+  bindkey -M vicmd 'm' forward-char
+  bindkey -M vicmd 'h' vi-set-mark
+  bindkey -M visual 'j' backward-char
+  bindkey -M visual 'k' down-line-or-history
+  bindkey -M visual 'l' up-line-or-history
+  bindkey -M visual 'm' forward-char
+fi
+
+unset keyboard_layout keyboard_state_home
 bindkey -r '^ '
 bindkey -r '^[l'
 bindkey -r '^[k'
