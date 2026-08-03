@@ -6,6 +6,7 @@ bindkey -M vicmd 'j' backward-char
 bindkey -M vicmd 'm' forward-char
 bindkey -M vicmd 'l' up-line-or-history
 bindkey -M vicmd 'k' down-line-or-history
+bindkey -M vicmd 'h' vi-set-mark
 bindkey -M visual 'j' backward-char
 bindkey -M visual 'm' forward-char
 bindkey -M visual 'l' up-line-or-history
