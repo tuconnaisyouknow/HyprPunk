@@ -54,3 +54,8 @@ vimsh() {
 
   vim "$filename"
 }
+
+fastfetch() {
+  command fastfetch "$@"
+  [[ -n "$TMUX" ]] && tmux refresh-client
+}
