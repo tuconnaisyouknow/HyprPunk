@@ -382,7 +382,7 @@ normalize_workspace_list() {
   [[ "$list" =~ ^[0-9,[:space:]]+$ ]] || return 1
   [[ "$list" =~ [0-9] ]] || return 1
   printf '%s\n' "$list" |
-    tr ', ' '\n\n' |
+    tr ', ' '\n' |
     awk '
       NF == 0 { next }
       /^[0-9]+$/ && $1 >= 1 && $1 <= 2147483647 { print $1 + 0; next }
@@ -536,10 +536,10 @@ reflow_layout() {
   [[ ${#active[@]} -gt 0 ]] || return 0
   for moved_id in "${!active[@]}"; do
     resolve_layout_position "$moved_id" || continue
-    if [[ -z "${min_x+x}" || pos_x[$moved_id] -lt min_x ]]; then
+    if [[ -z "${min_x+x}" ]] || ((pos_x[$moved_id] < min_x)); then
       min_x="${pos_x[$moved_id]}"
     fi
-    if [[ -z "${min_y+x}" || pos_y[$moved_id] -lt min_y ]]; then
+    if [[ -z "${min_y+x}" ]] || ((pos_y[$moved_id] < min_y)); then
       min_y="${pos_y[$moved_id]}"
     fi
   done

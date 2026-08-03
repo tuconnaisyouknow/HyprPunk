@@ -26,7 +26,11 @@ map_floor() {
       return
     fi
   done
-  [ -n "$def_val" ] && echo $def_val || echo " "
+  if [[ -n "$def_val" ]]; then
+    echo "$def_val"
+  else
+    echo " "
+  fi
 }
 
 init_query() {

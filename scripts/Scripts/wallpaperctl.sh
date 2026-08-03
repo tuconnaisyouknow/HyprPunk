@@ -66,7 +66,7 @@ write_state() {
   lock_tmp="$(mktemp --tmpdir="$STATE_DIR" hyprlock-wallpaper.XXXXXX)"
   hyprpaper_tmp="$(mktemp --tmpdir="$STATE_DIR" hyprpaper-wallpaper.XXXXXX)"
   printf 'wallpaper=%s\n' "$wallpaper" >"$tmp"
-  printf '$wallpaper = %s\n' "$wallpaper" >"$lock_tmp"
+  printf '%s\n' "\$wallpaper = $wallpaper" >"$lock_tmp"
   printf 'wallpaper {\n  monitor =\n  path = %s\n}\n' "$wallpaper" >"$hyprpaper_tmp"
   mv -f "$tmp" "$STATE_FILE"
   mv -f "$lock_tmp" "$LOCK_FRAGMENT"
