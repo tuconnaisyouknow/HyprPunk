@@ -1,59 +1,28 @@
-# EZA config
-alias ls='eza --color=always --icons=always'
-alias tree='eza --color=always --icons=always --tree'
-
-# NVIM config
-alias vim='nvim'
-#alias vimsh='f() { echo "#!/bin/bash" > "$1" && chmod +x "$1" && vim "$1"; }; f'
-
-# SUDO config (keep user config en variable)
-alias sudo='sudo -E '
-alias sudoi='command sudo -i'
-
-# FASTFETCH config
-alias ff='fastfetch'
-
-# TMUX config
-alias t='tmux'
-alias tst='tmuxinator start'
-alias tstp='tmuxinator stop'
-alias mux='tmuxinator'
-
-# BAT config
-alias rcat='\cat'
-
 # YAY config
 alias i='yay -S --needed --noconfirm --removemake'
 alias u='yay -Syu --noconfirm --removemake'
 alias update='yay -Sy --needed --noconfirm --removemake'
 alias r='yay -Rns --noconfirm --removemake'
 
-# MKDIR config
-alias mkdir='mkdir -p '
+# SUDO config (keep user config en variable)
+alias sudo='sudo -E '
+alias sudoi='command sudo -i'
 
-# GIT config
-alias gbmcfg='git branch --set-upstream-to=origin/master master'
-alias gpmstr='git push origin master'
-alias gpmain='git push origin main'
+# EZA config
+alias ls='eza --color=always --icons=always'
+alias tree='eza --color=always --icons=always --tree'
 
-# CLEAR config
-alias eclear='clear'
-alias clearr='clear'
-alias elclearr='clear'
-alias celar='clear'
-alias cclear='clear'
-alias cleazr='clear'
-alias cleear='clear'
-alias cleaar='clear'
+# NVIM config
+alias vim='nvim'
 
-# SYSTEMCTL config
-alias sc='sudo systemctl'
+# FASTFETCH config
+alias ff='fastfetch'
 
-# PERSONAL config
-alias :q='exit'
+# TMUX config
+alias t='tmux'
 
 # YAZI config
 alias y='yazi'
 
-# EXEGOL config
-alias exegol='sudo -E /home/tuconnais/.local/bin/exegol'
+# BAT config
+alias rcat='\cat'
