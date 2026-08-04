@@ -3,18 +3,20 @@
 -- #############################
 
 -- Locale
-hl.env("LC_CTYPE", "fr_FR.UTF-8")
-hl.env("LC_NUMERIC", "fr_FR.UTF-8")
-hl.env("LC_TIME", "fr_FR.UTF-8")
-hl.env("LC_COLLATE", "fr_FR.UTF-8")
-hl.env("LC_MONETARY", "fr_FR.UTF-8")
-hl.env("LC_MESSAGES", "en_US.UTF-8")
-hl.env("LC_PAPER", "fr_FR.UTF-8")
-hl.env("LC_NAME", "fr_FR.UTF-8")
-hl.env("LC_ADDRESS", "fr_FR.UTF-8")
-hl.env("LC_TELEPHONE", "fr_FR.UTF-8")
-hl.env("LC_MEASUREMENT", "fr_FR.UTF-8")
-hl.env("LC_IDENTIFICATION", "fr_FR.UTF-8")
+local locale = __require("locale_state")
+hl.env("LANG", locale.language)
+hl.env("LC_MESSAGES", locale.language)
+hl.env("LC_CTYPE", locale.regional)
+hl.env("LC_NUMERIC", locale.regional)
+hl.env("LC_TIME", locale.regional)
+hl.env("LC_COLLATE", locale.regional)
+hl.env("LC_MONETARY", locale.regional)
+hl.env("LC_PAPER", locale.regional)
+hl.env("LC_NAME", locale.regional)
+hl.env("LC_ADDRESS", locale.regional)
+hl.env("LC_TELEPHONE", locale.regional)
+hl.env("LC_MEASUREMENT", locale.regional)
+hl.env("LC_IDENTIFICATION", locale.regional)
 
 -- Cursor
 hl.env("XCURSOR_SIZE", "24")

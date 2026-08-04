@@ -77,6 +77,10 @@ During installation, the script asks whether the machine is a **laptop** or a **
 - 📊 `waybar` or `waybar-desktop`
 - 🔒 `hyprlock` or `hyprlock-desktop`
 
+It also asks independently for the keyboard layout, interface language, and regional formats. The locale defaults preserve
+an English interface (`en_US.UTF-8`) with French regional conventions (`fr_FR.UTF-8`). Both locales are generated during
+installation.
+
 Reboot after the installation completes.
 
 ---
@@ -165,6 +169,22 @@ Hyprland reads the selected XKB layout dynamically instead of hard-coding:
 ```lua
 kb_layout = keyboard.xkb
 ```
+
+### Locale profiles
+
+The interface language (`LANG` and `LC_MESSAGES`) and regional formats (the other `LC_*` categories) are independent.
+They can be changed after installation from **Rofi → Configuration → Locale**, or from the command line:
+
+```bash
+~/Scripts/locale-profilectl.sh set-language us
+~/Scripts/locale-profilectl.sh set-language fr
+~/Scripts/locale-profilectl.sh set-regional us
+~/Scripts/locale-profilectl.sh set-regional fr
+```
+
+The profiles are stored in `$XDG_STATE_HOME/hyprpunk/locale-language` and `locale-regional`. Hyprland, D-Bus, and the
+systemd user environment are refreshed immediately for newly started applications; already running applications need
+to be restarted.
 
 ---
 

@@ -13,6 +13,8 @@ current_step="Initialisation"
 prepared_dotfiles_dir=""
 pc_type=""
 keyboard_layout=""
+locale_language="us"
+locale_regional="fr"
 
 declare -A COMPLETED_STEPS=()
 
@@ -68,6 +70,8 @@ save_state() {
     printf 'backup_dir=%s\n' "$BACKUP_DIR"
     printf 'pc_type=%s\n' "$pc_type"
     printf 'keyboard_layout=%s\n' "$keyboard_layout"
+    printf 'locale_language=%s\n' "$locale_language"
+    printf 'locale_regional=%s\n' "$locale_regional"
     for step in "${!COMPLETED_STEPS[@]}"; do
       printf 'completed=%s\n' "$step"
     done
@@ -85,6 +89,8 @@ load_state() {
     backup_dir) BACKUP_DIR="$value" ;;
     pc_type) pc_type="$value" ;;
     keyboard_layout) keyboard_layout="$value" ;;
+    locale_language) locale_language="$value" ;;
+    locale_regional) locale_regional="$value" ;;
     completed) [[ -n "$value" ]] && COMPLETED_STEPS["$value"]=1 ;;
     esac
   done <"$STATE_FILE"
@@ -103,6 +109,14 @@ load_state() {
   }
   [[ -z "$keyboard_layout" || "$keyboard_layout" == "us" || "$keyboard_layout" == "fr" ]] || {
     echo "Invalid keyboard layout in installation state: $keyboard_layout" >&2
+    return 1
+  }
+  [[ "$locale_language" == "us" || "$locale_language" == "fr" ]] || {
+    echo "Invalid language locale in installation state: $locale_language" >&2
+    return 1
+  }
+  [[ "$locale_regional" == "us" || "$locale_regional" == "fr" ]] || {
+    echo "Invalid regional locale in installation state: $locale_regional" >&2
     return 1
   }
 }
@@ -221,6 +235,44 @@ ask_keyboard_layout() {
       ;;
     *)
       echo "Invalid layout. Please enter 'fr' or 'us'."
+      ;;
+    esac
+  done
+}
+
+ask_locale_language() {
+  while true; do
+    read -rp "Interface language [us/fr] (default: us): " locale_language
+    locale_language="${locale_language,,}"
+    case "$locale_language" in
+    "" | us)
+      locale_language="us"
+      break
+      ;;
+    fr)
+      break
+      ;;
+    *)
+      echo "Invalid language. Please enter 'fr' or 'us'."
+      ;;
+    esac
+  done
+}
+
+ask_locale_regional() {
+  while true; do
+    read -rp "Regional formats [us/fr] (default: fr): " locale_regional
+    locale_regional="${locale_regional,,}"
+    case "$locale_regional" in
+    "" | fr)
+      locale_regional="fr"
+      break
+      ;;
+    us)
+      break
+      ;;
+    *)
+      echo "Invalid regional format. Please enter 'fr' or 'us'."
       ;;
     esac
   done
@@ -446,6 +498,10 @@ configure_keyboard() {
   "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
 }
 
+configure_locale_profiles() {
+  "$HOME/Scripts/locale-profilectl.sh" init "$locale_language" "$locale_regional"
+}
+
 configure_monitors() {
   "$HOME/Scripts/displayctl.sh" init preferred
 }
@@ -540,9 +596,12 @@ apply_themes() {
 }
 
 install_locale() {
-  if ! grep -q '^[[:space:]]*fr_FR.UTF-8[[:space:]]\+UTF-8' /etc/locale.gen; then
-    sudo sed -i '/^[[:space:]]*#\s*fr_FR.UTF-8\s\+UTF-8/s/^#\s*//' /etc/locale.gen
-  fi
+  local locale
+  for locale in en_US.UTF-8 fr_FR.UTF-8; do
+    if ! grep -q "^[[:space:]]*${locale}[[:space:]]\\+UTF-8" /etc/locale.gen; then
+      sudo sed -i "/^[[:space:]]*#[[:space:]]*${locale}[[:space:]]\\+UTF-8/s/^[[:space:]]*#[[:space:]]*//" /etc/locale.gen
+    fi
+  done
 
   sudo locale-gen
 }
@@ -613,6 +672,8 @@ main() {
   run_step "update_system" "Updating the system" update_system
   run_step "ask_pc_type" "Selecting the computer type" ask_pc_type
   run_step "ask_keyboard_layout" "Selecting the keyboard layout" ask_keyboard_layout
+  run_step "ask_locale_language" "Selecting the interface language" ask_locale_language
+  run_step "ask_locale_regional" "Selecting regional formats" ask_locale_regional
 
   run_step "create_github_dir" "Creating the GitHub directory" mkdir -p "$GITHUB_DIR"
   run_step "install_yay" "Installing yay" install_yay
@@ -631,6 +692,7 @@ main() {
   run_step "stow_dotfiles" "Linking dotfiles" stow_dotfiles
   run_step "generate_qt_configs" "Generating Qt configuration" generate_qt_configs
   run_step "configure_keyboard" "Configuring the keyboard" configure_keyboard
+  run_step "configure_locale_profiles" "Configuring locale profiles" configure_locale_profiles
   run_step "configure_monitors" "Configuring monitors" configure_monitors
   run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
   run_step "configure_touchpad" "Configuring the touchpad" configure_touchpad
