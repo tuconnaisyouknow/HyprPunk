@@ -1,11 +1,174 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -Eeuo pipefail
 
 DOTFILES_REPO="https://github.com/tuconnaisyouknow/HyprPunk.git"
 DOTFILES_DIR="$HOME/.dotfiles"
 GITHUB_DIR="$HOME/GitHub"
 BACKUP_DIR="$HOME/.backup/system-$(date +%Y-%m-%d_%H-%M-%S)"
+LOG_DIR="$HOME/.local/state/hyprpunk"
+LOG_FILE="$LOG_DIR/install-$(date +%Y-%m-%d_%H-%M-%S).log"
+STATE_FILE="$LOG_DIR/install.state"
+current_step="Initialisation"
+prepared_dotfiles_dir=""
+pc_type=""
+keyboard_layout=""
+
+declare -A COMPLETED_STEPS=()
+
+readonly -a USER_CONFIG_PATHS=(
+  "Pictures/Avatars"
+  "Pictures/Wallpapers"
+  "Scripts"
+  ".oh-my-zsh"
+  ".config/bat"
+  ".config/btop"
+  ".config/cava"
+  ".config/fastfetch"
+  ".config/fontconfig"
+  ".config/gtk-3.0"
+  ".config/gtk-4.0"
+  ".config/hypr/hypridle.conf"
+  ".config/hypr/hyprland.conf"
+  ".config/hypr/hyprlock.conf"
+  ".config/hypr/hyprpaper.conf"
+  ".config/kitty"
+  ".config/kdeglobals"
+  ".config/Kvantum"
+  ".config/nvim"
+  ".config/qt5ct"
+  ".config/qt6ct"
+  ".config/rofi"
+  ".config/starship.toml"
+  ".config/swaync"
+  ".config/tmux"
+  ".config/waybar"
+  ".config/yazi"
+  ".lesskey"
+  ".zshrc"
+  ".bindingrc"
+  ".aliasrc"
+  ".functionrc"
+  ".highlightrc"
+)
+
+setup_logging() {
+  mkdir -p "$LOG_DIR"
+  exec > >(tee -a "$LOG_FILE") 2>&1
+  echo "Installation log: $LOG_FILE"
+}
+
+save_state() {
+  local state_tmp
+  local step
+
+  state_tmp=$(mktemp --tmpdir="$LOG_DIR" install-state.XXXXXX)
+  {
+    printf 'version=1\n'
+    printf 'backup_dir=%s\n' "$BACKUP_DIR"
+    printf 'pc_type=%s\n' "$pc_type"
+    printf 'keyboard_layout=%s\n' "$keyboard_layout"
+    for step in "${!COMPLETED_STEPS[@]}"; do
+      printf 'completed=%s\n' "$step"
+    done
+  } >"$state_tmp"
+  mv -f "$state_tmp" "$STATE_FILE"
+}
+
+load_state() {
+  local key value version=""
+
+  COMPLETED_STEPS=()
+  while IFS='=' read -r key value; do
+    case "$key" in
+    version) version="$value" ;;
+    backup_dir) BACKUP_DIR="$value" ;;
+    pc_type) pc_type="$value" ;;
+    keyboard_layout) keyboard_layout="$value" ;;
+    completed) [[ -n "$value" ]] && COMPLETED_STEPS["$value"]=1 ;;
+    esac
+  done <"$STATE_FILE"
+
+  [[ "$version" == "1" ]] || {
+    echo "Unsupported installation state version: ${version:-missing}" >&2
+    return 1
+  }
+  [[ "$BACKUP_DIR" == "$HOME/.backup/system-"* ]] || {
+    echo "Invalid backup directory in installation state: $BACKUP_DIR" >&2
+    return 1
+  }
+  [[ -z "$pc_type" || "$pc_type" == "laptop" || "$pc_type" == "desktop" ]] || {
+    echo "Invalid computer type in installation state: $pc_type" >&2
+    return 1
+  }
+  [[ -z "$keyboard_layout" || "$keyboard_layout" == "us" || "$keyboard_layout" == "fr" ]] || {
+    echo "Invalid keyboard layout in installation state: $keyboard_layout" >&2
+    return 1
+  }
+}
+
+initialize_state() {
+  local answer
+
+  if [[ -f "$STATE_FILE" ]]; then
+    read -rp "An unfinished installation was found. Resume it? [Y/n]: " answer
+    case "$answer" in
+    n | N)
+      rm -f -- "$STATE_FILE"
+      ;;
+    *)
+      load_state
+      echo "Resuming installation. Backup directory: $BACKUP_DIR"
+      ;;
+    esac
+  fi
+
+  save_state
+}
+
+cleanup() {
+  if [[ -n "$prepared_dotfiles_dir" && -d "$prepared_dotfiles_dir" ]]; then
+    rm -rf -- "$prepared_dotfiles_dir"
+  fi
+}
+
+on_error() {
+  local exit_code=$?
+  local line_number="$1"
+  local command="$2"
+
+  if [[ "$BASHPID" != "$$" ]]; then
+    return "$exit_code"
+  fi
+
+  trap - ERR
+  printf '\nInstallation failed.\n' >&2
+  printf 'Step    : %s\n' "$current_step" >&2
+  printf 'Line    : %s\n' "$line_number" >&2
+  printf 'Command : %s\n' "$command" >&2
+  printf 'Exit code: %s\n' "$exit_code" >&2
+  printf 'Log     : %s\n' "$LOG_FILE" >&2
+  exit "$exit_code"
+}
+
+run_step() {
+  local step_id="$1"
+  current_step="$2"
+  shift 2
+
+  if [[ -n "${COMPLETED_STEPS[$step_id]:-}" ]]; then
+    printf '\n==> %s (already completed, skipping)\n' "$current_step"
+    return
+  fi
+
+  printf '\n==> %s\n' "$current_step"
+  "$@"
+  COMPLETED_STEPS["$step_id"]=1
+  save_state
+}
+
+trap 'on_error "$LINENO" "$BASH_COMMAND"' ERR
+trap cleanup EXIT
 
 clone_or_pull() {
   local repo="$1"
@@ -133,50 +296,34 @@ install_packages() {
 clean_user_configs() {
   echo "Cleaning previous user configs..."
 
-  rm -rf \
-    "$HOME/Pictures/Avatars" \
-    "$HOME/Pictures/Wallpapers" \
-    "$HOME/Scripts" \
-    "$HOME/.oh-my-zsh" \
-    "$HOME/.config/bat" \
-    "$HOME/.config/btop" \
-    "$HOME/.config/cava" \
-    "$HOME/.config/fastfetch" \
-    "$HOME/.config/fontconfig" \
-    "$HOME/.config/gtk-3.0" \
-    "$HOME/.config/gtk-4.0" \
-    "$HOME/.config/hypr/hypridle.conf" \
-    "$HOME/.config/hypr/hyprland.conf" \
-    "$HOME/.config/hypr/hyprlock.conf" \
-    "$HOME/.config/hypr/hyprpaper.conf" \
-    "$HOME/.config/kitty" \
-    "$HOME/.config/kdeglobals" \
-    "$HOME/.config/Kvantum" \
-    "$HOME/.config/nvim" \
-    "$HOME/.config/qt5ct" \
-    "$HOME/.config/qt6ct" \
-    "$HOME/.config/rofi" \
-    "$HOME/.config/starship.toml" \
-    "$HOME/.config/swaync" \
-    "$HOME/.config/tmux" \
-    "$HOME/.config/waybar" \
-    "$HOME/.config/yazi" \
-    "$HOME/.lesskey" \
-    "$HOME/.zshrc" \
-    "$HOME/.bindingrc" \
-    "$HOME/.aliasrc" \
-    "$HOME/.functionrc" \
-    "$HOME/.highlightrc"
+  local path
+  for path in "${USER_CONFIG_PATHS[@]}"; do
+    rm -rf -- "${HOME:?}/$path"
+  done
 }
 
-backup_system_configs() {
+backup_configs() {
+  local path
+  local -a existing_user_configs=()
+
   mkdir -p "$BACKUP_DIR"
 
   [[ -f /boot/grub/grub.cfg ]] && sudo cp /boot/grub/grub.cfg "$BACKUP_DIR/"
   [[ -f /etc/default/grub ]] && sudo cp /etc/default/grub "$BACKUP_DIR/"
   [[ -f /etc/sddm.conf ]] && sudo cp /etc/sddm.conf "$BACKUP_DIR/"
 
-  echo "System config backup created in: $BACKUP_DIR"
+  for path in "${USER_CONFIG_PATHS[@]}"; do
+    [[ -e "$HOME/$path" || -L "$HOME/$path" ]] && existing_user_configs+=("$path")
+  done
+
+  if ((${#existing_user_configs[@]})); then
+    (
+      cd "$HOME"
+      tar -czf "$BACKUP_DIR/user-configs.tar.gz" -- "${existing_user_configs[@]}"
+    )
+  fi
+
+  echo "Configuration backup created in: $BACKUP_DIR"
 }
 
 install_oh_my_zsh() {
@@ -198,10 +345,29 @@ install_oh_my_zsh() {
   rm -f "$HOME/.zshrc"
 }
 
-install_dotfiles() {
-  rm -rf "$DOTFILES_DIR"
-  git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+prepare_dotfiles() {
+  prepared_dotfiles_dir=$(mktemp -d "${TMPDIR:-/tmp}/hyprpunk-dotfiles.XXXXXX")
+  git clone "$DOTFILES_REPO" "$prepared_dotfiles_dir"
+  git -C "$prepared_dotfiles_dir" rev-parse --verify HEAD >/dev/null
+}
 
+activate_dotfiles() {
+  if [[ -d "$BACKUP_DIR/dotfiles" && -d "$DOTFILES_DIR/.git" ]]; then
+    rm -rf -- "$prepared_dotfiles_dir"
+    prepared_dotfiles_dir=""
+    echo "Dotfiles were already activated before the previous interruption."
+    return
+  fi
+
+  if [[ -d "$DOTFILES_DIR" ]]; then
+    mv "$DOTFILES_DIR" "$BACKUP_DIR/dotfiles"
+  fi
+
+  mv "$prepared_dotfiles_dir" "$DOTFILES_DIR"
+  prepared_dotfiles_dir=""
+}
+
+stow_dotfiles() {
   if [[ "$pc_type" == "laptop" ]]; then
     stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim rofi scripts starship swaync tmux wallpapers waybar yazi zsh
   else
@@ -365,7 +531,7 @@ install_tmux_plugins() {
 }
 
 apply_themes() {
-  papirus-folders -C cat-mocha-mauve --theme Papirus-Dark || true
+  papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
 
   gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-mauve-standard+default'
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
@@ -422,7 +588,7 @@ enable_services() {
   sudo systemctl enable sddm
   sudo systemctl enable swayosd-libinput-backend.service
 
-  systemctl --user enable xwayland-satellite.service || true
+  systemctl --user enable xwayland-satellite.service
 }
 
 ask_reboot() {
@@ -434,38 +600,50 @@ ask_reboot() {
     ;;
   n | N | *)
     echo "Install complete. Please reboot manually."
-    exit 0
+    return 0
     ;;
   esac
 }
 
 main() {
-  require_arch
-  update_system
-  ask_pc_type
-  ask_keyboard_layout
+  setup_logging
+  initialize_state
 
-  mkdir -p "$GITHUB_DIR"
+  run_step "require_arch" "Checking the operating system" require_arch
+  run_step "update_system" "Updating the system" update_system
+  run_step "ask_pc_type" "Selecting the computer type" ask_pc_type
+  run_step "ask_keyboard_layout" "Selecting the keyboard layout" ask_keyboard_layout
 
-  install_yay
-  install_packages
-  backup_system_configs
-  clean_user_configs
-  install_oh_my_zsh
-  install_dotfiles
-  generate_qt_configs
-  configure_keyboard
-  configure_monitors
-  configure_wallpaper
-  configure_touchpad
-  set_default_apps
-  install_tmux_plugins
-  apply_themes
-  install_locale
-  install_sddm_theme
-  install_grub_theme
-  enable_services
-  ask_reboot
+  run_step "create_github_dir" "Creating the GitHub directory" mkdir -p "$GITHUB_DIR"
+  run_step "install_yay" "Installing yay" install_yay
+  run_step "install_packages" "Installing packages" install_packages
+
+  if [[ -z "${COMPLETED_STEPS[activate_dotfiles]:-}" ]]; then
+    current_step="Downloading and validating dotfiles"
+    printf '\n==> %s\n' "$current_step"
+    prepare_dotfiles
+  fi
+
+  run_step "backup_configs" "Backing up existing configuration" backup_configs
+  run_step "clean_user_configs" "Cleaning previous user configs" clean_user_configs
+  run_step "install_oh_my_zsh" "Installing Oh My Zsh" install_oh_my_zsh
+  run_step "activate_dotfiles" "Activating the downloaded dotfiles" activate_dotfiles
+  run_step "stow_dotfiles" "Linking dotfiles" stow_dotfiles
+  run_step "generate_qt_configs" "Generating Qt configuration" generate_qt_configs
+  run_step "configure_keyboard" "Configuring the keyboard" configure_keyboard
+  run_step "configure_monitors" "Configuring monitors" configure_monitors
+  run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
+  run_step "configure_touchpad" "Configuring the touchpad" configure_touchpad
+  run_step "set_default_apps" "Setting default applications" set_default_apps
+  run_step "install_tmux_plugins" "Installing tmux plugins" install_tmux_plugins
+  run_step "apply_themes" "Applying themes" apply_themes
+  run_step "install_locale" "Installing the locale" install_locale
+  run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
+  run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
+  run_step "enable_services" "Enabling services" enable_services
+  run_step "ask_reboot" "Finishing installation" ask_reboot
+
+  rm -f -- "$STATE_FILE"
 }
 
 main "$@"
