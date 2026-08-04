@@ -98,10 +98,10 @@ install_packages() {
     swayosd cliphist rofi \
     waybar-module-pacman-updates-git \
     \
-    qt5ct qt5-wayland qt5-tools \
+    qt5ct-kde qt5-wayland qt5-tools \
     qt5-quickcontrols2 layer-shell-qt5 \
-    qt6ct qt6-wayland qt6-tools \
-    layer-shell-qt kvantum-qt6-git \
+    qt6ct-kde qt6-wayland qt6-tools \
+    layer-shell-qt kvantum kvantum-qt5 \
     \
     xdg-desktop-portal \
     xdg-desktop-portal-hyprland \
@@ -150,6 +150,7 @@ clean_user_configs() {
     "$HOME/.config/hypr/hyprlock.conf" \
     "$HOME/.config/hypr/hyprpaper.conf" \
     "$HOME/.config/kitty" \
+    "$HOME/.config/kdeglobals" \
     "$HOME/.config/Kvantum" \
     "$HOME/.config/nvim" \
     "$HOME/.config/qt5ct" \
@@ -202,10 +203,77 @@ install_dotfiles() {
   git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
 
   if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kitty kvantum nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim rofi scripts starship swaync tmux wallpapers waybar yazi zsh
   else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kitty kvantum nvim qt5 qt6 rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kdeglobals kitty kvantum nvim rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
+}
+
+generate_qt_configs() {
+  install -Dm644 \
+    "$DOTFILES_DIR/qt5/.config/qt5ct/colors/catppuccin-mocha-mauve.conf" \
+    "$HOME/.config/qt5ct/colors/catppuccin-mocha-mauve.conf"
+  install -Dm644 \
+    "$DOTFILES_DIR/qt6/.config/qt6ct/colors/catppuccin-mocha-mauve.conf" \
+    "$HOME/.config/qt6ct/colors/catppuccin-mocha-mauve.conf"
+
+  cat >"$HOME/.config/qt5ct/qt5ct.conf" <<EOF
+[Appearance]
+color_scheme_path=$HOME/.config/qt5ct/colors/catppuccin-mocha-mauve.conf
+custom_palette=true
+icon_theme=Papirus-Dark
+standard_dialogs=default
+style=kvantum-dark
+
+[Fonts]
+fixed="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
+general="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+double_click_interval=400
+keyboard_scheme=2
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3
+
+[Troubleshooting]
+force_raster_widgets=1
+EOF
+
+  cat >"$HOME/.config/qt6ct/qt6ct.conf" <<EOF
+[Appearance]
+color_scheme_path=$HOME/.config/qt6ct/colors/catppuccin-mocha-mauve.conf
+custom_palette=true
+icon_theme=Papirus-Dark
+standard_dialogs=default
+style=kvantum-dark
+
+[Fonts]
+fixed="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+general="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+double_click_interval=400
+keyboard_scheme=2
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3
+
+[Troubleshooting]
+force_raster_widgets=1
+EOF
 }
 
 configure_keyboard() {
@@ -385,6 +453,7 @@ main() {
   clean_user_configs
   install_oh_my_zsh
   install_dotfiles
+  generate_qt_configs
   configure_keyboard
   configure_monitors
   configure_wallpaper

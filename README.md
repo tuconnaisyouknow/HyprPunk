@@ -100,14 +100,15 @@ Reboot after the installation completes.
 ├── hyprlock/            # Laptop lock screen
 ├── hyprlock-desktop/    # Desktop lock screen
 ├── hyprpaper/           # Wallpaper daemon configuration
+├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
 ├── keyboard/            # Layout-specific application keymaps
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum Catppuccin Mocha Mauve theme
 ├── nvim/                # Neovim Lua configuration
-├── qt5/                 # Qt5 theme settings
-├── qt6/                 # Qt6 theme settings
+├── qt5/                 # Source palette for generated Qt5ct configuration
+├── qt6/                 # Source palette for generated Qt6ct configuration
 ├── rofi/                # Shared Rofi configuration and menu themes
-├── scripts/             # System, Rofi, display, and lock-screen helpers
+├── scripts/             # System, Rofi, display, Qt, and lock-screen helpers
 ├── sddm/themes/         # Cyberpunk video themes installed system-wide
 ├── starship/            # Starship prompt configuration
 ├── swaync/              # Notification center configuration
@@ -119,7 +120,7 @@ Reboot after the installation completes.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `grub/`, and `sddm/` are repository or system-wide resources handled separately by the installer.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `grub/`, and `sddm/` are repository or system-wide resources handled separately by the installer. The `qt5/` and `qt6/` directories only store the versioned Catppuccin palettes: the installer generates complete local Qtct configurations so graphical changes do not modify the repository.
 
 ---
 
