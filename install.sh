@@ -333,7 +333,7 @@ install_packages() {
     otf-font-awesome \
     ttf-apple-emoji \
     \
-    thunar ark loupe papers \
+    thunar tumbler ffmpegthumbnailer ark loupe papers \
     mpv celluloid mate-media \
     libreoffice-fresh brave-bin \
     spotify-launcher obsidian \
