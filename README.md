@@ -36,6 +36,7 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 - 📝 **Neovim** with a Lua-based configuration.
 - 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** themed around Catppuccin Mocha.
 - 🛠️ **SwayNC**, **SwayOSD**, **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
+- 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 > [!WARNING]
 > There is currently an issue with how the SwayNC player buttons are rendered. I'm working on a fix.
 - 📦 Modular configuration managed with GNU Stow.
@@ -92,6 +93,7 @@ Reboot after the installation completes.
 ├── assets/screenshots/  # Images used by this README
 ├── avatars/             # User avatars
 ├── bat/                 # Bat configuration and Catppuccin theme
+├── brave/               # Brave managed policy installed system-wide
 ├── btop/                # Btop configuration and theme
 ├── cava/                # Audio visualizer configuration, shaders, and themes
 ├── fastfetch/           # Fastfetch system summary configuration and logo
@@ -124,7 +126,7 @@ Reboot after the installation completes.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `grub/`, and `sddm/` are repository or system-wide resources handled separately by the installer. The `qt5/` and `qt6/` directories only store the versioned Catppuccin palettes: the installer generates complete local Qtct configurations so graphical changes do not modify the repository.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `brave/`, `grub/`, and `sddm/` are repository or system-wide resources handled separately by the installer. The `qt5/` and `qt6/` directories only store the versioned Catppuccin palettes: the installer generates complete local Qtct configurations so graphical changes do not modify the repository.
 
 ---
 
