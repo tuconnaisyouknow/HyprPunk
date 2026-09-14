@@ -642,6 +642,19 @@ install_grub_theme() {
   sudo grub-mkconfig -o /boot/grub/grub.cfg
 }
 
+install_brave_policy() {
+  local policy_src="$DOTFILES_DIR/brave/policies/managed/policy.json"
+  local policy_target_dir="/etc/brave/policies/managed"
+
+  if ! command -v brave >/dev/null 2>&1; then
+    echo "Brave not found, skipping policy installation."
+    return
+  fi
+
+  sudo mkdir -p "$policy_target_dir"
+  sudo ln -sf "$policy_src" "$policy_target_dir/policy.json"
+}
+
 enable_services() {
   sudo systemctl enable NetworkManager
   sudo systemctl enable sddm
@@ -702,6 +715,7 @@ main() {
   run_step "install_locale" "Installing the locale" install_locale
   run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
   run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
+  run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
   run_step "enable_services" "Enabling services" enable_services
   run_step "ask_reboot" "Finishing installation" ask_reboot
 
