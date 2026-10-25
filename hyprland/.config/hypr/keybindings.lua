@@ -83,7 +83,8 @@ bind(mainMod .. " + CTRL + S", hl.dsp.exec_cmd("hyprshot -m region --raw | satty
 bind("Print", hl.dsp.exec_cmd("hyprshot -m active -m output -o ~/Pictures/Screenshots"),
   "Capture the active monitor")
 bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), "Pick a color from the screen")
-bind(mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t"), "Toggle the notification center")
+bind(mainMod .. " + N", hl.dsp.exec_cmd("qs -c hyprpunk ipc call notifications toggle"),
+  "Toggle the notification center")
 
 bind(mainMod .. " + Q", hl.dsp.window.close(), "Close the focused window")
 bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }), "Toggle floating mode for the focused window")
@@ -91,7 +92,7 @@ bind(mainMod .. " + S", hl.dsp.layout("togglesplit"), "Toggle the split directio
 bind("F11", hl.dsp.window.fullscreen(), "Toggle fullscreen mode",
   { locked = true, repeating = true })
 bind(mainMod .. " + CTRL + l", hl.dsp.exec_cmd("hyprlock"), "Lock the screen")
-bind(mainMod .. " + ALT + W", hl.dsp.exec_cmd("killall waybar ; waybar"), "Reload Waybar")
+bind(mainMod .. " + ALT + Q", hl.dsp.exec_cmd("killall qs ; qs -c hyprpunk"), "Reload Quickshell")
 bind(mainMod .. " + ALT + I", hl.dsp.exec_cmd("killall hypridle ; hypridle"),
   "Reload Hypridle")
 
