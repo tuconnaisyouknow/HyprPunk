@@ -67,12 +67,12 @@ end)
 -- ####################
 
 -- Applications
-hl.window_rule({ match = { class = "kitty" }, workspace = "1" })         -- Assign Kitty to workspace 1
-hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" }) -- Assign Brave to workspace 2
-hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })       -- Assign Spotify to workspace 3
-hl.window_rule({ match = { class = "md.Obsidian" }, workspace = "4" })   -- Assign Obsidian to workspace 4
-hl.window_rule({ match = { class = "discord" }, workspace = "5" })       -- Assign Discord to workspace 5
-hl.window_rule({ match = { class = "thunar" }, workspace = "6" })        -- Assign Thunar to workspace 6
+hl.window_rule({ match = { class = "kitty" }, workspace = "1" })                -- Assign Kitty to workspace 1
+hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" })        -- Assign Brave to workspace 2
+hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })              -- Assign Spotify to workspace 3
+hl.window_rule({ match = { class = "md.obsidian.Obsidian" }, workspace = "4" }) -- Assign Obsidian to workspace 4
+hl.window_rule({ match = { class = "discord" }, workspace = "5" })              -- Assign Discord to workspace 5
+hl.window_rule({ match = { class = "thunar" }, workspace = "6" })               -- Assign Thunar to workspace 6
 
 -- Making satty windows float
 hl.window_rule({ match = { class = "com.gabm.satty" }, float = true })
