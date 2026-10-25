@@ -76,6 +76,10 @@ hl.window_rule({ match = { class = "Element" }, workspace = "5" })              
 hl.window_rule({ match = { class = "thunar" }, workspace = "6" })               -- Assign Thunar to workspace 6
 hl.window_rule({ match = { class = "org.kde.dolphin" }, workspace = "6" })      -- Assign Dolphin to workspace 6
 
+-- Bitwarden's temporary Brave window is exposed as a separate Chromium app.
+-- Keep it out of the dwindle tree so opening it does not split Brave in half.
+hl.window_rule({ match = { class = "brave-nngceckbapebfimnlniiiahkandclblb-Default" }, float = true })
+
 -- Making satty windows float
 hl.window_rule({ match = { class = "com.gabm.satty" }, float = true })
 
