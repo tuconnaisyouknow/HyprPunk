@@ -33,6 +33,7 @@ usage() {
   cat <<EOF
 Usage:
   $(basename "$0") status
+  $(basename "$0") info
   $(basename "$0") ensure
   $(basename "$0") bootstrap
   $(basename "$0") sync
@@ -687,6 +688,62 @@ status)
   printf 'default_scale=%s\n' "${current_scale:-auto}"
   [[ -f "$STATE_FILE" ]] &&
     awk -F= '$1 ~ /^(selector|mode|scale|position|relative|slot|workspaces)\./ { print }' "$STATE_FILE"
+  ;;
+info)
+  # Active outputs with their saved settings, as JSON for the quickshell panel.
+  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  load_monitors
+  while IFS=$'\x1f' read -r output make model serial description; do
+    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
+    printf '%s\x1f' "$output" "$MONITOR_ID" \
+      "$(read_value "mode.$MONITOR_ID")" \
+      "$(read_value "scale.$MONITOR_ID")" \
+      "$(read_value "slot.$MONITOR_ID")" \
+      "$(read_value "workspaces.$MONITOR_ID")" \
+      "$(read_value "relative.$MONITOR_ID")"
+    printf '\n'
+  done < <(
+    jq -r '
+      .[] |
+      select(.disabled != true) |
+      [.name, (.make // ""), (.model // ""), (.serial // ""), .description] |
+      join("\u001f")
+    ' <<<"$MONITORS_JSON"
+  ) | jq -Rn \
+    --argjson monitors "$MONITORS_JSON" \
+    --arg layout "$(read_value layout)" \
+    --arg default_scale "$(read_value default_scale)" '
+      {
+        layout: (if $layout == "" then "auto" else $layout end),
+        default_scale: (if $default_scale == "" then "auto" else $default_scale end),
+        outputs: [
+          inputs |
+          split("\u001f") |
+          . as $fields |
+          ($monitors[] | select(.name == $fields[0])) as $monitor |
+          {
+            name: $fields[0],
+            id: $fields[1],
+            mode: $fields[2],
+            scale: $fields[3],
+            slot: $fields[4],
+            workspaces: $fields[5],
+            relative: $fields[6],
+            description: $monitor.description,
+            model: ($monitor.model // ""),
+            width: $monitor.width,
+            height: $monitor.height,
+            refresh_rate: $monitor.refreshRate,
+            current_scale: $monitor.scale,
+            x: $monitor.x,
+            y: $monitor.y,
+            transform: $monitor.transform,
+            focused: $monitor.focused,
+            modes: $monitor.availableModes
+          }
+        ]
+      }
+    '
   ;;
 outputs)
   load_monitors
