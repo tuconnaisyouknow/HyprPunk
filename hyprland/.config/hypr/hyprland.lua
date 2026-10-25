@@ -86,6 +86,16 @@ hl.window_rule({ match = { class = "com.gabm.satty" }, float = true })
 -- Centering floating windows
 hl.window_rule({ match = { float = true }, center = true }) -- Center all floating windows
 
+-- ################
+-- ### Gestures ###
+-- ################
+
+-- Swipe workspace
+hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
+
+-- Move application
+hl.gesture({ fingers = 4, direction = "swipe", action = "move" })
+
 -- ###################
 -- ### LAYER RULES ###
 -- ###################
