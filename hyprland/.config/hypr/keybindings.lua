@@ -4,9 +4,8 @@
 
 local terminal = "kitty"
 local fileManager = "dolphin"
-local codeEditor = "code"
 local notepad = "obsidian"
-local menu = 'rofi -show drun -show-icons -display-drun " Apps "'
+local menu = "qs -c hyprpunk ipc call launcher toggle"
 local browser = "brave"
 local music = "spotify-launcher"
 local keyboard = __require("keyboard_state")
@@ -58,22 +57,21 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal), "Open the terminal")
 bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), "Open the file manager")
 bind(mainMod .. " + O", hl.dsp.exec_cmd(notepad), "Open Obsidian")
-bind(mainMod .. " + C", hl.dsp.exec_cmd(codeEditor), "Open the code editor")
 bind(mainMod .. " + B", hl.dsp.exec_cmd(browser), "Open the web browser")
 bind(mainMod .. " + P", hl.dsp.exec_cmd(music), "Open Spotify")
 bind(mainMod .. " + D", hl.dsp.exec_cmd("discord"), "Open Discord")
 
 bind("ALT + SPACE", hl.dsp.exec_cmd(menu), "Open the application launcher")
-bind("CTRL + ALT + SPACE", hl.dsp.exec_cmd("~/Scripts/Rofi/menu.sh"), "Open the main Rofi menu")
-bind("CTRL + ugrave", hl.dsp.exec_cmd("~/Scripts/Rofi/cliphist.sh standalone"),
+bind("CTRL + ALT + SPACE", hl.dsp.exec_cmd("qs -c hyprpunk ipc call menu toggle"), "Open the main menu")
+bind("CTRL + ugrave", hl.dsp.exec_cmd("qs -c hyprpunk ipc call clipboard toggle"),
   "Open the clipboard history")
-bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("~/Scripts/Rofi/wallpaper.sh standalone"),
+bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("qs -c hyprpunk ipc call wallpaper toggle"),
   "Open the wallpaper selector")
-bind(mainMod .. " + semicolon",
-  hl.dsp.exec_cmd(
-    'rofi -modi emoji -show emoji -theme ~/.config/rofi/catppuccin-list.rasi -display-emoji "󰱨 Emoji " -kb-accept-entry "" -kb-custom-1 Return'),
+bind(mainMod .. " + CTRL + G", hl.dsp.exec_cmd("qs -c hyprpunk ipc call sddm toggle"),
+  "Open the SDDM theme selector")
+bind(mainMod .. " + semicolon", hl.dsp.exec_cmd("qs -c hyprpunk ipc call emoji toggle"),
   "Open the emoji selector")
-bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd("~/Scripts/Rofi/keybindings.sh standalone"),
+bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd("qs -c hyprpunk ipc call keybindings toggle"),
   "Show all keybindings")
 
 bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region -o ~/Pictures/Screenshots"),
@@ -85,6 +83,10 @@ bind("Print", hl.dsp.exec_cmd("hyprshot -m active -m output -o ~/Pictures/Screen
 bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), "Pick a color from the screen")
 bind(mainMod .. " + N", hl.dsp.exec_cmd("qs -c hyprpunk ipc call notifications toggle"),
   "Toggle the notification center")
+bind(mainMod .. " + C", hl.dsp.exec_cmd("qs -c hyprpunk ipc call controlcenter toggle"),
+  "Toggle the control center")
+bind(mainMod .. " + Escape", hl.dsp.exec_cmd("qs -c hyprpunk ipc call session toggle"),
+  "Open the session menu (lock, logout, reboot, shutdown)")
 
 bind(mainMod .. " + Q", hl.dsp.window.close(), "Close the focused window")
 bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }), "Toggle floating mode for the focused window")
