@@ -23,15 +23,10 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("~/Scripts/displayctl.sh bootstrap")
   hl.exec_cmd("~/Scripts/touchpadctl.sh sync")
   hl.exec_cmd("hyprpaper")
-  hl.exec_cmd("waybar")
+  hl.exec_cmd("qs -c hyprpunk")
   hl.exec_cmd("hypridle")
 
-  -- Starting network and bluetooth applets
-  hl.exec_cmd("nm-applet")
-  hl.exec_cmd("blueman-applet")
-
-  -- Starting swaync and swayosd servers for notifications and OSD
-  hl.exec_cmd("systemctl --user restart swaync.service")
+  -- Starting swayosd server for OSD
   hl.exec_cmd("swayosd-server")
 
   -- Stopping bluetooth by default on startup
@@ -100,8 +95,16 @@ hl.gesture({ fingers = 4, direction = "swipe", action = "move" })
 -- ### LAYER RULES ###
 -- ###################
 
-hl.layer_rule({ match = { namespace = "swaync-control-center" }, blur = true, ignore_alpha = 0.35 })
-hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true, ignore_alpha = 0.35 })
+-- Quickshell translucent surfaces: only the painted parts are blurred, not the empty window
+hl.layer_rule({ match = { namespace = "hyprpunk-notifications" }, blur = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "hyprpunk-notification-center" }, blur = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "hyprpunk-osd" }, blur = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, ignore_alpha = 0.5 })
+-- Island panels (session menu, wallpaper picker) animate themselves out of the bar island
+hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = 0.5, no_anim = true })
+-- The bar itself stays sharp; only its popups (the player) are blurred
+hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur_popups = true, ignore_alpha = 0.5 })
 
 -- #####################
 -- ### LOOK AND FEEL ###
