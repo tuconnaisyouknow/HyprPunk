@@ -72,14 +72,6 @@ EOF
   write_file "$GENERATED_DIR/kitty.conf" <<'EOF'
     map ctrl+m send_key f12
 EOF
-  write_file "$GENERATED_DIR/rofi.rasi" <<'EOF'
-    configuration {
-      kb-move-char-back: "Ctrl+j,Left";
-      kb-move-char-forward: "Ctrl+m,Right";
-      kb-row-down: "Ctrl+k,Down";
-      kb-row-up: "Ctrl+l,Up";
-    }
-EOF
   write_file "$GENERATED_DIR/lesskey" <<'EOF'
     k forw-line
     l back-line
@@ -108,15 +100,6 @@ generate_us() {
     set -g @vim_navigator_mapping_right "C-l"
 EOF
   : >"$GENERATED_DIR/kitty.conf"
-  write_file "$GENERATED_DIR/rofi.rasi" <<'EOF'
-    configuration {
-      kb-move-char-back: "Ctrl+h,Left";
-      kb-move-char-forward: "Ctrl+l,Right";
-      kb-remove-char-back: "BackSpace,Shift+BackSpace";
-      kb-row-down: "Ctrl+j,Down";
-      kb-row-up: "Ctrl+k,Up";
-    }
-EOF
   : >"$GENERATED_DIR/lesskey"
 }
 

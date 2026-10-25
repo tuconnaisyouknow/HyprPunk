@@ -40,7 +40,6 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/nvim"
   ".config/qt5ct"
   ".config/qt6ct"
-  ".config/rofi"
   ".config/starship.toml"
   ".config/swaync"
   ".config/tmux"
@@ -310,7 +309,7 @@ install_packages() {
     \
     hyprland hyprpaper hyprlock hypridle \
     hyprshot satty hyprcursor waybar swaync \
-    swayosd cliphist rofi \
+    swayosd cliphist \
     waybar-module-pacman-updates-git \
     \
     qt5ct-kde qt5-wayland qt5-tools \
@@ -421,9 +420,9 @@ activate_dotfiles() {
 
 stow_dotfiles() {
   if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim rofi scripts starship swaync tmux wallpapers waybar yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim scripts starship swaync tmux wallpapers waybar yazi zsh
   else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kdeglobals kitty kvantum nvim rofi scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kdeglobals kitty kvantum nvim scripts starship swaync tmux wallpapers waybar-desktop yazi zsh
   fi
 }
 
