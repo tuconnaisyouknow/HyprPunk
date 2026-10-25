@@ -162,35 +162,36 @@ bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), "Drag to move a window",
 bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), "Drag to resize a window",
   { mouse = true })
 
-bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise"),
+bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"),
   "Increase the output volume", { locked = true, repeating = true })
-bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"),
+bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
   "Decrease the output volume", { locked = true, repeating = true })
-bind("XF86AudioMute", hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"),
+bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
   "Mute or unmute the audio output", { locked = true, repeating = true })
-bind("XF86AudioMicMute", hl.dsp.exec_cmd("swayosd-client --input-volume mute-toogle"),
+bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
   "Mute or unmute the microphone", { locked = true, repeating = true })
 bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpadctl.sh toggle"),
   "Enable or disable the touchpad", { locked = true, repeating = true })
 
-bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("swayosd-client --brightness raise"),
+bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -q set 5%+"),
   "Increase the screen brightness", { locked = true, repeating = true })
-bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("swayosd-client --brightness lower"),
+bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -q set 5%-"),
   "Decrease the screen brightness", { locked = true, repeating = true })
 
-bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), "Play the next track",
+bind("XF86AudioNext", hl.dsp.exec_cmd("qs -c hyprpunk ipc call music next || playerctl next"), "Play the next track",
   { locked = true })
 bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), "Toggle media playback",
   { locked = true })
 bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), "Toggle media playback",
   { locked = true })
-bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), "Play the previous track",
+bind("XF86AudioPrev", hl.dsp.exec_cmd("qs -c hyprpunk ipc call music previous || playerctl previous"),
+  "Play the previous track",
   { locked = true })
-bind(mainMod .. " + SHIFT + CTRL + M", hl.dsp.exec_cmd("swayosd-client --playerctl next"),
+bind(mainMod .. " + SHIFT + CTRL + M", hl.dsp.exec_cmd("qs -c hyprpunk ipc call music next || playerctl next"),
   "Play the next track", { locked = true })
-bind(mainMod .. " + SHIFT + CTRL + K", hl.dsp.exec_cmd("swayosd-client --playerctl play-pause"),
+bind(mainMod .. " + SHIFT + CTRL + K", hl.dsp.exec_cmd("playerctl play-pause"),
   "Toggle media playback", { locked = true })
-bind(mainMod .. " + SHIFT + CTRL + J", hl.dsp.exec_cmd("swayosd-client --playerctl prev"),
+bind(mainMod .. " + SHIFT + CTRL + J", hl.dsp.exec_cmd("qs -c hyprpunk ipc call music previous || playerctl previous"),
   "Play the previous track", { locked = true })
-bind(mainMod .. " + SHIFT + CTRL + L", hl.dsp.exec_cmd("swayosd-client --playerctl shuffle"),
+bind(mainMod .. " + SHIFT + CTRL + L", hl.dsp.exec_cmd("playerctl shuffle toggle"),
   "Toggle shuffle mode", { locked = true })
