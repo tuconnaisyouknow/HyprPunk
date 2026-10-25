@@ -3,7 +3,7 @@
 > Arch Linux dotfiles for Hyprland, with a cyberpunk visual direction, Catppuccin Mocha colors, and Mauve accents.
 
 HyprPunk is a complete personal Wayland setup built around **Hyprland**.  
-It brings together the window manager, bars, menus, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
+It brings together the window manager, bars, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
 
 The goal is simple: a cohesive, dark, readable, and responsive desktop inspired by cyberpunk visuals without getting in the way of daily work.
 
@@ -14,14 +14,10 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 | Desktop | Tmux |
 |:-:|:-:|
 | ![desktop](./assets/screenshots/desktop.png) | ![tmux](./assets/screenshots/tmux.png) |
-| Hyprlock | Rofi |
-| ![hyprlock](./assets/screenshots/hyprlock.png) | ![rofi](./assets/screenshots/rofi.png) |
-| SDDM | Thunar |
-| ![sddm](./assets/screenshots/sddm.png) | ![thunar](./assets/screenshots/thunar.png) |
-| Swaync | System Menu |
-| ![swaync](./assets/screenshots/swaync.png) | ![system-menu](./assets/screenshots/system-menu.png) |
-| Wallpaper Selector | SDDM Theme Selector |
-| ![wallpaper-selector](./assets/screenshots/wallpaper-selector.png) | ![sddm-theme-selector](./assets/screenshots/sddm-theme-selector.png) |
+| Hyprlock | SDDM |
+| ![hyprlock](./assets/screenshots/hyprlock.png) | ![sddm](./assets/screenshots/sddm.png) |
+| Thunar | Swaync |
+| ![thunar](./assets/screenshots/thunar.png) | ![swaync](./assets/screenshots/swaync.png) |
 
 ---
 
@@ -29,7 +25,6 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 
 - 🪟 **Hyprland** as the main Wayland environment.
 - 📊 **Waybar** with laptop and desktop variants.
-- 🚀 **Rofi** menus for system actions, screenshots, clipboard history, wallpapers, SDDM themes, and Hyprland configuration.
 - 🔒 **Hyprlock**, **Hypridle**, and **Hyprpaper** for lock screen, idle handling, and wallpapers.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
@@ -113,9 +108,9 @@ Reboot after the installation completes.
 ├── nvim/                # Neovim Lua configuration
 ├── qt5/                 # Source palette for generated Qt5ct configuration
 ├── qt6/                 # Source palette for generated Qt6ct configuration
-├── rofi/                # Shared Rofi configuration and menu themes
-├── scripts/             # System, Rofi, display, Qt, and lock-screen helpers
+├── scripts/             # System, display, Qt, and lock-screen helpers
 ├── sddm/themes/         # Cyberpunk video themes installed system-wide
+├── sddm/previews/       # Preview images of the SDDM themes
 ├── starship/            # Starship prompt configuration
 ├── swaync/              # Notification center configuration
 ├── tmux/                # Tmux configuration
@@ -142,7 +137,7 @@ The installer offers two keyboard profiles:
 
 `US` is the default when no profile has been selected yet or when the installer prompt is left empty.
 
-The active profile can be changed later from **Rofi → Configuration → Keyboard**.
+The active profile can be changed later from the command line:
 
 ```bash
 ~/Scripts/keyboard-layoutctl.sh set us
@@ -150,7 +145,7 @@ The active profile can be changed later from **Rofi → Configuration → Keyboa
 ```
 
 The selection is stored in `$XDG_STATE_HOME/hyprpunk/keyboard-layout` (or `~/.local/state/hyprpunk/keyboard-layout`).
-Hyprland, Kitty, tmux, and Rofi pick up the change immediately. New Zsh and Yazi processes use it on startup;
+Hyprland, Kitty, and tmux pick up the change immediately. New Zsh and Yazi processes use it on startup;
 an existing Neovim instance can reload its movement mappings with `:KeyboardLayoutReload` (restart Neovim to
 also rebuild plugin-specific mappings such as Snacks Explorer).
 
@@ -162,7 +157,6 @@ The layout integration covers:
 - 📝 `nvim/.config/nvim/lua/config/keymaps.lua`
 - 💻 `tmux/.config/tmux/tmux.conf`
 - 📁 `keyboard/yazi/fr.toml`
-- 🚀 `rofi/.config/rofi/config.rasi`
 - ⌨️ `kitty/.config/kitty/kitty.conf`
 - 🐚 `zsh/.bindingrc` and `zsh/.zshrc`
 
@@ -175,7 +169,7 @@ kb_layout = keyboard.xkb
 ### Locale profiles
 
 The interface language (`LANG` and `LC_MESSAGES`) and regional formats (the other `LC_*` categories) are independent.
-They can be changed after installation from **Rofi → Configuration → Locale**, or from the command line:
+They can be changed after installation from the command line:
 
 ```bash
 ~/Scripts/locale-profilectl.sh set-language us
@@ -190,33 +184,9 @@ to be restarted.
 
 ---
 
-## 🚀 Rofi Scripts
+## 🖥️ Display Settings
 
-The main menu opens with `Ctrl + Alt + Space` and groups the available tools as follows:
-
-- 🚀 **Apps** — launch desktop applications with `drun`.
-- ▶️ **Action** — take or annotate screenshots, configure monitors, and toggle the touchpad.
-- ⌨️ **Keybindings** — display the active, documented Hyprland bindings reported by `hyprctl`.
-- 📋 **Clipboard** — browse the Cliphist history and copy an entry back to the Wayland clipboard.
-- 🎨 **Style** — choose a wallpaper or apply an SDDM theme from visual previews.
-- ⚙️ **Configuration** — open the Hyprland, Hyprlock, Hyprpaper, Hypridle, Neovim, Starship, and Kitty configuration files in Neovim.
-- ⏻ **System** — lock, log out, reboot, or shut down the session.
-
-The monitor menu supports per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment. It can also build an automatic layout or reset all saved display settings. Changes are applied through `~/Scripts/displayctl.sh` and persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`).
-
-Frequently used menus also have direct shortcuts:
-
-- `Ctrl + ù` — clipboard history
-- `Super + Ctrl + W` — wallpaper selector
-- `Super + Ctrl + K` — keybinding viewer
-
-Scripts are located in:
-
-```text
-scripts/Scripts/Rofi/
-```
-
-The top-level menu scripts accept a `standalone` mode for direct shortcuts and a `menu` mode that returns to their parent menu when cancelled. Rofi themes live in `rofi/.config/rofi/`; SDDM preview images live in `scripts/Scripts/Rofi/preview/`.
+Monitors are managed by `~/Scripts/displayctl.sh`: per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment, plus an automatic layout and a reset of all saved display settings. The settings are persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`) and applied by Hyprland on reload. Run `~/Scripts/displayctl.sh` without arguments to list its commands.
 
 ---
 
@@ -249,7 +219,7 @@ The main files to adapt to your machine are:
 
 - ⌨️ Document the main keybindings.
 - 📦 Add a dependency table per module.
-- 🩺 Add troubleshooting notes for SDDM, Waybar, Rofi, and Hyprland.
+- 🩺 Add troubleshooting notes for SDDM, Waybar, and Hyprland.
 - 🌆 Update the installer to use the `HyprPunk` name everywhere.
 - ♻️ Add uninstall or backup restore instructions.
 
