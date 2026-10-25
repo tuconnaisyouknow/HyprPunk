@@ -3,7 +3,7 @@
 -- ###################
 
 local terminal = "kitty"
-local fileManager = "thunar"
+local fileManager = "dolphin"
 local codeEditor = "code"
 local notepad = "obsidian"
 local menu = 'rofi -show drun -show-icons -display-drun " Apps "'
