@@ -3,7 +3,7 @@
 > Arch Linux dotfiles for Hyprland, with a cyberpunk visual direction, Catppuccin Mocha colors, and Mauve accents.
 
 HyprPunk is a complete personal Wayland setup built around **Hyprland**.  
-It brings together the window manager, bars, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
+It brings together the window manager, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
 
 The goal is simple: a cohesive, dark, readable, and responsive desktop inspired by cyberpunk visuals without getting in the way of daily work.
 
@@ -16,24 +16,21 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 | ![desktop](./assets/screenshots/desktop.png) | ![tmux](./assets/screenshots/tmux.png) |
 | Hyprlock | SDDM |
 | ![hyprlock](./assets/screenshots/hyprlock.png) | ![sddm](./assets/screenshots/sddm.png) |
-| Thunar | Swaync |
-| ![thunar](./assets/screenshots/thunar.png) | ![swaync](./assets/screenshots/swaync.png) |
+| Thunar | |
+| ![thunar](./assets/screenshots/thunar.png) | |
 
 ---
 
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
-- 📊 **Waybar** with laptop and desktop variants.
 - 🔒 **Hyprlock**, **Hypridle**, and **Hyprpaper** for lock screen, idle handling, and wallpapers.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
 - 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** themed around Catppuccin Mocha.
-- 🛠️ **SwayNC**, **SwayOSD**, **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
+- 🛠️ **SwayOSD**, **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
-> [!WARNING]
-> There is currently an issue with how the SwayNC player buttons are rendered. I'm working on a fix.
 - 📦 Modular configuration managed with GNU Stow.
 
 ---
@@ -68,10 +65,8 @@ Run the installer:
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)"
 ```
 
-During installation, the script asks whether the machine is a **laptop** or a **desktop** and selects the matching modules:
-
-- 📊 `waybar` or `waybar-desktop`
-- 🔒 `hyprlock` or `hyprlock-desktop`
+During installation, the script asks whether the machine is a **laptop** or a **desktop** and selects the matching lock
+screen module: `hyprlock` or `hyprlock-desktop`.
 
 It also asks independently for the keyboard layout, interface language, and regional formats. The locale defaults preserve
 an English interface (`en_US.UTF-8`) with French regional conventions (`fr_FR.UTF-8`). Both locales are generated during
@@ -112,11 +107,8 @@ Reboot after the installation completes.
 ├── sddm/themes/         # Cyberpunk video themes installed system-wide
 ├── sddm/previews/       # Preview images of the SDDM themes
 ├── starship/            # Starship prompt configuration
-├── swaync/              # Notification center configuration
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Cyberpunk wallpapers
-├── waybar/              # Laptop Waybar configuration
-├── waybar-desktop/      # Desktop Waybar configuration
 ├── yazi/                # Yazi file manager configuration and theme
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
@@ -219,7 +211,7 @@ The main files to adapt to your machine are:
 
 - ⌨️ Document the main keybindings.
 - 📦 Add a dependency table per module.
-- 🩺 Add troubleshooting notes for SDDM, Waybar, and Hyprland.
+- 🩺 Add troubleshooting notes for SDDM and Hyprland.
 - 🌆 Update the installer to use the `HyprPunk` name everywhere.
 - ♻️ Add uninstall or backup restore instructions.
 
