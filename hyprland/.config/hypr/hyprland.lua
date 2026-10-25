@@ -32,8 +32,10 @@ hl.on("hyprland.start", function()
   -- Starting battery moniroring script to notify when the battery is under 20% of charge
   hl.exec_cmd("~/Scripts/battery-monitor.sh")
 
-  -- Starting clipboard monitoring to store clipboard history
-  hl.exec_cmd("wl-paste --watch cliphist store")
+  -- Starting clipboard monitoring to store clipboard history (text, and images
+  -- even when they come with a text type, for the quickshell clipboard thumbnails)
+  hl.exec_cmd("wl-paste --type text --watch cliphist store")
+  hl.exec_cmd("wl-paste --type image --watch cliphist store")
 
   -- Starting xwayland-satellite instead of XWayland
   hl.exec_cmd("systemctl --user restart xwayland-satellite.service")
