@@ -2,14 +2,14 @@
 -- ### SOURCES ###
 -- ###############
 
-local colors = require("mocha") -- Color theme
+local colors = require("mocha")              -- Color theme
 local keyboard = __require("keyboard_state") -- Reloadable keyboard profile
-require("monitors")             -- Monitors config
-require("keybindings")          -- Keybindings
-require("env")                  -- Environement variables
-require("touchpad")             -- Touchpad toogle conf
-require("workspaces")           -- Per-computer workspace assignments
-pcall(require, "personal")      -- OPTIONAL (if you don't need a ~/.config/hypr/personal.lua file you can remove this line)
+pcall(require, "personal")                   -- OPTIONAL (if you don't need a ~/.config/hypr/personal.lua file you can remove this line)
+require("monitors")                          -- Monitors config
+require("keybindings")                       -- Keybindings
+require("env")                               -- Environement variables
+require("touchpad")                          -- Touchpad toogle conf
+require("workspaces")                        -- Per-computer workspace assignments
 
 -- #################
 -- ### AUTOSTART ###
