@@ -26,9 +26,6 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("qs -c hyprpunk")
   hl.exec_cmd("hypridle")
 
-  -- Starting swayosd server for OSD
-  hl.exec_cmd("swayosd-server")
-
   -- Stopping bluetooth by default on startup
   hl.exec_cmd("bluetoothctl power off")
 

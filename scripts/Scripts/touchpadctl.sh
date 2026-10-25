@@ -119,27 +119,21 @@ reload_hyprland() {
   hyprctl reload >/dev/null 2>&1 || true
 }
 
-show_osd() {
-  swayosd-client \
-    --custom-message "$1" \
-    --custom-icon input-touchpad 2>/dev/null || true
+# The On/Off feedback is shown by the Quickshell bar, which watches the state file.
+notify_error() {
+  notify-send -a Touchpad -i input-touchpad "$1" 2>/dev/null || true
 }
 
 set_enabled() {
   local enabled="$1"
   load_touchpads
   if [[ -z "$TOUCHPADS" ]]; then
-    show_osd "No touchpad detected"
+    notify_error "No touchpad detected"
     echo "No touchpad detected." >&2
     return 2
   fi
   write_state "$enabled"
   reload_hyprland
-  if [[ "$enabled" == "true" ]]; then
-    show_osd "Touchpad On"
-  else
-    show_osd "Touchpad Off"
-  fi
 }
 
 command="${1:-}"
