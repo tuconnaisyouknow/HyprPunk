@@ -270,11 +270,11 @@ PanelWindow {
                             x: (1 - header.intro) * 48
                         }
 
-                        Text {
+                        IconText {
                             Layout.fillWidth: true
-                            text: "󰂚 Notifications"
+                            icon: "󰂚"
+                            text: "Notifications"
                             color: "#cba6f7"
-                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 18
                             font.weight: Font.Bold
                         }
@@ -292,13 +292,13 @@ PanelWindow {
                                 backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, clearHover.hovered ? 0.95 : 0.8)
                             }
 
-                            Text {
+                            IconText {
                                 id: clearLabel
 
                                 anchors.centerIn: parent
-                                text: "󰎟 Clear"
+                                icon: "󰎟"
+                                text: "Clear"
                                 color: "#1e1e2e"
-                                font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 14
                                 font.weight: Font.Bold
                             }
@@ -328,13 +328,14 @@ PanelWindow {
                             values: center.entryIds
                         }
 
-                        Text {
+                        IconText {
                             anchors.centerIn: parent
                             visible: center.entryIds.length === 0
-                            text: "󰂚  No notifications"
+                            icon: "󰂚"
+                            text: "No notifications"
                             color: "#7f849c"
-                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 16
+                            font.weight: Font.Normal
                         }
 
                         delegate: Item {

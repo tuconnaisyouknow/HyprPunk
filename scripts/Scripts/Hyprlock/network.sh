@@ -6,12 +6,12 @@ source "$script_dir/../lib/system-info.sh"
 
 case "$(network_type)" in
   wifi)
-    echo -e "  "
+    echo -e "󰤨  "
     ;;
   ethernet)
     echo "󰈀  "
     ;;
   *)
-    echo "󰖪  "
+    echo "󰤮  "
     ;;
 esac

@@ -218,11 +218,14 @@ PanelWindow {
         if (muted)
             return "";
 
-        if (volume < 34)
+        if (volume === 0)
             return "";
 
-        if (volume < 67)
+        if (volume < 34)
             return "";
+
+        if (volume < 67)
+            return "";
 
         return "";
     }
@@ -477,7 +480,7 @@ PanelWindow {
                                     anchors.fill: parent
                                     anchors.leftMargin: 10
                                     anchors.rightMargin: 8
-                                    icon: ""
+                                    icon: "󰂛"
                                     title: "Focus"
                                     subtitle: controlCenter.shellState.doNotDisturb ? "On" : "Off"
                                     active: controlCenter.shellState.doNotDisturb
@@ -669,16 +672,16 @@ PanelWindow {
                         onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
                     }
 
-                    Text {
-                        Layout.fillWidth: true
+                    IconText {
+                        Layout.alignment: Qt.AlignHCenter
                         Layout.topMargin: 8
                         Layout.bottomMargin: 8
                         visible: controlCenter.wifiNetworks.length === 0
-                        horizontalAlignment: Text.AlignHCenter
-                        text: Networking.wifiEnabled ? "󰤯  Searching for networks…" : "󰤭  Wi-Fi is off"
+                        icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
+                        text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
                         color: "#7f849c"
-                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 14
+                        font.weight: Font.Normal
 
 
                     }
@@ -734,12 +737,12 @@ PanelWindow {
                             anchors.margins: 12
                             spacing: 8
 
-                            Text {
+                            IconText {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                text: "󰌾  " + (controlCenter.passwordNetwork !== null ? controlCenter.passwordNetwork.name : "")
+                                icon: "󰌾"
+                                text: (controlCenter.passwordNetwork !== null ? controlCenter.passwordNetwork.name : "")
                                 color: "#cba6f7"
-                                font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 14
                                 font.weight: Font.Bold
                             }
@@ -805,16 +808,16 @@ PanelWindow {
                         onToggled: controlCenter.toggleBluetooth()
                     }
 
-                    Text {
-                        Layout.fillWidth: true
+                    IconText {
+                        Layout.alignment: Qt.AlignHCenter
                         Layout.topMargin: 8
                         Layout.bottomMargin: 8
                         visible: controlCenter.bluetoothDevices.length === 0
-                        horizontalAlignment: Text.AlignHCenter
-                        text: controlCenter.bluetoothEnabled ? "󰂰  Searching for devices…" : "󰂲  Bluetooth is off"
+                        icon: controlCenter.bluetoothEnabled ? "󰂰" : "󰂲"
+                        text: controlCenter.bluetoothEnabled ? "Searching for devices…" : "Bluetooth is off"
                         color: "#7f849c"
-                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 14
+                        font.weight: Font.Normal
 
 
                     }

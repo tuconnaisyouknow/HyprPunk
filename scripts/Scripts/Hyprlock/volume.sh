@@ -18,10 +18,12 @@ volume_int=$(echo "$volume_float * 100" | bc -l | awk '{ printf "%d", $1 }')
 # Convertit point en virgule (même si inutile ici car entier, mais pour cohérence FR)
 volume_fr="${volume_int//./,}"
 
-# Choix de l'icône selon le volume
-if [ "$volume_int" -ge 66 ]; then
+# Choix de l'icône selon le volume, mêmes paliers que quickshell
+if [ "$volume_int" -ge 67 ]; then
   icon=" "
-elif [ "$volume_int" -ge 33 ]; then
+elif [ "$volume_int" -ge 34 ]; then
+  icon=" "
+elif [ "$volume_int" -gt 0 ]; then
   icon=" "
 else
   icon=" "

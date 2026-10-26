@@ -143,6 +143,20 @@ Item {
         font.weight: Font.Bold
     }
 
+    component IconTitle: IconText {
+        font.pixelSize: 14
+        font.weight: Font.Bold
+    }
+
+    component IconDetail: IconText {
+        color: "#b4befe"
+        font.pixelSize: 12
+        font.weight: Font.Normal
+        font.features: {
+            "tnum": 1
+        }
+    }
+
     component Detail: Text {
         color: "#b4befe"
         font.family: "JetBrainsMono Nerd Font"
@@ -223,8 +237,9 @@ Item {
                 Layout.fillWidth: true
                 spacing: 10
 
-                SectionTitle {
-                    text: "  CPU"
+                IconTitle {
+                    icon: ""
+                    text: "CPU"
                 }
 
                 Detail {
@@ -290,13 +305,15 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
 
-                Detail {
+                IconDetail {
                     Layout.fillWidth: true
-                    text: " " + monitor.temperature
+                    icon: ""
+                    text: monitor.temperature
                 }
 
-                Detail {
-                    text: String.fromCodePoint(0xf04c5) + " " + monitor.frequency
+                IconDetail {
+                    icon: String.fromCodePoint(0xf04c5)
+                    text: monitor.frequency
                 }
 
             }
@@ -308,8 +325,9 @@ Item {
                 Layout.fillWidth: true
                 spacing: 10
 
-                SectionTitle {
-                    text: String.fromCodePoint(0xf0f86) + "  RAM"
+                IconTitle {
+                    icon: ""
+                    text: "RAM"
                 }
 
                 Detail {
@@ -352,9 +370,10 @@ Item {
                 Layout.fillWidth: true
                 spacing: 6
 
-                SectionTitle {
+                IconTitle {
                     Layout.fillWidth: true
-                    text: "  Processes"
+                    icon: ""
+                    text: "Processes"
                 }
 
                 Repeater {

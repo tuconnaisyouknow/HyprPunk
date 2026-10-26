@@ -73,7 +73,7 @@ SearchPanel {
     }
 
     panelName: "keybindings"
-    searchIcon: ""
+    searchIcon: "󰌌"
     placeholder: "Search keybindings"
     hint: binds.length > 0 ? results.length + " / " + binds.length : ""
     count: results.length

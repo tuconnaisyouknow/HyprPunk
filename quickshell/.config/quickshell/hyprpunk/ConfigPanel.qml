@@ -11,11 +11,11 @@ SearchPanel {
     readonly property int rowSpacing: 4
     // command, when set, is run in kitty instead of nvim on the path.
     readonly property var files: [{
-        "icon": "",
+        "icon": "",
         "name": "Hyprland",
         "path": "~/.config/hypr/hyprland.lua"
     }, {
-        "icon": "",
+        "icon": "󰌌",
         "name": "Hyprland keybindings",
         "path": "~/.config/hypr/keybindings.lua"
     }, {
@@ -23,7 +23,7 @@ SearchPanel {
         "name": "Hyprlock",
         "path": "~/.config/hypr/hyprlock.conf"
     }, {
-        "icon": "",
+        "icon": "",
         "name": "Hypridle",
         "path": "~/.config/hypr/hypridle.conf"
     }, {
