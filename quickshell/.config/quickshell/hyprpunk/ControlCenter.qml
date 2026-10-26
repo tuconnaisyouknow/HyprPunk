@@ -749,12 +749,12 @@ PanelWindow {
                         ListView {
                             id: wifiList
 
-                            // Wider than the page by a few pixels, so the hovered row's zoom
-                            // isn't cut at the sides; the rows stay aligned with the page.
+                            // Wider than the page by a few pixels, so the hovered row's zoom and
+                            // bounce (up to 4.5px a side) aren't cut; the rows stay aligned.
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.leftMargin: -4
-                            anchors.rightMargin: -4
+                            anchors.leftMargin: -6
+                            anchors.rightMargin: -6
                             height: Math.min(contentHeight, 340)
                             clip: true
                             spacing: 4
@@ -770,8 +770,8 @@ PanelWindow {
                                 ListRow {
                                     id: row
 
-                                    x: 4
-                                    width: parent.width - 8
+                                    x: 6
+                                    width: parent.width - 12
                                     icon: controlCenter.wifiIcon(modelData.signalStrength)
                                     title: modelData.name
                                     subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
@@ -918,12 +918,12 @@ PanelWindow {
                         ListView {
                             id: bluetoothList
 
-                            // Wider than the page by a few pixels, so the hovered row's zoom
-                            // isn't cut at the sides; the rows stay aligned with the page.
+                            // Wider than the page by a few pixels, so the hovered row's zoom and
+                            // bounce (up to 4.5px a side) aren't cut; the rows stay aligned.
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.leftMargin: -4
-                            anchors.rightMargin: -4
+                            anchors.leftMargin: -6
+                            anchors.rightMargin: -6
                             height: Math.min(contentHeight, 340)
                             clip: true
                             spacing: 4
@@ -939,8 +939,8 @@ PanelWindow {
                                 ListRow {
                                     id: row
 
-                                    x: 4
-                                    width: parent.width - 8
+                                    x: 6
+                                    width: parent.width - 12
                                     icon: controlCenter.bluetoothDeviceIcon(modelData.icon)
                                     title: modelData.deviceName
                                     subtitle: {
