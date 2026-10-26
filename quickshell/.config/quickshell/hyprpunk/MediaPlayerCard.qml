@@ -5,7 +5,8 @@ import Quickshell.Services.Mpris
 import Quickshell.Widgets
 
 // Now-playing card in the style of Apple's player: artwork, title and artist on
-// top, a scrubbable progress bar with times, then the transport controls.
+// top, a scrubbable progress bar with times, then the transport controls, and the
+// lyrics under them once switched on with the microphone button by the equalizer.
 Rectangle {
     id: card
 
@@ -36,6 +37,22 @@ Rectangle {
     // While scrubbing, the bar follows the pointer and the player seeks on release.
     property real scrubPosition: -1
     readonly property real shownPosition: scrubPosition >= 0 ? scrubPosition : position
+    // The player alone, then the lyrics under it.
+    readonly property int playerHeight: 172
+    readonly property int lyricsHeight: 250
+    readonly property int fullHeight: playerHeight + lyricsHeight
+    readonly property bool lyricsShown: Lyrics.enabled && player !== null
+    // The line being sung, a moment early so it does not read as late.
+    readonly property int lyricsLine: {
+        if (!Lyrics.synced || Lyrics.answeredTrack !== Lyrics.track)
+            return -1;
+
+        const now = position + 0.2;
+        let index = -1;
+        for (let i = 0; i < Lyrics.lines.length && Lyrics.lines[i].t <= now; i++)
+            index = i;
+        return index;
+    }
 
     // Emitted just before skipping: 1 = next track, -1 = previous.
     signal skipRequested(int direction)
@@ -47,9 +64,17 @@ Rectangle {
         return minutes + ":" + (rest < 10 ? "0" : "") + rest;
     }
 
-    implicitHeight: 172
+    implicitHeight: lyricsShown ? fullHeight : playerHeight
     radius: 18
     color: "transparent"
+
+    Behavior on implicitHeight {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+
+    }
 
     GlassSurface {
         visible: card.glassVisible
@@ -95,6 +120,33 @@ Rectangle {
         triggeredOnStart: true
         onTriggered: card.poll()
     }
+
+    // Settles first: the title, the artist and the length do not change together.
+    Timer {
+        id: lyricsRequest
+
+        interval: 500
+        onTriggered: {
+            if (card.player !== null && card.length > 0)
+                Lyrics.request(card.player.trackArtist, card.player.trackTitle, card.player.trackAlbum, card.length);
+
+        }
+    }
+
+    Connections {
+        function onTrackTitleChanged() {
+            lyricsRequest.restart();
+        }
+
+        function onTrackArtistChanged() {
+            lyricsRequest.restart();
+        }
+
+        target: card.player
+    }
+
+    onLengthChanged: lyricsRequest.restart()
+    onPlayerChanged: lyricsRequest.restart()
 
     Timer {
         id: pollAfterSeek
@@ -166,20 +218,20 @@ Rectangle {
 
     ColumnLayout {
         anchors.left: parent.left
-        anchors.right: equalizer.left
+        anchors.right: lyricsButton.left
         anchors.verticalCenter: artwork.verticalCenter
         anchors.leftMargin: card.artMargin + card.artSize + 12
         anchors.rightMargin: 12
         spacing: 2
 
-        Text {
+        MarqueeText {
             Layout.fillWidth: true
+            running: card.active
             text: card.player !== null ? (card.player.trackTitle || card.player.identity) : ""
             color: "#cba6f7"
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 15
             font.weight: Font.DemiBold
-            elide: Text.ElideRight
         }
 
         Text {
@@ -351,13 +403,27 @@ Rectangle {
         }
     }
 
+    PlayerControl {
+        id: lyricsButton
+
+        anchors.right: equalizer.left
+        anchors.rightMargin: 4
+        anchors.verticalCenter: artwork.verticalCenter
+        icon: "󰍰"
+        iconSize: 17
+        size: 32
+        highlighted: card.lyricsShown
+        secondary: true
+        available: card.player !== null
+        onTriggered: Lyrics.setEnabled(!Lyrics.enabled)
+    }
+
     Item {
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
         anchors.leftMargin: card.artMargin - 6
         anchors.rightMargin: card.artMargin - 6
-        anchors.bottomMargin: 10
+        y: card.playerHeight - 10 - height
         height: 44
 
         PlayerControl {
@@ -426,6 +492,36 @@ Rectangle {
                 else
                     card.player.loopState = MprisLoopState.None;
             }
+        }
+
+    }
+
+    LyricsView {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: card.artMargin + 2
+        anchors.rightMargin: card.artMargin + 2
+        y: card.playerHeight + 2
+        height: card.lyricsHeight - 18
+        visible: opacity > 0
+        opacity: card.lyricsShown ? 1 : 0
+        active: card.active && card.lyricsShown
+        lines: Lyrics.answeredTrack === Lyrics.track ? Lyrics.lines : []
+        synced: Lyrics.synced
+        instrumental: Lyrics.instrumental && Lyrics.answeredTrack === Lyrics.track
+        status: Lyrics.status
+        current: card.lyricsLine
+        onSeekRequested: (seconds) => {
+            if (card.player !== null && card.player.canSeek)
+                card.seek(seconds);
+
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 220
+            }
+
         }
 
     }

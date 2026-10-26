@@ -1796,7 +1796,8 @@ PanelWindow {
                     }
 
                     implicitWidth: 380
-                    implicitHeight: musicPlayerCard.implicitHeight
+                    // Tall enough for the lyrics: the card grows and shrinks inside it.
+                    implicitHeight: musicPlayerCard.fullHeight
                     color: "transparent"
                     grabFocus: false
 
@@ -1843,7 +1844,7 @@ PanelWindow {
                         anchors.top: parent.top
                         anchors.right: parent.right
                         width: musicPopup.lerp(musicPill.width, musicPopup.width)
-                        height: musicPopup.lerp(musicPill.height, musicPopup.height)
+                        height: musicPopup.lerp(musicPill.height, musicPlayerCard.height)
                         // The pill's corners: rounder ones would let the pill's show under the card.
                         radius: musicPill.radius
                         color: "transparent"
