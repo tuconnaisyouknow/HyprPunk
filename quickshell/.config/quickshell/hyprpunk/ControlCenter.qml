@@ -53,10 +53,10 @@ PanelWindow {
     readonly property bool powerProfilesAvailable: isLaptop && powerProfiles.length > 1
     property int brightness: 0
     // Keyboard layout and locale profiles ("fr" or "us"), kept by the hyprpunk scripts.
-    readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk"
+    readonly property string stateDir: Session.stateDir
     property string keyboardLayout: "us"
-    property string localeLanguage: "us"
-    property string localeRegional: "fr"
+    readonly property string localeLanguage: Session.languageProfile
+    readonly property string localeRegional: Session.regionalProfile
     readonly property var localeProfiles: [{
         "id": "fr",
         "name": "French",
@@ -676,7 +676,7 @@ PanelWindow {
                                     TapHandler {
                                         onTapped: {
                                             controlCenter.close();
-                                            Quickshell.execDetached(["mate-volume-control"]);
+                                            Session.launch(["mate-volume-control"]);
                                         }
                                     }
 
@@ -1094,7 +1094,7 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.topMargin: 6
                         wrapMode: Text.WordWrap
-                        text: "Restart open applications to apply it."
+                        text: "New apps use it right away. Log out and back in to apply it to the apps already open."
                         color: "#7f849c"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
@@ -1260,22 +1260,6 @@ PanelWindow {
         printErrors: false
         onFileChanged: reload()
         onLoaded: controlCenter.keyboardLayout = text().trim() || "us"
-    }
-
-    FileView {
-        path: controlCenter.stateDir + "/locale-language"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: controlCenter.localeLanguage = text().trim() || "us"
-    }
-
-    FileView {
-        path: controlCenter.stateDir + "/locale-regional"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: controlCenter.localeRegional = text().trim() || "fr"
     }
 
     FileView {

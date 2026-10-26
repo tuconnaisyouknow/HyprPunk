@@ -162,21 +162,15 @@ IslandPanel {
     function launch(entry, action) {
         remember(entry);
         close();
-        if (entry.runInTerminal)
-            Quickshell.execDetached({
-                "command": [terminal, "-e"].concat(action ? action.command : entry.command),
-                "workingDirectory": entry.workingDirectory || Quickshell.env("HOME")
-            });
-        else if (action)
-            action.execute();
-        else
-            entry.execute();
+        // Through Hyprland, so the app gets the current locale (Session).
+        const command = action ? action.command : entry.command;
+        Session.launch(entry.runInTerminal ? [terminal, "-e"].concat(command) : command, entry.workingDirectory || Quickshell.env("HOME"));
     }
 
     function searchWeb(text) {
         close();
         if (text !== "")
-            Quickshell.execDetached(["xdg-open", searchUrl + encodeURIComponent(text)]);
+            Session.launch(["xdg-open", searchUrl + encodeURIComponent(text)]);
 
     }
 
@@ -186,7 +180,7 @@ IslandPanel {
             return ;
 
         // Not kitty --hold: it opens a shell afterwards, whose fastfetch hides the output.
-        Quickshell.execDetached(inTerminal ? [terminal, "-e", "sh", "-c", holdScript, "sh", command] : ["sh", "-c", command]);
+        Session.launch(inTerminal ? [terminal, "-e", "sh", "-c", holdScript, "sh", command] : ["sh", "-c", command]);
     }
 
     function activate(shift) {
