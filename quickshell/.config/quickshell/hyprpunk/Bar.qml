@@ -23,6 +23,7 @@ PanelWindow {
     property color mauve: "#cba6f7"
     property color red: "#f38ba8"
     property color green: "#a6e3a1"
+    property color peach: "#fab387"
     readonly property var workspaceIcons: ["", "", "", "", "", "", "", "", "", "", ""]
     readonly property var battery: UPower.displayDevice
     readonly property bool hasBattery: battery.ready && battery.isLaptopBattery && battery.isPresent
@@ -761,6 +762,16 @@ PanelWindow {
 
         }
 
+        // The privacy dot while the calendar covers the island: right of its card, at
+        // the island's height, following its edge as it grows.
+        PrivacyDot {
+            x: centerGroup.x + clockPill.x + clockPill.width / 2 + calendarCard.width / 2 + 8
+            y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
+            camera: bar.shellState.cameraInUse
+            opacity: camera || bar.shellState.microphoneInUse ? calendarCard.openness : 0
+            visible: bar.calendarPopupVisible && opacity > 0
+        }
+
         RowLayout {
             id: centerGroup
 
@@ -829,6 +840,59 @@ PanelWindow {
                         id: clock
 
                         precision: SystemClock.Minutes
+                    }
+
+                }
+
+                // Privacy: a dot after the time while an app records you, green for the
+                // camera (over the microphone), orange for the microphone alone.
+                Item {
+                    readonly property bool shown: !bar.statusOsdVisible && (bar.shellState.cameraInUse || bar.shellState.microphoneInUse)
+
+                    visible: Layout.preferredWidth > 0
+                    Layout.preferredWidth: shown ? 8 : 0
+                    Layout.leftMargin: shown ? -2 : -clockPill.spacing
+                    implicitHeight: 8
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 8
+                        height: 8
+                        radius: 4
+                        scale: parent.shown ? 1 : 0
+                        color: bar.shellState.cameraInUse ? bar.green : bar.peach
+
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 260
+                                easing.type: Easing.OutBack
+                            }
+
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+
+                        }
+
+                    }
+
+                    Behavior on Layout.preferredWidth {
+                        NumberAnimation {
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                    Behavior on Layout.leftMargin {
+                        NumberAnimation {
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
                     }
 
                 }
@@ -2309,6 +2373,12 @@ PanelWindow {
 
                 }
 
+                // Caffeine on: the computer stays awake.
+                Label {
+                    visible: bar.shellState.caffeine
+                    text: "󰅶"
+                }
+
                 IconText {
                     visible: bar.audioSink !== null
                     icon: bar.volumeIcon()
@@ -2799,6 +2869,12 @@ PanelWindow {
         }
 
         target: UPower
+    }
+
+    // Caffeine: the bar is always shown, so its inhibitor holds hypridle off.
+    IdleInhibitor {
+        window: bar
+        enabled: bar.shellState.caffeine
     }
 
 }

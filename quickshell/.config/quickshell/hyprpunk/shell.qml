@@ -57,6 +57,21 @@ ShellRoot {
         property bool controlPillHovered: false
         property var controlPillScreen: null
         property bool doNotDisturb: false
+        // Privacy dot: an app records the camera or the microphone.
+        readonly property bool cameraInUse: privacyService.cameraInUse
+        readonly property bool microphoneInUse: privacyService.microphoneInUse
+        // Caffeine: keeps the computer awake (no dimming, locking or sleep) for
+        // caffeineMinutes, until caffeineUntil (ms since epoch), or until turned off
+        // with 0 minutes.
+        property bool caffeine: false
+        property int caffeineMinutes: 0
+        property real caffeineUntil: 0
+
+        function setCaffeine(minutes) {
+            caffeineMinutes = minutes;
+            caffeineUntil = minutes > 0 ? Date.now() + minutes * 60000 : 0;
+            caffeine = true;
+        }
         // Until these times (ms since epoch), the next keyboard backlight or
         // screen brightness change gets no OSD. Set through IPC by hypridle.
         property real keyboardOsdMutedUntil: 0
@@ -478,6 +493,23 @@ ShellRoot {
     NotificationPopups {
         shellState: globalState
         notificationServer: notificationService
+    }
+
+    // Turns caffeine off once its time is up.
+    Timer {
+        running: globalState.caffeine && globalState.caffeineUntil > 0
+        interval: 10000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            if (Date.now() >= globalState.caffeineUntil)
+                globalState.caffeine = false;
+
+        }
+    }
+
+    Privacy {
+        id: privacyService
     }
 
     AirPods {
