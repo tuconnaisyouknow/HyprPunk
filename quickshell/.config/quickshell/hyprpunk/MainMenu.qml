@@ -26,6 +26,10 @@ IslandPanel {
         "name": "Emoji",
         "panel": "emoji"
     }, {
+        "icon": "󰹑",
+        "name": "Capture",
+        "panel": "screenshot"
+    }, {
         "icon": "󰌌",
         "name": "Keybindings",
         "panel": "keybindings"

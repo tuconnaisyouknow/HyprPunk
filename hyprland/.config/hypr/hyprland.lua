@@ -77,9 +77,6 @@ hl.window_rule({ match = { class = "org.kde.dolphin" }, workspace = "6" })      
 -- Keep it out of the dwindle tree so opening it does not split Brave in half.
 hl.window_rule({ match = { class = "brave-nngceckbapebfimnlniiiahkandclblb-Default" }, float = true })
 
--- Making satty windows float
-hl.window_rule({ match = { class = "com.gabm.satty" }, float = true })
-
 -- Centering floating windows
 hl.window_rule({ match = { float = true }, center = true }) -- Center all floating windows
 
@@ -105,6 +102,8 @@ hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, 
 hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, ignore_alpha = 0.5 })
 -- Island panels (session menu, wallpaper picker) animate themselves out of the bar island
 hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = 0.5, no_anim = true })
+-- The screenshot's region is chosen over the frozen screen: shown at once, no fade
+hl.layer_rule({ match = { namespace = "hyprpunk-screenshot" }, no_anim = true })
 -- The bar: its pills are opaque, only the island as an OSD and the popups (the player) show the blur
 hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
 

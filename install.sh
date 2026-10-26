@@ -310,8 +310,8 @@ install_packages() {
     gnome-keyring seahorse hyprpolkitagent \
     \
     hyprland awww hyprlock hypridle \
-    hyprshot satty hyprcursor hyprpicker \
-    quickshell cliphist wl-clipboard \
+    grim wf-recorder hyprcursor hyprpicker \
+    quickshell cliphist wl-clipboard libnotify \
     \
     qt5ct-kde qt5-wayland qt5-tools \
     qt5-quickcontrols2 layer-shell-qt5 \
@@ -334,7 +334,7 @@ install_packages() {
     ttf-apple-emoji \
     \
     dolphin ffmpegthumbs kdegraphics-thumbnailers ark loupe papers \
-    mpv celluloid mate-media \
+    ffmpeg mpv celluloid mate-media \
     libreoffice-fresh brave-bin \
     spotify-launcher obsidian discord \
     \

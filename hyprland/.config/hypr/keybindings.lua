@@ -74,12 +74,16 @@ bind(mainMod .. " + semicolon", hl.dsp.exec_cmd("qs -c hyprpunk ipc call emoji t
 bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd("qs -c hyprpunk ipc call keybindings toggle"),
   "Show all keybindings")
 
-bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region -o ~/Pictures/Screenshots"),
-  "Capture a screen region")
-bind(mainMod .. " + CTRL + S", hl.dsp.exec_cmd("hyprshot -m region --raw | satty --filename -"),
+bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("qs -c hyprpunk ipc call screenshot region"),
+  "Capture a screen region or a window")
+bind(mainMod .. " + CTRL + S", hl.dsp.exec_cmd("qs -c hyprpunk ipc call screenshot annotate"),
   "Capture and annotate a screen region")
-bind("Print", hl.dsp.exec_cmd("hyprshot -m active -m output -o ~/Pictures/Screenshots"),
+bind("Print", hl.dsp.exec_cmd("qs -c hyprpunk ipc call screenshot screen"),
   "Capture the active monitor")
+bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("qs -c hyprpunk ipc call screenshot recordRegion"),
+  "Record a screen region or a window, or stop recording")
+bind("SHIFT + Print", hl.dsp.exec_cmd("qs -c hyprpunk ipc call screenshot record"),
+  "Record the active monitor, or stop recording")
 bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), "Pick a color from the screen")
 bind(mainMod .. " + N", hl.dsp.exec_cmd("qs -c hyprpunk ipc call notifications toggle"),
   "Toggle the notification center")
