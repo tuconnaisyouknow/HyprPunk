@@ -121,6 +121,8 @@ IslandPanel {
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 15
             clip: true
+            cursorDelegate: Item {
+            }
             onTextChanged: panel.query = text
             Keys.onPressed: (event) => {
                 const move = panel.controlMove(event);
@@ -155,6 +157,10 @@ IslandPanel {
                 color: "#7f849c"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: parent.font.pixelSize
+            }
+
+            BlockCursor {
+                input: searchInput
             }
 
         }

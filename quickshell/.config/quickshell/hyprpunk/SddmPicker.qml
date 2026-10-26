@@ -269,8 +269,8 @@ IslandPanel {
             anchors.rightMargin: 16
             anchors.verticalCenter: parent.verticalCenter
             enabled: !picker.applying
-            // Hidden letters and cursor copied from the high-above-the-noise SDDM theme:
-            // spaced filled squares and a blinking mauve block.
+            // Hidden letters copied from the high-above-the-noise SDDM theme: spaced filled
+            // squares, with its blinking block cursor (BlockCursor).
             echoMode: TextInput.Password
             passwordCharacter: "■"
             color: "#cba6f7"
@@ -280,8 +280,6 @@ IslandPanel {
             font.letterSpacing: 3
             clip: true
             cursorDelegate: Item {
-                width: 0
-                height: 0
             }
             onAccepted: {
                 if (text !== "")
@@ -302,39 +300,8 @@ IslandPanel {
                 font.pixelSize: parent.font.pixelSize
             }
 
-            Rectangle {
-                id: blockCursor
-
-                x: passwordInput.cursorRectangle.x
-                y: passwordInput.cursorRectangle.y
-                width: 8
-                height: passwordInput.cursorRectangle.height
-                color: "#cba6f7"
-                // Only once typing has started, the placeholder stays clear.
-                visible: passwordInput.activeFocus && passwordInput.text !== ""
-
-                SequentialAnimation {
-                    loops: Animation.Infinite
-                    running: blockCursor.visible
-
-                    NumberAnimation {
-                        target: blockCursor
-                        property: "opacity"
-                        from: 1
-                        to: 0.1
-                        duration: 400
-                    }
-
-                    NumberAnimation {
-                        target: blockCursor
-                        property: "opacity"
-                        from: 0.1
-                        to: 1
-                        duration: 400
-                    }
-
-                }
-
+            BlockCursor {
+                input: passwordInput
             }
 
         }

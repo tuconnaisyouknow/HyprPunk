@@ -770,11 +770,17 @@ PanelWindow {
                                     anchors.leftMargin: 12
                                     anchors.rightMargin: 12
                                     verticalAlignment: TextInput.AlignVCenter
+                                    // The sudo field's hidden letters and cursor (SddmPicker).
                                     echoMode: TextInput.Password
+                                    passwordCharacter: "■"
                                     color: "#cba6f7"
-                                    selectionColor: "#cba6f7"
+                                    selectionColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.35)
                                     font.family: "JetBrainsMono Nerd Font"
                                     font.pixelSize: 14
+                                    font.letterSpacing: 3
+                                    clip: true
+                                    cursorDelegate: Item {
+                                    }
                                     Keys.onEscapePressed: controlCenter.passwordNetwork = null
                                     onAccepted: {
                                         if (controlCenter.passwordNetwork !== null && text !== "") {
@@ -789,7 +795,12 @@ PanelWindow {
                                         visible: parent.text === ""
                                         text: "Password, then Enter"
                                         color: "#6c7086"
-                                        font: parent.font
+                                        font.family: parent.font.family
+                                        font.pixelSize: parent.font.pixelSize
+                                    }
+
+                                    BlockCursor {
+                                        input: passwordInput
                                     }
 
                                 }
