@@ -52,8 +52,11 @@ PopupWindow {
     property bool hasChecks: false
     property bool hasIcons: false
     property real widestRow: 0
+    // Summed here rather than read from the column, which only lays its rows out when the
+    // window draws a frame: an empty menu draws nothing, so it would never grow.
+    property real rowsHeight: 0
     readonly property real maxHeight: (screen ? screen.height : 1080) - 48
-    readonly property bool overflows: entryColumn.implicitHeight + padding * 2 > maxHeight
+    readonly property bool overflows: rowsHeight + padding * 2 > maxHeight
 
     // Closes the whole menu, from the root.
     signal dismissed()
@@ -70,6 +73,7 @@ PopupWindow {
 
     function measure() {
         let widest = 0;
+        let height = 0;
         let checks = false;
         let icons = false;
         for (let i = 0; i < rowRepeater.count; i++) {
@@ -78,6 +82,7 @@ PopupWindow {
                 continue;
 
             widest = Math.max(widest, row.naturalWidth);
+            height += row.height;
             const entry = row.modelData;
             if (entry.isSeparator)
                 continue;
@@ -86,6 +91,7 @@ PopupWindow {
             icons = icons || entry.icon !== "";
         }
         widestRow = widest;
+        rowsHeight = height;
         hasChecks = checks;
         hasIcons = icons;
     }
@@ -170,7 +176,7 @@ PopupWindow {
     }
 
     implicitWidth: Math.ceil(Math.max(180, Math.min(380, widestRow))) + padding * 2
-    implicitHeight: Math.min(entryColumn.implicitHeight + padding * 2, maxHeight)
+    implicitHeight: Math.min(rowsHeight + padding * 2, maxHeight)
     color: "transparent"
     grabFocus: true
     onCurrentIndexChanged: reveal(currentIndex)
@@ -279,7 +285,7 @@ PopupWindow {
             interactive: menu.overflows
             boundsBehavior: Flickable.StopAtBounds
             contentWidth: width
-            contentHeight: entryColumn.implicitHeight + menu.padding * 2
+            contentHeight: menu.rowsHeight + menu.padding * 2
 
             Column {
                 id: entryColumn
