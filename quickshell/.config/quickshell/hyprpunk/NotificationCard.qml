@@ -49,6 +49,23 @@ Rectangle {
     property bool hasDefaultAction: false
     property var buttonActions: []
 
+    // Bodies may carry the spec's markup (hyprshot sends <i>...</i> even when
+    // the server does not advertise it): keep bold, italic, underline and line
+    // breaks, drop every other tag (links, and images that would be fetched),
+    // and escape the stray angle brackets of plain-text bodies.
+    function styledBody(text) {
+        return text.replace(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>|[<>]/g, (match, slash, tag) => {
+            if (!tag)
+                return match === "<" ? "&lt;" : "&gt;";
+
+            const name = tag.toLowerCase();
+            if (name === "br")
+                return "<br>";
+
+            return ["b", "i", "u"].includes(name) ? "<" + slash + name + ">" : "";
+        }).replace(/\n/g, "<br>");
+    }
+
     function invokeAction(identifier) {
         if (!alive)
             return ;
@@ -232,8 +249,8 @@ Rectangle {
             Text {
                 visible: text !== ""
                 Layout.fillWidth: true
-                text: card.body
-                textFormat: Text.PlainText
+                text: card.styledBody(card.body)
+                textFormat: Text.StyledText
                 color: card.critical ? "#f38ba8" : "#cba6f7"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 16

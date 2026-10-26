@@ -304,7 +304,7 @@ ShellRoot {
         actionsSupported: true
         actionIconsSupported: true
         bodySupported: true
-        bodyMarkupSupported: false
+        bodyMarkupSupported: true
         imageSupported: true
         persistenceSupported: true
         onNotification: (notification) => {
