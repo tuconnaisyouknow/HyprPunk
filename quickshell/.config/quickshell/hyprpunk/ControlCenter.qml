@@ -1119,7 +1119,8 @@ PanelWindow {
     Timer {
         id: openDelay
 
-        interval: 120
+        // The bar's pills' delay (Bar.hoverOpenDelay).
+        interval: 350
         onTriggered: controlCenter.opened = true
     }
 
