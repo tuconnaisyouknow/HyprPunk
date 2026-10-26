@@ -70,7 +70,6 @@ hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })              
 hl.window_rule({ match = { class = "md.obsidian.Obsidian" }, workspace = "4" }) -- Assign Obsidian to workspace 4
 hl.window_rule({ match = { class = "discord" }, workspace = "5" })              -- Assign Discord to workspace 5
 hl.window_rule({ match = { class = "Element" }, workspace = "5" })              -- Assign Element to workspace 5
-hl.window_rule({ match = { class = "thunar" }, workspace = "6" })               -- Assign Thunar to workspace 6
 hl.window_rule({ match = { class = "org.kde.dolphin" }, workspace = "6" })      -- Assign Dolphin to workspace 6
 
 -- Bitwarden's temporary Brave window is exposed as a separate Chromium app.
