@@ -496,6 +496,32 @@ PanelWindow {
                         adjustment: PopupAdjustment.SlideX
                     }
 
+                    // The anchor is only computed on opening: follow the pill when the
+                    // workspaces before it change width.
+                    Connections {
+                        function onXChanged() {
+                            monitorPopup.anchor.updateAnchor();
+                        }
+
+                        function onYChanged() {
+                            monitorPopup.anchor.updateAnchor();
+                        }
+
+                        target: monitorPill
+                    }
+
+                    Connections {
+                        function onXChanged() {
+                            monitorPopup.anchor.updateAnchor();
+                        }
+
+                        function onYChanged() {
+                            monitorPopup.anchor.updateAnchor();
+                        }
+
+                        target: monitorPill.parent
+                    }
+
                     ClippingRectangle {
                         id: monitorCard
 
@@ -1137,6 +1163,10 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -(bar.implicitHeight - 50) / 2
             spacing: 9
+            // When the control pill changes width, it publishes before the row has moved
+            // back against the right edge: publish again once the row is in place.
+            onXChanged: controlPill.publishGeometry()
+            onYChanged: controlPill.publishGeometry()
 
             Pill {
                 visible: bar.updatesText !== ""
@@ -1616,6 +1646,36 @@ PanelWindow {
                         edges: Edges.Top | Edges.Right
                         gravity: Edges.Bottom | Edges.Left
                         adjustment: PopupAdjustment.SlideX
+                    }
+
+                    // The anchor is only computed on opening: follow the pill when it
+                    // resizes or when the control pill after it changes width.
+                    Connections {
+                        function onXChanged() {
+                            musicPopup.anchor.updateAnchor();
+                        }
+
+                        function onYChanged() {
+                            musicPopup.anchor.updateAnchor();
+                        }
+
+                        function onWidthChanged() {
+                            musicPopup.anchor.updateAnchor();
+                        }
+
+                        target: musicPill
+                    }
+
+                    Connections {
+                        function onXChanged() {
+                            musicPopup.anchor.updateAnchor();
+                        }
+
+                        function onYChanged() {
+                            musicPopup.anchor.updateAnchor();
+                        }
+
+                        target: musicPill.parent
                     }
 
                     ClippingRectangle {
