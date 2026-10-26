@@ -11,11 +11,20 @@ ClippingRectangle {
     readonly property alias hovered: pillHover.hovered
     property int spacing: 10
     property int horizontalPadding: 20
+    // The panels' glass rim, for a pill that turns into a card (the island's OSD).
+    property real glassOpacity: 0
 
     implicitWidth: contentRow.implicitWidth + horizontalPadding
     implicitHeight: 38
     radius: height / 2
     color: "#313244"
+
+    GlassSurface {
+        radius: pill.radius
+        tinted: false
+        opacity: pill.glassOpacity
+        visible: opacity > 0
+    }
 
     HoverHandler {
         id: pillHover
