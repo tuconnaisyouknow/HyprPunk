@@ -2122,7 +2122,7 @@ PanelWindow {
     Process {
         id: resourceProcess
 
-        command: ["sh", "-c", "free -m | awk '/^Mem:/ {printf \"%.1fG\\n\", $3/1024}'; sensors 2>/dev/null | awk '/Package id 0:/ {gsub(/[+°C]/, \"\", $4); printf \"%.0f°C\\n\", $4; found=1; exit} /^Tctl:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} /^Tdie:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} END {if (!found) print \"--°C\"}'; awk '/cpu MHz/ {sum += $4; count++} END {printf \"%.0f MHz\\n\", count ? sum/count : 0}' /proc/cpuinfo; lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n1; head -n1 /proc/stat"]
+        command: ["sh", "-c", "free -m | awk '/^Mem:/ {printf \"%.1fG\\n\", $3/1024}'; sensors 2>/dev/null | awk '/Package id 0:/ {gsub(/[+°C]/, \"\", $4); printf \"%.0f°C\\n\", $4; found=1; exit} /^Tctl:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} /^Tdie:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} END {if (!found) print \"--°C\"}'; awk '/cpu MHz/ {sum += $4; count++} END {printf \"%.0f MHz\\n\", count ? sum/count : 0}' /proc/cpuinfo; awk -F': ' '/^model name/ {print $2; exit}' /proc/cpuinfo; head -n1 /proc/stat"]
         running: true
 
         stdout: StdioCollector {
