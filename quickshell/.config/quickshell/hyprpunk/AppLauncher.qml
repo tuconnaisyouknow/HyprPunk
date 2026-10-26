@@ -349,6 +349,8 @@ IslandPanel {
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 15
             clip: true
+            cursorDelegate: Item {
+            }
             readOnly: launcher.actionsEntry !== null
             onTextChanged: launcher.query = text
             Keys.onPressed: (event) => {
@@ -389,6 +391,10 @@ IslandPanel {
                 color: launcher.actionsEntry ? "#cdd6f4" : "#7f849c"
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: parent.font.pixelSize
+            }
+
+            BlockCursor {
+                input: searchInput
             }
 
         }
