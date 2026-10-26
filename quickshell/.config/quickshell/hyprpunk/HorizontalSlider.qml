@@ -8,6 +8,9 @@ Item {
     property color accent: "#cba6f7"
     property color trackColor: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.12)
     property color iconColor: "#1e1e2e"
+    // The icon as a round button in the fill (the volume's mute): plain glyph with a
+    // glass halo on hover, like the player's controls.
+    property bool iconButton: false
 
     signal valueRequested(real value)
     signal iconClicked()
@@ -33,6 +36,13 @@ Item {
             width: Math.max(parent.height, parent.width * control.value)
             radius: parent.radius
             color: control.accent
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: 140
+                }
+
+            }
 
             Behavior on width {
                 NumberAnimation {
@@ -63,18 +73,59 @@ Item {
 
     }
 
-    Text {
+    Item {
+        id: iconArea
+
         anchors.left: parent.left
-        anchors.leftMargin: 9
+        anchors.leftMargin: 2
         anchors.verticalCenter: parent.verticalCenter
-        text: control.icon
-        color: control.iconColor
-        font.family: "JetBrainsMono Nerd Font"
-        font.pixelSize: 16
-        font.weight: Font.Bold
+        width: control.height - 4
+        height: width
+
+        GlassSurface {
+            radius: width / 2
+            hovered: iconTap.pressed
+            opacity: control.iconButton && iconHover.hovered ? 1 : 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 120
+                }
+
+            }
+
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: control.icon
+            color: control.iconColor
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 16
+            font.weight: Font.Bold
+        }
+
+        HoverHandler {
+            id: iconHover
+
+            enabled: control.iconButton
+            cursorShape: Qt.PointingHandCursor
+        }
 
         TapHandler {
-            onTapped: control.iconClicked()
+            id: iconTap
+
+            enabled: control.iconButton
+            onTapped: {
+                iconBounce.restart();
+                control.iconClicked();
+            }
+        }
+
+        BounceAnimation {
+            id: iconBounce
+
+            target: iconArea
         }
 
     }

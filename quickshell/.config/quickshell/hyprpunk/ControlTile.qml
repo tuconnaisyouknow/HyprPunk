@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-Item {
+// A control center block with an icon toggle: bounces when toggled.
+ControlBlock {
     id: tile
 
     required property string icon
@@ -13,10 +14,17 @@ Item {
     signal toggled()
     signal expandRequested()
 
-    implicitHeight: 52
+    function toggle() {
+        bounce();
+        toggled();
+    }
+
+    implicitHeight: 60
 
     RowLayout {
         anchors.fill: parent
+        anchors.leftMargin: 10
+        anchors.rightMargin: 8
         spacing: 10
 
         Rectangle {
@@ -56,7 +64,7 @@ Item {
             }
 
             TapHandler {
-                onTapped: tile.toggled()
+                onTapped: tile.toggle()
             }
 
             Behavior on color {
@@ -105,7 +113,7 @@ Item {
             }
 
             TapHandler {
-                onTapped: tile.expandable ? tile.expandRequested() : tile.toggled()
+                onTapped: tile.expandable ? tile.expandRequested() : tile.toggle()
             }
 
         }

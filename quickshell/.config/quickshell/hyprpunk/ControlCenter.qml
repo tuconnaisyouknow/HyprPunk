@@ -26,6 +26,11 @@ PanelWindow {
     // Geometry of that pill (screen coordinates), published by the bar.
     readonly property var pill: shellState.controlPill
     property string page: "main"
+    // Page transition, iOS navigation-like: the sub-page slides in from the right over
+    // the main page, which backs off to the left; the other way round going back.
+    property string shownPage: "main"
+    property string previousPage: "main"
+    property real pageProgress: 1
     property var passwordNetwork: null
     property string powerProfile: "balanced"
     property var powerProfiles: []
@@ -99,6 +104,30 @@ PanelWindow {
 
     function lerp(from, to) {
         return from + (to - from) * progress;
+    }
+
+    function pageVisible(name) {
+        return page === name || (pageProgress < 1 && previousPage === name);
+    }
+
+    function pageX(name) {
+        const direction = page === "main" ? -1 : 1;
+        const width = panelWidth - 28;
+        // pageProgress runs linearly: the slide eases out (cubic), the fades below don't.
+        const slide = 1 - Math.pow(1 - pageProgress, 3);
+        if (name === page)
+            return (1 - slide) * direction * width * 0.3;
+
+        return -slide * direction * width * 0.15;
+    }
+
+    function pageOpacity(name) {
+        // The page left behind is almost gone before the new one shows, so the two
+        // never blur together.
+        if (name === page)
+            return Math.max(0, Math.min(1, (pageProgress - 0.2) / 0.6));
+
+        return Math.max(0, 1 - pageProgress / 0.35);
     }
 
     function close() {
@@ -249,6 +278,8 @@ PanelWindow {
         } else {
             openedByKeybind = false;
             page = "main";
+            // Folds back without the page transition.
+            pageAnimation.complete();
             passwordNetwork = null;
             // Set after the page reset, which would otherwise retain the old height.
             retainedHeight = 0;
@@ -257,6 +288,9 @@ PanelWindow {
     onPageChanged: {
         // panel.height still holds the previous page's height at this point.
         retainedHeight = Math.max(retainedHeight, panel.height);
+        previousPage = shownPage;
+        shownPage = page;
+        pageAnimation.restart();
     }
     onPasswordNetworkChanged: {
         if (passwordNetwork === null && !pillHovered && !panelHovered)
@@ -409,62 +443,51 @@ PanelWindow {
                     id: mainPage
 
                     width: parent.width
-                    visible: controlCenter.page === "main"
+                    x: controlCenter.pageX("main")
+                    visible: controlCenter.pageVisible("main")
+                    enabled: controlCenter.page === "main"
+                    opacity: controlCenter.pageOpacity("main")
                     spacing: 12
 
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 12
 
-                        Rectangle {
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: connectivity.implicitHeight + 20
-                            radius: 18
-                            color: "transparent"
+                            Layout.alignment: Qt.AlignTop
+                            spacing: 12
 
-                            GlassSurface {
-                                radius: parent.radius
+                            ControlTile {
+                                Layout.fillWidth: true
+                                icon: Networking.wifiEnabled ? (controlCenter.activeWifi !== null ? controlCenter.wifiIcon(controlCenter.activeWifi.signalStrength) : "󰤯") : "󰤭"
+                                title: "Wi-Fi"
+                                subtitle: controlCenter.wifiSubtitle()
+                                active: Networking.wifiEnabled
+                                expandable: controlCenter.wifiDevice !== null
+                                onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+                                onExpandRequested: controlCenter.page = "wifi"
                             }
 
-                            ColumnLayout {
-                                id: connectivity
+                            ControlTile {
+                                Layout.fillWidth: true
+                                icon: controlCenter.bluetoothEnabled ? (controlCenter.connectedBluetooth.length > 0 ? "󰂱" : "󰂯") : "󰂲"
+                                title: "Bluetooth"
+                                subtitle: controlCenter.bluetoothSubtitle()
+                                active: controlCenter.bluetoothEnabled
+                                expandable: controlCenter.adapter !== null
+                                onToggled: controlCenter.toggleBluetooth()
+                                onExpandRequested: controlCenter.page = "bluetooth"
+                            }
 
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                spacing: 6
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    icon: Networking.wifiEnabled ? (controlCenter.activeWifi !== null ? controlCenter.wifiIcon(controlCenter.activeWifi.signalStrength) : "󰤯") : "󰤭"
-                                    title: "Wi-Fi"
-                                    subtitle: controlCenter.wifiSubtitle()
-                                    active: Networking.wifiEnabled
-                                    expandable: controlCenter.wifiDevice !== null
-                                    onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-                                    onExpandRequested: controlCenter.page = "wifi"
-                                }
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    icon: controlCenter.bluetoothEnabled ? (controlCenter.connectedBluetooth.length > 0 ? "󰂱" : "󰂯") : "󰂲"
-                                    title: "Bluetooth"
-                                    subtitle: controlCenter.bluetoothSubtitle()
-                                    active: controlCenter.bluetoothEnabled
-                                    expandable: controlCenter.adapter !== null
-                                    onToggled: controlCenter.toggleBluetooth()
-                                    onExpandRequested: controlCenter.page = "bluetooth"
-                                }
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    icon: "󰗊"
-                                    title: "Locale"
-                                    subtitle: controlCenter.localeLanguage.toUpperCase() + " · " + controlCenter.localeRegional.toUpperCase() + " formats"
-                                    expandable: true
-                                    onToggled: controlCenter.page = "locale"
-                                    onExpandRequested: controlCenter.page = "locale"
-                                }
-
+                            ControlTile {
+                                Layout.fillWidth: true
+                                icon: "󰗊"
+                                title: "Locale"
+                                subtitle: controlCenter.localeLanguage.toUpperCase() + " · " + controlCenter.localeRegional.toUpperCase() + " formats"
+                                expandable: true
+                                onToggled: controlCenter.page = "locale"
+                                onExpandRequested: controlCenter.page = "locale"
                             }
 
                         }
@@ -475,89 +498,44 @@ PanelWindow {
                             Layout.fillHeight: true
                             spacing: 12
 
-                            Rectangle {
+                            ControlTile {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                radius: 18
-                                color: "transparent"
-
-                                GlassSurface {
-                                    radius: parent.radius
-                                }
-
-                                ControlTile {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 10
-                                    anchors.rightMargin: 8
-                                    icon: "󰂛"
-                                    title: "Focus"
-                                    subtitle: controlCenter.shellState.doNotDisturb ? "On" : "Off"
-                                    active: controlCenter.shellState.doNotDisturb
-                                    onToggled: controlCenter.shellState.doNotDisturb = !controlCenter.shellState.doNotDisturb
-                                }
-
+                                icon: "󰂛"
+                                title: "Focus"
+                                subtitle: controlCenter.shellState.doNotDisturb ? "On" : "Off"
+                                active: controlCenter.shellState.doNotDisturb
+                                onToggled: controlCenter.shellState.doNotDisturb = !controlCenter.shellState.doNotDisturb
                             }
 
-                            Rectangle {
+                            ControlTile {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 visible: controlCenter.powerProfilesAvailable
-                                radius: 18
-                                color: "transparent"
-
-                                GlassSurface {
-                                    radius: parent.radius
-                                }
-
-                                ControlTile {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 10
-                                    anchors.rightMargin: 8
-                                    icon: controlCenter.powerProfileIcon()
-                                    title: "Power"
-                                    subtitle: controlCenter.powerProfile === "power-saver" ? "Saver" : controlCenter.powerProfile === "performance" ? "Performance" : "Balanced"
-                                    active: controlCenter.powerProfile !== "balanced"
-                                    onToggled: controlCenter.cyclePowerProfile()
-                                }
-
+                                icon: controlCenter.powerProfileIcon()
+                                title: "Power"
+                                subtitle: controlCenter.powerProfile === "power-saver" ? "Saver" : controlCenter.powerProfile === "performance" ? "Performance" : "Balanced"
+                                active: controlCenter.powerProfile !== "balanced"
+                                onToggled: controlCenter.cyclePowerProfile()
                             }
 
-                            Rectangle {
+                            // A click switches between the AZERTY and QWERTY profiles.
+                            ControlTile {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                radius: 18
-                                color: "transparent"
-
-                                GlassSurface {
-                                    radius: parent.radius
-                                }
-
-                                // A click switches between the AZERTY and QWERTY profiles.
-                                ControlTile {
-                                    anchors.fill: parent
-                                    anchors.leftMargin: 10
-                                    anchors.rightMargin: 8
-                                    icon: "󰌌"
-                                    title: "Keyboard"
-                                    subtitle: controlCenter.keyboardLayout === "fr" ? "FR AZERTY" : "US QWERTY"
-                                    onToggled: Quickshell.execDetached([Quickshell.env("HOME") + "/Scripts/keyboard-layoutctl.sh", "set", controlCenter.keyboardLayout === "fr" ? "us" : "fr"])
-                                }
-
+                                icon: "󰌌"
+                                title: "Keyboard"
+                                subtitle: controlCenter.keyboardLayout === "fr" ? "FR AZERTY" : "US QWERTY"
+                                onToggled: Quickshell.execDetached([Quickshell.env("HOME") + "/Scripts/keyboard-layoutctl.sh", "set", controlCenter.keyboardLayout === "fr" ? "us" : "fr"])
                             }
 
                         }
 
                     }
 
-                    Rectangle {
+                    ControlBlock {
                         Layout.fillWidth: true
                         implicitHeight: brightnessColumn.implicitHeight + 24
-                        radius: 18
-                        color: "transparent"
-
-                        GlassSurface {
-                            radius: parent.radius
-                        }
 
                         ColumnLayout {
                             id: brightnessColumn
@@ -590,15 +568,9 @@ PanelWindow {
 
                     }
 
-                    Rectangle {
+                    ControlBlock {
                         Layout.fillWidth: true
                         implicitHeight: soundColumn.implicitHeight + 24
-                        radius: 18
-                        color: "transparent"
-
-                        GlassSurface {
-                            radius: parent.radius
-                        }
 
                         ColumnLayout {
                             id: soundColumn
@@ -646,7 +618,10 @@ PanelWindow {
 
                             HorizontalSlider {
                                 Layout.fillWidth: true
-                                value: controlCenter.muted ? 0 : controlCenter.volume / 100
+                                // Muting keeps the volume: the fill stays at its level, in lavender.
+                                value: controlCenter.volume / 100
+                                accent: controlCenter.muted ? "#b4befe" : "#cba6f7"
+                                iconButton: true
                                 icon: controlCenter.volumeIcon()
                                 onValueRequested: (value) => {
                                     if (controlCenter.audio !== null) {
@@ -670,7 +645,10 @@ PanelWindow {
                     id: wifiPage
 
                     width: parent.width
-                    visible: controlCenter.page === "wifi"
+                    x: controlCenter.pageX("wifi")
+                    visible: controlCenter.pageVisible("wifi")
+                    enabled: controlCenter.page === "wifi"
+                    opacity: controlCenter.pageOpacity("wifi")
                     spacing: 12
 
                     PageHeader {
@@ -699,7 +677,8 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.min(contentHeight, 340)
                         visible: controlCenter.wifiNetworks.length > 0
-                        clip: true
+                        // Only once it scrolls: the hovered row grows past the sides.
+                        clip: contentHeight > height
                         spacing: 4
                         model: controlCenter.wifiNetworks
 
@@ -728,16 +707,10 @@ PanelWindow {
 
                     }
 
-                    Rectangle {
+                    ControlBlock {
                         Layout.fillWidth: true
                         implicitHeight: passwordColumn.implicitHeight + 24
                         visible: controlCenter.passwordNetwork !== null
-                        radius: 18
-                        color: "transparent"
-
-                        GlassSurface {
-                            radius: parent.radius
-                        }
 
                         ColumnLayout {
                             id: passwordColumn
@@ -817,7 +790,10 @@ PanelWindow {
                     id: bluetoothPage
 
                     width: parent.width
-                    visible: controlCenter.page === "bluetooth"
+                    x: controlCenter.pageX("bluetooth")
+                    visible: controlCenter.pageVisible("bluetooth")
+                    enabled: controlCenter.page === "bluetooth"
+                    opacity: controlCenter.pageOpacity("bluetooth")
                     spacing: 12
 
                     PageHeader {
@@ -846,7 +822,8 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.min(contentHeight, 340)
                         visible: controlCenter.bluetoothDevices.length > 0
-                        clip: true
+                        // Only once it scrolls: the hovered row grows past the sides.
+                        clip: contentHeight > height
                         spacing: 4
                         model: controlCenter.bluetoothDevices
 
@@ -884,7 +861,10 @@ PanelWindow {
                     id: localePage
 
                     width: parent.width
-                    visible: controlCenter.page === "locale"
+                    x: controlCenter.pageX("locale")
+                    visible: controlCenter.pageVisible("locale")
+                    enabled: controlCenter.page === "locale"
+                    opacity: controlCenter.pageOpacity("locale")
                     spacing: 6
 
                     PageHeader {
@@ -998,6 +978,16 @@ PanelWindow {
             easing.type: Easing.OutCubic
         }
 
+    }
+
+    NumberAnimation {
+        id: pageAnimation
+
+        target: controlCenter
+        property: "pageProgress"
+        from: 0
+        to: 1
+        duration: 320
     }
 
     Binding {

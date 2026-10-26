@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-Rectangle {
+ControlBlock {
     id: row
 
     required property string icon
@@ -14,12 +14,6 @@ Rectangle {
 
     implicitHeight: 48
     radius: 14
-    color: "transparent"
-
-    GlassSurface {
-        radius: row.radius
-        hovered: rowHover.hovered
-    }
 
     RowLayout {
         anchors.fill: parent
@@ -71,13 +65,14 @@ Rectangle {
     }
 
     HoverHandler {
-        id: rowHover
-
         cursorShape: Qt.PointingHandCursor
     }
 
     TapHandler {
-        onTapped: row.clicked()
+        onTapped: {
+            row.bounce();
+            row.clicked();
+        }
     }
 
 }
