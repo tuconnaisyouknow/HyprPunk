@@ -89,26 +89,35 @@ def lookup(artist, title, album, seconds):
     # Spotify lists every artist ("A, B"): lrclib often has only the first.
     first_artist = re.split(r",\s*|\s+&\s+", artist)[0] if artist else ""
     song = FEATURING.sub("", SUFFIX.sub("", title)).strip() or title
-    searches = [{"track_name": title, "artist_name": artist}]
-    if song != title or first_artist != artist:
-        searches.append({"track_name": song, "artist_name": first_artist})
-    searches.append({"q": f"{first_artist} {song}".strip()})
 
-    def fits(record):
-        if not has_lyrics(record):
-            return False
-        if seconds > 0 and abs((record.get("duration") or 0) - seconds) > LENGTH_TOLERANCE:
-            return False
+    def close_in_length(record, tolerance=LENGTH_TOLERANCE):
+        return seconds <= 0 or abs((record.get("duration") or 0) - seconds) <= tolerance
+
+    def by_artist(record):
         # A free search matches any word: the artist must be the one playing.
         singer = folded(record.get("artistName") or "")
         wanted = folded(first_artist)
-        return not wanted or wanted in singer or singer in folded(artist)
+        return close_in_length(record) and (not wanted or wanted in singer or singer in folded(artist))
+
+    def renamed(record):
+        # The artist may go by another name there ("tha Supreme", now "thasup"):
+        # the same song name, and the same album or nearly the same length.
+        if folded(record.get("trackName") or "") != folded(song):
+            return False
+        same_album = bool(album) and folded(record.get("albumName") or "") == folded(album)
+        return close_in_length(record) and (same_album or close_in_length(record, 2))
+
+    searches = [({"track_name": title, "artist_name": artist}, by_artist)]
+    if song != title or first_artist != artist:
+        searches.append(({"track_name": song, "artist_name": first_artist}, by_artist))
+    searches.append(({"q": f"{first_artist} {song}".strip()}, by_artist))
+    searches.append(({"track_name": song}, renamed))
 
     found = []
-    for params in searches:
+    for params, fits in searches:
         params = {key: value for key, value in params.items() if value}
         try:
-            found += [record for record in ask("search", params) or [] if fits(record)]
+            found += [record for record in ask("search", params) or [] if has_lyrics(record) and fits(record)]
         except Unreachable:
             unreachable = True
             continue

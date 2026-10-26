@@ -5,12 +5,12 @@ import Quickshell
 import Quickshell.Io
 
 // Lyrics of the playing track, looked up on lrclib.net by ~/Scripts/lyrics-lookup.py
-// (which caches them). Off until switched on from the media card: every lookup tells
-// lrclib what is playing.
+// (which caches them). On unless switched off with the media card's button, a choice
+// kept in the state directory: every lookup tells lrclib what is playing.
 Singleton {
     id: lyrics
 
-    property bool enabled: false
+    property bool enabled: true
     // The track request() was last given, "artist\ntitle\nalbum\nseconds".
     property string track: ""
     // The track the lines belong to, once lrclib answered for it.
@@ -128,10 +128,12 @@ Singleton {
         id: stateFile
 
         path: Session.stateDir + "/lyrics-enabled"
+        // Read before the first lookup, so a switched-off choice holds from the start.
+        blockLoading: true
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
-        onLoaded: lyrics.enabled = text().trim() === "on"
+        onLoaded: lyrics.enabled = text().trim() !== "off"
     }
 
 }

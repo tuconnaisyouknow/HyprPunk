@@ -6,7 +6,7 @@ import Quickshell.Widgets
 
 // Now-playing card in the style of Apple's player: artwork, title and artist on
 // top, a scrubbable progress bar with times, then the transport controls, and the
-// lyrics under them once switched on with the microphone button by the equalizer.
+// lyrics under them, which the microphone button by the equalizer switches off.
 Rectangle {
     id: card
 
@@ -42,6 +42,8 @@ Rectangle {
     readonly property int lyricsHeight: 250
     readonly property int fullHeight: playerHeight + lyricsHeight
     readonly property bool lyricsShown: Lyrics.enabled && player !== null
+    // The card only grows once there are lines to show, not while looking or for nothing.
+    readonly property bool lyricsFound: lyricsShown && Lyrics.answeredTrack === Lyrics.track && Lyrics.lines.length > 0
     // The line being sung, a moment early so it does not read as late.
     readonly property int lyricsLine: {
         if (!Lyrics.synced || Lyrics.answeredTrack !== Lyrics.track)
@@ -64,7 +66,7 @@ Rectangle {
         return minutes + ":" + (rest < 10 ? "0" : "") + rest;
     }
 
-    implicitHeight: lyricsShown ? fullHeight : playerHeight
+    implicitHeight: lyricsFound ? fullHeight : playerHeight
     radius: 18
     color: "transparent"
 
@@ -504,12 +506,10 @@ Rectangle {
         y: card.playerHeight + 2
         height: card.lyricsHeight - 18
         visible: opacity > 0
-        opacity: card.lyricsShown ? 1 : 0
-        active: card.active && card.lyricsShown
+        opacity: card.lyricsFound ? 1 : 0
+        active: card.active && card.lyricsFound
         lines: Lyrics.answeredTrack === Lyrics.track ? Lyrics.lines : []
         synced: Lyrics.synced
-        instrumental: Lyrics.instrumental && Lyrics.answeredTrack === Lyrics.track
-        status: Lyrics.status
         current: card.lyricsLine
         onSeekRequested: (seconds) => {
             if (card.player !== null && card.player.canSeek)
