@@ -14,6 +14,8 @@ RowLayout {
     spacing: 10
 
     Rectangle {
+        id: backButton
+
         implicitWidth: 34
         implicitHeight: 34
         radius: 17
@@ -39,7 +41,16 @@ RowLayout {
         }
 
         TapHandler {
-            onTapped: header.backRequested()
+            onTapped: {
+                backBounce.restart();
+                header.backRequested();
+            }
+        }
+
+        BounceAnimation {
+            id: backBounce
+
+            target: backButton
         }
 
     }
@@ -54,6 +65,8 @@ RowLayout {
     }
 
     Rectangle {
+        id: toggleSwitch
+
         visible: header.toggleVisible
         implicitWidth: 46
         implicitHeight: 24
@@ -100,7 +113,16 @@ RowLayout {
         }
 
         TapHandler {
-            onTapped: header.toggled()
+            onTapped: {
+                switchBounce.restart();
+                header.toggled();
+            }
+        }
+
+        BounceAnimation {
+            id: switchBounce
+
+            target: toggleSwitch
         }
 
     }

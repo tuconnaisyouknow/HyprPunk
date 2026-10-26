@@ -258,7 +258,8 @@ PanelWindow {
             return ;
         }
         if (volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
-            showStatusOsd(volumeIcon(), audioMuted ? "Muted" : "Volume", !audioMuted, audioMuted ? 0 : audioVolume, 100);
+            // Muting keeps the volume: the gauge stays at its level, in lavender.
+            showStatusOsd(volumeIcon(), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
 
     }
 
@@ -854,7 +855,15 @@ PanelWindow {
                         width: parent.width * Math.min(1, bar.statusOsdLevel / Math.max(1, bar.statusOsdMaxLevel))
                         height: parent.height
                         radius: parent.radius
-                        color: bar.mauve
+                        // Lavender while off: a muted volume keeps its level.
+                        color: bar.statusOsdEnabled ? bar.mauve : bar.lavender
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 140
+                            }
+
+                        }
 
                         Behavior on width {
                             NumberAnimation {
