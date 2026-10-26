@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Shapes
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
@@ -20,8 +19,6 @@ PanelWindow {
     property color overlay1: "#7f849c"
     property color textColor: "#cdd6f4"
     property color mauve: "#cba6f7"
-    property color red: "#f38ba8"
-    property color green: "#a6e3a1"
     // BR/EDR address of the AirPods shown, and why: "lid", "connected", "pairing" or
     // "manual" (ipc).
     property string address: ""
@@ -34,34 +31,7 @@ PanelWindow {
     // Apple's renders ({buds, case} paths), null for models without any or until downloaded.
     readonly property var images: shownAirPods !== null && shownAirPods.images ? shownAirPods.images : null
     // [{level, charging, label}] under the pods: one ring while both pods agree.
-    readonly property var podBatteries: {
-        if (device === null)
-            return [];
-
-        if (headphones)
-            return [device.headset];
-
-        const left = device.left;
-        const right = device.right;
-        if (left.level === null && right.level === null)
-            return [left];
-
-        if (right.level === null || (left.level === right.level && left.charging === right.charging))
-            return [Object.assign({
-                "label": right.level === null ? "L" : ""
-            }, left)];
-
-        if (left.level === null)
-            return [Object.assign({
-                "label": "R"
-            }, right)];
-
-        return [Object.assign({
-            "label": "L"
-        }, left), Object.assign({
-            "label": "R"
-        }, right)];
-    }
+    readonly property var podBatteries: airPods.podBatteries(device)
     // The case is left out while its battery is unknown (pods out of it, lid shut).
     readonly property bool caseShown: !headphones && images !== null && (pairingView || (device !== null && device["case"].level !== null))
     // Both pods worn: the card has done its job.
@@ -442,93 +412,6 @@ PanelWindow {
         NumberAnimation {
             duration: 200
             easing.type: Easing.OutCubic
-        }
-
-    }
-
-    // Battery ring: a bolt inside while charging, else the pod's letter, the level below.
-    component BatteryRing: Column {
-        id: ring
-
-        // {level, charging, label}, level 0-100 or null when unknown.
-        property var battery: null
-        readonly property var level: battery !== null ? battery.level : null
-        readonly property bool charging: battery !== null && battery.charging
-        readonly property bool low: level !== null && level <= 20 && !charging
-
-        spacing: 6
-
-        Item {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 40
-            height: 40
-
-            Shape {
-                anchors.fill: parent
-                preferredRendererType: Shape.CurveRenderer
-
-                ShapePath {
-                    strokeColor: Qt.rgba(69 / 255, 71 / 255, 90 / 255, 0.8)
-                    strokeWidth: 4
-                    fillColor: "transparent"
-
-                    PathAngleArc {
-                        centerX: 20
-                        centerY: 20
-                        radiusX: 18
-                        radiusY: 18
-                        startAngle: 0
-                        sweepAngle: 360
-                    }
-
-                }
-
-                ShapePath {
-                    strokeColor: ring.low ? popup.red : popup.green
-                    strokeWidth: 4
-                    fillColor: "transparent"
-                    capStyle: ShapePath.RoundCap
-
-                    PathAngleArc {
-                        centerX: 20
-                        centerY: 20
-                        radiusX: 18
-                        radiusY: 18
-                        startAngle: -90
-                        sweepAngle: ring.level === null ? 0 : 3.6 * ring.level
-
-                        Behavior on sweepAngle {
-                            NumberAnimation {
-                                duration: 450
-                                easing.type: Easing.OutCubic
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-            Text {
-                anchors.centerIn: parent
-                text: ring.charging ? "󱐋" : ring.battery !== null && ring.battery.label ? ring.battery.label : ""
-                color: ring.charging ? popup.green : popup.textColor
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: ring.charging ? 17 : 13
-                font.weight: Font.Bold
-            }
-
-        }
-
-        Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: ring.level === null ? "--" : ring.level + "%"
-            color: ring.low ? popup.red : popup.textColor
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 17
-            font.weight: Font.Medium
         }
 
     }

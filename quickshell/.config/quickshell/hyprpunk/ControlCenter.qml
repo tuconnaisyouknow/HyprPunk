@@ -14,6 +14,7 @@ PanelWindow {
     id: controlCenter
 
     required property var shellState
+    required property var airPods
     property bool opened: false
     // Opened from a keybind: takes the keyboard so Escape closes it right away.
     property bool openedByKeybind: false
@@ -23,6 +24,8 @@ PanelWindow {
     property real retainedHeight: 0
     property real progress: opened ? 1 : 0
     readonly property int panelWidth: 378
+    // The panel's tallest: a page taller than that scrolls.
+    readonly property int panelMaxHeight: 680
     // Geometry of that pill (screen coordinates), published by the bar.
     readonly property var pill: shellState.controlPill
     property string page: "main"
@@ -42,6 +45,8 @@ PanelWindow {
     property var detailDevice: null
     // Where the enterprise form goes back to: the list, or the network's details.
     property string enterpriseReturnPage: "wifi"
+    // The Bluetooth page, or the sound page for an audio device opened from it.
+    property string bluetoothDetailReturnPage: "bluetooth"
     property string powerProfile: "balanced"
     property var powerProfiles: []
     property bool bluetoothPowerPending: false
@@ -139,7 +144,7 @@ PanelWindow {
             return "wifi";
 
         if (name === "bluetoothDetail")
-            return "bluetooth";
+            return bluetoothDetailReturnPage;
 
         return "main";
     }
@@ -151,6 +156,7 @@ PanelWindow {
     }
 
     function showBluetoothDetails(device) {
+        bluetoothDetailReturnPage = page === "sound" ? "sound" : "bluetooth";
         detailDevice = device;
         page = "bluetoothDetail";
     }
@@ -366,7 +372,7 @@ PanelWindow {
 
     }
     implicitWidth: panelWidth + pill.right
-    implicitHeight: 680 + pill.top
+    implicitHeight: panelMaxHeight + pill.top
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
@@ -500,7 +506,7 @@ PanelWindow {
 
                 }
 
-                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : mainPage.implicitHeight
+                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : mainPage.implicitHeight
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.rightMargin: 14
@@ -637,8 +643,20 @@ PanelWindow {
                     }
 
                     ControlBlock {
+                        id: soundBlock
+
                         Layout.fillWidth: true
                         implicitHeight: soundColumn.implicitHeight + 24
+
+                        // Under the content: the slider keeps its own clicks.
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                soundBlock.bounce();
+                                controlCenter.page = "sound";
+                            }
+                        }
 
                         ColumnLayout {
                             id: soundColumn
@@ -663,21 +681,22 @@ PanelWindow {
                                     horizontalAlignment: Text.AlignRight
                                     elide: Text.ElideRight
                                     text: controlCenter.audioSink !== null ? (controlCenter.audioSink.description || controlCenter.audioSink.name) : "No output"
-                                    color: soundSettingsHover.hovered ? "#cba6f7" : "#b4befe"
+                                    color: "#b4befe"
                                     font.family: "JetBrainsMono Nerd Font"
                                     font.pixelSize: 12
+                                }
 
-                                    HoverHandler {
-                                        id: soundSettingsHover
+                                Text {
+                                    text: "󰅂"
+                                    color: soundBlock.hovered ? "#cba6f7" : "#b4befe"
+                                    font.family: "JetBrainsMono Nerd Font"
+                                    font.pixelSize: 14
 
-                                        cursorShape: Qt.PointingHandCursor
-                                    }
-
-                                    TapHandler {
-                                        onTapped: {
-                                            controlCenter.close();
-                                            Session.launch(["mate-volume-control"]);
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 160
                                         }
+
                                     }
 
                                 }
@@ -1016,8 +1035,25 @@ PanelWindow {
                     enabled: controlCenter.page === "bluetoothDetail"
                     opacity: controlCenter.pageOpacity("bluetoothDetail")
                     device: controlCenter.detailDevice
-                    onBackRequested: controlCenter.page = "bluetooth"
-                    onForgotten: controlCenter.page = "bluetooth"
+                    onBackRequested: controlCenter.page = controlCenter.bluetoothDetailReturnPage
+                    onForgotten: controlCenter.page = controlCenter.bluetoothDetailReturnPage
+                }
+
+                SoundPage {
+                    id: soundPage
+
+                    width: parent.width
+                    x: controlCenter.pageX("sound")
+                    visible: controlCenter.pageVisible("sound")
+                    enabled: controlCenter.page === "sound"
+                    opacity: controlCenter.pageOpacity("sound")
+                    active: controlCenter.opened && controlCenter.page === "sound"
+                    maxHeight: controlCenter.panelMaxHeight - 28
+                    airPods: controlCenter.airPods
+                    onBackRequested: controlCenter.page = "main"
+                    onBluetoothDetailsRequested: (device) => {
+                        return controlCenter.showBluetoothDetails(device);
+                    }
                 }
 
                 ColumnLayout {

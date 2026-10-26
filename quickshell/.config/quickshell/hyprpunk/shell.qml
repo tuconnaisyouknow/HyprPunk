@@ -350,6 +350,7 @@ ShellRoot {
 
             screen: modelData
             shellState: globalState
+            airPods: airPodsService
         }
 
     }

@@ -3,14 +3,16 @@ import Quickshell
 import Quickshell.Io
 
 // The AirPods companion (~/Scripts/airpodsd.py): paired AirPods with their
-// batteries and ear detection, the AirPods in pairing mode next to the computer,
-// and the moments their card should show (case opened, connected, pairing mode).
+// batteries, ear detection and settings, the AirPods in pairing mode next to the
+// computer, and the moments their card should show (case opened, connected, pairing mode).
 Scope {
     id: airPods
 
     // Paired AirPods: {address, name, model, kind ("buds" or "headphones"), connected,
-    // nearby, lidOpen, left/right {level, charging, inEar}, case/headset {level, charging}},
-    // a level is null when unknown.
+    // nearby, lidOpen, left/right {level, charging, inEar}, case/headset {level, charging},
+    // controls {listeningMode (1 off, 2 noise cancellation, 3 transparency, 4 adaptive),
+    // conversationAwareness, adaptiveStrength (0-100), allowOff} as far as they reported
+    // them}, a level is null when unknown.
     property var devices: []
     // AirPods in pairing mode: {address, name, model, kind, state ("ready", "pairing", "failed")}.
     property var pairing: null
@@ -24,10 +26,53 @@ Scope {
         }) || null;
     }
 
-    function send(command, address) {
-        if (daemon.running)
-            daemon.write(command + " " + address + "\n");
+    // [{level, charging, label}] of the pods (or the headphones): one ring while both
+    // pods agree, a letter on each when they do not.
+    function podBatteries(device) {
+        if (device === null)
+            return [];
 
+        if (device.kind === "headphones")
+            return [device.headset];
+
+        const left = device.left;
+        const right = device.right;
+        if (left.level === null && right.level === null)
+            return [left];
+
+        if (right.level === null || (left.level === right.level && left.charging === right.charging))
+            return [Object.assign({
+                "label": right.level === null ? "L" : ""
+            }, left)];
+
+        if (left.level === null)
+            return [Object.assign({
+                "label": "R"
+            }, right)];
+
+        return [Object.assign({
+            "label": "L"
+        }, left), Object.assign({
+            "label": "R"
+        }, right)];
+    }
+
+    // Models with noise cancellation and transparency: the Pro ones, the AirPods 4
+    // with ANC and the Max.
+    function hasNoiseControl(device) {
+        return device !== null && [0x200E, 0x2014, 0x2024, 0x2027, 0x201B, 0x200A, 0x201F].includes(device.modelId);
+    }
+
+    function send(command, address, argument) {
+        if (daemon.running)
+            daemon.write(command + " " + address + (argument !== undefined ? " " + argument : "") + "\n");
+
+    }
+
+    // A setting of the connected AirPods (airpodsd's CONTROLS): a number, or a bool
+    // for the switches.
+    function control(address, name, value) {
+        send("control", address, name + " " + Number(value));
     }
 
     function pair(address) {

@@ -11,6 +11,9 @@ Item {
     // The icon as a round button in the fill (the volume's mute): plain glyph with a
     // glass halo on hover, like the player's controls.
     property bool iconButton: false
+    // Written in the track after the icon (the mixer's apps): dark over the fill,
+    // lavender past it, the colour changing right at the fill's edge.
+    property string label: ""
 
     signal valueRequested(real value)
     signal iconClicked()
@@ -30,6 +33,8 @@ Item {
         color: control.trackColor
 
         Rectangle {
+            id: sliderFill
+
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -50,6 +55,42 @@ Item {
                     easing.type: Easing.OutCubic
                 }
 
+            }
+
+        }
+
+        Text {
+            id: sliderLabel
+
+            x: control.height + 4
+            width: parent.width - x - 12
+            anchors.verticalCenter: parent.verticalCenter
+            visible: control.label !== ""
+            text: control.label
+            color: "#b4befe"
+            elide: Text.ElideRight
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 12
+            font.weight: Font.Bold
+        }
+
+        // The same label again, cut to the fill.
+        Item {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: sliderFill.width
+            visible: control.label !== ""
+            clip: true
+
+            Text {
+                x: sliderLabel.x
+                width: sliderLabel.width
+                anchors.verticalCenter: parent.verticalCenter
+                text: sliderLabel.text
+                color: control.iconColor
+                elide: Text.ElideRight
+                font: sliderLabel.font
             }
 
         }
