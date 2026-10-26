@@ -9,6 +9,7 @@ Rectangle {
     required property bool occupied
     property bool drawActiveBackground: true
     property bool activeForeground: false
+    readonly property alias hovered: mouse.containsMouse
     readonly property bool brandIcon: workspaceId === 2 || workspaceId === 3 || workspaceId === 5
     readonly property bool legacyNerdIcon: workspaceId === 7 || workspaceId === 10
     readonly property string iconFont: legacyNerdIcon ? "Font Awesome 7 Free Solid" : brandIcon ? "Font Awesome 7 Brands" : "Font Awesome 7 Free"
