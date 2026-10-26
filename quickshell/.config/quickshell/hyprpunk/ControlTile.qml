@@ -96,14 +96,39 @@ ControlBlock {
                     font.weight: Font.Bold
                 }
 
-                Text {
+                // Cut with an ellipsis, scrolling round under the pointer when it
+                // does not fit.
+                Item {
+                    readonly property bool scrolling: tile.hovered && subtitleMarquee.overflowing
+
                     width: parent.width
-                    visible: text !== ""
-                    text: tile.subtitle
-                    color: "#b4befe"
-                    elide: Text.ElideRight
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 12
+                    height: subtitleText.implicitHeight
+                    visible: tile.subtitle !== ""
+
+                    Text {
+                        id: subtitleText
+
+                        width: parent.width
+                        visible: !parent.scrolling
+                        text: tile.subtitle
+                        color: "#b4befe"
+                        elide: Text.ElideRight
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                    }
+
+                    MarqueeText {
+                        id: subtitleMarquee
+
+                        width: parent.width
+                        visible: parent.scrolling
+                        running: parent.scrolling
+                        text: tile.subtitle
+                        color: "#b4befe"
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                    }
+
                 }
 
             }

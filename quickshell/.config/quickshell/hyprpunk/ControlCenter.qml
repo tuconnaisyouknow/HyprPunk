@@ -23,7 +23,7 @@ PanelWindow {
     property bool panelHovered: false
     property real retainedHeight: 0
     property real progress: opened ? 1 : 0
-    readonly property int panelWidth: 378
+    readonly property int panelWidth: 452
     // The panel's tallest: a page taller than that scrolls.
     readonly property int panelMaxHeight: 680
     // Geometry of that pill (screen coordinates), published by the bar.
@@ -72,6 +72,24 @@ PanelWindow {
         "locale": "en_US.UTF-8"
     }]
     property int pendingBrightness: 0
+    // The time caffeine's countdown is shown at, ticking while the panel is open.
+    property real now: Date.now()
+    readonly property var caffeineDurations: [{
+        "minutes": 0,
+        "label": "Until turned off"
+    }, {
+        "minutes": 30,
+        "label": "30 minutes"
+    }, {
+        "minutes": 60,
+        "label": "1 hour"
+    }, {
+        "minutes": 120,
+        "label": "2 hours"
+    }, {
+        "minutes": 240,
+        "label": "4 hours"
+    }]
     readonly property var audioSink: Pipewire.defaultAudioSink
     readonly property var audio: audioSink !== null ? audioSink.audio : null
     readonly property int volume: audio !== null ? Math.round(audio.volume * 100) : 0
@@ -293,6 +311,34 @@ PanelWindow {
         }
     }
 
+    function toggleCaffeine() {
+        if (shellState.caffeine)
+            shellState.caffeine = false;
+        else
+            shellState.setCaffeine(0);
+        now = Date.now();
+    }
+
+    function chooseCaffeine(minutes) {
+        shellState.setCaffeine(minutes);
+        now = Date.now();
+    }
+
+    // "Off", "On" until turned off, or the time left: "45 min left", "1 h 30 left".
+    function caffeineSubtitle() {
+        if (!shellState.caffeine)
+            return "Off";
+
+        if (shellState.caffeineUntil <= 0)
+            return "On";
+
+        const minutes = Math.max(1, Math.ceil((shellState.caffeineUntil - now) / 60000));
+        if (minutes < 60)
+            return minutes + " min left";
+
+        return Math.floor(minutes / 60) + " h " + String(minutes % 60).padStart(2, "0") + " left";
+    }
+
     function powerProfileIcon() {
         if (powerProfile === "performance")
             return "󰓅";
@@ -506,7 +552,7 @@ PanelWindow {
 
                 }
 
-                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : mainPage.implicitHeight
+                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : mainPage.implicitHeight
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.rightMargin: 14
@@ -523,12 +569,17 @@ PanelWindow {
                     opacity: controlCenter.pageOpacity("main")
                     spacing: 12
 
+                    // Two columns of tiles, of the same width.
                     RowLayout {
+                        id: tileColumns
+
+                        readonly property real columnWidth: (width - spacing) / 2
+
                         Layout.fillWidth: true
                         spacing: 12
 
                         ColumnLayout {
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: tileColumns.columnWidth
                             Layout.alignment: Qt.AlignTop
                             spacing: 12
 
@@ -567,8 +618,7 @@ PanelWindow {
                         }
 
                         ColumnLayout {
-                            Layout.fillWidth: false
-                            Layout.preferredWidth: 132
+                            Layout.preferredWidth: tileColumns.columnWidth
                             Layout.fillHeight: true
                             spacing: 12
 
@@ -605,6 +655,18 @@ PanelWindow {
 
                         }
 
+                    }
+
+                    // Across both columns: the grid stays even.
+                    ControlTile {
+                        Layout.fillWidth: true
+                        icon: controlCenter.shellState.caffeine ? "󰅶" : "󰾪"
+                        title: "Caffeine"
+                        subtitle: controlCenter.caffeineSubtitle()
+                        active: controlCenter.shellState.caffeine
+                        expandable: true
+                        onToggled: controlCenter.toggleCaffeine()
+                        onExpandRequested: controlCenter.page = "caffeine"
                     }
 
                     ControlBlock {
@@ -1057,6 +1119,55 @@ PanelWindow {
                 }
 
                 ColumnLayout {
+                    id: caffeinePage
+
+                    width: parent.width
+                    x: controlCenter.pageX("caffeine")
+                    visible: controlCenter.pageVisible("caffeine")
+                    enabled: controlCenter.page === "caffeine"
+                    opacity: controlCenter.pageOpacity("caffeine")
+                    spacing: 6
+
+                    PageHeader {
+                        Layout.fillWidth: true
+                        title: "Caffeine"
+                        checked: controlCenter.shellState.caffeine
+                        onToggled: controlCenter.toggleCaffeine()
+                        onBackRequested: controlCenter.page = "main"
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.bottomMargin: 6
+                        text: "Keeps the screen on: no dimming, locking or sleep."
+                        color: "#7f849c"
+                        wrapMode: Text.Wrap
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                    }
+
+                    Repeater {
+                        model: controlCenter.caffeineDurations
+
+                        ListRow {
+                            required property var modelData
+                            readonly property bool chosen: controlCenter.shellState.caffeine && controlCenter.shellState.caffeineMinutes === modelData.minutes
+
+                            Layout.fillWidth: true
+                            icon: modelData.minutes === 0 ? "󰅶" : "󰔛"
+                            title: modelData.label
+                            // The chosen duration ends at: "Until 22:10".
+                            subtitle: chosen && controlCenter.shellState.caffeineUntil > 0 ? "Until " + Qt.formatTime(new Date(controlCenter.shellState.caffeineUntil), "HH:mm") : ""
+                            trailing: chosen ? "\uf00c" : ""
+                            highlighted: chosen
+                            onClicked: controlCenter.chooseCaffeine(modelData.minutes)
+                        }
+
+                    }
+
+                }
+
+                ColumnLayout {
                     id: localePage
 
                     width: parent.width
@@ -1203,6 +1314,14 @@ PanelWindow {
         property: "discovering"
         value: true
         when: controlCenter.bluetoothEnabled && controlCenter.opened && controlCenter.page === "bluetooth"
+    }
+
+    Timer {
+        running: controlCenter.opened && controlCenter.shellState.caffeine && controlCenter.shellState.caffeineUntil > 0
+        interval: 15000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: controlCenter.now = Date.now()
     }
 
     PwObjectTracker {
