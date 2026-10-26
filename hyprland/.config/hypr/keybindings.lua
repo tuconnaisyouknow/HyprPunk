@@ -87,6 +87,7 @@ bind(mainMod .. " + C", hl.dsp.exec_cmd("qs -c hyprpunk ipc call controlcenter t
   "Toggle the control center")
 bind(mainMod .. " + Escape", hl.dsp.exec_cmd("qs -c hyprpunk ipc call session toggle"),
   "Open the session menu (lock, logout, reboot, shutdown)")
+bind(mainMod .. " + U", hl.dsp.exec_cmd("kitty -e yay -Syu --noconfirm --removemake"), "Update all packages")
 
 bind(mainMod .. " + Q", hl.dsp.window.close(), "Close the focused window")
 bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }), "Toggle floating mode for the focused window")
