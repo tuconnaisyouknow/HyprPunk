@@ -3,7 +3,7 @@
 > Arch Linux dotfiles for Hyprland, with a cyberpunk visual direction, Catppuccin Mocha colors, and Mauve accents.
 
 HyprPunk is a complete personal Wayland setup built around **Hyprland**.  
-It brings together the window manager, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
+It brings together the window manager, the desktop shell, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
 
 The goal is simple: a cohesive, dark, readable, and responsive desktop inspired by cyberpunk visuals without getting in the way of daily work.
 
@@ -24,6 +24,7 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
+- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, and the OSD.
 - 🔒 **Hyprlock**, **Hypridle**, and **Hyprpaper** for lock screen, idle handling, and wallpapers.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
@@ -103,6 +104,7 @@ Reboot after the installation completes.
 ├── nvim/                # Neovim Lua configuration
 ├── qt5/                 # Source palette for generated Qt5ct configuration
 ├── qt6/                 # Source palette for generated Qt6ct configuration
+├── quickshell/          # Quickshell bar, island panels, control center, and notifications
 ├── scripts/             # System, display, Qt, and lock-screen helpers
 ├── sddm/themes/         # Cyberpunk video themes installed system-wide
 ├── sddm/previews/       # Preview images of the SDDM themes
@@ -188,6 +190,8 @@ The installer enables or configures:
 
 - 🌐 `NetworkManager`
 - 🎬 `sddm`
+- 📶 `bluetooth`
+- ⚡ `power-profiles-daemon`
 - 🔊 `swayosd-libinput-backend.service`
 - 🧱 `xwayland-satellite.service`
 - 🔑 `gnome-keyring`

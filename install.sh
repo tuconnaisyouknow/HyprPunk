@@ -32,6 +32,7 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/gtk-4.0"
   ".config/hypr/hypridle.conf"
   ".config/hypr/hyprland.conf"
+  ".config/hypr/hyprland.lua"
   ".config/hypr/hyprlock.conf"
   ".config/hypr/hyprpaper.conf"
   ".config/kitty"
@@ -40,6 +41,7 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/nvim"
   ".config/qt5ct"
   ".config/qt6ct"
+  ".config/quickshell"
   ".config/starship.toml"
   ".config/tmux"
   ".config/yazi"
@@ -303,11 +305,13 @@ install_packages() {
     neovim lazygit cargo npm \
     \
     sddm networkmanager network-manager-applet blueman \
+    bluez bluez-utils power-profiles-daemon upower \
+    pipewire-pulse wireplumber playerctl \
     gcr gnome-keyring seahorse \
     \
     hyprland hyprpaper hyprlock hypridle \
-    hyprshot satty hyprcursor \
-    swayosd cliphist \
+    hyprshot satty hyprcursor hyprpicker \
+    quickshell swayosd cliphist wl-clipboard \
     \
     qt5ct-kde qt5-wayland qt5-tools \
     qt5-quickcontrols2 layer-shell-qt5 \
@@ -332,7 +336,7 @@ install_packages() {
     thunar tumbler ffmpegthumbnailer ark loupe papers \
     mpv celluloid mate-media \
     libreoffice-fresh brave-bin \
-    spotify-launcher obsidian \
+    spotify-launcher obsidian discord \
     \
     qt6-multimedia \
     qt6-multimedia-ffmpeg \
@@ -417,9 +421,9 @@ activate_dotfiles() {
 
 stow_dotfiles() {
   if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim scripts starship tmux wallpapers yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
   else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kdeglobals kitty kvantum nvim scripts starship tmux wallpapers yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
   fi
 }
 
@@ -654,6 +658,8 @@ install_brave_policy() {
 enable_services() {
   sudo systemctl enable NetworkManager
   sudo systemctl enable sddm
+  sudo systemctl enable bluetooth
+  sudo systemctl enable power-profiles-daemon
   sudo systemctl enable swayosd-libinput-backend.service
 
   systemctl --user enable xwayland-satellite.service
