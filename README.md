@@ -33,7 +33,7 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 
 - 🪟 **Hyprland** as the main Wayland environment.
 - 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, and the OSD.
-- 🔒 **Hyprlock**, **Hypridle**, and **Hyprpaper** for lock screen, idle handling, and wallpapers.
+- 🔒 **Hyprlock**, **Hypridle**, and **awww** for lock screen, idle handling, and wallpapers with animated transitions.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
@@ -104,7 +104,6 @@ Reboot after the installation completes.
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── hyprlock/            # Laptop lock screen
 ├── hyprlock-desktop/    # Desktop lock screen
-├── hyprpaper/           # Wallpaper daemon configuration
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
 ├── keyboard/            # Layout-specific application keymaps
 ├── kitty/               # Kitty terminal configuration

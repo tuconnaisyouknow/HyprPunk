@@ -5,9 +5,10 @@ STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_DIR="$STATE_HOME/hyprpunk"
 STATE_FILE="${HYPR_WALLPAPER_STATE:-$STATE_DIR/wallpaper.conf}"
 LOCK_FRAGMENT="$STATE_DIR/hyprlock-wallpaper.conf"
-HYPRPAPER_FRAGMENT="$STATE_DIR/hyprpaper-wallpaper.conf"
 LOCK_FILE="${STATE_FILE}.lock"
 DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/night-drive-protocol.png"
+# A circle growing from the dynamic island, where the wallpaper selector opens.
+TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
 usage() {
   cat <<EOF
@@ -59,18 +60,15 @@ validate_wallpaper() {
 }
 
 write_state() {
-  local wallpaper="$1" dir tmp lock_tmp hyprpaper_tmp
+  local wallpaper="$1" dir tmp lock_tmp
   dir="$(dirname "$STATE_FILE")"
   mkdir -p "$dir" "$STATE_DIR"
   tmp="$(mktemp --tmpdir="$dir" wallpaper-state.XXXXXX)"
   lock_tmp="$(mktemp --tmpdir="$STATE_DIR" hyprlock-wallpaper.XXXXXX)"
-  hyprpaper_tmp="$(mktemp --tmpdir="$STATE_DIR" hyprpaper-wallpaper.XXXXXX)"
   printf 'wallpaper=%s\n' "$wallpaper" >"$tmp"
   printf '%s\n' "\$wallpaper = $wallpaper" >"$lock_tmp"
-  printf 'wallpaper {\n  monitor =\n  path = %s\n}\n' "$wallpaper" >"$hyprpaper_tmp"
   mv -f "$tmp" "$STATE_FILE"
   mv -f "$lock_tmp" "$LOCK_FRAGMENT"
-  mv -f "$hyprpaper_tmp" "$HYPRPAPER_FRAGMENT"
 }
 
 ensure_state() {
@@ -83,20 +81,22 @@ ensure_state() {
   write_state "$wallpaper"
 }
 
+# The arguments are passed to awww img, e.g. the transition.
 apply_wallpaper() {
   local wallpaper attempts=0
   wallpaper="$(read_wallpaper)"
   validate_wallpaper "$wallpaper"
 
-  while ((attempts < 20)); do
-    if hyprctl hyprpaper wallpaper ",$wallpaper" >/dev/null 2>&1; then
-      return 0
-    fi
+  # awww-daemon starts with the session and keeps no wallpaper of its own.
+  until awww query >/dev/null 2>&1; do
     attempts=$((attempts + 1))
+    if ((attempts >= 50)); then
+      echo "Unable to apply wallpaper: awww-daemon is not ready." >&2
+      return 2
+    fi
     sleep 0.1
   done
-  echo "Unable to apply wallpaper: Hyprpaper is not ready." >&2
-  return 2
+  awww img "$@" -- "$wallpaper"
 }
 
 command="${1:-}"
@@ -110,7 +110,7 @@ apply)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
   acquire_lock
   ensure_state
-  apply_wallpaper
+  apply_wallpaper --transition-type none
   ;;
 set)
   [[ $# -eq 2 ]] || { usage >&2; exit 1; }
@@ -118,7 +118,7 @@ set)
   wallpaper="$(realpath -m -s -- "$2")"
   validate_wallpaper "$wallpaper"
   write_state "$wallpaper"
-  apply_wallpaper
+  apply_wallpaper "${TRANSITION[@]}"
   ;;
 status)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
@@ -131,7 +131,7 @@ reset | init)
   validate_wallpaper "$DEFAULT_WALLPAPER"
   write_state "$DEFAULT_WALLPAPER"
   if [[ "$command" == "reset" ]]; then
-    apply_wallpaper
+    apply_wallpaper "${TRANSITION[@]}"
   fi
   ;;
 *)

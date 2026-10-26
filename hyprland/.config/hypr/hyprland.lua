@@ -22,7 +22,9 @@ hl.on("hyprland.start", function()
   -- Starting essential hyprland programs
   hl.exec_cmd("~/Scripts/displayctl.sh bootstrap")
   hl.exec_cmd("~/Scripts/touchpadctl.sh sync")
-  hl.exec_cmd("hyprpaper")
+  -- awww-daemon does not restore the last wallpaper, wallpaperctl.sh sets it once ready
+  hl.exec_cmd("awww-daemon")
+  hl.exec_cmd("~/Scripts/wallpaperctl.sh apply")
   hl.exec_cmd("qs -c hyprpunk")
   hl.exec_cmd("hypridle")
 
@@ -51,6 +53,8 @@ end)
 -- Existing output-specific modes are left untouched by displayctl.sh.
 hl.on("monitor.added", function()
   hl.exec_cmd("~/Scripts/displayctl.sh sync")
+  -- The new output starts blank under awww, once awww-daemon has picked it up.
+  hl.exec_cmd("sleep 1; ~/Scripts/wallpaperctl.sh apply")
 end)
 
 -- Recalculate only the active part of a saved layout when an output vanishes.

@@ -23,10 +23,6 @@ SearchPanel {
         "name": "Hyprlock",
         "path": "~/.config/hypr/hyprlock.conf"
     }, {
-        "icon": "",
-        "name": "Hyprpaper",
-        "path": "~/.config/hypr/hyprpaper.conf"
-    }, {
         "icon": "",
         "name": "Hypridle",
         "path": "~/.config/hypr/hypridle.conf"

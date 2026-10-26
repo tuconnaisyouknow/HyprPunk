@@ -34,7 +34,6 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/hypr/hyprland.conf"
   ".config/hypr/hyprland.lua"
   ".config/hypr/hyprlock.conf"
-  ".config/hypr/hyprpaper.conf"
   ".config/kitty"
   ".config/kdeglobals"
   ".config/Kvantum"
@@ -309,7 +308,7 @@ install_packages() {
     pipewire-pulse wireplumber playerctl \
     gnome-keyring seahorse hyprpolkitagent \
     \
-    hyprland hyprpaper hyprlock hypridle \
+    hyprland awww hyprlock hypridle \
     hyprshot satty hyprcursor hyprpicker \
     quickshell cliphist wl-clipboard \
     \
@@ -418,9 +417,9 @@ activate_dotfiles() {
 
 stow_dotfiles() {
   if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock hyprpaper kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
   else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop hyprpaper kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
+    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
   fi
 }
 
