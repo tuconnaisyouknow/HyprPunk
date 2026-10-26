@@ -145,7 +145,8 @@ PanelWindow {
         y: panel.island.top
         width: panel.lerp(panel.island.width, panel.cardWidth)
         height: panel.lerp(panel.island.height, panel.cardHeight)
-        radius: panel.lerp(panel.island.height / 2, 24)
+        // The island's corners: rounder ones would let the island's show under the card.
+        radius: panel.island.height / 2
         color: "transparent"
         focus: true
         Keys.forwardTo: panel.keyTargets

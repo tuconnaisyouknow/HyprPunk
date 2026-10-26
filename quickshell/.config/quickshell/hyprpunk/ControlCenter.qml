@@ -352,7 +352,8 @@ PanelWindow {
             visible: controlCenter.progress > 0
             width: controlCenter.lerp(controlCenter.pill.width, controlCenter.panelWidth)
             height: controlCenter.lerp(controlCenter.pill.height, fullHeight)
-            radius: controlCenter.lerp(controlCenter.pill.height / 2, 24)
+            // The pill's corners: rounder ones would let the pill's show under the panel.
+            radius: controlCenter.pill.height / 2
             // Lets the notification popups move below the panel instead of hiding behind it.
             onHeightChanged: {
                 controlCenter.shellState.controlCenterBottomScreen = controlCenter.screen;
@@ -367,13 +368,12 @@ PanelWindow {
                     controlCenter.close();
             }
 
-            // Same card as the player: surface0 (the pill) to base at 0.9 (blurred by a layer
-            // rule) with the glass rim, faded in over the pill so its own content disappears under it.
+            // Same card as the island panels: surface0 (the pill) to base at 0.9 (blurred by a
+            // layer rule) with the glass rim, opaque from the start so the pill itself seems to grow.
             GlassSurface {
                 radius: panel.radius
                 tinted: false
-                opacity: Math.min(1, controlCenter.progress / 0.35)
-                backgroundColor: Qt.rgba(controlCenter.lerp(49, 30) / 255, controlCenter.lerp(50, 30) / 255, controlCenter.lerp(68, 46) / 255, 0.9)
+                backgroundColor: Qt.rgba(controlCenter.lerp(49, 30) / 255, controlCenter.lerp(50, 30) / 255, controlCenter.lerp(68, 46) / 255, controlCenter.lerp(1, 0.9))
             }
 
             HoverHandler {
@@ -385,10 +385,19 @@ PanelWindow {
                 }
             }
 
+            // Laid out at full size, only uncovered while the panel grows.
             Item {
                 id: pages
 
-                opacity: Math.max(0, (controlCenter.progress - 0.45) / 0.55)
+                opacity: controlCenter.opened ? 1 : 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 120
+                        easing.type: Easing.OutCubic
+                    }
+
+                }
+
                 implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : mainPage.implicitHeight
                 anchors.right: parent.right
                 anchors.top: parent.top

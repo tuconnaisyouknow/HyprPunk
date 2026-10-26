@@ -529,29 +529,39 @@ PanelWindow {
                         anchors.left: parent.left
                         width: monitorPopup.lerp(monitorPill.width, monitorPopup.width)
                         height: monitorPopup.lerp(monitorPill.height, monitorPopup.height)
-                        radius: monitorPopup.lerp(monitorPill.radius, 24)
+                        // The pill's corners: rounder ones would let the pill's show under the card.
+                        radius: monitorPill.radius
                         color: "transparent"
 
-                        // Same card as the player, faded in over the pill like the control
-                        // center so the pill's own content disappears under it.
+                        // Same card as the island panels: surface0 (the pill) to base at 0.9,
+                        // opaque from the start so the pill itself seems to grow.
                         GlassSurface {
                             radius: monitorCard.radius
                             tinted: false
-                            opacity: Math.min(1, monitorPopup.progress / 0.35)
-                            backgroundColor: Qt.rgba(monitorPopup.lerp(49, 30) / 255, monitorPopup.lerp(50, 30) / 255, monitorPopup.lerp(68, 46) / 255, 0.9)
+                            backgroundColor: Qt.rgba(monitorPopup.lerp(49, 30) / 255, monitorPopup.lerp(50, 30) / 255, monitorPopup.lerp(68, 46) / 255, monitorPopup.lerp(1, 0.9))
                         }
 
+                        // Laid out at full size, only uncovered while the card grows.
                         SystemMonitorCard {
                             id: monitorContent
 
                             anchors.top: parent.top
                             anchors.left: parent.left
                             width: monitorPopup.width
-                            opacity: Math.max(0, (monitorPopup.progress - 0.7) / 0.3)
+                            opacity: bar.monitorVisible ? 1 : 0
                             active: bar.monitorPopupVisible
                             temperature: bar.cpuTemperature
                             frequency: bar.cpuFrequency
                             model: bar.cpuModel
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 120
+                                    easing.type: Easing.OutCubic
+                                }
+
+                            }
+
                         }
 
                         HoverHandler {
@@ -873,7 +883,8 @@ PanelWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: bar.calendarVisible ? calendarPopup.width : clockPill.width
                     height: bar.calendarVisible ? calendarPopup.contentHeight : clockPill.height
-                    radius: bar.calendarVisible ? 24 : clockPill.radius
+                    // The pill's corners: rounder ones would let the pill's show under the card.
+                    radius: clockPill.radius
                     color: "transparent"
 
                     // Same card as the player: surface0 (the pill) to base at 0.9, blurred by
@@ -1137,14 +1148,6 @@ PanelWindow {
                     }
 
                     Behavior on height {
-                        NumberAnimation {
-                            duration: 280
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                    Behavior on radius {
                         NumberAnimation {
                             duration: 280
                             easing.type: Easing.OutCubic
@@ -1685,7 +1688,8 @@ PanelWindow {
                         anchors.right: parent.right
                         width: musicPopup.lerp(musicPill.width, musicPopup.width)
                         height: musicPopup.lerp(musicPill.height, musicPopup.height)
-                        radius: musicPopup.lerp(musicPill.radius, 24)
+                        // The pill's corners: rounder ones would let the pill's show under the card.
+                        radius: musicPill.radius
                         color: "transparent"
 
                         // Same background as the control center: surface0 (the pill) to base at 0.9,
