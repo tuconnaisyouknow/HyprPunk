@@ -108,8 +108,8 @@ hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, 
 hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, ignore_alpha = 0.5 })
 -- Island panels (session menu, wallpaper picker) animate themselves out of the bar island
 hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = 0.5, no_anim = true })
--- The bar itself stays sharp; only its popups (the player) are blurred
-hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur_popups = true, ignore_alpha = 0.5 })
+-- The bar: its pills are opaque, only the island as an OSD and the popups (the player) show the blur
+hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
 
 -- #####################
 -- ### LOOK AND FEEL ###

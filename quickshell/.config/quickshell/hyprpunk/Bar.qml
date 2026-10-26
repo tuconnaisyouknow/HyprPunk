@@ -90,6 +90,16 @@ PanelWindow {
     property string keyboardBacklightPath: ""
     property bool keyboardHwInitialized: false
     property real clockCenterOffset: bar.statusOsdVisible ? 3 : -3
+    // 0 for the clock, 1 for an OSD: the island turns from the pill into the panels' card.
+    property real statusOsdProgress: statusOsdVisible ? 1 : 0
+
+    Behavior on statusOsdProgress {
+        NumberAnimation {
+            duration: 220
+            easing.type: Easing.OutCubic
+        }
+
+    }
     readonly property string stateHome: {
         const configuredStateHome = Quickshell.env("XDG_STATE_HOME");
         return configuredStateHome && configuredStateHome !== "" ? configuredStateHome : Quickshell.env("HOME") + "/.local/state";
@@ -658,6 +668,10 @@ PanelWindow {
                 horizontalPadding: bar.statusOsdVisible ? 36 : 20
                 implicitHeight: bar.statusOsdVisible ? 50 : 38
                 contentOpacity: 1
+                // Same card as the control center: surface0 (the pill) to base at 0.9, blurred
+                // by the bar's layer rule, with the glass rim.
+                color: Qt.rgba((49 - 19 * bar.statusOsdProgress) / 255, (50 - 20 * bar.statusOsdProgress) / 255, (68 - 22 * bar.statusOsdProgress) / 255, 1 - 0.1 * bar.statusOsdProgress)
+                glassOpacity: bar.statusOsdProgress
 
                 Label {
                     id: dateTimeLabel
