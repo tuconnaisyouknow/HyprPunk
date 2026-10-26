@@ -673,34 +673,56 @@ PanelWindow {
 
                     }
 
-                    ListView {
+                    Item {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(contentHeight, 340)
+                        Layout.preferredHeight: wifiList.height
                         visible: controlCenter.wifiNetworks.length > 0
-                        // Only once it scrolls: the hovered row grows past the sides.
-                        clip: contentHeight > height
-                        spacing: 4
-                        model: controlCenter.wifiNetworks
 
-                        delegate: ListRow {
-                            required property var modelData
+                        ListView {
+                            id: wifiList
 
-                            width: ListView.view.width
-                            icon: controlCenter.wifiIcon(modelData.signalStrength)
-                            title: modelData.name
-                            subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
-                            trailing: modelData.security === WifiSecurityType.Open ? "" : "󰌾"
-                            highlighted: modelData.connected
-                            onClicked: controlCenter.selectWifi(modelData)
+                            // Wider than the page by a few pixels, so the hovered row's zoom
+                            // isn't cut at the sides; the rows stay aligned with the page.
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: -4
+                            anchors.rightMargin: -4
+                            height: Math.min(contentHeight, 340)
+                            clip: true
+                            spacing: 4
+                            model: controlCenter.wifiNetworks
 
-                            Connections {
-                                function onConnectionFailed(reason) {
-                                    if (reason === ConnectionFailReason.NoSecrets)
-                                        controlCenter.selectWifi(modelData);
+                            // The row inside: the list sets its delegates' x.
+                            delegate: Item {
+                                required property var modelData
+
+                                width: ListView.view.width
+                                height: row.height
+
+                                ListRow {
+                                    id: row
+
+                                    x: 4
+                                    width: parent.width - 8
+                                    icon: controlCenter.wifiIcon(modelData.signalStrength)
+                                    title: modelData.name
+                                    subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
+                                    trailing: modelData.security === WifiSecurityType.Open ? "" : "󰌾"
+                                    highlighted: modelData.connected
+                                    onClicked: controlCenter.selectWifi(modelData)
+
+                                    Connections {
+                                        function onConnectionFailed(reason) {
+                                            if (reason === ConnectionFailReason.NoSecrets)
+                                                controlCenter.selectWifi(modelData);
+
+                                        }
+
+                                        target: modelData
+                                    }
 
                                 }
 
-                                target: modelData
                             }
 
                         }
@@ -818,38 +840,60 @@ PanelWindow {
 
                     }
 
-                    ListView {
+                    Item {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: Math.min(contentHeight, 340)
+                        Layout.preferredHeight: bluetoothList.height
                         visible: controlCenter.bluetoothDevices.length > 0
-                        // Only once it scrolls: the hovered row grows past the sides.
-                        clip: contentHeight > height
-                        spacing: 4
-                        model: controlCenter.bluetoothDevices
 
-                        delegate: ListRow {
-                            required property var modelData
+                        ListView {
+                            id: bluetoothList
 
-                            width: ListView.view.width
-                            icon: controlCenter.bluetoothDeviceIcon(modelData.icon)
-                            title: modelData.deviceName
-                            subtitle: {
-                                if (modelData.pairing)
-                                    return "Pairing…";
+                            // Wider than the page by a few pixels, so the hovered row's zoom
+                            // isn't cut at the sides; the rows stay aligned with the page.
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: -4
+                            anchors.rightMargin: -4
+                            height: Math.min(contentHeight, 340)
+                            clip: true
+                            spacing: 4
+                            model: controlCenter.bluetoothDevices
 
-                                if (modelData.state === BluetoothDeviceState.Connecting)
-                                    return "Connecting…";
+                            // The row inside: the list sets its delegates' x.
+                            delegate: Item {
+                                required property var modelData
 
-                                if (modelData.state === BluetoothDeviceState.Disconnecting)
-                                    return "Disconnecting…";
+                                width: ListView.view.width
+                                height: row.height
 
-                                if (modelData.connected)
-                                    return modelData.batteryAvailable ? "Connected · " + Math.round(modelData.battery * 100) + "%" : "Connected";
+                                ListRow {
+                                    id: row
 
-                                return modelData.paired ? "Paired" : "";
+                                    x: 4
+                                    width: parent.width - 8
+                                    icon: controlCenter.bluetoothDeviceIcon(modelData.icon)
+                                    title: modelData.deviceName
+                                    subtitle: {
+                                        if (modelData.pairing)
+                                            return "Pairing…";
+
+                                        if (modelData.state === BluetoothDeviceState.Connecting)
+                                            return "Connecting…";
+
+                                        if (modelData.state === BluetoothDeviceState.Disconnecting)
+                                            return "Disconnecting…";
+
+                                        if (modelData.connected)
+                                            return modelData.batteryAvailable ? "Connected · " + Math.round(modelData.battery * 100) + "%" : "Connected";
+
+                                        return modelData.paired ? "Paired" : "";
+                                    }
+                                    highlighted: modelData.connected
+                                    onClicked: controlCenter.selectBluetooth(modelData)
+                                }
+
                             }
-                            highlighted: modelData.connected
-                            onClicked: controlCenter.selectBluetooth(modelData)
+
                         }
 
                     }
