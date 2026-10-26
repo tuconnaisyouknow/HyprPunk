@@ -128,7 +128,7 @@ IslandPanel {
                 if (move)
                     panel.move(move[0], move[1]);
                 else if (event.key === Qt.Key_Escape)
-                    panel.close();
+                    panel.back();
                 else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                     panel.count > 0 && panel.activated(panel.selectedIndex, (event.modifiers & Qt.ShiftModifier) !== 0);
                 else if (event.key === Qt.Key_Down)

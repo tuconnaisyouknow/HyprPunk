@@ -360,7 +360,7 @@ IslandPanel {
                     if (launcher.actionsEntry)
                         launcher.actionsEntry = null;
                     else
-                        launcher.close();
+                        launcher.back();
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                     launcher.activate(shift);
                 } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
