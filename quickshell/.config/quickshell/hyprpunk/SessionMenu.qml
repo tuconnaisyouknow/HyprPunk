@@ -19,7 +19,7 @@ IslandPanel {
         "command": ["sh", "-c", "pidof hyprlock || loginctl lock-session"]
     }, {
         "id": "logout",
-        "icon": "󰍃",
+        "icon": "",
         "confirm": true,
         "command": ["hyprctl", "dispatch", "hl.dsp.exit()"]
     }, {
@@ -29,7 +29,7 @@ IslandPanel {
         "command": ["systemctl", "reboot"]
     }, {
         "id": "shutdown",
-        "icon": "󰐥",
+        "icon": "",
         "confirm": true,
         "command": ["systemctl", "poweroff"]
     }]

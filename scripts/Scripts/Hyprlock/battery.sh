@@ -12,8 +12,9 @@ fi
 status=$(battery_status)
 
 # Icônes de batterie par tranche de 10%
-# De 󰁹 (0-9%) à 󰂎 (100%)
+# De 󰂎 (0-9%) à 󰁹 (100%), avec l'éclair en charge
 icons=("󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹")
+charging_icons=("󰢟" "󰢜" "󰂆" "󰂇" "󰂈" "󰢝" "󰂉" "󰢞" "󰂊" "󰂋" "󰂅")
 
 # Calcule l'index d'icône à afficher
 index=$((capacity / 10))
@@ -22,9 +23,9 @@ index=$((capacity / 10))
 # Choisit l'icône correspondante
 icon=${icons[$index]}
 
-# Si en charge ou pleine, remplacer par l'icône de charge
+# Si en charge ou pleine, la même jauge avec l'éclair
 if [[ "$status" == "Charging" || "$status" == "Full" ]]; then
-  icon="" # Icône de charge
+  icon=${charging_icons[$index]}
 fi
 
 # Affiche l'icône suivie du pourcentage

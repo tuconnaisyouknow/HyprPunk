@@ -329,7 +329,7 @@ IslandPanel {
             anchors.left: parent.left
             anchors.leftMargin: 16
             anchors.verticalCenter: parent.verticalCenter
-            text: launcher.actionsEntry ? "" : "󰍉"
+            text: launcher.actionsEntry ? "󰅂" : "󰍉"
             color: "#cba6f7"
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 16
@@ -436,7 +436,7 @@ IslandPanel {
             anchors.left: parent.left
             anchors.leftMargin: 18
             anchors.verticalCenter: parent.verticalCenter
-            text: launcher.special === "calc" ? "󰃬" : launcher.special === "command" ? "" : "󰖟"
+            text: launcher.special === "calc" ? "󰃬" : launcher.special === "command" ? "" : "󰖟"
             color: "#cba6f7"
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 20

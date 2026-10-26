@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
@@ -29,6 +30,9 @@ PanelWindow {
     property string cpuFrequency: ""
     property string cpuModel: ""
     property string memoryText: "--"
+    property int cpuUsage: 0
+    // [idle, total] jiffies of the last /proc/stat sample.
+    property var cpuStat: [0, 0]
     property string updatesText: ""
     property bool calendarVisible: false
     property bool calendarPopupVisible: false
@@ -83,14 +87,30 @@ PanelWindow {
         return configuredStateHome && configuredStateHome !== "" ? configuredStateHome : Quickshell.env("HOME") + "/.local/state";
     }
 
-    function connectedNetworkDevice() {
+    // The connected device first, else one NetworkManager is bringing up.
+    readonly property var networkDevice: {
+        let connecting = null;
         for (const device of Networking.devices.values) {
             if (device.connected)
                 return device;
 
+            if (connecting === null && device.state === ConnectionState.Connecting)
+                connecting = device;
+
         }
-        return null;
+        return connecting;
     }
+    // Active VPN connections ({name, state}), Quickshell.Networking does not expose them.
+    property var vpnConnections: []
+    readonly property var vpnConnection: vpnConnections.find((connection) => {
+        return connection.state === "activated";
+    }) || vpnConnections.find((connection) => {
+        return connection.state === "activating";
+    }) || null
+    readonly property bool vpnActive: vpnConnection !== null && vpnConnection.state === "activated"
+    readonly property bool vpnConnecting: vpnConnection !== null && !vpnActive
+    readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || vpnConnecting
+    readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && vpnConnection !== null
 
     function activeWifiNetwork(device) {
         for (const network of device.networks.values) {
@@ -102,36 +122,45 @@ PanelWindow {
     }
 
     function networkIcon() {
-        const device = bar.connectedNetworkDevice();
+        const device = bar.networkDevice;
         if (device === null)
-            return "󰖪";
+            return "󰤮";
 
         if (device.type === DeviceType.Wired)
-            return "󰈀";
+            return device.connected ? "󰈀" : "󰌚";
 
+        // Locked while a VPN is up (or coming up) over the Wi-Fi.
+        const locked = device.connected && bar.vpnConnection !== null;
+        const icons = locked ? ["󰤬", "󰤡", "󰤤", "󰤧", "󰤪"] : ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"];
         const network = bar.activeWifiNetwork(device);
-        const icons = ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"];
         const strength = network !== null ? network.signalStrength : 0;
         return icons[Math.max(0, Math.min(icons.length - 1, Math.floor(strength * icons.length)))];
     }
 
     function networkTooltip() {
-        const device = bar.connectedNetworkDevice();
+        const device = bar.networkDevice;
         if (device === null)
             return "Disconnected";
 
-        if (device.type === DeviceType.Wired)
-            return "Ethernet · " + device.name;
+        let text;
+        if (device.type === DeviceType.Wired) {
+            text = "Ethernet · " + device.name;
+        } else {
+            const network = bar.activeWifiNetwork(device);
+            text = network !== null ? network.name + " · " + Math.round(network.signalStrength * 100) + "%" : device.name;
+        }
+        if (!device.connected)
+            return "Connecting · " + text;
 
-        const network = bar.activeWifiNetwork(device);
-        return network !== null ? network.name + " · " + Math.round(network.signalStrength * 100) + "%" : device.name;
+        if (bar.vpnConnection !== null)
+            text += "\n" + (bar.vpnConnecting ? "Connecting VPN · " : "VPN · ") + bar.vpnConnection.name;
+
+        return text;
     }
 
     function batteryIcon() {
-        if (!UPower.onBattery)
-            return "";
-
-        const icons = ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"];
+        // Plugged in: the same gauge with the charging bolt.
+        const icons = UPower.onBattery ? ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"] : ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"];
         const percentage = Math.max(0, Math.min(1, bar.battery.percentage));
         return icons[Math.min(icons.length - 1, Math.floor(percentage * icons.length))];
     }
@@ -179,11 +208,14 @@ PanelWindow {
         if (audioMuted)
             return "";
 
-        if (audioVolume < 34)
+        if (audioVolume === 0)
             return "";
 
-        if (audioVolume < 67)
+        if (audioVolume < 34)
             return "";
+
+        if (audioVolume < 67)
+            return "";
 
         return "";
     }
@@ -401,12 +433,14 @@ PanelWindow {
                     }
                 }
 
-                Label {
-                    text: "󰾆 " + bar.memoryText
+                IconText {
+                    icon: ""
+                    text: bar.memoryText
                 }
 
-                Label {
-                    text: " " + bar.cpuTemperature
+                IconText {
+                    icon: ""
+                    text: bar.cpuUsage + "%"
                 }
 
                 Timer {
@@ -886,13 +920,14 @@ PanelWindow {
 
                     }
 
-                    Label {
+                    IconText {
                         id: calendarDate
 
                         anchors.top: calendarSeparator.bottom
                         anchors.topMargin: 10
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "󰃭 " + Qt.formatDate(clock.date, "dddd d MMMM yyyy")
+                        icon: "󰃭"
+                        text: Qt.formatDate(clock.date, "dddd d MMMM yyyy")
                         color: bar.lavender
                         font.pixelSize: 15
                         opacity: bar.calendarVisible ? 1 : 0
@@ -1724,8 +1759,110 @@ PanelWindow {
                     bar.shellState.controlPillHovered = hovered;
                 }
 
-                Label {
-                    text: bar.networkIcon()
+                // Spinner in place of the icon while NetworkManager connects (VPN included).
+                Item {
+                    implicitWidth: bar.networkConnecting ? 16 : networkLabel.implicitWidth
+                    implicitHeight: networkLabel.implicitHeight
+
+                    Label {
+                        id: networkLabel
+
+                        visible: !bar.networkConnecting
+                        text: bar.networkIcon()
+                    }
+
+                    Shape {
+                        id: networkSpinner
+
+                        property real sweep: 90
+
+                        visible: bar.networkConnecting
+                        anchors.centerIn: parent
+                        width: 14
+                        height: 14
+                        preferredRendererType: Shape.CurveRenderer
+
+                        ShapePath {
+                            fillColor: "transparent"
+                            strokeColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.25)
+                            strokeWidth: 2
+
+                            PathAngleArc {
+                                centerX: networkSpinner.width / 2
+                                centerY: networkSpinner.height / 2
+                                radiusX: networkSpinner.width / 2 - 1
+                                radiusY: networkSpinner.height / 2 - 1
+                                startAngle: 0
+                                sweepAngle: 360
+                            }
+
+                        }
+
+                        ShapePath {
+                            fillColor: "transparent"
+                            strokeColor: "#cba6f7"
+                            strokeWidth: 2
+                            capStyle: ShapePath.RoundCap
+
+                            PathAngleArc {
+                                centerX: networkSpinner.width / 2
+                                centerY: networkSpinner.height / 2
+                                radiusX: networkSpinner.width / 2 - 1
+                                radiusY: networkSpinner.height / 2 - 1
+                                startAngle: -90
+                                sweepAngle: networkSpinner.sweep
+                            }
+
+                        }
+
+                        RotationAnimator on rotation {
+                            running: networkSpinner.visible
+                            from: 0
+                            to: 360
+                            duration: 900
+                            loops: Animation.Infinite
+                        }
+
+                        // The arc stretches and shrinks as it turns.
+                        SequentialAnimation on sweep {
+                            running: networkSpinner.visible
+                            loops: Animation.Infinite
+
+                            NumberAnimation {
+                                to: 270
+                                duration: 700
+                                easing.type: Easing.InOutCubic
+                            }
+
+                            NumberAnimation {
+                                to: 40
+                                duration: 700
+                                easing.type: Easing.InOutCubic
+                            }
+
+                        }
+
+                    }
+
+                    // No locked Ethernet glyph in Material Design: a padlock badge instead.
+                    Rectangle {
+                        visible: bar.wiredLocked && !bar.networkConnecting
+                        anchors.right: networkLabel.right
+                        anchors.bottom: networkLabel.bottom
+                        anchors.rightMargin: -4
+                        anchors.bottomMargin: 1
+                        width: 11
+                        height: 11
+                        radius: width / 2
+                        color: controlPill.color
+
+                        Label {
+                            anchors.centerIn: parent
+                            text: "󰌾"
+                            font.pixelSize: 9
+                        }
+
+                    }
 
                     ToolTipArea {
                         text: bar.networkTooltip()
@@ -1733,10 +1870,22 @@ PanelWindow {
 
                 }
 
-                Label {
+                IconText {
+                    visible: bar.audioSink !== null
+                    icon: bar.volumeIcon()
+                    text: bar.audioVolume + "%"
+
+                    ToolTipArea {
+                        text: bar.audioSink !== null ? bar.audioSink.description : ""
+                    }
+
+                }
+
+                IconText {
                     visible: bar.hasBattery
                     color: bar.battery.percentage <= 0.2 ? bar.red : bar.mauve
-                    text: bar.batteryIcon() + " " + Math.round(bar.battery.percentage * 100) + "%"
+                    icon: bar.batteryIcon()
+                    text: Math.round(bar.battery.percentage * 100) + "%"
 
                     ToolTipArea {
                         text: bar.batteryTooltip()
@@ -1753,7 +1902,7 @@ PanelWindow {
     Process {
         id: resourceProcess
 
-        command: ["sh", "-c", "free -m | awk '/^Mem:/ {printf \"%.1fG\\n\", $3/1024}'; sensors 2>/dev/null | awk '/Package id 0:/ {gsub(/[+°C]/, \"\", $4); printf \"%.0f°C\\n\", $4; found=1; exit} /^Tctl:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} /^Tdie:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} END {if (!found) print \"--°C\"}'; awk '/cpu MHz/ {sum += $4; count++} END {printf \"%.0f MHz\\n\", count ? sum/count : 0}' /proc/cpuinfo; lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n1"]
+        command: ["sh", "-c", "free -m | awk '/^Mem:/ {printf \"%.1fG\\n\", $3/1024}'; sensors 2>/dev/null | awk '/Package id 0:/ {gsub(/[+°C]/, \"\", $4); printf \"%.0f°C\\n\", $4; found=1; exit} /^Tctl:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} /^Tdie:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} END {if (!found) print \"--°C\"}'; awk '/cpu MHz/ {sum += $4; count++} END {printf \"%.0f MHz\\n\", count ? sum/count : 0}' /proc/cpuinfo; lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n1; head -n1 /proc/stat"]
         running: true
 
         stdout: StdioCollector {
@@ -1769,9 +1918,66 @@ PanelWindow {
                     bar.cpuFrequency = lines[2];
                     bar.cpuModel = lines[3];
                 }
+                const stat = lines.find((line) => {
+                    return line.startsWith("cpu ");
+                });
+                if (stat !== undefined) {
+                    const jiffies = stat.trim().split(/\s+/).slice(1).map(Number);
+                    const idle = jiffies[3] + (jiffies[4] || 0);
+                    const total = jiffies.slice(0, 8).reduce((sum, value) => {
+                        return sum + (value || 0);
+                    }, 0);
+                    if (bar.cpuStat[1] > 0 && total > bar.cpuStat[1])
+                        bar.cpuUsage = Math.round(100 * (1 - (idle - bar.cpuStat[0]) / (total - bar.cpuStat[1])));
+
+                    bar.cpuStat = [idle, total];
+                }
             }
         }
 
+    }
+
+    Process {
+        id: vpnProcess
+
+        // NAME last: it is the only field that can hold an (escaped) colon.
+        command: ["nmcli", "-t", "-f", "TYPE,STATE,NAME", "connection", "show", "--active"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const connections = [];
+                for (const line of text.trim().split("\n")) {
+                    const fields = line.split(":");
+                    if (fields.length >= 3 && (fields[0] === "vpn" || fields[0] === "wireguard"))
+                        connections.push({
+                        "state": fields[1],
+                        "name": fields.slice(2).join(":").replace(/\\:/g, ":")
+                    });
+
+                }
+                bar.vpnConnections = connections;
+            }
+        }
+
+    }
+
+    // Any NetworkManager change refreshes the VPN list, coalesced.
+    Process {
+        command: ["nmcli", "monitor"]
+        running: true
+
+        stdout: SplitParser {
+            onRead: vpnRefresh.restart()
+        }
+
+    }
+
+    Timer {
+        id: vpnRefresh
+
+        interval: 250
+        onTriggered: vpnProcess.running = true
     }
 
     Process {

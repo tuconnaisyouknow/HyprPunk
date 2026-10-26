@@ -26,7 +26,7 @@ IslandPanel {
         "name": "Emoji",
         "panel": "emoji"
     }, {
-        "icon": "",
+        "icon": "󰌌",
         "name": "Keybindings",
         "panel": "keybindings"
     }, {
