@@ -44,6 +44,28 @@ PanelWindow {
     property bool monitorOpenPending: false
     property bool monitorVisible: false
     property bool monitorPopupVisible: false
+    property bool workspaceOpenPending: false
+    property bool workspaceVisible: false
+    property bool workspacePopupVisible: false
+    // The workspace the preview card opens on, among the ones the user is not on.
+    property var previewWorkspace: null
+    readonly property var previewWorkspaces: workspaceSwitcher.workspaces.filter((workspace) => {
+        return !workspace.focused;
+    }).sort((a, b) => {
+        return a.id - b.id;
+    })
+    // Picture of the bar for the previews (grabToImage's result, which keeps it alive).
+    property var barSnapshot: null
+    readonly property int workspacePreviewWidth: 400
+    // The screen's shape, 16:9 until Hyprland has told which monitor the bar is on.
+    readonly property int workspacePreviewHeight: {
+        const monitor = Hyprland.monitorFor(bar.screen);
+        return Math.round(workspacePreviewWidth * (monitor !== null && monitor.width > 0 ? monitor.height / monitor.width : 9 / 16));
+    }
+    // 0 = card folded on the workspaces pill, 1 = preview fully open.
+    property real workspaceProgress: workspaceVisible ? 1 : 0
+    // The wallpaper set by wallpaperctl.sh, under the previewed windows.
+    property string wallpaperPath: ""
     // 0 = card folded on the resources pill, 1 = system monitor fully open.
     property real monitorProgress: monitorVisible ? 1 : 0
     // 0 = popup folded on the cover pill, 1 = player fully open.
@@ -121,6 +143,12 @@ PanelWindow {
     readonly property bool vpnConnecting: vpnConnection !== null && !vpnActive
     readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || vpnConnecting
     readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && vpnConnection !== null
+
+    function closeWorkspacePreview() {
+        workspaceOpenPending = false;
+        workspaceVisible = false;
+        workspaceHideDelay.restart();
+    }
 
     function activeWifiNetwork(device) {
         for (const network of device.networks.values) {
@@ -308,6 +336,8 @@ PanelWindow {
     }
 
     Item {
+        id: barContent
+
         anchors.fill: parent
         anchors.leftMargin: 24
         anchors.rightMargin: 24
@@ -320,140 +350,186 @@ PanelWindow {
             anchors.verticalCenterOffset: -(bar.implicitHeight - 50) / 2
             spacing: 9
 
+            // Previews a workspace on hover, in a card that grows out of it.
             Pill {
-                Item {
+                id: workspacePill
+
+                onHoveredChanged: {
+                    if (!hovered) {
+                        workspaceOpenDelay.stop();
+                        if (bar.workspacePopupVisible)
+                            workspaceCloseDelay.restart();
+
+                    }
+                }
+
+                WorkspaceSwitcher {
                     id: workspaceSwitcher
 
-                    readonly property var hyprlandMonitor: Hyprland.monitorFor(bar.screen)
-                    readonly property var workspaces: Hyprland.workspaces.values.filter((workspace) => {
-                        return workspace.id > 0 && workspace.id <= 10 && workspace.monitor === workspaceSwitcher.hyprlandMonitor && (workspace.active || workspace.toplevels.values.length > 0);
-                    })
-                    property int activeButtonIndex: -1
-                    property int activeWorkspaceId: -1
-                    property bool activeWorkspaceOccupied: false
-                    property real fallbackSlideX: 0
-                    property real fallbackOpacity: 1
+                    screen: bar.screen
+                    icons: bar.workspaceIcons
+                    // Waits a moment, so passing over the pill on the way to a click
+                    // does not flash cards. The focused workspace is already on screen.
+                    onHoveredWorkspaceChanged: {
+                        if (hoveredWorkspace !== null && !hoveredWorkspace.focused && !bar.workspacePopupVisible)
+                            workspaceOpenDelay.restart();
+                        else
+                            workspaceOpenDelay.stop();
+                    }
+                }
 
-                    function selectWorkspace(workspaceId, visualIndex, occupied) {
-                        const previousWorkspaceId = activeWorkspaceId;
-                        const previousIndex = activeButtonIndex;
-                        const previousWorkspaceOccupied = activeWorkspaceOccupied;
-                        activeWorkspaceId = workspaceId;
-                        activeButtonIndex = visualIndex;
-                        activeWorkspaceOccupied = occupied;
-                        const sameVisualPosition = previousIndex === visualIndex;
-                        const emptyToOccupiedAfter = !previousWorkspaceOccupied && occupied && workspaceId > previousWorkspaceId;
-                        if (previousWorkspaceId >= 0 && previousWorkspaceId !== workspaceId && (sameVisualPosition || emptyToOccupiedAfter)) {
-                            fallbackTransition.stop();
-                            fallbackSlideX = workspaceId > previousWorkspaceId ? 22 : -22;
-                            fallbackOpacity = 0.25;
-                            fallbackTransition.start();
-                        }
+                Timer {
+                    id: workspaceOpenDelay
+
+                    interval: 350
+                    onTriggered: {
+                        if (workspaceSwitcher.hoveredWorkspace === null)
+                            return ;
+
+                        // The windows' places, which Hyprland only sends when asked, and
+                        // the bar as it stands, laid over every preview.
+                        Hyprland.refreshToplevels();
+                        barContent.grabToImage((result) => {
+                            bar.barSnapshot = result;
+                        });
+                        bar.previewWorkspace = workspaceSwitcher.hoveredWorkspace;
+                        workspaceCloseDelay.stop();
+                        workspaceHideDelay.stop();
+                        bar.workspaceOpenPending = true;
+                        bar.workspacePopupVisible = true;
+                    }
+                }
+
+                Timer {
+                    id: workspaceCloseDelay
+
+                    interval: 220
+                    onTriggered: bar.closeWorkspacePreview()
+                }
+
+                Timer {
+                    id: workspaceHideDelay
+
+                    // Lets the card fold back onto the pill first.
+                    interval: 320
+                    onTriggered: bar.workspacePopupVisible = false
+                }
+
+                PopupWindow {
+                    id: workspacePopup
+
+                    readonly property real progress: bar.workspaceProgress
+
+                    function lerp(from, to) {
+                        return from + (to - from) * progress;
                     }
 
-                    function clearSelectionIfUnfocused() {
-                        for (const workspace of workspaces) {
-                            if (workspace.focused)
-                                return ;
+                    visible: bar.workspacePopupVisible
 
+                    Connections {
+                        function onFrameSwapped() {
+                            if (bar.workspaceOpenPending) {
+                                bar.workspaceOpenPending = false;
+                                bar.workspaceVisible = true;
+                            }
                         }
-                        activeButtonIndex = -1;
-                        activeWorkspaceId = -1;
-                        activeWorkspaceOccupied = false;
+
+                        target: workspaceCard.Window.window
                     }
 
-                    implicitWidth: workspaceRow.implicitWidth
-                    implicitHeight: workspaceRow.implicitHeight
-                    opacity: fallbackOpacity
+                    // The preview inside the control center's padding.
+                    implicitWidth: bar.workspacePreviewWidth + 28
+                    implicitHeight: bar.workspacePreviewHeight + 28
+                    color: "transparent"
+                    grabFocus: false
 
-                    ParallelAnimation {
-                        id: fallbackTransition
-
-                        NumberAnimation {
-                            target: workspaceSwitcher
-                            property: "fallbackSlideX"
-                            to: 0
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                        NumberAnimation {
-                            target: workspaceSwitcher
-                            property: "fallbackOpacity"
-                            to: 1
-                            duration: 160
-                            easing.type: Easing.OutCubic
-                        }
-
+                    anchor {
+                        item: workspacePill
+                        edges: Edges.Top | Edges.Left
+                        gravity: Edges.Bottom | Edges.Right
+                        adjustment: PopupAdjustment.SlideX
                     }
 
-                    Rectangle {
-                        z: 0
-                        x: workspaceSwitcher.activeButtonIndex >= 0 ? workspaceSwitcher.activeButtonIndex * (31 + workspaceRow.spacing) : 0
-                        y: 0
-                        width: 44
-                        height: 31
-                        radius: height / 2
-                        color: bar.mauve
-                        visible: workspaceSwitcher.activeButtonIndex >= 0
+                    // The anchor is only computed on opening: follow the pill.
+                    Connections {
+                        function onXChanged() {
+                            workspacePopup.anchor.updateAnchor();
+                        }
 
-                        Behavior on x {
-                            NumberAnimation {
-                                duration: 260
-                                easing.type: Easing.OutCubic
+                        function onYChanged() {
+                            workspacePopup.anchor.updateAnchor();
+                        }
+
+                        target: workspacePill
+                    }
+
+                    ClippingRectangle {
+                        id: workspaceCard
+
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        width: workspacePopup.lerp(workspacePill.width, workspacePopup.width)
+                        height: workspacePopup.lerp(workspacePill.height, workspacePopup.height)
+                        // The pill's corners: rounder ones would let the pill's show under the card.
+                        radius: workspacePill.radius
+                        color: "transparent"
+
+                        // Same card as the pill it grows from, so the pill itself seems to grow.
+                        GlassSurface {
+                            radius: workspaceCard.radius
+                            tinted: false
+                            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+                        }
+
+                        // Laid out at full size, only uncovered while the card grows. Made
+                        // again at each opening, so the windows are captured afresh.
+                        Loader {
+                            x: 14
+                            y: 14
+                            width: bar.workspacePreviewWidth
+                            height: bar.workspacePreviewHeight
+                            active: bar.workspacePopupVisible
+                            opacity: bar.workspaceVisible ? 1 : 0
+
+                            sourceComponent: WorkspacePreviewCard {
+                                workspaces: bar.previewWorkspaces
+                                initialWorkspace: bar.previewWorkspace
+                                monitor: workspaceSwitcher.hyprlandMonitor
+                                wallpaper: bar.wallpaperPath
+                                barImage: bar.barSnapshot !== null ? bar.barSnapshot.url : ""
+                                barRect: Qt.rect(barContent.x, barContent.y, barContent.width, barContent.height)
+                                onWorkspaceChosen: (workspace) => {
+                                    workspace.activate();
+                                    bar.closeWorkspacePreview();
+                                }
+                            }
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 120
+                                    easing.type: Easing.OutCubic
+                                }
+
                             }
 
                         }
 
-                    }
-
-                    Row {
-                        id: workspaceRow
-
-                        z: 1
-                        spacing: 2
-
-                        Repeater {
-                            id: workspaceRepeater
-
-                            model: workspaceSwitcher.workspaces
-
-                            WorkspaceButton {
-                                id: workspaceButton
-
-                                required property var modelData
-                                required property int index
-
-                                workspaceId: modelData.id
-                                icon: bar.workspaceIcons[modelData.id]
-                                active: modelData.focused
-                                occupied: modelData.toplevels.values.length > 0
-                                drawActiveBackground: false
-                                onActivated: modelData.activate()
-                                onActiveChanged: {
-                                    if (active)
-                                        workspaceSwitcher.selectWorkspace(workspaceId, index, occupied);
-                                    else
-                                        Qt.callLater(workspaceSwitcher.clearSelectionIfUnfocused);
-                                }
-                                onOccupiedChanged: {
-                                    if (active)
-                                        workspaceSwitcher.activeWorkspaceOccupied = occupied;
-
-                                }
-                                Component.onCompleted: {
-                                    if (active)
-                                        workspaceSwitcher.selectWorkspace(workspaceId, index, occupied);
-
+                        HoverHandler {
+                            onHoveredChanged: {
+                                if (hovered) {
+                                    workspaceCloseDelay.stop();
+                                    workspaceHideDelay.stop();
+                                    bar.workspaceVisible = true;
+                                } else {
+                                    workspaceCloseDelay.restart();
                                 }
                             }
-
                         }
 
                     }
 
-                    transform: Translate {
-                        x: workspaceSwitcher.fallbackSlideX
+                    mask: Region {
+                        item: workspaceCard
                     }
 
                 }
@@ -2460,6 +2536,25 @@ PanelWindow {
     }
 
     Behavior on musicProgress {
+        NumberAnimation {
+            duration: 280
+            easing.type: Easing.OutCubic
+        }
+
+    }
+
+    FileView {
+        path: Session.stateDir + "/wallpaper.conf"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            const match = text().match(/^wallpaper=(.*)$/m);
+            bar.wallpaperPath = match ? match[1] : "";
+        }
+    }
+
+    Behavior on workspaceProgress {
         NumberAnimation {
             duration: 280
             easing.type: Easing.OutCubic
