@@ -29,7 +29,7 @@ Scope {
     // [{level, charging, label}] of the pods (or the headphones): one ring while both
     // pods agree, a letter on each when they do not.
     function podBatteries(device) {
-        if (device === null)
+        if (device === null || device.kind === undefined)
             return [];
 
         if (device.kind === "headphones")

@@ -14,7 +14,7 @@ ControlBlock {
     readonly property var controls: device.controls || {}
     readonly property var images: device.images || null
     readonly property bool headphones: device.kind === "headphones"
-    readonly property bool caseShown: !headphones && device["case"].level !== null
+    readonly property bool caseShown: !headphones && device["case"] !== undefined && device["case"].level !== null
     readonly property bool noiseControl: airPods.hasNoiseControl(device)
     readonly property var listeningModes: [{
         "value": 2,
