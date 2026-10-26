@@ -99,7 +99,7 @@ hl.layer_rule({ match = { namespace = "hyprpunk-notifications" }, blur = true, i
 hl.layer_rule({ match = { namespace = "hyprpunk-notification-center" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ match = { namespace = "hyprpunk-osd" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, ignore_alpha = 0.5 })
-hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
 -- Island panels (session menu, wallpaper picker) animate themselves out of the bar island
 hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = 0.5, no_anim = true })
 -- The screenshot's region is chosen over the frozen screen: shown at once, no fade

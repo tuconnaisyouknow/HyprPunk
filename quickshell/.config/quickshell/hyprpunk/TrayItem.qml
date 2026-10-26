@@ -7,7 +7,7 @@ Item {
 
     required property var item
     property bool popupAbove: false
-    readonly property bool menuOpen: menuAnchor.visible
+    readonly property bool menuOpen: trayMenu.visible
 
     implicitWidth: 28
     implicitHeight: 28
@@ -41,15 +41,12 @@ Item {
         above: root.popupAbove
     }
 
-    QsMenuAnchor {
-        id: menuAnchor
+    TrayMenu {
+        id: trayMenu
 
-        menu: root.item.menu
-        anchor.item: root
-        anchor.edges: root.popupAbove ? Edges.Top | Edges.Right : Edges.Bottom | Edges.Left
-        anchor.gravity: root.popupAbove ? Edges.Top | Edges.Left : Edges.Bottom | Edges.Right
-        // Clears the tray panel border above the icons.
-        anchor.margins.top: root.popupAbove ? -23 : 0
+        handle: root.item.menu
+        anchorItem: root
+        onDismissed: close()
     }
 
     MouseArea {
@@ -60,8 +57,16 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
         onClicked: (mouse) => {
-            if (mouse.button === Qt.RightButton && root.item.hasMenu) {
-                menuAnchor.open();
+            // Some items only have a menu, opened by any click.
+            if (root.item.hasMenu && (mouse.button === Qt.RightButton || root.item.onlyMenu)) {
+                if (trayMenu.visible) {
+                    trayMenu.close();
+                } else {
+                    // The tray's window ends at the screen's right edge.
+                    const window = root.QsWindow.window;
+                    trayMenu.anchorRight = window.screen.width - window.width + root.QsWindow.itemPosition(root).x + root.width;
+                    trayMenu.visible = true;
+                }
             } else if (mouse.button === Qt.MiddleButton) {
                 root.item.secondaryActivate();
             } else {
