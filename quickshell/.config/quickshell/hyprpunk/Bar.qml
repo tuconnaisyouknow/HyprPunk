@@ -89,8 +89,14 @@ PanelWindow {
     property bool statusOsdEnabled: false
     // "airpods": a pod and its battery ring instead of an icon, label and gauge.
     // "battery": the battery's alert, its icon, a title and the time left.
+    // "screenshot": the screenshot or recording just taken in small (statusOsdImage, the
+    // recording's first frame), titled statusOsdTitle, a click opens statusOsdFile.
     property string statusOsdKind: ""
     property string statusOsdImage: ""
+    property string statusOsdTitle: ""
+    property string statusOsdFile: ""
+    // Seconds since the recording started, for the island.
+    property int recordingElapsed: 0
     property var statusOsdRingLevel: null
     property bool statusOsdRingCharging: false
     // Level gauge shown instead of the On/Off badge when statusOsdMaxLevel > 0.
@@ -253,6 +259,31 @@ PanelWindow {
         }
         batteryAlertStage = stage;
         showBatteryOsd(stage === 5 ? "Battery critical" : "Battery low");
+    }
+
+    // m:ss, h:mm:ss past an hour.
+    function formatDuration(seconds) {
+        const pad = (value) => {
+            return String(value).padStart(2, "0");
+        };
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor(seconds / 60) % 60;
+        return (hours > 0 ? hours + ":" + pad(minutes) : minutes) + ":" + pad(seconds % 60);
+    }
+
+    function showScreenshotOsd(taken) {
+        calendarCloseDelay.stop();
+        calendarHideDelay.stop();
+        calendarVisible = false;
+        calendarPopupVisible = false;
+        statusOsdKind = "screenshot";
+        statusOsdImage = taken.file;
+        statusOsdFile = taken.video || taken.file;
+        statusOsdTitle = taken.video ? "Recording" : "Screenshot";
+        statusOsdLabel = taken.video ? formatDuration(taken.duration) + " · Saved" : taken.annotated ? "Annotated · Saved" : "Copied · Saved";
+        statusOsdHideDelay.interval = 3500;
+        statusOsdVisible = true;
+        statusOsdHideDelay.restart();
     }
 
     // Plugged in or unplugged: told in the island, unless unplugging gives a low
@@ -762,14 +793,35 @@ PanelWindow {
 
         }
 
-        // The privacy dot while the calendar covers the island: right of its card, at
-        // the island's height, following its edge as it grows.
+        // The privacy and recording dots while the calendar covers the island: right of
+        // its card, at the island's height, following its edge as it grows.
         PrivacyDot {
             x: centerGroup.x + clockPill.x + clockPill.width / 2 + calendarCard.width / 2 + 8
             y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
             camera: bar.shellState.cameraInUse
-            opacity: camera || bar.shellState.microphoneInUse ? calendarCard.openness : 0
+            microphone: bar.shellState.microphoneInUse
+            recording: bar.shellState.recording
+            opacity: active ? calendarCard.openness : 0
             visible: bar.calendarPopupVisible && opacity > 0
+        }
+
+        // The same while the island shows something else (an OSD): right of it.
+        PrivacyDot {
+            x: centerGroup.x + clockPill.x + clockPill.width + 8
+            y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
+            camera: bar.shellState.cameraInUse
+            microphone: bar.shellState.microphoneInUse
+            recording: bar.shellState.recording
+            opacity: active && bar.statusOsdVisible && !bar.calendarPopupVisible ? 1 : 0
+            visible: opacity > 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 200
+                }
+
+            }
+
         }
 
         RowLayout {
@@ -799,6 +851,16 @@ PanelWindow {
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
                 spacing: 8
+
+                // The screenshot or recording just taken opens in its viewer.
+                TapHandler {
+                    enabled: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
+                    cursorShape: Qt.PointingHandCursor
+                    onTapped: {
+                        Quickshell.execDetached(["xdg-open", bar.statusOsdFile]);
+                        bar.statusOsdVisible = false;
+                    }
+                }
                 horizontalPadding: bar.statusOsdVisible ? 36 : 20
                 implicitHeight: bar.statusOsdVisible ? 50 : 38
                 contentOpacity: 1
@@ -897,6 +959,124 @@ PanelWindow {
 
                 }
 
+                // Recording: a pulsing red dot and the time recorded after the time, a
+                // click stops it.
+                Item {
+                    id: recordingChip
+
+                    readonly property bool shown: !bar.statusOsdVisible && bar.shellState.recording
+
+                    visible: Layout.preferredWidth > 0
+                    Layout.preferredWidth: shown ? recordingRow.implicitWidth + 16 : 0
+                    Layout.leftMargin: shown ? 0 : -clockPill.spacing
+                    implicitHeight: 24
+                    clip: true
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: height / 2
+                        color: recordingHover.hovered ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.28) : Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.16)
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 140
+                            }
+
+                        }
+
+                    }
+
+                    Row {
+                        id: recordingRow
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: 8
+                        spacing: 6
+
+                        // The stop square on hover, the dot otherwise.
+                        Rectangle {
+                            id: recordingDot
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 8
+                            height: 8
+                            radius: recordingHover.hovered ? 2 : 4
+                            color: bar.red
+
+                            SequentialAnimation on opacity {
+                                running: recordingChip.shown && !recordingHover.hovered
+                                loops: Animation.Infinite
+                                onRunningChanged: {
+                                    if (!running)
+                                        recordingDot.opacity = 1;
+
+                                }
+
+                                NumberAnimation {
+                                    to: 0.3
+                                    duration: 700
+                                    easing.type: Easing.InOutSine
+                                }
+
+                                NumberAnimation {
+                                    to: 1
+                                    duration: 700
+                                    easing.type: Easing.InOutSine
+                                }
+
+                            }
+
+                            Behavior on radius {
+                                NumberAnimation {
+                                    duration: 140
+                                }
+
+                            }
+
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: bar.formatDuration(bar.recordingElapsed)
+                            color: bar.red
+                            font.family: "JetBrainsMono Nerd Font"
+                            font.pixelSize: 12
+                            font.weight: Font.Bold
+                            font.features: {
+                                "tnum": 1
+                            }
+                        }
+
+                    }
+
+                    HoverHandler {
+                        id: recordingHover
+
+                        cursorShape: Qt.PointingHandCursor
+                    }
+
+                    TapHandler {
+                        onTapped: bar.shellState.requestScreenshot("stop", "", 0)
+                    }
+
+                    Behavior on Layout.preferredWidth {
+                        NumberAnimation {
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                    Behavior on Layout.leftMargin {
+                        NumberAnimation {
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                }
+
                 Text {
                     visible: bar.statusOsdVisible && bar.statusOsdKind === ""
                     text: bar.statusOsdIcon
@@ -964,6 +1144,62 @@ PanelWindow {
 
                         }
 
+                    }
+
+                }
+
+                // Screenshot: the picture in small, then what became of it.
+                ClippingRectangle {
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
+                    implicitWidth: Math.round(30 * Math.min(1.8, Math.max(0.6, screenshotThumbnail.implicitWidth / Math.max(1, screenshotThumbnail.implicitHeight))))
+                    implicitHeight: 30
+                    radius: 6
+                    color: bar.surface1
+
+                    Image {
+                        id: screenshotThumbnail
+
+                        anchors.fill: parent
+                        source: bar.statusOsdKind === "screenshot" && bar.statusOsdImage !== "" ? "file://" + bar.statusOsdImage : ""
+                        sourceSize.height: 90
+                        fillMode: Image.PreserveAspectCrop
+                        cache: false
+                        smooth: true
+                        mipmap: true
+                    }
+
+                    // A recording's play sign.
+                    Text {
+                        anchors.centerIn: parent
+                        visible: bar.statusOsdTitle === "Recording"
+                        text: "󰐊"
+                        color: "#cdd6f4"
+                        style: Text.Outline
+                        styleColor: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.6)
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 14
+                    }
+
+                }
+
+                Column {
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
+                    Layout.leftMargin: 2
+                    spacing: 0
+
+                    Text {
+                        text: bar.statusOsdTitle
+                        color: bar.mauve
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 14
+                        font.weight: Font.Bold
+                    }
+
+                    Text {
+                        text: bar.statusOsdLabel
+                        color: bar.lavender
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 11
                     }
 
                 }
@@ -2532,6 +2768,15 @@ PanelWindow {
         onExited: updateProcess.running = true
     }
 
+    // The time recorded, for the island.
+    Timer {
+        interval: 1000
+        running: bar.shellState.recording
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: bar.recordingElapsed = Math.max(0, Math.round((Date.now() - bar.shellState.recordingStarted) / 1000))
+    }
+
     Timer {
         interval: 60 * 60 * 1000
         running: true
@@ -2869,6 +3114,17 @@ PanelWindow {
         }
 
         target: UPower
+    }
+
+    Connections {
+        function onScreenshotTakenChanged() {
+            const taken = bar.shellState.screenshotTaken;
+            if (taken !== null && taken.screen === bar.screen.name)
+                bar.showScreenshotOsd(taken);
+
+        }
+
+        target: bar.shellState
     }
 
     // Caffeine: the bar is always shown, so its inhibitor holds hypridle off.

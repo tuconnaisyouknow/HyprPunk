@@ -16,8 +16,8 @@ ShellRoot {
         property bool controlCenterOpen: false
         // Requests for a screen's panels: panel is "controlcenter", "notifications",
         // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji",
-        // "keybindings", "config", "monitor" or "menu", action "toggle", "open"
-        // or "close", screen a screen name (the focused one when empty).
+        // "keybindings", "config", "monitor", "screenshot" or "menu", action "toggle",
+        // "open" or "close", screen a screen name (the focused one when empty).
         property var panelRequest: ({
             "panel": "",
             "action": "",
@@ -57,6 +57,37 @@ ShellRoot {
         property bool controlPillHovered: false
         property var controlPillScreen: null
         property bool doNotDisturb: false
+        // Screenshots: asked by the keybinds or the screenshot menu (mode "screen",
+        // "region", "annotate", "record", "record-region" or "stop", screen a screen
+        // name, the focused one when empty, delay in ms), the region being chosen
+        // ({screen, file, scale}) and the last one taken, for the island ({screen,
+        // file, annotated}, or for a recording {screen, file: its first frame, video,
+        // duration in s}).
+        property var screenshotRequest: ({
+            "mode": "",
+            "screen": "",
+            "delay": 0
+        })
+        property int screenshotRequests: 0
+        property var screenshotSelection: null
+        property var screenshotTaken: null
+        // The screen being recorded, since recordingStarted (ms since epoch).
+        property bool recording: false
+        property string recordingScreen: ""
+        property real recordingStarted: 0
+
+        // The region chosen ({x, y, width, height} on the screen), null when cancelled.
+        signal screenshotSelected(var rect)
+
+        function requestScreenshot(mode, screen, delay) {
+            screenshotRequest = {
+                "mode": mode,
+                "screen": screen || "",
+                "delay": delay || 0
+            };
+            screenshotRequests += 1;
+        }
+
         // Privacy dot: an app records the camera or the microphone.
         readonly property bool cameraInUse: privacyService.cameraInUse
         readonly property bool microphoneInUse: privacyService.microphoneInUse
@@ -510,6 +541,35 @@ ShellRoot {
 
     Privacy {
         id: privacyService
+    }
+
+    Screenshot {
+        shellState: globalState
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        ScreenshotMenu {
+            required property var modelData
+
+            screen: modelData
+            shellState: globalState
+        }
+
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        ScreenshotSelector {
+            required property var modelData
+
+            screen: modelData
+            screenName: modelData.name
+            shellState: globalState
+        }
+
     }
 
     AirPods {

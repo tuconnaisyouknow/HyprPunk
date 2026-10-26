@@ -187,13 +187,15 @@ PanelWindow {
 
     }
 
-    // The privacy dot, out of the island the card covers: right of the card, at the
-    // island's height, following its edge as it grows.
+    // The privacy and recording dots, out of the island the card covers: right of the
+    // card, at the island's height, following its edge as it grows.
     PrivacyDot {
         x: card.x + card.width + 8
         y: panel.island.top + panel.island.height / 2 - height / 2
         camera: panel.shellState.cameraInUse
-        opacity: camera || panel.shellState.microphoneInUse ? panel.progress : 0
+        microphone: panel.shellState.microphoneInUse
+        recording: panel.shellState.recording
+        opacity: active ? panel.progress : 0
         visible: opacity > 0
     }
 

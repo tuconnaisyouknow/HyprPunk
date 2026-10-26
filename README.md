@@ -32,7 +32,7 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
-- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, and the OSD.
+- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, the OSD, and screenshots (annotated in place) and screen recordings.
 - 🔒 **Hyprlock**, **Hypridle**, and **awww** for lock screen, idle handling, and wallpapers with animated transitions.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
@@ -111,7 +111,7 @@ Reboot after the installation completes.
 ├── nvim/                # Neovim Lua configuration
 ├── qt5/                 # Source palette for generated Qt5ct configuration
 ├── qt6/                 # Source palette for generated Qt6ct configuration
-├── quickshell/          # Quickshell bar, island panels, control center, and notifications
+├── quickshell/          # Quickshell bar, island panels, control center, notifications, and captures
 ├── scripts/             # System, display, Qt, and lock-screen helpers
 ├── sddm/themes/         # Cyberpunk video themes installed system-wide
 ├── sddm/previews/       # Preview images of the SDDM themes
