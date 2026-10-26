@@ -23,6 +23,7 @@ PanelWindow {
     property color overlay2: "#9399b2"
     property color mauve: "#cba6f7"
     property color red: "#f38ba8"
+    property color green: "#a6e3a1"
     readonly property var workspaceIcons: ["", "", "", "", "", "", "", "", "", "", ""]
     readonly property var battery: UPower.displayDevice
     readonly property bool hasBattery: battery.ready && battery.isLaptopBattery && battery.isPresent
@@ -61,6 +62,11 @@ PanelWindow {
     property string statusOsdIcon: ""
     property string statusOsdLabel: ""
     property bool statusOsdEnabled: false
+    // "airpods": a pod and its battery ring instead of an icon, label and gauge.
+    property string statusOsdKind: ""
+    property string statusOsdImage: ""
+    property var statusOsdRingLevel: null
+    property bool statusOsdRingCharging: false
     // Level gauge shown instead of the On/Off badge when statusOsdMaxLevel > 0.
     property int statusOsdLevel: 0
     property int statusOsdMaxLevel: 0
@@ -77,6 +83,8 @@ PanelWindow {
     readonly property int audioVolume: audioSink !== null && audioSink.audio !== null ? Math.round(audioSink.audio.volume * 100) : 0
     readonly property bool audioMuted: audioSink !== null && audioSink.audio !== null && audioSink.audio.muted
     property bool volumeInitialized: false
+    // Output whose volume changes are shown, set again on each change of output.
+    property var volumeSink: audioSink
     property int screenBrightness: 0
     property bool brightnessInitialized: false
     property string keyboardBacklightPath: ""
@@ -195,11 +203,29 @@ PanelWindow {
         calendarHideDelay.stop();
         calendarVisible = false;
         calendarPopupVisible = false;
+        statusOsdKind = "";
+        statusOsdHideDelay.interval = 1500;
         statusOsdIcon = icon;
         statusOsdLabel = label;
         statusOsdEnabled = enabled;
         statusOsdLevel = level !== undefined ? level : 0;
         statusOsdMaxLevel = maxLevel !== undefined ? maxLevel : 0;
+        statusOsdVisible = true;
+        statusOsdHideDelay.restart();
+    }
+
+    function showAirPodsOsd(osd) {
+        calendarCloseDelay.stop();
+        calendarHideDelay.stop();
+        calendarVisible = false;
+        calendarPopupVisible = false;
+        statusOsdKind = "airpods";
+        statusOsdImage = osd.image;
+        statusOsdRingLevel = osd.level;
+        statusOsdRingCharging = osd.charging;
+        // Fades the content in like a new OSD.
+        statusOsdLabel = "AirPods";
+        statusOsdHideDelay.interval = 3000;
         statusOsdVisible = true;
         statusOsdHideDelay.restart();
     }
@@ -226,9 +252,22 @@ PanelWindow {
     }
 
     function showVolumeOsd() {
-        if (volumeInitialized)
+        // Checked here too: the volume can change (to 0 while an output goes away)
+        // before the output itself does.
+        if (audioSink !== volumeSink) {
+            resetVolumeOsd();
+            return ;
+        }
+        if (volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
             showStatusOsd(volumeIcon(), audioMuted ? "Muted" : "Volume", !audioMuted, audioMuted ? 0 : audioVolume, 100);
 
+    }
+
+    // Another output (e.g. AirPods coming or going) brings its own volume: not a change.
+    function resetVolumeOsd() {
+        volumeSink = audioSink;
+        volumeInitialized = false;
+        volumeInitDelay.restart();
     }
 
     // The island's new content fades in while the pill resizes around it.
@@ -236,6 +275,7 @@ PanelWindow {
     onStatusOsdLabelChanged: islandContentFade.restart()
     onAudioVolumeChanged: showVolumeOsd()
     onAudioMutedChanged: showVolumeOsd()
+    onAudioSinkChanged: resetVolumeOsd()
     // Deferred: during the bar's creation the pill's animations do not exist yet.
     onSpotifyPlayerChanged: Qt.callLater(musicPill.resetDiscs)
     onMicSourceChanged: {
@@ -652,7 +692,7 @@ PanelWindow {
                 }
 
                 Text {
-                    visible: bar.statusOsdVisible
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === ""
                     text: bar.statusOsdIcon
                     color: bar.mauve
                     font.family: "JetBrainsMono Nerd Font"
@@ -661,7 +701,7 @@ PanelWindow {
 
                 // Volume and screen brightness only show their icon and bar.
                 Text {
-                    visible: bar.statusOsdVisible && bar.statusOsdMaxLevel <= 10
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel <= 10
                     Layout.leftMargin: 4
                     Layout.rightMargin: 4
                     text: bar.statusOsdLabel
@@ -672,7 +712,7 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    visible: bar.statusOsdVisible && bar.statusOsdMaxLevel <= 0
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel <= 0
                     implicitWidth: statusOsdStateText.implicitWidth + 16
                     implicitHeight: 24
                     radius: 12
@@ -695,7 +735,7 @@ PanelWindow {
                     readonly property int segments: bar.statusOsdMaxLevel
                     readonly property int filled: bar.statusOsdLevel
 
-                    visible: bar.statusOsdVisible && bar.statusOsdMaxLevel > 0 && bar.statusOsdMaxLevel <= 10
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel > 0 && bar.statusOsdMaxLevel <= 10
                     spacing: 4
 
                     Repeater {
@@ -722,9 +762,90 @@ PanelWindow {
 
                 }
 
+                // AirPods: the pods on the left, their battery ring on the right.
+                Item {
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
+                    // As tall as the battery ring.
+                    implicitWidth: 40
+                    implicitHeight: 26
+
+                    Image {
+                        id: airPodsOsdImage
+
+                        anchors.fill: parent
+                        source: bar.statusOsdImage !== "" ? "file://" + bar.statusOsdImage : ""
+                        fillMode: Image.PreserveAspectFit
+                        sourceSize.height: 60
+                        smooth: true
+                        mipmap: true
+                    }
+
+                    // No render (AirPods Max, not downloaded yet): the glyph.
+                    Text {
+                        visible: airPodsOsdImage.status !== Image.Ready
+                        anchors.centerIn: parent
+                        text: "󱡏"
+                        color: bar.mauve
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 22
+                    }
+
+                }
+
+                Item {
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
+                    implicitWidth: 136
+                    implicitHeight: 1
+                }
+
+                Shape {
+                    id: airPodsOsdRing
+
+                    readonly property bool low: bar.statusOsdRingLevel !== null && bar.statusOsdRingLevel <= 20 && !bar.statusOsdRingCharging
+
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
+                    implicitWidth: 26
+                    implicitHeight: 26
+                    preferredRendererType: Shape.CurveRenderer
+
+                    ShapePath {
+                        strokeColor: bar.surface1
+                        strokeWidth: 3.5
+                        fillColor: "transparent"
+
+                        PathAngleArc {
+                            centerX: 13
+                            centerY: 13
+                            radiusX: 11
+                            radiusY: 11
+                            startAngle: 0
+                            sweepAngle: 360
+                        }
+
+                    }
+
+                    ShapePath {
+                        strokeColor: airPodsOsdRing.low ? bar.red : bar.green
+                        strokeWidth: 3.5
+                        fillColor: "transparent"
+                        capStyle: ShapePath.RoundCap
+
+                        PathAngleArc {
+                            centerX: 13
+                            centerY: 13
+                            radiusX: 11
+                            radiusY: 11
+                            startAngle: -90
+                            sweepAngle: bar.statusOsdRingLevel === null ? 0 : 3.6 * bar.statusOsdRingLevel
+                        }
+
+                    }
+
+                }
+
                 // Fine-grained levels (volume, screen brightness): continuous bar.
                 Rectangle {
-                    visible: bar.statusOsdVisible && bar.statusOsdMaxLevel > 10
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel > 10
                     implicitWidth: 160
                     implicitHeight: 8
                     radius: 4
@@ -2153,6 +2274,17 @@ PanelWindow {
         onFileChanged: reload()
     }
 
+    Connections {
+        function onAirPodsOsdRequestsChanged() {
+            const osd = bar.shellState.airPodsOsd;
+            if (osd.screen === bar.screen.name)
+                bar.showAirPodsOsd(osd);
+
+        }
+
+        target: bar.shellState
+    }
+
     PwObjectTracker {
         objects: bar.micSource !== null ? [bar.micSource] : []
     }
@@ -2162,6 +2294,8 @@ PanelWindow {
     }
 
     Timer {
+        id: volumeInitDelay
+
         interval: 600
         running: true
         onTriggered: bar.volumeInitialized = true
