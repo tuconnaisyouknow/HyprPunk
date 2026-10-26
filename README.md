@@ -30,7 +30,7 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
 - 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** themed around Catppuccin Mocha.
-- 🛠️ **SwayOSD**, **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
+- 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
 
@@ -192,7 +192,6 @@ The installer enables or configures:
 - 🎬 `sddm`
 - 📶 `bluetooth`
 - ⚡ `power-profiles-daemon`
-- 🔊 `swayosd-libinput-backend.service`
 - 🧱 `xwayland-satellite.service`
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
