@@ -89,6 +89,9 @@ PanelWindow {
     property string keyboardBacklightPath: ""
     property bool keyboardHwInitialized: false
     property real clockCenterOffset: bar.statusOsdVisible ? 3 : -3
+    // Regional formats (locale-profilectl.sh): the calendar's names and first day of the
+    // week follow them, although the shell keeps the locale it was started with.
+    readonly property var regionalLocale: Qt.locale(Session.regionalProfile === "us" ? "en_US" : "fr_FR")
     readonly property string stateHome: {
         const configuredStateHome = Quickshell.env("XDG_STATE_HOME");
         return configuredStateHome && configuredStateHome !== "" ? configuredStateHome : Quickshell.env("HOME") + "/.local/state";
@@ -163,6 +166,10 @@ PanelWindow {
             text += "\n" + (bar.vpnConnecting ? "Connecting VPN · " : "VPN · ") + bar.vpnConnection.name;
 
         return text;
+    }
+
+    function capitalized(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
     function batteryIcon() {
@@ -956,7 +963,8 @@ PanelWindow {
                 readonly property date displayedMonth: new Date(currentYear, currentMonth + monthOffset, 1)
                 readonly property int displayedYear: displayedMonth.getFullYear()
                 readonly property int displayedMonthNumber: displayedMonth.getMonth()
-                readonly property int firstWeekday: (displayedMonth.getDay() + 6) % 7
+                // Column of the month's first day, the week starting on the locale's first day.
+                readonly property int firstWeekday: (displayedMonth.getDay() - bar.regionalLocale.firstDayOfWeek + 7) % 7
                 readonly property int daysInMonth: new Date(displayedYear, displayedMonthNumber + 1, 0).getDate()
                 readonly property int weekRows: Math.ceil((firstWeekday + daysInMonth) / 7)
                 // Card height for the displayed month, measured from the real layout.
@@ -1093,7 +1101,7 @@ PanelWindow {
                         anchors.topMargin: 10
                         anchors.horizontalCenter: parent.horizontalCenter
                         icon: "󰃭"
-                        text: Qt.formatDate(clock.date, "dddd d MMMM yyyy")
+                        text: bar.regionalLocale.toString(clock.date, bar.regionalLocale.dateFormat(Locale.LongFormat))
                         color: bar.lavender
                         font.pixelSize: 15
                         opacity: bar.calendarVisible ? 1 : 0
@@ -1150,7 +1158,7 @@ PanelWindow {
                             id: calendarMonthLabel
 
                             Layout.alignment: Qt.AlignHCenter
-                            text: Qt.formatDate(calendarPopup.displayedMonth, "MMMM yyyy")
+                            text: bar.capitalized(bar.regionalLocale.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
                             color: bar.mauve
                             font.pixelSize: 18
                             font.weight: Font.Bold
@@ -1168,7 +1176,10 @@ PanelWindow {
                             rowSpacing: 4
 
                             Repeater {
-                                model: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                                // From the locale's first day, "Lun" rather than "lun.".
+                                model: [0, 1, 2, 3, 4, 5, 6].map((offset) => {
+                                    return bar.capitalized(bar.regionalLocale.dayName((bar.regionalLocale.firstDayOfWeek + offset) % 7, Locale.ShortFormat).replace(/\.$/, ""));
+                                })
 
                                 Label {
                                     required property string modelData
@@ -2209,6 +2220,8 @@ PanelWindow {
         id: upgradeProcess
 
         command: ["kitty", "-e", "yay", "-Syu", "--noconfirm", "--removemake"]
+        // The current locale, not the one the shell was started with.
+        environment: Session.localeEnvironment
         onExited: updateProcess.running = true
     }
 

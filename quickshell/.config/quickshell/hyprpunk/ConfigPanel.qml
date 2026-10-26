@@ -54,7 +54,7 @@ SearchPanel {
 
     function edit(file) {
         close();
-        Quickshell.execDetached(["kitty"].concat(file.command || ["nvim", file.path.replace(/^~/, home)]));
+        Session.launch(["kitty"].concat(file.command || ["nvim", file.path.replace(/^~/, home)]));
     }
 
     panelName: "config"

@@ -116,6 +116,9 @@ ColumnLayout {
     Process {
         id: chooser
 
+        // The current locale, not the one the shell was started with.
+        environment: Session.localeEnvironment
+
         command: {
             const command = ["zenity", "--file-selection", "--title=" + file.dialogTitle];
             if (file.path !== "")
