@@ -16,6 +16,16 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 | ![desktop](./assets/screenshots/desktop.png) | ![tmux](./assets/screenshots/tmux.png) |
 | Hyprlock | SDDM |
 | ![hyprlock](./assets/screenshots/hyprlock.png) | ![sddm](./assets/screenshots/sddm.png) |
+| Application Launcher | Main Menu |
+| ![launcher](./assets/screenshots/launcher.png) | ![main-menu](./assets/screenshots/main-menu.png) |
+| Control Center | Session Menu |
+| ![control-center](./assets/screenshots/control-center.png) | ![session-menu](./assets/screenshots/session-menu.png) |
+| Wallpaper Selector | SDDM Theme Selector |
+| ![wallpaper-selector](./assets/screenshots/wallpaper-selector.png) | ![sddm-theme-selector](./assets/screenshots/sddm-theme-selector.png) |
+| Keybindings | Emoji Picker |
+| ![keybindings](./assets/screenshots/keybindings.png) | ![emoji-picker](./assets/screenshots/emoji-picker.png) |
+| Configuration Files | Monitors |
+| ![config-files](./assets/screenshots/config-files.png) | ![monitors](./assets/screenshots/monitors.png) |
 
 ---
 
