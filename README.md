@@ -194,6 +194,7 @@ The installer enables or configures:
 - ⚡ `power-profiles-daemon`
 - 🧱 `xwayland-satellite.service`
 - 🔑 `gnome-keyring`
+- 🛡️ `hyprpolkitagent`
 - 🎨 GTK, Qt, and Kvantum themes
 - 📁 Papirus Dark icons with Catppuccin Mocha Mauve folders
 - 🕹️ CyberEXS GRUB theme when GRUB is present
