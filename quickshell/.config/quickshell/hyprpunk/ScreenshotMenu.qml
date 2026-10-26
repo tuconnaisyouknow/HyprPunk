@@ -13,13 +13,14 @@ IslandPanel {
     readonly property int entrySize: 64
     readonly property int entrySpacing: 10
     readonly property int labelHeight: 26
-    // mode: the screenshot taken, or the recording started, on this screen.
+    // mode: the screenshot taken, or the recording started, on this screen; badge: a
+    // small icon at the bottom right of the icon.
     readonly property var entries: [{
         "icon": "󰍹",
         "name": "Screen",
         "mode": "screen"
     }, {
-        "icon": "󰩭",
+        "icon": "󰒉",
         "name": "Region",
         "mode": "region"
     }, {
@@ -35,7 +36,8 @@ IslandPanel {
         "name": "Record screen",
         "mode": "record"
     }, {
-        "icon": "󰑋",
+        "icon": "󰒉",
+        "badge": "󰕧",
         "name": "Record region",
         "mode": "record-region"
     }])
@@ -115,6 +117,8 @@ IslandPanel {
                 }
 
                 Text {
+                    id: entryIcon
+
                     anchors.centerIn: parent
                     text: entryCard.modelData.icon
                     color: entryCard.selected ? "#1e1e2e" : "#cba6f7"
@@ -129,6 +133,20 @@ IslandPanel {
 
                     }
 
+                }
+
+                // Over the icon's corner, cut out of it by an outline of the card's colour.
+                Text {
+                    visible: entryCard.modelData.badge !== undefined
+                    x: entryIcon.x + entryIcon.width - width * 0.8
+                    y: entryIcon.y + entryIcon.height - height * 0.95
+                    text: entryCard.modelData.badge || ""
+                    color: entryIcon.color
+                    style: Text.Outline
+                    styleColor: entryCard.selected ? "#cba6f7" : "#2a2a3d"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    font.weight: Font.Bold
                 }
 
                 HoverHandler {
