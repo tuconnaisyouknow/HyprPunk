@@ -368,12 +368,12 @@ PanelWindow {
                     controlCenter.close();
             }
 
-            // Same card as the island panels: surface0 (the pill) to base at 0.9 (blurred by a
-            // layer rule) with the glass rim, opaque from the start so the pill itself seems to grow.
+            // Same card as the pill it grows from: base at 0.9 (blurred by a layer rule) with
+            // the glass rim, so the pill itself seems to grow.
             GlassSurface {
                 radius: panel.radius
                 tinted: false
-                backgroundColor: Qt.rgba(controlCenter.lerp(49, 30) / 255, controlCenter.lerp(50, 30) / 255, controlCenter.lerp(68, 46) / 255, controlCenter.lerp(1, 0.9))
+                backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
             }
 
             HoverHandler {
