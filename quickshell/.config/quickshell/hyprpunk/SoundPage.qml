@@ -538,15 +538,21 @@ ColumnLayout {
 
                     }
 
+                    // By address: every state of the daemon is a new list, and the panels
+                    // would be made again (losing the mode just chosen) at each one.
                     Repeater {
-                        model: page.airPodsShown
+                        model: ScriptModel {
+                            values: page.airPodsShown.map((device) => {
+                                return device.address;
+                            })
+                        }
 
                         AirPodsPanel {
                             required property var modelData
 
                             Layout.fillWidth: true
                             airPods: page.airPods
-                            device: modelData
+                            device: page.airPods.device(modelData) || {}
                         }
 
                     }
