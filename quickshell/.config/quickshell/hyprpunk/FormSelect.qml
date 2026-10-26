@@ -1,0 +1,192 @@
+import QtQuick
+import QtQuick.Layouts
+
+// Labelled choice of the control center's forms (NetworkManager's combo boxes): the
+// field shows the current option, a click unfolds the options below it.
+ColumnLayout {
+    id: select
+
+    required property string label
+    // [{"label": "...", ...}]: the entries' other keys are the caller's.
+    required property var options
+    property int currentIndex: 0
+    property bool expanded: false
+    readonly property var current: options[currentIndex] || null
+
+    signal activated(int index)
+
+    spacing: 5
+
+    Text {
+        text: select.label
+        color: "#b4befe"
+        font.family: "JetBrainsMono Nerd Font"
+        font.pixelSize: 12
+        font.weight: Font.Bold
+    }
+
+    Rectangle {
+        id: box
+
+        Layout.fillWidth: true
+        implicitHeight: 34
+        radius: 12
+        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, boxHover.hovered ? 0.6 : 0.45)
+        opacity: select.enabled ? 1 : 0.45
+
+        Text {
+            anchors.left: parent.left
+            anchors.right: chevron.left
+            anchors.leftMargin: 12
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            elide: Text.ElideRight
+            text: select.current ? select.current.label : ""
+            color: "#cba6f7"
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 14
+        }
+
+        Text {
+            id: chevron
+
+            anchors.right: parent.right
+            anchors.rightMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            text: "󰅀"
+            color: "#b4befe"
+            rotation: select.expanded ? 180 : 0
+            font.family: "JetBrainsMono Nerd Font"
+            font.pixelSize: 14
+
+            Behavior on rotation {
+                NumberAnimation {
+                    duration: 180
+                    easing.type: Easing.OutCubic
+                }
+
+            }
+
+        }
+
+        HoverHandler {
+            id: boxHover
+
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        TapHandler {
+            onTapped: {
+                boxBounce.restart();
+                select.expanded = !select.expanded;
+            }
+        }
+
+        BounceAnimation {
+            id: boxBounce
+
+            target: box
+        }
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 120
+            }
+
+        }
+
+    }
+
+    // The options, unfolded under the field.
+    Item {
+        Layout.fillWidth: true
+        implicitHeight: select.expanded ? optionColumn.implicitHeight : 0
+        clip: true
+        visible: implicitHeight > 0
+
+        Column {
+            id: optionColumn
+
+            width: parent.width
+            topPadding: 2
+            spacing: 2
+
+            Repeater {
+                model: select.options
+
+                Rectangle {
+                    id: option
+
+                    required property var modelData
+                    required property int index
+
+                    width: optionColumn.width
+                    height: 32
+                    radius: 10
+                    color: optionHover.hovered ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.16) : "transparent"
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.right: check.left
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        elide: Text.ElideRight
+                        text: option.modelData.label
+                        color: option.index === select.currentIndex ? "#cba6f7" : "#b4befe"
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 13
+                        font.weight: option.index === select.currentIndex ? Font.Bold : Font.Normal
+                    }
+
+                    Text {
+                        id: check
+
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: option.index === select.currentIndex
+                        text: ""
+                        color: "#cba6f7"
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                    }
+
+                    HoverHandler {
+                        id: optionHover
+
+                        cursorShape: Qt.PointingHandCursor
+                    }
+
+                    TapHandler {
+                        onTapped: {
+                            select.currentIndex = option.index;
+                            select.expanded = false;
+                            select.activated(option.index);
+                        }
+                    }
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 100
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        Behavior on implicitHeight {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+
+        }
+
+    }
+
+}

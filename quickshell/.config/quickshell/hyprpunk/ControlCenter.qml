@@ -32,6 +32,16 @@ PanelWindow {
     property string previousPage: "main"
     property real pageProgress: 1
     property var passwordNetwork: null
+    // Enterprise network whose credentials are asked on the "enterprise" page.
+    property var enterpriseNetwork: null
+    // Network connected from the panel: only its failures ask for credentials, not
+    // NetworkManager's own reconnections in the background.
+    property var requestedWifi: null
+    // Saved network and paired device of the detail pages.
+    property var detailNetwork: null
+    property var detailDevice: null
+    // Where the enterprise form goes back to: the list, or the network's details.
+    property string enterpriseReturnPage: "wifi"
     property string powerProfile: "balanced"
     property var powerProfiles: []
     property bool bluetoothPowerPending: false
@@ -110,8 +120,44 @@ PanelWindow {
         return page === name || (pageProgress < 1 && previousPage === name);
     }
 
+    function pageDepth(name) {
+        if (name === "main")
+            return 0;
+
+        if (name === "wifiDetail" || name === "bluetoothDetail")
+            return 2;
+
+        return name === "enterprise" ? 3 : 1;
+    }
+
+    // The page a page goes back to (Escape and the back buttons).
+    function parentPage(name) {
+        if (name === "enterprise")
+            return enterpriseReturnPage;
+
+        if (name === "wifiDetail")
+            return "wifi";
+
+        if (name === "bluetoothDetail")
+            return "bluetooth";
+
+        return "main";
+    }
+
+    function showWifiDetails(network) {
+        detailNetwork = network;
+        wifiDetailPage.reset();
+        page = "wifiDetail";
+    }
+
+    function showBluetoothDetails(device) {
+        detailDevice = device;
+        page = "bluetoothDetail";
+    }
+
     function pageX(name) {
-        const direction = page === "main" ? -1 : 1;
+        // Back towards the main page: the other way round.
+        const direction = pageDepth(page) < pageDepth(previousPage) ? -1 : 1;
         const width = panelWidth - 28;
         // pageProgress runs linearly: the slide eases out (cubic), the fades below don't.
         const slide = 1 - Math.pow(1 - pageProgress, 3);
@@ -204,7 +250,25 @@ PanelWindow {
             network.disconnect();
         } else if (network.known || network.security === WifiSecurityType.Open) {
             passwordNetwork = null;
+            requestedWifi = network;
             network.connect();
+        } else {
+            askWifiSecrets(network);
+        }
+    }
+
+    // 802.1X networks (NetworkManager's enterprise form), the others a password.
+    function isEnterprise(network) {
+        return [WifiSecurityType.WpaEap, WifiSecurityType.Wpa2Eap, WifiSecurityType.Wpa3SuiteB192, WifiSecurityType.DynamicWep, WifiSecurityType.Leap].includes(network.security);
+    }
+
+    function askWifiSecrets(network) {
+        if (isEnterprise(network)) {
+            passwordNetwork = null;
+            enterpriseNetwork = network;
+            enterpriseReturnPage = "wifi";
+            enterprisePage.reset();
+            page = "enterprise";
         } else {
             passwordNetwork = network;
             passwordInput.text = "";
@@ -281,6 +345,10 @@ PanelWindow {
             // Folds back without the page transition.
             pageAnimation.complete();
             passwordNetwork = null;
+            enterpriseNetwork = null;
+            requestedWifi = null;
+            detailNetwork = null;
+            detailDevice = null;
             // Set after the page reset, which would otherwise retain the old height.
             retainedHeight = 0;
         }
@@ -397,7 +465,7 @@ PanelWindow {
             focus: true
             Keys.onEscapePressed: {
                 if (controlCenter.page !== "main")
-                    controlCenter.page = "main";
+                    controlCenter.page = controlCenter.parentPage(controlCenter.page);
                 else
                     controlCenter.close();
             }
@@ -432,7 +500,7 @@ PanelWindow {
 
                 }
 
-                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : mainPage.implicitHeight
+                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : mainPage.implicitHeight
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.rightMargin: 14
@@ -709,12 +777,14 @@ PanelWindow {
                                     subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
                                     trailing: modelData.security === WifiSecurityType.Open ? "" : "󰌾"
                                     highlighted: modelData.connected
+                                    detailsAvailable: modelData.known
                                     onClicked: controlCenter.selectWifi(modelData)
+                                    onDetailsRequested: controlCenter.showWifiDetails(modelData)
 
                                     Connections {
                                         function onConnectionFailed(reason) {
-                                            if (reason === ConnectionFailReason.NoSecrets)
-                                                controlCenter.selectWifi(modelData);
+                                            if (reason === ConnectionFailReason.NoSecrets && controlCenter.opened && controlCenter.requestedWifi === modelData)
+                                                controlCenter.askWifiSecrets(modelData);
 
                                         }
 
@@ -889,7 +959,9 @@ PanelWindow {
                                         return modelData.paired ? "Paired" : "";
                                     }
                                     highlighted: modelData.connected
+                                    detailsAvailable: modelData.paired
                                     onClicked: controlCenter.selectBluetooth(modelData)
+                                    onDetailsRequested: controlCenter.showBluetoothDetails(modelData)
                                 }
 
                             }
@@ -900,6 +972,53 @@ PanelWindow {
 
                 }
 
+
+                EnterpriseWifiPage {
+                    id: enterprisePage
+
+                    width: parent.width
+                    x: controlCenter.pageX("enterprise")
+                    visible: controlCenter.pageVisible("enterprise")
+                    enabled: controlCenter.page === "enterprise"
+                    opacity: controlCenter.pageOpacity("enterprise")
+                    network: controlCenter.enterpriseNetwork
+                    onBackRequested: controlCenter.page = controlCenter.enterpriseReturnPage
+                    onFinished: controlCenter.page = controlCenter.enterpriseReturnPage
+                }
+
+                WifiDetailPage {
+                    id: wifiDetailPage
+
+                    width: parent.width
+                    x: controlCenter.pageX("wifiDetail")
+                    visible: controlCenter.pageVisible("wifiDetail")
+                    enabled: controlCenter.page === "wifiDetail"
+                    opacity: controlCenter.pageOpacity("wifiDetail")
+                    network: controlCenter.detailNetwork
+                    enterprise: controlCenter.detailNetwork !== null && controlCenter.isEnterprise(controlCenter.detailNetwork)
+                    onBackRequested: controlCenter.page = "wifi"
+                    onConnectRequested: controlCenter.selectWifi(controlCenter.detailNetwork)
+                    onModifyRequested: {
+                        controlCenter.enterpriseNetwork = controlCenter.detailNetwork;
+                        controlCenter.enterpriseReturnPage = "wifiDetail";
+                        enterprisePage.edit();
+                        controlCenter.page = "enterprise";
+                    }
+                    onForgotten: controlCenter.page = "wifi"
+                }
+
+                BluetoothDetailPage {
+                    id: bluetoothDetailPage
+
+                    width: parent.width
+                    x: controlCenter.pageX("bluetoothDetail")
+                    visible: controlCenter.pageVisible("bluetoothDetail")
+                    enabled: controlCenter.page === "bluetoothDetail"
+                    opacity: controlCenter.pageOpacity("bluetoothDetail")
+                    device: controlCenter.detailDevice
+                    onBackRequested: controlCenter.page = "bluetooth"
+                    onForgotten: controlCenter.page = "bluetooth"
+                }
 
                 ColumnLayout {
                     id: localePage
@@ -1009,8 +1128,9 @@ PanelWindow {
 
         interval: 380
         onTriggered: {
-            // Keep the panel open while a Wi-Fi password is being typed.
-            if (!controlCenter.pillHovered && !controlCenter.panelHovered && controlCenter.passwordNetwork === null)
+            // Keep the panel open while a Wi-Fi password or enterprise credentials are typed
+            // (a certificate may be picked in a file chooser outside it).
+            if (!controlCenter.pillHovered && !controlCenter.panelHovered && controlCenter.passwordNetwork === null && controlCenter.page !== "enterprise" && !(controlCenter.page === "wifiDetail" && wifiDetailPage.editing))
                 controlCenter.opened = false;
 
         }
