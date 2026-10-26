@@ -219,12 +219,12 @@ PanelWindow {
         radius: popup.island.height / 2
         color: "transparent"
 
-        // Same card as the island panels: surface0 (the island) to base at 0.9, blurred
+        // Same card as the island panels and the pills: base at 0.9, blurred
         // by the hyprpunk-island layer rule, with the glass rim.
         GlassSurface {
             radius: card.radius
             tinted: false
-            backgroundColor: Qt.rgba(popup.lerp(49, 30) / 255, popup.lerp(50, 30) / 255, popup.lerp(68, 46) / 255, popup.lerp(1, 0.9))
+            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
         }
 
         HoverHandler {

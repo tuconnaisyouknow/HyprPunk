@@ -152,12 +152,12 @@ PanelWindow {
         Keys.forwardTo: panel.keyTargets
         Keys.onEscapePressed: panel.back()
 
-        // Same card as the calendar: surface0 (the island) to base at 0.9 (blurred by a
-        // layer rule) with the glass rim.
+        // Same card as the island it grows from: base at 0.9 (blurred by a layer rule)
+        // with the glass rim.
         GlassSurface {
             radius: card.radius
             tinted: false
-            backgroundColor: Qt.rgba(panel.lerp(49, 30) / 255, panel.lerp(50, 30) / 255, panel.lerp(68, 46) / 255, panel.lerp(1, 0.9))
+            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
         }
 
         // Swallows the clicks on the card itself, so only the outside closes the panel.

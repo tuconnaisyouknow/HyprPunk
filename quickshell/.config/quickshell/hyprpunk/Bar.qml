@@ -17,7 +17,6 @@ PanelWindow {
 
     required property var shellState
     property color base: "#1e1e2e"
-    property color surface0: "#313244"
     property color surface1: "#45475a"
     property color lavender: "#b4befe"
     property color overlay2: "#9399b2"
@@ -90,16 +89,6 @@ PanelWindow {
     property string keyboardBacklightPath: ""
     property bool keyboardHwInitialized: false
     property real clockCenterOffset: bar.statusOsdVisible ? 3 : -3
-    // 0 for the clock, 1 for an OSD: the island turns from the pill into the panels' card.
-    property real statusOsdProgress: statusOsdVisible ? 1 : 0
-
-    Behavior on statusOsdProgress {
-        NumberAnimation {
-            duration: 220
-            easing.type: Easing.OutCubic
-        }
-
-    }
     readonly property string stateHome: {
         const configuredStateHome = Quickshell.env("XDG_STATE_HOME");
         return configuredStateHome && configuredStateHome !== "" ? configuredStateHome : Quickshell.env("HOME") + "/.local/state";
@@ -583,12 +572,12 @@ PanelWindow {
                         radius: monitorPill.radius
                         color: "transparent"
 
-                        // Same card as the island panels: surface0 (the pill) to base at 0.9,
-                        // opaque from the start so the pill itself seems to grow.
+                        // Same card as the pill it grows from: base at 0.9 with the glass rim,
+                        // so the pill itself seems to grow.
                         GlassSurface {
                             radius: monitorCard.radius
                             tinted: false
-                            backgroundColor: Qt.rgba(monitorPopup.lerp(49, 30) / 255, monitorPopup.lerp(50, 30) / 255, monitorPopup.lerp(68, 46) / 255, monitorPopup.lerp(1, 0.9))
+                            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
                         }
 
                         // Laid out at full size, only uncovered while the card grows.
@@ -668,10 +657,6 @@ PanelWindow {
                 horizontalPadding: bar.statusOsdVisible ? 36 : 20
                 implicitHeight: bar.statusOsdVisible ? 50 : 38
                 contentOpacity: 1
-                // Same card as the control center: surface0 (the pill) to base at 0.9, blurred
-                // by the bar's layer rule, with the glass rim.
-                color: Qt.rgba((49 - 19 * bar.statusOsdProgress) / 255, (50 - 20 * bar.statusOsdProgress) / 255, (68 - 22 * bar.statusOsdProgress) / 255, 1 - 0.1 * bar.statusOsdProgress)
-                glassOpacity: bar.statusOsdProgress
 
                 Label {
                     id: dateTimeLabel
@@ -1022,12 +1007,12 @@ PanelWindow {
                     radius: clockPill.radius
                     color: "transparent"
 
-                    // Same card as the player: surface0 (the pill) to base at 0.9, blurred by
+                    // Same card as the island it grows from: base at 0.9, blurred by
                     // the hyprpunk-bar blur_popups layer rule, with the glass rim.
                     GlassSurface {
                         radius: calendarCard.radius
                         tinted: false
-                        backgroundColor: Qt.rgba((49 - 19 * calendarCard.openness) / 255, (50 - 20 * calendarCard.openness) / 255, (68 - 22 * calendarCard.openness) / 255, 1 - 0.1 * calendarCard.openness)
+                        backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
                     }
 
                     MouseArea {
@@ -1492,7 +1477,17 @@ PanelWindow {
                 implicitWidth: 38
                 implicitHeight: 38
                 radius: 19
-                color: bar.surface0
+                // The pills' card is painted by the hole and the ring below, once
+                // everywhere: a fill here would show twice under the ring.
+                color: "transparent"
+
+                // Shows while a disc rolls in or out of the hole.
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: 3
+                    radius: width / 2
+                    color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+                }
 
                 Behavior on spinSpeed {
                     NumberAnimation {
@@ -1561,16 +1556,22 @@ PanelWindow {
                     maskSpreadAtMin: 1
                 }
 
-                // The masks leave a jagged edge (worse while spinning): an antialiased
-                // ring of the pill color covers it, the hole stays 32px wide.
+                // The pill around the hole, the pills' card. The masks leave a jagged edge
+                // (worse while spinning): the ring covers it, the hole stays 32px wide.
                 Rectangle {
                     anchors.fill: parent
-                    anchors.margins: 1.5
                     radius: width / 2
                     color: "transparent"
-                    border.width: 1.5
-                    border.color: musicPill.color
+                    border.width: 3
+                    border.color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
                     antialiasing: true
+                }
+
+                // Over the ring, like the other pills' rim.
+                GlassSurface {
+                    z: 1
+                    radius: 19
+                    tinted: false
                 }
 
                 // Spins while playing, keeps its angle while paused.
@@ -1827,12 +1828,12 @@ PanelWindow {
                         radius: musicPill.radius
                         color: "transparent"
 
-                        // Same background as the control center: surface0 (the pill) to base at 0.9,
+                        // Same card as the pill it grows from: base at 0.9,
                         // blurred by the hyprpunk-bar blur_popups layer rule, with the glass rim.
                         GlassSurface {
                             radius: musicCard.radius
                             tinted: false
-                            backgroundColor: Qt.rgba(musicPopup.lerp(49, 30) / 255, musicPopup.lerp(50, 30) / 255, musicPopup.lerp(68, 46) / 255, musicPopup.lerp(1, 0.9))
+                            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
                         }
 
                         MediaPlayerCard {
