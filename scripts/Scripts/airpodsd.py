@@ -13,6 +13,7 @@ Writes one JSON object per line on stdout:
     {"event": "lidClosed", "address": "..."}
 and reads one command per line on stdin:
     connect <address> | disconnect <address> | pair <address> | ignore <address>
+    control <address> <setting> <value>   (a setting of CONTROLS, sent over AAP)
 
 The protocol details come from LibrePods (https://github.com/kavishdevar/librepods).
 """
@@ -83,6 +84,20 @@ AAP_FEATURES_ACK = bytes.fromhex("040004002b00")
 AAP_BATTERY = bytes.fromhex("040004000400")
 AAP_EAR = bytes.fromhex("040004000600")
 AAP_KEYS = bytes.fromhex("04000400310002")
+# Control commands: the header, then the setting's identifier and its value, padded to
+# four value bytes. The AirPods answer with the same packet once applied, and send the
+# current values after the notifications are requested.
+AAP_CONTROL = bytes.fromhex("040004000900")
+# The settings the shell reads and changes, by AAP identifier: their name and how the
+# value byte reads. Listening mode: 1 off, 2 noise cancellation, 3 transparency,
+# 4 adaptive. Switches: 1 on, 2 off. Adaptive strength: 0 to 100.
+CONTROLS = {
+    0x0D: ("listeningMode", "byte"),
+    0x28: ("conversationAwareness", "switch"),
+    0x2E: ("adaptiveStrength", "byte"),
+    0x34: ("allowOff", "switch"),
+}
+CONTROL_IDS = {name: identifier for identifier, (name, _kind) in CONTROLS.items()}
 # AAP battery components and pod states.
 COMPONENTS = {0x01: "headset", 0x02: "right", 0x04: "left", 0x08: "case"}
 IN_EAR, OUT_OF_EAR, IN_CASE = 0x00, 0x01, 0x02
@@ -316,6 +331,8 @@ class AapSession:
             self.handle_ear(packet[6], packet[7])
         elif packet.startswith(AAP_KEYS):
             self.handle_keys(packet)
+        elif packet.startswith(AAP_CONTROL) and len(packet) >= 8:
+            self.handle_control(packet[6], packet[7])
 
     def handle_battery(self, packet):
         device = self.daemon.devices.get(self.address)
@@ -358,6 +375,22 @@ class AapSession:
         if previous is not None:
             self.daemon.ear_changed(self.address, previous, in_ear)
         self.daemon.changed()
+
+    def handle_control(self, identifier, value):
+        device = self.daemon.devices.get(self.address)
+        if device is None or identifier not in CONTROLS:
+            return
+        name, kind = CONTROLS[identifier]
+        device["controls"][name] = value == 0x01 if kind == "switch" else value
+        self.daemon.changed()
+
+    def set_control(self, name, value):
+        identifier = CONTROL_IDS[name]
+        kind = CONTROLS[identifier][1]
+        byte = (0x01 if value else 0x02) if kind == "switch" else max(0, min(100, int(value)))
+        if self.sock is None or not self.ready:
+            return
+        self.send(AAP_CONTROL + bytes([identifier, byte, 0, 0, 0]))
 
     def handle_keys(self, packet):
         keys = {}
@@ -603,6 +636,8 @@ class Daemon:
                 "nearby": False,
                 "lidOpen": False,
                 "precise": False,
+                # The CONTROLS the AirPods reported, by name, while connected.
+                "controls": {},
             }
         was_connected = device["connected"]
         device.update({"name": name, "model": model, "modelId": model_id, "kind": kind, "connected": connected})
@@ -612,6 +647,7 @@ class Daemon:
         elif not connected and address in self.sessions:
             self.sessions.pop(address).close()
             device["precise"] = False
+            device["controls"] = {}
             for part in ("left", "right"):
                 device[part]["inEar"] = False
         if changed is not None and "Connected" in changed and connected and not was_connected:
@@ -932,9 +968,12 @@ class Daemon:
         return True
 
     def run_command(self, line):
-        command, _, address = line.strip().partition(" ")
-        address = address.strip().upper()
-        if command == "connect":
+        command, _, rest = line.strip().partition(" ")
+        address, _, argument = rest.strip().partition(" ")
+        address = address.upper()
+        if command == "control":
+            self.control(address, argument)
+        elif command == "connect":
             self.connect(address)
         elif command == "disconnect":
             self.disconnect(address)
@@ -945,6 +984,17 @@ class Daemon:
             if self.pairing is not None and self.pairing["address"] == address:
                 self.pairing = None
                 self.changed()
+
+    def control(self, address, argument):
+        name, _, value = argument.partition(" ")
+        session = self.sessions.get(address)
+        if session is None or name not in CONTROL_IDS:
+            return
+        try:
+            value = int(value)
+        except ValueError:
+            return
+        session.set_control(name, value)
 
     def changed(self):
         if not self.emit_pending:
