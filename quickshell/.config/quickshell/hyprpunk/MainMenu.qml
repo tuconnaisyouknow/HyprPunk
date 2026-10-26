@@ -53,7 +53,7 @@ IslandPanel {
 
     function run(entry) {
         close();
-        shellState.requestPanel(entry.panel, "open", screen.name);
+        shellState.requestPanel(entry.panel, "open", screen.name, panelName);
     }
 
     function select(delta) {
@@ -64,7 +64,10 @@ IslandPanel {
     cardWidth: entries.length * entrySize + (entries.length - 1) * entrySpacing + 2 * cardPadding
     cardHeight: entrySize + labelHeight + 2 * cardPadding
     keyTargets: [keys]
-    onOpening: selectedIndex = 0
+    // Back from an entry's panel, that entry stays selected.
+    onOpening: selectedIndex = Math.max(0, entries.findIndex((entry) => {
+        return entry.panel === openedFrom;
+    }))
 
     Item {
         id: keys

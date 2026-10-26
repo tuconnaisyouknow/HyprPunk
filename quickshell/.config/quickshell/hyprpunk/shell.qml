@@ -33,11 +33,13 @@ ShellRoot {
             "height": 38
         })
 
-        function requestPanel(panel, action, screen) {
+        // origin: the panel making the request (the main menu for its entries).
+        function requestPanel(panel, action, screen, origin) {
             panelRequest = {
                 "panel": panel,
                 "action": action,
-                "screen": screen || ""
+                "screen": screen || "",
+                "origin": origin || ""
             };
             panelRequests += 1;
         }

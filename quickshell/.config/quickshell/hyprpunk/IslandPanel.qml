@@ -30,6 +30,8 @@ PanelWindow {
     // Left/right keys of the Hyprland binds for the keyboard layout (keyboard_state.lua):
     // j/m on AZERTY, h/l on QWERTY.
     property string keyboardLayout: "us"
+    // Panel whose request opened this one ("menu" from the main menu), read on opening.
+    property string openedFrom: ""
 
     // Emitted before the card grows, to reset the panel's state.
     signal opening()
@@ -53,6 +55,14 @@ PanelWindow {
         openPending = false;
         opened = false;
         hideDelay.restart();
+    }
+
+    // Escape: back to the main menu when it opened this panel, closed otherwise.
+    function back() {
+        close();
+        if (openedFrom === "menu")
+            shellState.requestPanel("menu", "open", screen.name, panelName);
+
     }
 
     // -1 or 1 for the layout's left/right keys (no modifier), 0 otherwise.
@@ -100,9 +110,10 @@ PanelWindow {
             if (request.panel !== panel.panelName || target !== panel.screen.name)
                 return ;
 
-            if (request.action === "open" || (request.action === "toggle" && !panel.opened))
+            if (request.action === "open" || (request.action === "toggle" && !panel.opened)) {
+                panel.openedFrom = request.origin;
                 panel.open();
-            else
+            } else
                 panel.close();
         }
 
@@ -138,7 +149,7 @@ PanelWindow {
         color: "transparent"
         focus: true
         Keys.forwardTo: panel.keyTargets
-        Keys.onEscapePressed: panel.close()
+        Keys.onEscapePressed: panel.back()
 
         // Same card as the calendar: surface0 (the island) to base at 0.9 (blurred by a
         // layer rule) with the glass rim.
