@@ -10,31 +10,12 @@ Item {
     // [{"t": seconds, "text": "..."}], t is -1 for untimed lyrics.
     property var lines: []
     property bool synced: false
-    property bool instrumental: false
-    // Lyrics.status: "idle", "loading", "found", "missing" or "network".
-    property string status: "idle"
     // Index of the line being sung, -1 before the first one.
     property int current: -1
     // Off while the card is not shown: no blur layers, no follow animation.
     property bool active: true
     // The line being sung sits this far down the view.
     readonly property real anchorRatio: 0.3
-    readonly property string message: {
-        if (status === "loading")
-            return "Looking for lyrics…";
-
-        if (status === "network")
-            return "Lyrics unavailable, trying again soon";
-
-        if (status === "missing")
-            return "No lyrics for this track";
-
-        if (instrumental)
-            return "Instrumental";
-
-        return "";
-    }
-
     // Scrolled by hand: the view stops following until resumeFollow runs out.
     property bool handScrolled: false
 
@@ -66,24 +47,10 @@ Item {
         }
     }
 
-    Text {
-        anchors.centerIn: parent
-        width: parent.width
-        visible: view.message !== ""
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.WordWrap
-        text: view.message
-        color: "#7f849c"
-        font.family: "JetBrainsMono Nerd Font"
-        font.pixelSize: 14
-        font.weight: Font.DemiBold
-    }
-
     Flickable {
         id: flickable
 
         anchors.fill: parent
-        visible: view.lines.length > 0
         contentHeight: column.height
         clip: true
         boundsBehavior: Flickable.StopAtBounds
