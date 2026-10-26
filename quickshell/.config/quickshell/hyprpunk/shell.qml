@@ -67,6 +67,11 @@ ShellRoot {
         property real musicSkipUntil: 0
         // Incremented on each "previous" request, which may restart the track instead.
         property int musicPreviousRequests: 0
+        // AirPods OSD on a screen's island, once the AirPods card folds back:
+        // {screen, image (the pods' render, "" for none), level (null when unknown), charging}.
+        property var airPodsOsd: ({
+        })
+        property int airPodsOsdRequests: 0
     }
 
     // hypridle calls `qs -c hyprpunk ipc call osd ignoreNextChange <keyboard|screen>`
@@ -472,6 +477,23 @@ ShellRoot {
     NotificationPopups {
         shellState: globalState
         notificationServer: notificationService
+    }
+
+    AirPods {
+        id: airPodsService
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        AirPodsPopup {
+            required property var modelData
+
+            screen: modelData
+            shellState: globalState
+            airPods: airPodsService
+        }
+
     }
 
     Variants {

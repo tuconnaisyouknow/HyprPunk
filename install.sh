@@ -305,6 +305,7 @@ install_packages() {
     \
     sddm networkmanager \
     bluez bluez-utils power-profiles-daemon upower \
+    python-dbus python-gobject python-cryptography \
     pipewire-pulse wireplumber playerctl \
     gnome-keyring seahorse hyprpolkitagent \
     \
