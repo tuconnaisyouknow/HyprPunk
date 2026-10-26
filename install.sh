@@ -307,7 +307,7 @@ install_packages() {
     sddm networkmanager \
     bluez bluez-utils power-profiles-daemon upower \
     pipewire-pulse wireplumber playerctl \
-    gnome-keyring seahorse \
+    gnome-keyring seahorse hyprpolkitagent \
     \
     hyprland hyprpaper hyprlock hypridle \
     hyprshot satty hyprcursor hyprpicker \

@@ -42,6 +42,9 @@ hl.on("hyprland.start", function()
 
   -- Starting gnome keyring for some applications
   hl.exec_cmd("/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh")
+
+  -- Starting the polkit agent for graphical privilege prompts
+  hl.exec_cmd("systemctl --user start hyprpolkitagent")
 end)
 
 -- Initialize unknown outputs as soon as Hyprland has finished adding them.
