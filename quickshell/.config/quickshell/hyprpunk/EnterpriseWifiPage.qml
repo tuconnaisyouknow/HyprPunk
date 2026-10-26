@@ -247,9 +247,13 @@ ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: Math.min(form.implicitHeight, 470) + 24
 
+        // Into the block's padding by 6px a side, so the fields' bounce isn't cut.
         Flickable {
             anchors.fill: parent
-            anchors.margins: 12
+            anchors.leftMargin: 6
+            anchors.rightMargin: 6
+            anchors.topMargin: 12
+            anchors.bottomMargin: 12
             contentHeight: form.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
             clip: true
@@ -257,7 +261,8 @@ ColumnLayout {
             ColumnLayout {
                 id: form
 
-                width: parent.width
+                x: 6
+                width: parent.width - 12
                 spacing: 10
                 enabled: !page.connecting && !page.loading
 
