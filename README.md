@@ -16,8 +16,6 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 | ![desktop](./assets/screenshots/desktop.png) | ![tmux](./assets/screenshots/tmux.png) |
 | Hyprlock | SDDM |
 | ![hyprlock](./assets/screenshots/hyprlock.png) | ![sddm](./assets/screenshots/sddm.png) |
-| Thunar | |
-| ![thunar](./assets/screenshots/thunar.png) | |
 
 ---
 

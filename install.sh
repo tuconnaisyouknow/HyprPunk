@@ -301,7 +301,7 @@ install_packages() {
     fzf eza bat fd \
     ripgrep fastfetch btop tmux \
     yazi cava bc stow brightnessctl jq \
-    webp-pixbuf-loader gvfs \
+    webp-pixbuf-loader \
     neovim lazygit cargo npm \
     \
     sddm networkmanager \
@@ -333,7 +333,7 @@ install_packages() {
     otf-font-awesome \
     ttf-apple-emoji \
     \
-    thunar tumbler ffmpegthumbnailer ark loupe papers \
+    dolphin ffmpegthumbs kdegraphics-thumbnailers ark loupe papers \
     mpv celluloid mate-media \
     libreoffice-fresh brave-bin \
     spotify-launcher obsidian discord \
