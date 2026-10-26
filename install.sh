@@ -304,14 +304,14 @@ install_packages() {
     webp-pixbuf-loader gvfs \
     neovim lazygit cargo npm \
     \
-    sddm networkmanager network-manager-applet blueman \
+    sddm networkmanager \
     bluez bluez-utils power-profiles-daemon upower \
     pipewire-pulse wireplumber playerctl \
-    gcr gnome-keyring seahorse \
+    gnome-keyring seahorse \
     \
     hyprland hyprpaper hyprlock hypridle \
     hyprshot satty hyprcursor hyprpicker \
-    quickshell swayosd cliphist wl-clipboard \
+    quickshell cliphist wl-clipboard \
     \
     qt5ct-kde qt5-wayland qt5-tools \
     qt5-quickcontrols2 layer-shell-qt5 \
@@ -339,10 +339,7 @@ install_packages() {
     spotify-launcher obsidian discord \
     \
     qt6-multimedia \
-    qt6-multimedia-ffmpeg \
-    gst-plugin-pipewire \
-    gst-plugins-bad \
-    gst-plugins-ugly
+    qt6-multimedia-ffmpeg
 }
 
 clean_user_configs() {
@@ -660,7 +657,6 @@ enable_services() {
   sudo systemctl enable sddm
   sudo systemctl enable bluetooth
   sudo systemctl enable power-profiles-daemon
-  sudo systemctl enable swayosd-libinput-backend.service
 
   systemctl --user enable xwayland-satellite.service
 }
