@@ -9,8 +9,11 @@ ControlBlock {
     property string subtitle: ""
     property string trailing: ""
     property bool highlighted: false
+    // A round info button at the end, for a saved network or a paired device.
+    property bool detailsAvailable: false
 
     signal clicked()
+    signal detailsRequested()
 
     implicitHeight: 48
     radius: 14
@@ -18,7 +21,7 @@ ControlBlock {
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 12
-        anchors.rightMargin: 14
+        anchors.rightMargin: row.detailsAvailable ? 8 : 14
         spacing: 12
 
         Text {
@@ -60,6 +63,57 @@ ControlBlock {
             color: "#b4befe"
             font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 14
+        }
+
+        // Plain glyph with a glass halo on hover, like the player's controls.
+        Item {
+            id: detailsButton
+
+            visible: row.detailsAvailable
+            Layout.preferredWidth: 30
+            Layout.preferredHeight: 30
+
+            GlassSurface {
+                radius: width / 2
+                hovered: detailsArea.pressed
+                opacity: detailsArea.containsMouse ? 1 : 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 120
+                    }
+
+                }
+
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: "󰋽"
+                color: detailsArea.containsMouse ? "#cba6f7" : "#b4befe"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 17
+            }
+
+            // A MouseArea takes the click from the row.
+            MouseArea {
+                id: detailsArea
+
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    detailsBounce.restart();
+                    row.detailsRequested();
+                }
+            }
+
+            BounceAnimation {
+                id: detailsBounce
+
+                target: detailsButton
+            }
+
         }
 
     }
