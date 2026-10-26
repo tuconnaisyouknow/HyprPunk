@@ -31,9 +31,6 @@ hl.on("hyprland.start", function()
   -- Stopping bluetooth by default on startup
   hl.exec_cmd("bluetoothctl power off")
 
-  -- Starting battery moniroring script to notify when the battery is under 20% of charge
-  hl.exec_cmd("~/Scripts/battery-monitor.sh")
-
   -- Starting clipboard monitoring to store clipboard history (text, and images
   -- even when they come with a text type, for the quickshell clipboard thumbnails)
   hl.exec_cmd("wl-paste --type text --watch cliphist store")

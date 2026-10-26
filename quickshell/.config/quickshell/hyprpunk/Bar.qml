@@ -87,6 +87,7 @@ PanelWindow {
     property string statusOsdLabel: ""
     property bool statusOsdEnabled: false
     // "airpods": a pod and its battery ring instead of an icon, label and gauge.
+    // "battery": the battery's alert, its icon, a title and the time left.
     property string statusOsdKind: ""
     property string statusOsdImage: ""
     property var statusOsdRingLevel: null
@@ -94,6 +95,18 @@ PanelWindow {
     // Level gauge shown instead of the On/Off badge when statusOsdMaxLevel > 0.
     property int statusOsdLevel: 0
     property int statusOsdMaxLevel: 0
+    readonly property int batteryPercent: Math.round(battery.percentage * 100)
+    // The lowest threshold (20, 10 or 5 %) the battery went under since it was last
+    // plugged in, 0 above them: each is told once, the critical one stays shown.
+    property int batteryAlertStage: 0
+    readonly property bool batteryCritical: hasBattery && UPower.onBattery && batteryAlertStage === 5
+    // Off while the shell starts, UPower's first values are not a plug or unplug.
+    property bool powerEventsReady: false
+    // Seconds left from the battery's own draw, while UPower has no estimate yet
+    // (the first seconds after unplugging), 0 without one.
+    property real batteryDrawEstimate: 0
+    readonly property real batteryTimeLeft: battery.timeToEmpty > 0 ? battery.timeToEmpty : batteryDrawEstimate
+    readonly property bool batteryEstimating: statusOsdVisible && statusOsdKind === "battery" && statusOsdLabel === "On battery" && batteryTimeLeft <= 0
     property bool lockStateInitialized: false
     property bool capsLockEnabled: false
     property bool numLockEnabled: false
@@ -220,6 +233,77 @@ PanelWindow {
         statusOsdHideDelay.interval = 3000;
         statusOsdVisible = true;
         statusOsdHideDelay.restart();
+    }
+
+    function updateBatteryAlert() {
+        if (!hasBattery)
+            return ;
+
+        if (!UPower.onBattery) {
+            batteryAlertStage = 0;
+            return ;
+        }
+        const stage = batteryPercent <= 5 ? 5 : batteryPercent <= 10 ? 10 : batteryPercent <= 20 ? 20 : 0;
+        if (stage === 0 || (batteryAlertStage > 0 && stage >= batteryAlertStage)) {
+            if (stage === 0)
+                batteryAlertStage = 0;
+
+            return ;
+        }
+        batteryAlertStage = stage;
+        showBatteryOsd(stage === 5 ? "Battery critical" : "Battery low");
+    }
+
+    // Plugged in or unplugged: told in the island, unless unplugging gives a low
+    // battery's alert instead.
+    function powerSourceChanged() {
+        updateBatteryAlert();
+        if (!hasBattery || !powerEventsReady)
+            return ;
+
+        if (!UPower.onBattery)
+            showBatteryOsd("Charging");
+        else if (batteryAlertStage === 0)
+            showBatteryOsd("On battery");
+    }
+
+    function showBatteryOsd(title) {
+        calendarCloseDelay.stop();
+        calendarHideDelay.stop();
+        calendarVisible = false;
+        calendarPopupVisible = false;
+        statusOsdKind = "battery";
+        statusOsdLabel = title;
+        batteryDrawEstimate = 0;
+        // Unplugged: open until the time left is known, then a moment to read it.
+        statusOsdHideDelay.interval = title === "On battery" && batteryTimeLeft <= 0 ? 8000 : title === "Charging" || title === "On battery" ? 2500 : 6000;
+        statusOsdVisible = true;
+        // The critical alert stays until the computer is plugged in.
+        if (batteryCritical)
+            statusOsdHideDelay.stop();
+        else
+            statusOsdHideDelay.restart();
+    }
+
+    // Green while charging, mauve on battery, red for the alerts.
+    function batteryOsdColor() {
+        if (statusOsdLabel === "Charging")
+            return green;
+
+        return statusOsdLabel === "On battery" ? mauve : red;
+    }
+
+    // "64% · 1 h 05 until full" while charging, "64% · 3 h 10 left" on battery, the
+    // percentage alone until UPower has an estimate.
+    function batteryDetail() {
+        const seconds = UPower.onBattery ? batteryTimeLeft : battery.timeToFull;
+        if (!(seconds > 0))
+            return batteryPercent + (batteryEstimating ? "% · Estimating…" : UPower.onBattery ? "%" : "% · Plugged in");
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.round((seconds % 3600) / 60);
+        const duration = hours > 0 ? hours + " h " + String(minutes).padStart(2, "0") : minutes + " min";
+        return batteryPercent + "% · " + duration + (UPower.onBattery ? " left" : " until full");
     }
 
     function volumeIcon() {
@@ -820,6 +904,64 @@ PanelWindow {
 
                 }
 
+                // Battery: plugged in (green), unplugged (mauve) or running low (red,
+                // pulsing while critical), a title and the time left or to full.
+                Text {
+                    id: batteryOsdIcon
+
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "battery"
+                    text: bar.batteryIcon()
+                    color: bar.batteryOsdColor()
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 22
+
+                    SequentialAnimation on opacity {
+                        running: bar.batteryCritical && batteryOsdIcon.visible
+                        loops: Animation.Infinite
+                        onRunningChanged: {
+                            if (!running)
+                                batteryOsdIcon.opacity = 1;
+
+                        }
+
+                        NumberAnimation {
+                            to: 0.35
+                            duration: 600
+                            easing.type: Easing.InOutSine
+                        }
+
+                        NumberAnimation {
+                            to: 1
+                            duration: 600
+                            easing.type: Easing.InOutSine
+                        }
+
+                    }
+
+                }
+
+                Column {
+                    visible: bar.statusOsdVisible && bar.statusOsdKind === "battery"
+                    Layout.leftMargin: 2
+                    spacing: 0
+
+                    Text {
+                        text: bar.statusOsdLabel
+                        color: bar.batteryOsdColor()
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 14
+                        font.weight: Font.Bold
+                    }
+
+                    Text {
+                        text: bar.batteryDetail()
+                        color: bar.lavender
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 11
+                    }
+
+                }
+
                 // AirPods: the pods on the left, their battery ring on the right.
                 Item {
                     visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
@@ -981,7 +1123,13 @@ PanelWindow {
                 id: statusOsdHideDelay
 
                 interval: 1500
-                onTriggered: bar.statusOsdVisible = false
+                onTriggered: {
+                    // Another OSD over the critical battery alert: back to the alert.
+                    if (bar.batteryCritical)
+                        bar.showBatteryOsd("Battery critical");
+                    else
+                        bar.statusOsdVisible = false;
+                }
             }
 
             Timer {
@@ -2168,10 +2316,38 @@ PanelWindow {
                 }
 
                 IconText {
+                    id: batteryPill
+
                     visible: bar.hasBattery
-                    color: bar.battery.percentage <= 0.2 ? bar.red : bar.mauve
+                    // Red only while it runs out: charging, a low level is fine.
+                    color: UPower.onBattery && bar.batteryPercent <= 20 ? bar.red : bar.mauve
                     icon: bar.batteryIcon()
-                    text: Math.round(bar.battery.percentage * 100) + "%"
+                    text: bar.batteryPercent + "%"
+
+                    // Pulses from 10 %.
+                    SequentialAnimation on opacity {
+                        running: bar.hasBattery && UPower.onBattery && bar.batteryPercent <= 10
+                        loops: Animation.Infinite
+                        onRunningChanged: {
+                            if (!running)
+                                batteryPill.opacity = 1;
+
+                        }
+
+                        NumberAnimation {
+                            to: 0.4
+                            duration: 900
+                            easing.type: Easing.InOutSine
+                        }
+
+                        NumberAnimation {
+                            to: 1
+                            duration: 900
+                            easing.type: Easing.InOutSine
+                        }
+
+                    }
+
                 }
 
             }
@@ -2560,6 +2736,69 @@ PanelWindow {
             easing.type: Easing.OutCubic
         }
 
+    }
+
+    // The battery's alerts, from UPower's changes (no polling).
+    Connections {
+        function onPercentageChanged() {
+            bar.updateBatteryAlert();
+        }
+
+        target: bar.battery
+        // Already low when the shell starts.
+        Component.onCompleted: Qt.callLater(bar.updateBatteryAlert)
+    }
+
+    Timer {
+        running: true
+        interval: 3000
+        onTriggered: bar.powerEventsReady = true
+    }
+
+    // The time left as soon as it is known, then the usual moment to read it.
+    Connections {
+        function onBatteryEstimatingChanged() {
+            if (!bar.batteryEstimating && bar.statusOsdVisible && bar.statusOsdLabel === "On battery") {
+                statusOsdHideDelay.interval = 2500;
+                statusOsdHideDelay.restart();
+            }
+        }
+
+        target: bar
+    }
+
+    // UPower waits for a few readings: the draw is read every second meanwhile.
+    Timer {
+        running: bar.batteryEstimating
+        interval: 1000
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: batteryDrawProcess.running = true
+    }
+
+    Process {
+        id: batteryDrawProcess
+
+        command: ["sh", "-c", "cat /sys/class/power_supply/BAT*/energy_now /sys/class/power_supply/BAT*/power_now"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const values = text.trim().split("\n").map(Number);
+                // µWh and µW: hours left, in seconds.
+                if (values.length >= 2 && values[0] > 0 && values[1] > 0)
+                    bar.batteryDrawEstimate = values[0] / values[1] * 3600;
+
+            }
+        }
+
+    }
+
+    Connections {
+        function onOnBatteryChanged() {
+            bar.powerSourceChanged();
+        }
+
+        target: UPower
     }
 
 }
