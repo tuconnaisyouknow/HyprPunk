@@ -49,7 +49,7 @@ Rectangle {
     property bool hasDefaultAction: false
     property var buttonActions: []
 
-    // Bodies may carry the spec's markup (hyprshot sends <i>...</i> even when
+    // Bodies may carry the spec's markup (some apps send <i>...</i> even when
     // the server does not advertise it): keep bold, italic, underline and line
     // breaks, drop every other tag (links, and images that would be fetched),
     // and escape the stray angle brackets of plain-text bodies.

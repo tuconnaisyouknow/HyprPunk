@@ -1,8 +1,9 @@
 # HyprPunk Quickshell
 
 The HyprPunk desktop shell: the bar with its dynamic island, the control center,
-the notifications and the island panels (launcher, clipboard, emoji, keybindings,
-wallpaper, SDDM theme, configuration files, monitors, session and main menu).
+the notifications, screenshots and screen recordings, and the island panels
+(launcher, clipboard, emoji, keybindings, wallpaper, SDDM theme, configuration
+files, monitors, captures, session and main menu).
 
 ## Run from the repository
 
@@ -38,6 +39,27 @@ qs -c hyprpunk ipc call <panel> toggle   # or open, close
 | `controlcenter` | `Super + C` |
 | `notifications` | `Super + N` |
 | `config`, `monitor` | from the main menu |
+| `screenshot` | from the main menu (`qs -c hyprpunk ipc call screenshot menu`) |
+
+## Screenshots and recordings
+
+| Capture | Keybinding | IPC (`qs -c hyprpunk ipc call screenshot …`) |
+|---|---|---|
+| The screen | `Print` | `screen` |
+| A region or a window | `Super + Shift + S` | `region` |
+| A region, annotated in place | `Super + Ctrl + S` | `annotate` |
+| Record the screen, or stop | `Shift + Print` | `record` |
+| Record a region or a window, or stop | `Super + Shift + R` | `recordRegion` |
+
+Screenshots are saved in `~/Pictures/Screenshots` and copied to the clipboard;
+recordings, with the system's sound, in `~/Videos/Recordings`. A recording stops
+from its keybinding again, its timer in the island, or `ipc call screenshot stop`.
+
+## Battery charge limit
+
+On laptops whose battery driver has a charge limit, the control center sets it
+through `battery-limit` (`battery/` in the dotfiles, installed by `install.sh`).
+Without it the limit is only shown.
 
 ## AirPods
 
