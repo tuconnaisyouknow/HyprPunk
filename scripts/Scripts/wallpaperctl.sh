@@ -4,7 +4,6 @@ set -euo pipefail
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_DIR="$STATE_HOME/hyprpunk"
 STATE_FILE="${HYPR_WALLPAPER_STATE:-$STATE_DIR/wallpaper.conf}"
-LOCK_FRAGMENT="$STATE_DIR/hyprlock-wallpaper.conf"
 LOCK_FILE="${STATE_FILE}.lock"
 DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/night-drive-protocol.png"
 # A circle growing from the dynamic island, where the wallpaper selector opens.
@@ -60,15 +59,12 @@ validate_wallpaper() {
 }
 
 write_state() {
-  local wallpaper="$1" dir tmp lock_tmp
+  local wallpaper="$1" dir tmp
   dir="$(dirname "$STATE_FILE")"
   mkdir -p "$dir" "$STATE_DIR"
   tmp="$(mktemp --tmpdir="$dir" wallpaper-state.XXXXXX)"
-  lock_tmp="$(mktemp --tmpdir="$STATE_DIR" hyprlock-wallpaper.XXXXXX)"
   printf 'wallpaper=%s\n' "$wallpaper" >"$tmp"
-  printf '%s\n' "\$wallpaper = $wallpaper" >"$lock_tmp"
   mv -f "$tmp" "$STATE_FILE"
-  mv -f "$lock_tmp" "$LOCK_FRAGMENT"
 }
 
 ensure_state() {

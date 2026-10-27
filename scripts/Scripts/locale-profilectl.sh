@@ -95,17 +95,6 @@ reload_hyprland() {
   fi
 }
 
-# hypridle starts hyprlock with its own environment: started again through Hyprland,
-# whose environment the reload just updated, the lock screen gets the new locale.
-restart_idle_daemon() {
-  if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v hyprctl >/dev/null 2>&1 &&
-    pgrep -x hypridle >/dev/null 2>&1; then
-    pkill -x hypridle || true
-    timeout 2s hyprctl dispatch "hl.dsp.exec_cmd('hypridle')" >/dev/null 2>&1 ||
-      echo "Warning: hypridle was not started again." >&2
-  fi
-}
-
 apply_profiles() {
   local language="$1" regional="$2" language_locale regional_locale
   profile_locale "$language" >/dev/null || {
@@ -124,7 +113,6 @@ apply_profiles() {
   write_profile "$REGIONAL_FILE" "$regional"
   export_locale_environment "$language_locale" "$regional_locale"
   reload_hyprland
-  restart_idle_daemon
   printf 'Locale profiles: interface %s, regional formats %s\n' \
     "$language_locale" "$regional_locale"
 }

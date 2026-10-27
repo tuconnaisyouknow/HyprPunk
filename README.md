@@ -14,8 +14,8 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 | Desktop | Tmux |
 |:-:|:-:|
 | ![desktop](./assets/screenshots/desktop.png) | ![tmux](./assets/screenshots/tmux.png) |
-| Hyprlock | SDDM |
-| ![hyprlock](./assets/screenshots/hyprlock.png) | ![sddm](./assets/screenshots/sddm.png) |
+| Lock Screen | SDDM |
+| ![lock-screen](./assets/screenshots/lock-screen.png) | ![sddm](./assets/screenshots/sddm.png) |
 | Application Launcher | Main Menu |
 | ![launcher](./assets/screenshots/launcher.png) | ![main-menu](./assets/screenshots/main-menu.png) |
 | Control Center | Session Menu |
@@ -32,9 +32,9 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
-- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, the OSD, and screenshots (annotated in place) and screen recordings.
+- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
 - 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
-- 🔒 **Hyprlock**, **Hypridle**, and **awww** for lock screen, idle handling, and wallpapers with animated transitions.
+- 🔒 **Hypridle** and **awww** for idle handling (locking, then suspending) and wallpapers with animated transitions.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
@@ -75,10 +75,7 @@ Run the installer:
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)"
 ```
 
-During installation, the script asks whether the machine is a **laptop** or a **desktop** and selects the matching lock
-screen module: `hyprlock` or `hyprlock-desktop`.
-
-It also asks independently for the keyboard layout, interface language, and regional formats. The locale defaults preserve
+During installation, the script asks for the keyboard layout, interface language, and regional formats. The locale defaults preserve
 an English interface (`en_US.UTF-8`) with French regional conventions (`fr_FR.UTF-8`). Both locales are generated during
 installation.
 
@@ -104,8 +101,6 @@ Reboot after the installation completes.
 ├── gtk4/                # GTK 4 theme settings
 ├── hypridle/            # Idle and suspend behavior
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
-├── hyprlock/            # Laptop lock screen
-├── hyprlock-desktop/    # Desktop lock screen
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
 ├── keyboard/            # Layout-specific application keymaps
 ├── kitty/               # Kitty terminal configuration
