@@ -11,21 +11,81 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 
 ## 🖼️ Screenshots
 
-| Desktop | Tmux |
+![desktop](./assets/screenshots/desktop.png)
+
+### 🧊 Shell
+
+Everything below is drawn by the Quickshell configuration in [`quickshell/`](./quickshell/.config/quickshell/hyprpunk/).
+
+#### 🔒 Lock screen
+
+The screen blurs into the lock, with the date and time over the player and its synced lyrics, and the bar's pills carried over. Typing shows the password prompt, and the island turns into a padlock that opens on the right password.
+
+![lock-animation](./assets/screenshots/lock-animation.webp)
+
+| Locked | Typing the password |
 |:-:|:-:|
-| ![desktop](./assets/screenshots/desktop.png) | ![tmux](./assets/screenshots/tmux.png) |
-| Lock Screen | SDDM |
-| ![lock-screen](./assets/screenshots/lock-screen.png) | ![sddm](./assets/screenshots/sddm.png) |
+| ![lock-screen](./assets/screenshots/lock-screen.png) | ![lock-password](./assets/screenshots/lock-password.png) |
+
+#### 🏝️ Dynamic island
+
+The clock's island grows into every panel and shows the volume, brightness, keyboard light, microphone and touchpad changes.
+
+![osd](./assets/screenshots/osd.webp)
+
 | Application Launcher | Main Menu |
+|:-:|:-:|
 | ![launcher](./assets/screenshots/launcher.png) | ![main-menu](./assets/screenshots/main-menu.png) |
-| Control Center | Session Menu |
-| ![control-center](./assets/screenshots/control-center.png) | ![session-menu](./assets/screenshots/session-menu.png) |
-| Wallpaper Selector | SDDM Theme Selector |
-| ![wallpaper-selector](./assets/screenshots/wallpaper-selector.png) | ![sddm-theme-selector](./assets/screenshots/sddm-theme-selector.png) |
-| Keybindings | Emoji Picker |
-| ![keybindings](./assets/screenshots/keybindings.png) | ![emoji-picker](./assets/screenshots/emoji-picker.png) |
-| Configuration Files | Monitors |
-| ![config-files](./assets/screenshots/config-files.png) | ![monitors](./assets/screenshots/monitors.png) |
+| Clipboard History | Emoji Picker |
+| ![clipboard](./assets/screenshots/clipboard.png) | ![emoji-picker](./assets/screenshots/emoji-picker.png) |
+| Wallpaper Selector | Session Menu |
+| ![wallpaper-selector](./assets/screenshots/wallpaper-selector.png) | ![session-menu](./assets/screenshots/session-menu.png) |
+
+#### 🎛️ Control center and bar
+
+| Control Center | Notifications |
+|:-:|:-:|
+| ![control-center](./assets/screenshots/control-center.png) | ![notifications](./assets/screenshots/notifications.png) |
+| Player and Lyrics | Workspace Preview |
+| ![music](./assets/screenshots/music.png) | ![workspace-preview](./assets/screenshots/workspace-preview.png) |
+
+<details>
+<summary>More shell screenshots</summary>
+
+| Calendar | Resources |
+|:-:|:-:|
+| ![calendar](./assets/screenshots/calendar.png) | ![resources](./assets/screenshots/resources.png) |
+| Screenshots and Recordings | Monitors |
+| ![capture](./assets/screenshots/capture.png) | ![monitors](./assets/screenshots/monitors.png) |
+| Keybindings | Configuration Files |
+| ![keybindings](./assets/screenshots/keybindings.png) | ![config-files](./assets/screenshots/config-files.png) |
+| SDDM Theme Selector | |
+| ![sddm-theme-selector](./assets/screenshots/sddm-theme-selector.png) | |
+
+</details>
+
+### 🖥️ Desktop
+
+The applications themed and configured by these dotfiles.
+
+#### 💻 Terminal
+
+**Kitty** with **Zsh**, the **Starship** prompt and **Tmux**, here running **Fastfetch**, **Btop** and **Cava**.
+
+![terminal](./assets/screenshots/terminal.png)
+
+| Neovim | Yazi |
+|:-:|:-:|
+| ![neovim](./assets/screenshots/neovim.png) | ![yazi](./assets/screenshots/yazi.png) |
+| Dolphin (Qt, Kvantum) | Brave and Loupe (GTK) |
+| ![dolphin](./assets/screenshots/dolphin.png) | ![brave-loupe](./assets/screenshots/brave-loupe.png) |
+
+<details>
+<summary>SDDM login screen</summary>
+
+![sddm](./assets/screenshots/sddm.png)
+
+</details>
 
 ---
 
@@ -102,7 +162,7 @@ Reboot after the installation completes.
 ├── hypridle/            # Idle and suspend behavior
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
-├── keyboard/            # Layout-specific application keymaps
+├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum Catppuccin Mocha Mauve theme
 ├── nvim/                # Neovim Lua configuration
@@ -119,7 +179,7 @@ Reboot after the installation completes.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, and `sddm/` are repository or system-wide resources handled separately by the installer. The `qt5/` and `qt6/` directories only store the versioned Catppuccin palettes: the installer generates complete local Qtct configurations so graphical changes do not modify the repository.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The `qt5/` and `qt6/` directories only store the versioned Catppuccin palettes: the installer generates complete local Qtct configurations so graphical changes do not modify the repository.
 
 ---
 
@@ -143,6 +203,8 @@ The active profile can be changed later from the command line:
 ```
 
 The selection is stored in `$XDG_STATE_HOME/hyprpunk/keyboard-layout` (or `~/.local/state/hyprpunk/keyboard-layout`).
+It also becomes the system keymap through `localectl`, for the SDDM login screen and the TTYs, without asking for a
+password: the installer adds a polkit rule (`keyboard/polkit/`) that lets the session change the keymap, and only that.
 Hyprland, Kitty, and tmux pick up the change immediately. New Zsh and Yazi processes use it on startup;
 an existing Neovim instance can reload its movement mappings with `:KeyboardLayoutReload` (restart Neovim to
 also rebuild plugin-specific mappings such as Snacks Explorer).
@@ -157,6 +219,9 @@ The layout integration covers:
 - 📁 `keyboard/yazi/fr.toml`
 - ⌨️ `kitty/.config/kitty/kitty.conf`
 - 🐚 `zsh/.bindingrc` and `zsh/.zshrc`
+- 🔑 The system keymap (SDDM and TTYs), set with `localectl set-x11-keymap`
+
+The clipboard history (`Ctrl + ù` in AZERTY) is bound to the same physical key in QWERTY: `Ctrl + '`.
 
 Hyprland reads the selected XKB layout dynamically instead of hard-coding:
 

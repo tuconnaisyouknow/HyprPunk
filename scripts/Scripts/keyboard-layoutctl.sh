@@ -14,6 +14,9 @@ usage() {
   echo "Usage: $0 {get|list|set <fr|us>|toggle|init [fr|us]|ensure}"
 }
 
+# set, toggle and init also change the system keymap (login screen and TTYs);
+# ensure only regenerates the session's files.
+
 get_layout() {
   local layout="us"
   if [[ -r "$STATE_FILE" ]]; then
@@ -117,6 +120,26 @@ reload_apps() {
   fi
 }
 
+system_field() {
+  localectl status 2>/dev/null | sed -n "s/^ *X11 $1: //p"
+}
+
+# The system keymap, for SDDM's login screen and the TTYs (localectl also sets the
+# console's from the X11 layout), the model and options kept. Through polkit without
+# a password (keyboard/polkit, installed by install.sh), or through sudo with
+# $2 = sudo (the installer).
+apply_system_layout() {
+  local layout="$1" prefix=() model options
+  [[ "${2:-}" == sudo ]] && prefix=(sudo)
+  command -v localectl >/dev/null 2>&1 || return 0
+  [[ "$(system_field Layout)" == "$layout" ]] && return 0
+  model="$(system_field Model)"
+  options="$(system_field Options)"
+  if ! "${prefix[@]}" localectl set-x11-keymap "$layout" "${model:-pc105}" "" "$options"; then
+    echo "Warning: the login screen and TTY keymap was not changed." >&2
+  fi
+}
+
 apply_layout() {
   local layout="$1"
   case "$layout" in
@@ -136,15 +159,23 @@ apply_layout() {
 case "${1:-}" in
   get) get_layout ;;
   list) printf 'us\nfr\n' ;;
-  set) [[ $# -eq 2 ]] || { usage >&2; exit 2; }; apply_layout "$2" ;;
+  set)
+    [[ $# -eq 2 ]] || { usage >&2; exit 2; }
+    apply_layout "$2"
+    apply_system_layout "$2"
+    ;;
   toggle)
     if [[ "$(get_layout)" == "fr" ]]; then
       apply_layout us
     else
       apply_layout fr
     fi
+    apply_system_layout "$(get_layout)"
     ;;
-  init) apply_layout "${2:-us}" ;;
+  init)
+    apply_layout "${2:-us}"
+    apply_system_layout "${2:-us}" sudo
+    ;;
   ensure) apply_layout "$(get_layout)" ;;
   *) usage >&2; exit 2 ;;
 esac

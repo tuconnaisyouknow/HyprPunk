@@ -2491,7 +2491,9 @@ PanelWindow {
     Process {
         id: brightnessProcess
 
-        command: ["brightnessctl", "-m"]
+        // The screen's backlight only: without one (a desktop), brightnessctl would
+        // read the first LED instead.
+        command: ["brightnessctl", "-c", "backlight", "-m"]
         running: true
 
         stdout: StdioCollector {
@@ -2536,7 +2538,9 @@ PanelWindow {
     }
 
     Process {
-        command: ["sh", "-c", "ls -d /sys/class/leds/*::kbd_backlight 2>/dev/null | head -n 1"]
+        // Found like hypridle's script finds it (keyboard-backlight.sh): the names vary
+        // between drivers.
+        command: ["sh", "-c", "device=$(\"$HOME/Scripts/keyboard-backlight.sh\" status) && echo \"/sys/class/leds/$device\""]
         running: true
 
         stdout: StdioCollector {
@@ -2545,8 +2549,8 @@ PanelWindow {
 
     }
 
-    // The ASUS driver changes the keyboard backlight itself on Fn keys and
-    // sysfs sends no inotify event for it, so the value is polled.
+    // Some drivers (ASUS, ThinkPad...) change the keyboard backlight themselves on Fn
+    // keys and sysfs sends no inotify event for it, so the value is polled.
     FileView {
         id: keyboardBacklightFile
 
