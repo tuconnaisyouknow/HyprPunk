@@ -578,7 +578,7 @@ IslandPanel {
                     required property string modelData
 
                     text: monitors.scaleLabel(modelData)
-                    selected: (monitors.selected.scale || monitors.info.default_scale) === modelData
+                    selected: monitors.selected !== null && (monitors.selected.scale || monitors.info.default_scale) === modelData
                     onClicked: monitors.apply(["scale", monitors.selected.name, modelData], true)
                 }
 
@@ -598,7 +598,7 @@ IslandPanel {
                     required property int index
 
                     text: String(index + 1)
-                    selected: monitors.selected.slot === String(index + 1)
+                    selected: monitors.selected !== null && monitors.selected.slot === String(index + 1)
                     onClicked: monitors.apply(["slot", monitors.selected.name, String(index + 1)], false)
                 }
 
@@ -620,7 +620,7 @@ IslandPanel {
                     readonly property string owner: monitors.workspaceOwner(workspace)
 
                     text: workspace
-                    selected: owner === monitors.selected.name
+                    selected: monitors.selected !== null && owner === monitors.selected.name
                     dimmed: owner !== "" && !selected
                     onClicked: monitors.toggleWorkspace(workspace)
                 }

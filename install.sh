@@ -462,7 +462,11 @@ force_raster_widgets=1
 EOF
 }
 
+# The layout also sets the system keymap (login screen and TTYs): a polkit rule lets
+# a later change from the session do it without the password.
 configure_keyboard() {
+  sudo install -Dm644 "$DOTFILES_DIR/keyboard/polkit/50-hyprpunk-keymap.rules" \
+    /etc/polkit-1/rules.d/50-hyprpunk-keymap.rules
   "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
 }
 

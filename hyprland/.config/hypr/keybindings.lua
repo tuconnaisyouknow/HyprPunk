@@ -63,7 +63,8 @@ bind(mainMod .. " + D", hl.dsp.exec_cmd("discord"), "Open Discord")
 
 bind("ALT + SPACE", hl.dsp.exec_cmd(menu), "Open the application launcher")
 bind("CTRL + ALT + SPACE", hl.dsp.exec_cmd("qs -c hyprpunk ipc call menu toggle"), "Open the main menu")
-bind("CTRL + ugrave", hl.dsp.exec_cmd("qs -c hyprpunk ipc call clipboard toggle"),
+-- By its place, right of the home row: ù in AZERTY, ' in QWERTY (no ù there).
+bind("CTRL + code:48", hl.dsp.exec_cmd("qs -c hyprpunk ipc call clipboard toggle"),
   "Open the clipboard history")
 bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("qs -c hyprpunk ipc call wallpaper toggle"),
   "Open the wallpaper selector")
@@ -180,9 +181,9 @@ bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ 
 bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpadctl.sh toggle"),
   "Enable or disable the touchpad", { locked = true, repeating = true })
 
-bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -q set 5%+"),
+bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5%+"),
   "Increase the screen brightness", { locked = true, repeating = true })
-bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -q set 5%-"),
+bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5%-"),
   "Decrease the screen brightness", { locked = true, repeating = true })
 
 bind("XF86AudioNext", hl.dsp.exec_cmd("qs -c hyprpunk ipc call music next || playerctl next"), "Play the next track",

@@ -6,7 +6,6 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
-import Quickshell.Services.UPower
 import Quickshell.Wayland
 import Quickshell.Widgets
 
@@ -50,13 +49,10 @@ PanelWindow {
     property string powerProfile: "balanced"
     property var powerProfiles: []
     property bool bluetoothPowerPending: false
-    // SMBIOS chassis types: Portable, Laptop, Notebook, Hand Held, Sub Notebook,
-    // Tablet, Convertible, Detachable.
-    readonly property bool laptopChassis: [8, 9, 10, 11, 14, 30, 31, 32].includes(parseInt(chassisTypeFile.text()))
-    readonly property bool hasLaptopBattery: UPower.displayDevice.ready && UPower.displayDevice.isLaptopBattery && UPower.displayDevice.isPresent
-    readonly property bool isLaptop: laptopChassis || hasLaptopBattery
-    readonly property bool powerProfilesAvailable: isLaptop && powerProfiles.length > 1
+    // Laptops and desktops alike: power-profiles-daemon offers at least saver and balanced.
+    readonly property bool powerProfilesAvailable: powerProfiles.length > 1
     property int brightness: 0
+    property bool hasBacklight: false
     // Keyboard layout and locale profiles ("fr" or "us"), kept by the hyprpunk scripts.
     readonly property string stateDir: Session.stateDir
     property string keyboardLayout: "us"
@@ -731,6 +727,7 @@ PanelWindow {
 
                     ControlBlock {
                         Layout.fillWidth: true
+                        visible: controlCenter.hasBacklight
                         implicitHeight: brightnessColumn.implicitHeight + 24
 
                         ColumnLayout {
@@ -1576,32 +1573,26 @@ PanelWindow {
         onLoaded: controlCenter.keyboardLayout = text().trim() || "us"
     }
 
-    FileView {
-        id: chassisTypeFile
-
-        path: "/sys/class/dmi/id/chassis_type"
-        preload: true
-        blockLoading: true
-        printErrors: false
-    }
-
     Timer {
         id: brightnessWriteDelay
 
         interval: 35
-        onTriggered: Quickshell.execDetached(["brightnessctl", "set", controlCenter.pendingBrightness + "%"])
+        onTriggered: Quickshell.execDetached(["brightnessctl", "-c", "backlight", "set", controlCenter.pendingBrightness + "%"])
     }
 
     Process {
         id: brightnessProcess
 
-        command: ["brightnessctl", "-m"]
+        // The screen's backlight only: without one (a desktop), brightnessctl would
+        // control the first LED instead, and the Display block is hidden.
+        command: ["brightnessctl", "-c", "backlight", "-m"]
         running: true
 
         stdout: StdioCollector {
             onStreamFinished: {
                 const fields = text.trim().split(",");
-                if (fields.length >= 4)
+                controlCenter.hasBacklight = fields.length >= 4;
+                if (controlCenter.hasBacklight)
                     controlCenter.brightness = parseInt(fields[3]);
 
             }

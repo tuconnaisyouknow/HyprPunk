@@ -30,7 +30,7 @@ qs -c hyprpunk ipc call <panel> toggle   # or open, close
 |---|---|
 | `launcher` | `Alt + Space` |
 | `menu` | `Ctrl + Alt + Space` |
-| `clipboard` | `Ctrl + ù` |
+| `clipboard` | `Ctrl + ù` (AZERTY), `Ctrl + '` (QWERTY) |
 | `emoji` | `Super + ;` |
 | `keybindings` | `Super + Ctrl + K` |
 | `wallpaper` | `Super + Ctrl + W` |

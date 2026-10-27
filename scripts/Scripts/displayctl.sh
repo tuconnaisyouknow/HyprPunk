@@ -141,7 +141,12 @@ set_monitor_identity() {
   local output="$1" make="$2" model="$3" serial="$4" description="$5"
   local identity duplicate_count
 
-  if [[ -n "$serial" ]]; then
+  if [[ -z "$description" ]]; then
+    # Virtual (headless) outputs and some adapters have no description, and
+    # "desc:" alone would match every display. Use the connector instead.
+    identity="|$output"
+    MONITOR_SELECTOR="$output"
+  elif [[ -n "$serial" ]]; then
     identity="$make|$model|$serial"
     MONITOR_SELECTOR="desc:$description"
   else

@@ -41,7 +41,6 @@ SearchPanel {
             "mouse_up": "Wheel up",
             "mouse:272": "Left click",
             "mouse:273": "Right click",
-            "ugrave": "ù",
             "semicolon": ";",
             "SPACE": "Space",
             "XF86AudioRaiseVolume": "Volume up",
@@ -56,6 +55,11 @@ SearchPanel {
             "XF86AudioPlay": "Play",
             "XF86AudioPrev": "Previous"
         };
+        // The clipboard's key, bound by its place (Hyprland gives no keycode back):
+        // ù in AZERTY, ' in QWERTY.
+        if (bind.key === "" && bind.description === "Open the clipboard history")
+            return keyboardLayout === "fr" ? "ù" : "'";
+
         if (bind.key === "") {
             // Workspace binds are set by keycode, the number is in the description.
             const match = bind.description.match(/workspace (\d+)$/);
