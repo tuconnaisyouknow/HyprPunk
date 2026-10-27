@@ -299,7 +299,7 @@ install_packages() {
     zsh kitty starship zoxide \
     fzf eza bat fd \
     ripgrep fastfetch btop tmux \
-    yazi cava bc stow brightnessctl jq \
+    yazi cava bc stow brightnessctl jq pacman-contrib \
     webp-pixbuf-loader \
     neovim lazygit cargo npm \
     \

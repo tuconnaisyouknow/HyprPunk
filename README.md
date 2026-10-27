@@ -33,6 +33,7 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 
 - 🪟 **Hyprland** as the main Wayland environment.
 - 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, the OSD, and screenshots (annotated in place) and screen recordings.
+- 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
 - 🔒 **Hyprlock**, **Hypridle**, and **awww** for lock screen, idle handling, and wallpapers with animated transitions.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
@@ -92,7 +93,7 @@ Reboot after the installation completes.
 ├── assets/screenshots/  # Images used by this README
 ├── avatars/             # User avatars
 ├── bat/                 # Bat configuration and Catppuccin theme
-├── battery/             # Battery charge limit script, service, and permissions installed system-wide
+├── battery/             # Battery charge limit script and service installed system-wide
 ├── brave/               # Brave managed policy installed system-wide
 ├── btop/                # Btop configuration and theme
 ├── cava/                # Audio visualizer configuration, shaders, and themes
@@ -201,6 +202,7 @@ The installer enables or configures:
 - 📶 `bluetooth`
 - ⚡ `power-profiles-daemon`
 - 🧱 `xwayland-satellite.service`
+- 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🛡️ `hyprpolkitagent`
 - 🎨 GTK, Qt, and Kvantum themes
