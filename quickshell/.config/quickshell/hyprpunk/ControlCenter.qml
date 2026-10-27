@@ -899,7 +899,11 @@ PanelWindow {
                             height: Math.min(contentHeight, 340)
                             clip: true
                             spacing: 4
-                            model: controlCenter.wifiNetworks
+                            // Keeps the rows that stay instead of rebuilding them all at each change,
+                            // which held up the animations.
+                            model: ScriptModel {
+                                values: controlCenter.wifiNetworks
+                            }
 
                             // The row inside: the list sets its delegates' x.
                             delegate: Item {
@@ -1068,7 +1072,11 @@ PanelWindow {
                             height: Math.min(contentHeight, 340)
                             clip: true
                             spacing: 4
-                            model: controlCenter.bluetoothDevices
+                            // Keeps the rows that stay instead of rebuilding them all at each change,
+                            // which held up the animations.
+                            model: ScriptModel {
+                                values: controlCenter.bluetoothDevices
+                            }
 
                             // The row inside: the list sets its delegates' x.
                             delegate: Item {
