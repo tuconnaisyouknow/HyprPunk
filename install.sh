@@ -311,7 +311,7 @@ install_packages() {
     \
     hyprland awww hyprlock hypridle \
     grim wf-recorder hyprcursor hyprpicker \
-    quickshell cliphist wl-clipboard libnotify \
+    quickshell cliphist wl-clipboard libnotify psmisc \
     \
     qt5ct-kde qt5-wayland qt5-tools \
     qt5-quickcontrols2 layer-shell-qt5 \
@@ -652,6 +652,29 @@ install_brave_policy() {
   sudo ln -sf "$policy_src" "$policy_target_dir/policy.json"
 }
 
+# The charge limit set from the control center (battery-limit): battery-limit.service
+# lets the wheel group write it and applies the one kept, at boot and around sleep.
+# Only for batteries whose driver has one.
+install_battery_limit() {
+  local battery_dir="$DOTFILES_DIR/battery"
+
+  if ! compgen -G "/sys/class/power_supply/*/charge_control_end_threshold" >/dev/null; then
+    echo "No battery charge limit on this computer, skipping."
+    return
+  fi
+
+  if ! id -nG | grep -qw wheel; then
+    echo "Warning: $USER is not in the wheel group, the charge limit stays read-only in the control center."
+  fi
+
+  sudo install -Dm755 "$battery_dir/battery-limit" /usr/local/bin/battery-limit
+  sudo install -Dm644 "$battery_dir/battery-limit.service" /etc/systemd/system/battery-limit.service
+  sudo install -Dm644 "$battery_dir/battery-limit.tmpfiles" /etc/tmpfiles.d/battery-limit.conf
+  sudo systemd-tmpfiles --create battery-limit.conf
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now battery-limit.service
+}
+
 enable_services() {
   sudo systemctl enable NetworkManager
   sudo systemctl enable sddm
@@ -714,6 +737,7 @@ main() {
   run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
   run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
   run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
+  run_step "install_battery_limit" "Installing the battery charge limit" install_battery_limit
   run_step "enable_services" "Enabling services" enable_services
   run_step "ask_reboot" "Finishing installation" ask_reboot
 

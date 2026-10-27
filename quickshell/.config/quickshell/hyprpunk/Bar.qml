@@ -3094,14 +3094,31 @@ PanelWindow {
     Process {
         id: batteryDrawProcess
 
-        command: ["sh", "-c", "cat /sys/class/power_supply/BAT*/energy_now /sys/class/power_supply/BAT*/power_now"]
+        // Every system battery's energy and draw (µWh and µW), from its charge and current
+        // times its voltage when it has no energy readings; the draw may be negative.
+        command: ["sh", "-c", batteryDrawProcess.script]
+        readonly property string script: 'for dir in /sys/class/power_supply/*; do
+[ "$(cat "$dir/type" 2>/dev/null)" = Battery ] || continue
+[ "$(cat "$dir/scope" 2>/dev/null)" = Device ] && continue
+if [ -r "$dir/energy_now" ]; then echo "$(cat "$dir/energy_now") $(cat "$dir/power_now" 2>/dev/null || echo 0)"
+elif [ -r "$dir/charge_now" ]; then volts=$(cat "$dir/voltage_now" 2>/dev/null || echo 0); echo "$(($(cat "$dir/charge_now") / 1000 * volts / 1000)) $(($(cat "$dir/current_now" 2>/dev/null || echo 0) / 1000 * volts / 1000))"
+fi
+done'
 
         stdout: StdioCollector {
             onStreamFinished: {
-                const values = text.trim().split("\n").map(Number);
-                // µWh and µW: hours left, in seconds.
-                if (values.length >= 2 && values[0] > 0 && values[1] > 0)
-                    bar.batteryDrawEstimate = values[0] / values[1] * 3600;
+                let energy = 0;
+                let draw = 0;
+                for (const line of text.trim().split("\n")) {
+                    const values = line.split(" ").map(Number);
+                    if (values.length === 2 && !isNaN(values[0]) && !isNaN(values[1])) {
+                        energy += values[0];
+                        draw += Math.abs(values[1]);
+                    }
+                }
+                // Hours left, in seconds.
+                if (energy > 0 && draw > 0)
+                    bar.batteryDrawEstimate = energy / draw * 3600;
 
             }
         }

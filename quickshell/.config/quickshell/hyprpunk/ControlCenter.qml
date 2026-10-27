@@ -90,6 +90,16 @@ PanelWindow {
         "minutes": 240,
         "label": "4 hours"
     }]
+    // The batteries' charge limit in % (100 when off), 0 without one. Set with
+    // battery-limit as a user of the wheel group, once installed (battery/, by
+    // install.sh), which also applies it again at boot and around sleep.
+    property int chargeLimit: 0
+    property bool chargeLimitWritable: false
+    // Why the last limit was not set (one the battery refuses), empty otherwise.
+    property string chargeLimitError: ""
+    // The limit turned back on: the last one under 100.
+    property int chargeLimitOn: 80
+    readonly property var chargeLimits: [60, 70, 80, 90]
     readonly property var audioSink: Pipewire.defaultAudioSink
     readonly property var audio: audioSink !== null ? audioSink.audio : null
     readonly property int volume: audio !== null ? Math.round(audio.volume * 100) : 0
@@ -339,6 +349,28 @@ PanelWindow {
         return Math.floor(minutes / 60) + " h " + String(minutes % 60).padStart(2, "0") + " left";
     }
 
+    function setChargeLimit(limit) {
+        if (!chargeLimitWritable)
+            return ;
+
+        chargeLimit = limit;
+        if (limit < 100)
+            chargeLimitOn = limit;
+
+        chargeLimitError = "";
+        chargeLimitSetProcess.command = ["battery-limit", "set", String(limit)];
+        chargeLimitSetProcess.running = true;
+    }
+
+    // A battery filled up to the limit, full without one.
+    function chargeLimitIcon(limit) {
+        return limit >= 100 ? "󰁹" : String.fromCodePoint(0xf007a + Math.max(0, Math.min(8, Math.round(limit / 10) - 1)));
+    }
+
+    function toggleChargeLimit() {
+        setChargeLimit(chargeLimit < 100 ? 100 : chargeLimitOn);
+    }
+
     function powerProfileIcon() {
         if (powerProfile === "performance")
             return "󰓅";
@@ -390,6 +422,8 @@ PanelWindow {
         if (opened) {
             powerProfileProcess.running = true;
             brightnessProcess.running = true;
+            chargeLimitError = "";
+            chargeLimitProcess.running = true;
             panel.forceActiveFocus();
         } else {
             openedByKeybind = false;
@@ -552,7 +586,7 @@ PanelWindow {
 
                 }
 
-                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : mainPage.implicitHeight
+                implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : controlCenter.page === "chargeLimit" ? chargeLimitPage.implicitHeight : mainPage.implicitHeight
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.rightMargin: 14
@@ -657,16 +691,42 @@ PanelWindow {
 
                     }
 
-                    // Across both columns: the grid stays even.
-                    ControlTile {
+                    // Under the columns, as wide as them; caffeine across both without a
+                    // battery's charge limit, for the grid to stay even.
+                    RowLayout {
                         Layout.fillWidth: true
-                        icon: controlCenter.shellState.caffeine ? "󰅶" : "󰾪"
-                        title: "Caffeine"
-                        subtitle: controlCenter.caffeineSubtitle()
-                        active: controlCenter.shellState.caffeine
-                        expandable: true
-                        onToggled: controlCenter.toggleCaffeine()
-                        onExpandRequested: controlCenter.page = "caffeine"
+                        spacing: tileColumns.spacing
+
+                        ControlTile {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: tileColumns.columnWidth
+                            icon: controlCenter.shellState.caffeine ? "󰅶" : "󰾪"
+                            title: "Caffeine"
+                            subtitle: controlCenter.caffeineSubtitle()
+                            active: controlCenter.shellState.caffeine
+                            expandable: true
+                            onToggled: controlCenter.toggleCaffeine()
+                            onExpandRequested: controlCenter.page = "caffeine"
+                        }
+
+                        ControlTile {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: tileColumns.columnWidth
+                            visible: controlCenter.chargeLimit > 0
+                            icon: controlCenter.chargeLimitIcon(controlCenter.chargeLimit)
+                            title: "Charge limit"
+                            subtitle: controlCenter.chargeLimit < 100 ? controlCenter.chargeLimit + " %" : "Off"
+                            active: controlCenter.chargeLimit < 100
+                            expandable: true
+                            onToggled: {
+                                if (controlCenter.chargeLimitWritable)
+                                    controlCenter.toggleChargeLimit();
+                                else
+                                    controlCenter.page = "chargeLimit";
+                            }
+                            onExpandRequested: controlCenter.page = "chargeLimit"
+                        }
+
                     }
 
                     ControlBlock {
@@ -1168,6 +1228,56 @@ PanelWindow {
                 }
 
                 ColumnLayout {
+                    id: chargeLimitPage
+
+                    width: parent.width
+                    x: controlCenter.pageX("chargeLimit")
+                    visible: controlCenter.pageVisible("chargeLimit")
+                    enabled: controlCenter.page === "chargeLimit"
+                    opacity: controlCenter.pageOpacity("chargeLimit")
+                    spacing: 6
+
+                    PageHeader {
+                        Layout.fillWidth: true
+                        title: "Charge limit"
+                        checked: controlCenter.chargeLimit < 100
+                        toggleVisible: controlCenter.chargeLimitWritable
+                        onToggled: controlCenter.toggleChargeLimit()
+                        onBackRequested: controlCenter.page = "main"
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.bottomMargin: 6
+                        text: !controlCenter.chargeLimitWritable ? "Read only: install battery-limit (battery/ in the dotfiles) to change it." : controlCenter.chargeLimitError !== "" ? controlCenter.chargeLimitError : "Stops charging at the limit, easier on the battery over the years. Kept after a restart."
+                        color: !controlCenter.chargeLimitWritable || controlCenter.chargeLimitError !== "" ? "#fab387" : "#7f849c"
+                        wrapMode: Text.Wrap
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 12
+                    }
+
+                    Repeater {
+                        model: controlCenter.chargeLimits
+
+                        ListRow {
+                            required property int modelData
+                            readonly property bool chosen: controlCenter.chargeLimit === modelData
+
+                            Layout.fillWidth: true
+                            icon: controlCenter.chargeLimitIcon(modelData)
+                            title: modelData + " %"
+                            subtitle: modelData === 80 ? "Recommended" : ""
+                            trailing: chosen ? "\uf00c" : ""
+                            highlighted: chosen
+                            enabled: controlCenter.chargeLimitWritable
+                            onClicked: controlCenter.setChargeLimit(modelData)
+                        }
+
+                    }
+
+                }
+
+                ColumnLayout {
                     id: localePage
 
                     width: parent.width
@@ -1401,6 +1511,46 @@ PanelWindow {
 
         interval: 3000
         onTriggered: controlCenter.bluetoothPowerPending = false
+    }
+
+    // "<limit> <writable 1|0> <kept limit>", nothing without a battery's limit; read
+    // only without battery-limit.
+    Process {
+        id: chargeLimitProcess
+
+        command: ["sh", "-c", "command -v battery-limit >/dev/null && exec battery-limit get; for file in /sys/class/power_supply/*/charge_control_end_threshold; do [ -e \"$file\" ] && echo \"$(cat \"$file\") 0\"; break; done"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const fields = text.trim().split(/\s+/);
+                const limit = parseInt(fields[0]);
+                controlCenter.chargeLimit = isNaN(limit) ? 0 : limit;
+                controlCenter.chargeLimitWritable = fields[1] === "1";
+                const kept = parseInt(fields[2]);
+                if (limit > 0 && limit < 100)
+                    controlCenter.chargeLimitOn = limit;
+                else if (kept > 0 && kept < 100)
+                    controlCenter.chargeLimitOn = kept;
+            }
+        }
+
+    }
+
+    Process {
+        id: chargeLimitSetProcess
+
+        stderr: StdioCollector {
+            id: chargeLimitSetErrors
+        }
+
+        // Re-read the real state, the firmware may round or refuse it.
+        onExited: (code) => {
+            if (code !== 0)
+                controlCenter.chargeLimitError = chargeLimitSetErrors.text.trim().split("\n").pop() || "The charge limit could not be set.";
+
+            chargeLimitProcess.running = true;
+        }
     }
 
     Process {

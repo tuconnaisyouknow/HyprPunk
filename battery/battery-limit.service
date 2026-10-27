@@ -1,0 +1,12 @@
+# Lets the wheel group set the batteries' charge limit from the control center, and
+# applies the one chosen there: firmwares forget it at boot and around sleep.
+[Unit]
+Description=Battery charge limit
+After=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/battery-limit apply
+
+[Install]
+WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target

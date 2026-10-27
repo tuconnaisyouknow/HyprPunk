@@ -1,0 +1,70 @@
+#!/bin/sh
+# The batteries' charge limit, for every battery whose driver has one
+# (charge_control_end_threshold), the same for all of them.
+#   battery-limit get      prints "<limit> <writable: 1 or 0> <kept limit>"
+#   battery-limit set <N>  keeps N (1 to 100, 100 for none) and applies it
+#   battery-limit apply    as root (battery-limit.service, at boot and around sleep):
+#                          lets the wheel group set the limit, then applies the kept
+#                          one, firmwares forgetting it
+# The control center runs it as a user of the wheel group.
+
+kept=/var/lib/battery-limit/end_threshold
+
+batteries() {
+  for dir in /sys/class/power_supply/*; do
+    [ -e "$dir/charge_control_end_threshold" ] && echo "$dir"
+  done
+}
+
+# Some firmwares (ThinkPad, Framework…) refuse an end under the start threshold: the
+# start goes under the end first.
+apply_limit() {
+  status=0
+  for dir in $(batteries); do
+    start="$dir/charge_control_start_threshold"
+    if [ -e "$start" ] && [ "$(cat "$start")" -ge "$1" ]; then
+      echo $(($1 > 5 ? $1 - 5 : 0)) >"$start" 2>/dev/null || status=1
+    fi
+    echo "$1" >"$dir/charge_control_end_threshold" 2>/dev/null || status=1
+  done
+  [ "$status" -eq 0 ] || echo "This battery does not accept a charge limit of $1 %." >&2
+  return "$status"
+}
+
+case "$1" in
+get)
+  dir=$(batteries | head -n 1)
+  [ -n "$dir" ] || exit 0
+  file="$dir/charge_control_end_threshold"
+  [ -w "$file" ] && [ -w "$kept" ] && writable=1 || writable=0
+  echo "$(cat "$file") $writable $(cat "$kept" 2>/dev/null)"
+  ;;
+set)
+  case "$2" in
+  '' | *[!0-9]*) echo "Usage: battery-limit set <1-100>" >&2; exit 2 ;;
+  esac
+  if [ "$2" -lt 1 ] || [ "$2" -gt 100 ]; then
+    echo "Usage: battery-limit set <1-100>" >&2
+    exit 2
+  fi
+  echo "$2" >"$kept" || exit 1
+  apply_limit "$2"
+  ;;
+apply)
+  # Here rather than in a udev rule: some drivers (asus-wmi…) add the limit to the
+  # battery after it appeared, with no event to catch.
+  for dir in $(batteries); do
+    for file in "$dir/charge_control_end_threshold" "$dir/charge_control_start_threshold"; do
+      [ -e "$file" ] && chgrp wheel "$file" && chmod 0664 "$file"
+    done
+  done
+  limit=$(cat "$kept" 2>/dev/null)
+  # None chosen yet: the firmware's own.
+  [ -n "$limit" ] || exit 0
+  apply_limit "$limit"
+  ;;
+*)
+  echo "Usage: battery-limit get | set <1-100> | apply" >&2
+  exit 2
+  ;;
+esac
