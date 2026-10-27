@@ -19,10 +19,6 @@ SearchPanel {
         "name": "Hyprland keybindings",
         "path": "~/.config/hypr/keybindings.lua"
     }, {
-        "icon": "󰷛",
-        "name": "Hyprlock",
-        "path": "~/.config/hypr/hyprlock.conf"
-    }, {
         "icon": "",
         "name": "Hypridle",
         "path": "~/.config/hypr/hypridle.conf"

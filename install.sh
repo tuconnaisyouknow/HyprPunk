@@ -11,7 +11,6 @@ LOG_FILE="$LOG_DIR/install-$(date +%Y-%m-%d_%H-%M-%S).log"
 STATE_FILE="$LOG_DIR/install.state"
 current_step="Initialisation"
 prepared_dotfiles_dir=""
-pc_type=""
 keyboard_layout=""
 locale_language="us"
 locale_regional="fr"
@@ -33,7 +32,6 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/hypr/hypridle.conf"
   ".config/hypr/hyprland.conf"
   ".config/hypr/hyprland.lua"
-  ".config/hypr/hyprlock.conf"
   ".config/kitty"
   ".config/kdeglobals"
   ".config/Kvantum"
@@ -66,7 +64,6 @@ save_state() {
   {
     printf 'version=1\n'
     printf 'backup_dir=%s\n' "$BACKUP_DIR"
-    printf 'pc_type=%s\n' "$pc_type"
     printf 'keyboard_layout=%s\n' "$keyboard_layout"
     printf 'locale_language=%s\n' "$locale_language"
     printf 'locale_regional=%s\n' "$locale_regional"
@@ -85,7 +82,8 @@ load_state() {
     case "$key" in
     version) version="$value" ;;
     backup_dir) BACKUP_DIR="$value" ;;
-    pc_type) pc_type="$value" ;;
+    # Asked by older installs to pick the lock screen, now the shell's everywhere.
+    pc_type) ;;
     keyboard_layout) keyboard_layout="$value" ;;
     locale_language) locale_language="$value" ;;
     locale_regional) locale_regional="$value" ;;
@@ -99,10 +97,6 @@ load_state() {
   }
   [[ "$BACKUP_DIR" == "$HOME/.backup/system-"* ]] || {
     echo "Invalid backup directory in installation state: $BACKUP_DIR" >&2
-    return 1
-  }
-  [[ -z "$pc_type" || "$pc_type" == "laptop" || "$pc_type" == "desktop" ]] || {
-    echo "Invalid computer type in installation state: $pc_type" >&2
     return 1
   }
   [[ -z "$keyboard_layout" || "$keyboard_layout" == "us" || "$keyboard_layout" == "fr" ]] || {
@@ -200,25 +194,6 @@ require_arch() {
   fi
 }
 
-ask_pc_type() {
-  while true; do
-    read -rp "Are you on a laptop or desktop ? [l/d]: " pc_input
-    case "$pc_input" in
-    l | L)
-      pc_type="laptop"
-      break
-      ;;
-    d | D)
-      pc_type="desktop"
-      break
-      ;;
-    *)
-      echo "Invalid option. Please enter 'l' for laptop or 'd' for desktop."
-      ;;
-    esac
-  done
-}
-
 ask_keyboard_layout() {
   while true; do
     read -rp "Keyboard layout [us/fr] (default: us): " keyboard_layout
@@ -309,7 +284,7 @@ install_packages() {
     pipewire-pulse wireplumber playerctl \
     gnome-keyring seahorse hyprpolkitagent \
     \
-    hyprland awww hyprlock hypridle \
+    hyprland awww hypridle \
     grim wf-recorder hyprcursor hyprpicker \
     quickshell cliphist wl-clipboard libnotify psmisc \
     \
@@ -417,11 +392,7 @@ activate_dotfiles() {
 }
 
 stow_dotfiles() {
-  if [[ "$pc_type" == "laptop" ]]; then
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
-  else
-    stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland hyprlock-desktop kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
-  fi
+  stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
 }
 
 generate_qt_configs() {
@@ -704,7 +675,6 @@ main() {
 
   run_step "require_arch" "Checking the operating system" require_arch
   run_step "update_system" "Updating the system" update_system
-  run_step "ask_pc_type" "Selecting the computer type" ask_pc_type
   run_step "ask_keyboard_layout" "Selecting the keyboard layout" ask_keyboard_layout
   run_step "ask_locale_language" "Selecting the interface language" ask_locale_language
   run_step "ask_locale_regional" "Selecting regional formats" ask_locale_regional

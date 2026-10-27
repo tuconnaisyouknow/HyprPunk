@@ -1,7 +1,7 @@
 # HyprPunk Quickshell
 
 The HyprPunk desktop shell: the bar with its dynamic island, the control center,
-the notifications, screenshots and screen recordings, and the island panels
+the notifications, the lock screen, screenshots and screen recordings, and the island panels
 (launcher, clipboard, emoji, keybindings, wallpaper, SDDM theme, configuration
 files, monitors, captures, session and main menu).
 
@@ -54,6 +54,18 @@ qs -c hyprpunk ipc call <panel> toggle   # or open, close
 Screenshots are saved in `~/Pictures/Screenshots` and copied to the clipboard;
 recordings, with the system's sound, in `~/Videos/Recordings`. A recording stops
 from its keybinding again, its timer in the island, or `ipc call screenshot stop`.
+
+## Lock screen
+
+A session lock (the compositor keeps the screens locked even if the shell stops),
+in place of hyprlock: the date and the time in the middle of the screen over the
+player and its lyrics, the island as a padlock, and the bar's resources and status.
+The password goes through PAM's `login` service and its field shows while typing.
+
+| Lock | How |
+|---|---|
+| With its animation | `Super + Ctrl + L`, the session menu, after 5½ minutes idle (`ipc call lock lock`) |
+| At once, before sleep | hypridle's `before_sleep_cmd` (`ipc call lock lockInstantly`), which sleep waits for |
 
 ## Battery charge limit
 
