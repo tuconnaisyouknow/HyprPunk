@@ -1,0 +1,4 @@
+# The charge limit kept for battery-limit.service, written by the control center:
+# empty until one is chosen, the firmware's own until then.
+d /var/lib/battery-limit 0775 root wheel -
+f /var/lib/battery-limit/end_threshold 0664 root wheel -
