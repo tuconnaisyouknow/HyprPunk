@@ -98,7 +98,7 @@ bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }), "Toggle floa
 bind(mainMod .. " + S", hl.dsp.layout("togglesplit"), "Toggle the split direction") -- dwindle
 bind("F11", hl.dsp.window.fullscreen(), "Toggle fullscreen mode",
   { locked = true, repeating = true })
-bind(mainMod .. " + CTRL + l", hl.dsp.exec_cmd("hyprlock"), "Lock the screen")
+bind(mainMod .. " + CTRL + l", hl.dsp.exec_cmd("qs -c hyprpunk ipc call lock lock"), "Lock the screen")
 bind(mainMod .. " + ALT + Q", hl.dsp.exec_cmd("killall qs ; qs -c hyprpunk"), "Reload Quickshell")
 bind(mainMod .. " + ALT + I", hl.dsp.exec_cmd("killall hypridle ; hypridle"),
   "Reload Hypridle")

@@ -366,6 +366,8 @@ ShellRoot {
     }
 
     Variants {
+        id: bars
+
         model: Quickshell.screens
 
         Bar {
@@ -375,6 +377,10 @@ ShellRoot {
             shellState: globalState
         }
 
+    }
+
+    Lock {
+        bars: bars.instances
     }
 
     Variants {

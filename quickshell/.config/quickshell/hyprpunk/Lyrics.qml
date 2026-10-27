@@ -33,6 +33,23 @@ Singleton {
         if (key === track)
             return ;
 
+        // The same track with a length a little off (MPRIS's and playerctl's, a card
+        // asking before or after its first poll): looking it up again would empty the
+        // lines and could bring other ones.
+        const asked = track.split("\n");
+        const sameTrack = asked.length === 4 && asked[0] === artist && asked[1] === title && asked[2] === album;
+        if (sameTrack && Math.abs(asked[3] - seconds) <= 2)
+            return ;
+
+        // The same track with its real length, which came after its title (MPRIS often
+        // gives the previous track's first): looked up again, but the lines found stay
+        // shown until the new ones come, instead of disappearing and coming back.
+        if (sameTrack && answeredTrack === track) {
+            track = key;
+            answeredTrack = key;
+            fetch(true);
+            return ;
+        }
         track = key;
         failures = 0;
         retry.stop();
@@ -43,13 +60,15 @@ Singleton {
         fetch();
     }
 
-    function fetch() {
-        if (!enabled || track === "" || answeredTrack === track || retry.running)
+    // again: looks up the track even though it has lines (its length changed).
+    function fetch(again) {
+        if (!enabled || track === "" || (answeredTrack === track && !again) || retry.running)
             return ;
 
         // A track asked for during a lookup waits for it to finish.
         if (lookup.running) {
             lookup.again = true;
+            lookup.forced = lookup.forced || again === true;
             return ;
         }
         const [artist, title, album, seconds] = track.split("\n");
@@ -75,6 +94,11 @@ Singleton {
             return ;
 
         if (result.status === "network") {
+            // Looked up again for its length: the lines found stay.
+            if (answeredTrack === track) {
+                status = lines.length > 0 ? "found" : "missing";
+                return ;
+            }
             status = "network";
             retry.interval = Math.min(120000, 10000 * Math.pow(2, failures));
             failures += 1;
@@ -110,11 +134,16 @@ Singleton {
 
         property string asked: ""
         property bool again: false
+        property bool forced: false
 
         onExited: {
             if (again) {
+                const force = forced;
                 again = false;
-                Qt.callLater(lyrics.fetch);
+                forced = false;
+                Qt.callLater(() => {
+                    return lyrics.fetch(force);
+                });
             }
         }
 
