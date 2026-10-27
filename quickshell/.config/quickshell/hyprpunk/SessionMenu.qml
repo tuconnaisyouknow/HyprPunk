@@ -16,7 +16,7 @@ IslandPanel {
         "id": "lock",
         "icon": "󰌾",
         "confirm": false,
-        "command": ["sh", "-c", "pidof hyprlock || loginctl lock-session"]
+        "command": ["qs", "-c", "hyprpunk", "ipc", "call", "lock", "lock"]
     }, {
         "id": "logout",
         "icon": "",

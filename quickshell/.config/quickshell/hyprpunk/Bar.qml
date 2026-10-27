@@ -167,6 +167,37 @@ PanelWindow {
     readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || vpnConnecting
     readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && vpnConnection !== null
 
+    // Where each pill is on the screen, for the lock screen to start from: the resources,
+    // the island and the control pill it keeps, and the others it lets go.
+    function lockGeometry() {
+        const rect = (item) => {
+            const origin = item.mapToItem(null, 0, 0);
+            return {
+                "x": origin.x,
+                "y": origin.y,
+                "width": item.width,
+                "height": item.height,
+                "radius": item.radius !== undefined ? item.radius : item.height / 2
+            };
+        };
+        const others = [];
+        for (const group of [leftGroup, centerGroup, rightGroup]) {
+            for (const child of group.children) {
+                if (child === monitorPill || child === clockPill || child === controlPill || !child.visible || child.width <= 0)
+                    continue;
+
+                // A drop-in slot: the pill inside it.
+                others.push(rect(child.pill !== undefined && child.pill !== null ? child.pill : child));
+            }
+        }
+        return {
+            "monitor": monitorPill.visible ? rect(monitorPill) : null,
+            "island": rect(clockPill),
+            "control": rect(controlPill),
+            "others": others
+        };
+    }
+
     function closeWorkspacePreview() {
         workspaceOpenPending = false;
         workspaceVisible = false;
@@ -1077,304 +1108,9 @@ PanelWindow {
 
                 }
 
-                Text {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === ""
-                    text: bar.statusOsdIcon
-                    color: bar.mauve
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 20
-                }
-
-                // Volume and screen brightness only show their icon and bar.
-                Text {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel <= 10
-                    Layout.leftMargin: 4
-                    Layout.rightMargin: 4
-                    text: bar.statusOsdLabel
-                    color: bar.mauve
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 15
-                    font.weight: Font.Bold
-                }
-
-                Rectangle {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel <= 0
-                    implicitWidth: statusOsdStateText.implicitWidth + 16
-                    implicitHeight: 24
-                    radius: 12
-                    color: bar.statusOsdEnabled ? bar.mauve : bar.surface1
-
-                    Text {
-                        id: statusOsdStateText
-
-                        anchors.centerIn: parent
-                        text: bar.statusOsdEnabled ? "On" : "Off"
-                        color: bar.statusOsdEnabled ? bar.base : bar.overlay2
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 12
-                        font.weight: Font.Bold
-                    }
-
-                }
-
-                Row {
-                    readonly property int segments: bar.statusOsdMaxLevel
-                    readonly property int filled: bar.statusOsdLevel
-
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel > 0 && bar.statusOsdMaxLevel <= 10
-                    spacing: 4
-
-                    Repeater {
-                        model: parent.segments
-
-                        Rectangle {
-                            required property int index
-
-                            width: 18
-                            height: 8
-                            radius: 4
-                            color: index < parent.filled ? bar.mauve : bar.surface1
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 140
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-                // Screenshot: the picture in small, then what became of it.
-                ClippingRectangle {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
-                    implicitWidth: Math.round(30 * Math.min(1.8, Math.max(0.6, screenshotThumbnail.implicitWidth / Math.max(1, screenshotThumbnail.implicitHeight))))
-                    implicitHeight: 30
-                    radius: 6
-                    color: bar.surface1
-
-                    Image {
-                        id: screenshotThumbnail
-
-                        anchors.fill: parent
-                        source: bar.statusOsdKind === "screenshot" && bar.statusOsdImage !== "" ? "file://" + bar.statusOsdImage : ""
-                        sourceSize.height: 90
-                        fillMode: Image.PreserveAspectCrop
-                        cache: false
-                        smooth: true
-                        mipmap: true
-                    }
-
-                    // A recording's play sign.
-                    Text {
-                        anchors.centerIn: parent
-                        visible: bar.statusOsdTitle === "Recording"
-                        text: "󰐊"
-                        color: "#cdd6f4"
-                        style: Text.Outline
-                        styleColor: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.6)
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 14
-                    }
-
-                }
-
-                Column {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
-                    Layout.leftMargin: 2
-                    spacing: 0
-
-                    Text {
-                        text: bar.statusOsdTitle
-                        color: bar.mauve
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 14
-                        font.weight: Font.Bold
-                    }
-
-                    Text {
-                        text: bar.statusOsdLabel
-                        color: bar.lavender
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 11
-                    }
-
-                }
-
-                // Battery: plugged in (green), unplugged (mauve) or running low (red,
-                // pulsing while critical), a title and the time left or to full.
-                Text {
-                    id: batteryOsdIcon
-
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "battery"
-                    text: bar.batteryIcon()
-                    color: bar.batteryOsdColor()
-                    font.family: "JetBrainsMono Nerd Font"
-                    font.pixelSize: 22
-
-                    SequentialAnimation on opacity {
-                        running: bar.batteryCritical && batteryOsdIcon.visible
-                        loops: Animation.Infinite
-                        onRunningChanged: {
-                            if (!running)
-                                batteryOsdIcon.opacity = 1;
-
-                        }
-
-                        NumberAnimation {
-                            to: 0.35
-                            duration: 600
-                            easing.type: Easing.InOutSine
-                        }
-
-                        NumberAnimation {
-                            to: 1
-                            duration: 600
-                            easing.type: Easing.InOutSine
-                        }
-
-                    }
-
-                }
-
-                Column {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "battery"
-                    Layout.leftMargin: 2
-                    spacing: 0
-
-                    Text {
-                        text: bar.statusOsdLabel
-                        color: bar.batteryOsdColor()
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 14
-                        font.weight: Font.Bold
-                    }
-
-                    Text {
-                        text: bar.batteryDetail()
-                        color: bar.lavender
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 11
-                    }
-
-                }
-
-                // AirPods: the pods on the left, their battery ring on the right.
-                Item {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
-                    // As tall as the battery ring.
-                    implicitWidth: 40
-                    implicitHeight: 26
-
-                    Image {
-                        id: airPodsOsdImage
-
-                        anchors.fill: parent
-                        source: bar.statusOsdImage !== "" ? "file://" + bar.statusOsdImage : ""
-                        fillMode: Image.PreserveAspectFit
-                        sourceSize.height: 60
-                        smooth: true
-                        mipmap: true
-                    }
-
-                    // No render (AirPods Max, not downloaded yet): the glyph.
-                    Text {
-                        visible: airPodsOsdImage.status !== Image.Ready
-                        anchors.centerIn: parent
-                        text: "󱡏"
-                        color: bar.mauve
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 22
-                    }
-
-                }
-
-                Item {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
-                    implicitWidth: 136
-                    implicitHeight: 1
-                }
-
-                Shape {
-                    id: airPodsOsdRing
-
-                    readonly property bool low: bar.statusOsdRingLevel !== null && bar.statusOsdRingLevel <= 20 && !bar.statusOsdRingCharging
-
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "airpods"
-                    implicitWidth: 26
-                    implicitHeight: 26
-                    preferredRendererType: Shape.CurveRenderer
-
-                    ShapePath {
-                        strokeColor: bar.surface1
-                        strokeWidth: 3.5
-                        fillColor: "transparent"
-
-                        PathAngleArc {
-                            centerX: 13
-                            centerY: 13
-                            radiusX: 11
-                            radiusY: 11
-                            startAngle: 0
-                            sweepAngle: 360
-                        }
-
-                    }
-
-                    ShapePath {
-                        strokeColor: airPodsOsdRing.low ? bar.red : bar.green
-                        strokeWidth: 3.5
-                        fillColor: "transparent"
-                        capStyle: ShapePath.RoundCap
-
-                        PathAngleArc {
-                            centerX: 13
-                            centerY: 13
-                            radiusX: 11
-                            radiusY: 11
-                            startAngle: -90
-                            sweepAngle: bar.statusOsdRingLevel === null ? 0 : 3.6 * bar.statusOsdRingLevel
-                        }
-
-                    }
-
-                }
-
-                // Fine-grained levels (volume, screen brightness): continuous bar.
-                Rectangle {
-                    visible: bar.statusOsdVisible && bar.statusOsdKind === "" && bar.statusOsdMaxLevel > 10
-                    implicitWidth: 160
-                    implicitHeight: 8
-                    radius: 4
-                    color: bar.surface1
-
-                    Rectangle {
-                        width: parent.width * Math.min(1, bar.statusOsdLevel / Math.max(1, bar.statusOsdMaxLevel))
-                        height: parent.height
-                        radius: parent.radius
-                        // Lavender while off: a muted volume keeps its level.
-                        color: bar.statusOsdEnabled ? bar.mauve : bar.lavender
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 140
-                            }
-
-                        }
-
-                        Behavior on width {
-                            NumberAnimation {
-                                duration: 140
-                                easing.type: Easing.OutCubic
-                            }
-
-                        }
-
-                    }
-
+                IslandOsd {
+                    bar: bar
+                    visible: bar.statusOsdVisible
                 }
 
                 Behavior on implicitWidth {
@@ -1801,6 +1537,8 @@ PanelWindow {
         }
 
         RowLayout {
+            id: rightGroup
+
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -(bar.implicitHeight - 50) / 2
@@ -1872,8 +1610,13 @@ PanelWindow {
                     property bool knownPositionPlaying: false
                     property real trackChangeTime: 0
 
-                    // Pops out then settles, on play, pause and track changes alike.
+                    // Pops out then settles, on play, pause and track changes alike. Not
+                    // while the player is open: the pill sits under its cover, and would
+                    // stick out of the card as it grows.
                     function pulse() {
+                        if (displayFrozen)
+                            return ;
+
                         pulseAnimation.restart();
                     }
 
@@ -2002,6 +1745,10 @@ PanelWindow {
                         if (!displayFrozen) {
                             spinFactor = 0;
                             spinRamp.restart();
+                        } else {
+                            // A pulse still running would grow out from under the cover.
+                            pulseAnimation.stop();
+                            scale = 1;
                         }
                     }
                     Component.onCompleted: Qt.callLater(resetDiscs)
@@ -2502,160 +2249,9 @@ PanelWindow {
                     bar.shellState.controlPillHovered = hovered;
                 }
 
-                // Spinner in place of the icon while NetworkManager connects (VPN included).
-                Item {
-                    implicitWidth: bar.networkConnecting ? 16 : networkLabel.implicitWidth
-                    implicitHeight: networkLabel.implicitHeight
-
-                    Label {
-                        id: networkLabel
-
-                        visible: !bar.networkConnecting
-                        text: bar.networkIcon()
-                    }
-
-                    Shape {
-                        id: networkSpinner
-
-                        property real sweep: 90
-
-                        visible: bar.networkConnecting
-                        anchors.centerIn: parent
-                        width: 14
-                        height: 14
-                        preferredRendererType: Shape.CurveRenderer
-
-                        ShapePath {
-                            fillColor: "transparent"
-                            strokeColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.25)
-                            strokeWidth: 2
-
-                            PathAngleArc {
-                                centerX: networkSpinner.width / 2
-                                centerY: networkSpinner.height / 2
-                                radiusX: networkSpinner.width / 2 - 1
-                                radiusY: networkSpinner.height / 2 - 1
-                                startAngle: 0
-                                sweepAngle: 360
-                            }
-
-                        }
-
-                        ShapePath {
-                            fillColor: "transparent"
-                            strokeColor: "#cba6f7"
-                            strokeWidth: 2
-                            capStyle: ShapePath.RoundCap
-
-                            PathAngleArc {
-                                centerX: networkSpinner.width / 2
-                                centerY: networkSpinner.height / 2
-                                radiusX: networkSpinner.width / 2 - 1
-                                radiusY: networkSpinner.height / 2 - 1
-                                startAngle: -90
-                                sweepAngle: networkSpinner.sweep
-                            }
-
-                        }
-
-                        // On the GUI thread: an animator, on the render thread, held the whole
-                        // shell to 30 frames a second, so every animation played in slow motion.
-                        RotationAnimation on rotation {
-                            running: networkSpinner.visible
-                            from: 0
-                            to: 360
-                            duration: 900
-                            loops: Animation.Infinite
-                        }
-
-                        // The arc stretches and shrinks as it turns.
-                        SequentialAnimation on sweep {
-                            running: networkSpinner.visible
-                            loops: Animation.Infinite
-
-                            NumberAnimation {
-                                to: 270
-                                duration: 700
-                                easing.type: Easing.InOutCubic
-                            }
-
-                            NumberAnimation {
-                                to: 40
-                                duration: 700
-                                easing.type: Easing.InOutCubic
-                            }
-
-                        }
-
-                    }
-
-                    // No locked Ethernet glyph in Material Design: a padlock badge instead.
-                    Rectangle {
-                        visible: bar.wiredLocked && !bar.networkConnecting
-                        anchors.right: networkLabel.right
-                        anchors.bottom: networkLabel.bottom
-                        anchors.rightMargin: -4
-                        anchors.bottomMargin: 1
-                        width: 11
-                        height: 11
-                        radius: width / 2
-                        color: controlPill.color
-
-                        Label {
-                            anchors.centerIn: parent
-                            text: "󰌾"
-                            font.pixelSize: 9
-                        }
-
-                    }
-
-                }
-
-                // Caffeine on: the computer stays awake.
-                Label {
-                    visible: bar.shellState.caffeine
-                    text: "󰅶"
-                }
-
-                IconText {
-                    visible: bar.audioSink !== null
-                    icon: bar.volumeIcon()
-                    text: bar.audioVolume + "%"
-                }
-
-                IconText {
-                    id: batteryPill
-
-                    visible: bar.hasBattery
-                    // Red only while it runs out: charging, a low level is fine.
-                    color: UPower.onBattery && bar.batteryPercent <= 20 ? bar.red : bar.mauve
-                    icon: bar.batteryIcon()
-                    text: bar.batteryPercent + "%"
-
-                    // Pulses from 10 %.
-                    SequentialAnimation on opacity {
-                        running: bar.hasBattery && UPower.onBattery && bar.batteryPercent <= 10
-                        loops: Animation.Infinite
-                        onRunningChanged: {
-                            if (!running)
-                                batteryPill.opacity = 1;
-
-                        }
-
-                        NumberAnimation {
-                            to: 0.4
-                            duration: 900
-                            easing.type: Easing.InOutSine
-                        }
-
-                        NumberAnimation {
-                            to: 1
-                            duration: 900
-                            easing.type: Easing.InOutSine
-                        }
-
-                    }
-
+                ControlStatus {
+                    bar: bar
+                    badgeColor: controlPill.color
                 }
 
             }

@@ -17,6 +17,9 @@ Rectangle {
     // and cover (the bar's music popup animates them from the cover pill).
     property bool glassVisible: true
     property bool coverVisible: true
+    // Off when the lyrics are shown elsewhere (beside the card on the lock screen),
+    // from lyricsLine, lyricsFound and seek().
+    property bool lyricsInside: true
     // Artwork geometry, followed by the bar's popup when it animates the cover.
     readonly property int artSize: 56
     readonly property int artMargin: 16
@@ -26,14 +29,17 @@ Rectangle {
     readonly property bool playing: player !== null && player.isPlaying
     // MprisPlayer.position drifts with Spotify (it keeps counting from the previous
     // track): position and length are asked with playerctl instead, and the
-    // position runs on between two answers.
+    // position runs on between two answers, for a second or so at most: after sleep it
+    // would otherwise run ahead by the whole time asleep until the next answer.
     readonly property string playerctlName: player !== null ? player.dbusName.replace("org.mpris.MediaPlayer2.", "") : ""
     property real polledPosition: 0
     property real polledLength: 0
     property real polledTime: 0
     property real now: 0
     readonly property real length: polledLength > 0 ? polledLength : (player !== null ? player.length : 0)
-    readonly property real position: Math.min(length, polledPosition + (playing ? Math.max(0, now - polledTime) / 1000 : 0))
+    readonly property real position: Math.min(length, polledPosition + (playing ? Math.max(0, Math.min(1500, now - polledTime)) / 1000 : 0))
+    // A new card (the lock screen's) knows where the track is from playerctl's first answer.
+    readonly property bool positionKnown: polledTime > 0
     // While scrubbing, the bar follows the pointer and the player seeks on release.
     property real scrubPosition: -1
     readonly property real shownPosition: scrubPosition >= 0 ? scrubPosition : position
@@ -42,8 +48,19 @@ Rectangle {
     readonly property int lyricsHeight: 250
     readonly property int fullHeight: playerHeight + lyricsHeight
     readonly property bool lyricsShown: Lyrics.enabled && player !== null
+    // The lyrics are the playing track's: right after a skip they are still the previous
+    // one's until the new ones are asked for, and would scroll back up to its start.
+    readonly property bool lyricsCurrent: {
+        if (player === null)
+            return false;
+
+        const asked = Lyrics.track.split("\n");
+        return asked[0] === player.trackArtist && asked[1] === player.trackTitle;
+    }
     // The card only grows once there are lines to show, not while looking or for nothing.
-    readonly property bool lyricsFound: lyricsShown && Lyrics.answeredTrack === Lyrics.track && Lyrics.lines.length > 0
+    readonly property bool lyricsFound: lyricsShown && lyricsCurrent && Lyrics.answeredTrack === Lyrics.track && Lyrics.lines.length > 0
+    // The next track's lyrics are being looked for.
+    readonly property bool lyricsLoading: lyricsShown && (!lyricsCurrent || Lyrics.status === "loading")
     // The line being sung, a moment early so it does not read as late.
     readonly property int lyricsLine: {
         if (!Lyrics.synced || Lyrics.answeredTrack !== Lyrics.track)
@@ -66,7 +83,7 @@ Rectangle {
         return minutes + ":" + (rest < 10 ? "0" : "") + rest;
     }
 
-    implicitHeight: lyricsFound ? fullHeight : playerHeight
+    implicitHeight: lyricsFound && lyricsInside ? fullHeight : playerHeight
     radius: 18
     color: "transparent"
 
@@ -129,6 +146,12 @@ Rectangle {
 
         interval: 500
         onTriggered: {
+            // MprisPlayer.length can still be the previous track's: playerctl's first,
+            // whose answer asks again.
+            if (!card.positionKnown && card.playerctlName !== "") {
+                card.poll();
+                return ;
+            }
             if (card.player !== null && card.length > 0)
                 Lyrics.request(card.player.trackArtist, card.player.trackTitle, card.player.trackAlbum, card.length);
 
@@ -175,10 +198,14 @@ Rectangle {
                 if (isNaN(position))
                     return ;
 
+                const first = !card.positionKnown;
                 card.polledPosition = position / 1e6;
                 card.polledLength = isNaN(length) ? 0 : length / 1e6;
                 card.polledTime = Date.now();
                 card.now = card.polledTime;
+                if (first)
+                    lyricsRequest.restart();
+
             }
         }
 
@@ -499,16 +526,20 @@ Rectangle {
     }
 
     LyricsView {
+        id: lyricsView
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: card.artMargin + 2
         anchors.rightMargin: card.artMargin + 2
         y: card.playerHeight + 2
         height: card.lyricsHeight - 18
-        visible: opacity > 0
-        opacity: card.lyricsFound ? 1 : 0
-        active: card.active && card.lyricsFound
-        lines: Lyrics.answeredTrack === Lyrics.track ? Lyrics.lines : []
+        visible: card.lyricsInside && opacity > 0
+        // Kept while the previous track's lines slide away.
+        opacity: card.lyricsFound || lyricsView.leaving ? 1 : 0
+        active: card.active && card.lyricsInside && card.lyricsFound
+        ready: card.positionKnown
+        lines: card.lyricsFound ? Lyrics.lines : []
         synced: Lyrics.synced
         current: card.lyricsLine
         onSeekRequested: (seconds) => {
