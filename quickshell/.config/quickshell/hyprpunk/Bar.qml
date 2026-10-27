@@ -2558,7 +2558,9 @@ PanelWindow {
 
                         }
 
-                        RotationAnimator on rotation {
+                        // On the GUI thread: an animator, on the render thread, held the whole
+                        // shell to 30 frames a second, so every animation played in slow motion.
+                        RotationAnimation on rotation {
                             running: networkSpinner.visible
                             from: 0
                             to: 360
