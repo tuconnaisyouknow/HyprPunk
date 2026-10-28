@@ -4,6 +4,12 @@
 
 local colors = require("mocha")              -- Catppuccin Mocha palette
 local keyboard = __require("keyboard_state") -- Keyboard layout, reloaded when you switch it
+package.loaded["glass_state"] = nil          -- Read again on every reload, like the screens
+local linked, glass = pcall(__require, "glass_state") -- Glass style, reloaded when you switch it
+-- Classic until glass_state.lua is linked, so a git pull without stow can't break the config
+if not linked then
+  glass = { liquid = false, ignore_alpha = 0.5 }
+end
 pcall(require, "personal")                   -- Your own tweaks in ~/.config/hypr/personal.lua, skipped if it doesn't exist
 require("monitors")                          -- Screens
 require("keybindings")                       -- Shortcuts
@@ -91,17 +97,17 @@ hl.gesture({ fingers = 4, direction = "swipe", action = "move" })
 -----------------
 
 -- The shell's see-through panels: blur only what is drawn, not the empty space around it
-hl.layer_rule({ match = { namespace = "hyprpunk-notifications" }, blur = true, ignore_alpha = 0.5 })
-hl.layer_rule({ match = { namespace = "hyprpunk-notification-center" }, blur = true, ignore_alpha = 0.5 })
-hl.layer_rule({ match = { namespace = "hyprpunk-osd" }, blur = true, ignore_alpha = 0.5 })
-hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, ignore_alpha = 0.5 })
-hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "hyprpunk-notifications" }, blur = true, ignore_alpha = glass.ignore_alpha })
+hl.layer_rule({ match = { namespace = "hyprpunk-notification-center" }, blur = true, ignore_alpha = glass.ignore_alpha })
+hl.layer_rule({ match = { namespace = "hyprpunk-osd" }, blur = true, ignore_alpha = glass.ignore_alpha })
+hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, ignore_alpha = glass.ignore_alpha })
+hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, blur_popups = true, ignore_alpha = glass.ignore_alpha })
 -- The island's panels (session menu, wallpaper picker) bring their own animation
-hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = 0.5, no_anim = true })
+hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = glass.ignore_alpha, no_anim = true })
 -- Screenshot selection appears right away over the frozen screen, no fade
 hl.layer_rule({ match = { namespace = "hyprpunk-screenshot" }, no_anim = true })
--- The bar's pills are opaque, so the blur only shows behind the island and the player
-hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
+-- In the classic style the bar's pills are opaque, so the blur only shows behind the island and the player
+hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur = true, blur_popups = true, ignore_alpha = glass.ignore_alpha })
 
 -------------------
 -- LOOK AND FEEL --

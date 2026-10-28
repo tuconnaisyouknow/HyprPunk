@@ -4,7 +4,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The language settings (locale-profilectl.sh), and how the shell launches things.
+// The language settings (locale-profilectl.sh), the glass style (glassctl.sh), and how
+// the shell launches things.
 // The shell keeps the environment it started with, so after a language change anything
 // it launched itself would still speak the old one. Apps are started through Hyprland
 // instead, which follows the change, and the shell's own helpers get localeEnvironment.
@@ -14,6 +15,9 @@ Singleton {
     // "us" or "fr".
     property string languageProfile: "us"
     property string regionalProfile: "fr"
+    // "classic" or "liquid", the lock screen clock's glass. Switching it restyles every
+    // glass surface on the spot, no restart needed.
+    property string glassStyle: "classic"
     readonly property string languageLocale: localeOf(languageProfile)
     readonly property string regionalLocale: localeOf(regionalProfile)
     // The variables locale-profilectl.sh exports, for a Process's environment.
@@ -70,6 +74,14 @@ Singleton {
         printErrors: false
         onFileChanged: reload()
         onLoaded: session.regionalProfile = text().trim() || "fr"
+    }
+
+    FileView {
+        path: session.stateDir + "/glass-style"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: session.glassStyle = text().trim() === "liquid" ? "liquid" : "classic"
     }
 
 }

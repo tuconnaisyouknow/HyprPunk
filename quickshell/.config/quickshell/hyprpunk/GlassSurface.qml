@@ -1,9 +1,9 @@
 import QtQuick
 import QtQuick.Shapes
 
-// The "liquid glass" look: a frosted fill over the blur, with a rim that catches the
-// light at the top and glows faintly at the bottom. It sits behind its parent's
-// content, so the parent itself should stay transparent.
+// The shell's glass: a frosted fill over the blur, with a rim that catches the light at
+// the top and glows faintly at the bottom. It sits behind its parent's content, so the
+// parent itself should stay transparent. In the liquid style the rim is LiquidGlass's.
 Item {
     id: glass
 
@@ -17,6 +17,12 @@ Item {
     // shows no cursor yet.
     property bool focused: false
     property real accent: focused ? 1 : 0
+    // The liquid style, chosen in the control center: the lock screen clock's glass, with
+    // see-through colors and a soft rim instead of the ring.
+    readonly property bool liquid: Session.glassStyle === "liquid"
+    // How much of the background's color stays, at the top and at the bottom.
+    property real liquidTop: 0.6
+    property real liquidBottom: 0.4
 
     // The rim's color, from the usual pale glass to mauve as the field gets the focus.
     function rimColor(alpha, focusedAlpha) {
@@ -36,8 +42,30 @@ Item {
 
     Rectangle {
         anchors.fill: parent
+        visible: !glass.liquid
         radius: glass.radius
         color: glass.backgroundColor
+    }
+
+    // The background turned to glass, fading downward like the clock's minutes.
+    Rectangle {
+        anchors.fill: parent
+        visible: glass.liquid
+        radius: glass.radius
+
+        gradient: Gradient {
+            GradientStop {
+                position: 0
+                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, glass.backgroundColor.a * glass.liquidTop)
+            }
+
+            GradientStop {
+                position: 1
+                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, glass.backgroundColor.a * glass.liquidBottom)
+            }
+
+        }
+
     }
 
     Rectangle {
@@ -62,6 +90,7 @@ Item {
 
     Shape {
         anchors.fill: parent
+        visible: !glass.liquid
         preferredRendererType: Shape.CurveRenderer
 
         ShapePath {
@@ -107,6 +136,20 @@ Item {
                 radius: Math.max(0, glass.radius - 1 - 0.5 * glass.accent)
             }
 
+        }
+
+    }
+
+    Loader {
+        anchors.fill: parent
+        active: glass.liquid
+
+        sourceComponent: LiquidGlass {
+            radius: glass.radius
+            rimWidth: 3 + glass.accent
+            rimTop: glass.rimColor(0.38, 0.95)
+            rimMiddle: glass.rimColor(0.06, 0.6)
+            rimBottom: glass.rimColor(0.16, 0.8)
         }
 
     }
