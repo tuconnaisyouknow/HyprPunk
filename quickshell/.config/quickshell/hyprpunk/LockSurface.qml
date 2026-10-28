@@ -140,6 +140,11 @@ WlSessionLockSurface {
                 revealIn.stop();
                 morphIn.stop();
                 revealOut.restart();
+                // The lock already showed the OSD. Ended now, so the bar's island doesn't
+                // open for it once the lock is gone.
+                if (surface.bar !== null && surface.bar.statusOsdVisible)
+                    surface.bar.endStatusOsd();
+
             }
         }
 
