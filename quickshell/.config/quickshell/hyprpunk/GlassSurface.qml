@@ -20,6 +20,9 @@ Item {
     // The liquid style, chosen in the control center: the lock screen clock's glass, with
     // see-through colors and a soft rim instead of the ring.
     readonly property bool liquid: Session.glassStyle === "liquid"
+    // The soft rim is kept once made, only hidden in the classic style. Building every
+    // surface's rim again at each switch made one frame stutter.
+    property bool liquidMade: false
     // How much of the background's color stays, at the top and at the bottom. A dark
     // panel turns see-through, but a light color like the mauve of a selection gets a
     // little stronger at the top and fades to its usual self, or it would look grey over
@@ -144,9 +147,21 @@ Item {
 
     }
 
+    onLiquidChanged: {
+        if (liquid)
+            liquidMade = true;
+
+    }
+    Component.onCompleted: {
+        if (liquid)
+            liquidMade = true;
+
+    }
+
     Loader {
         anchors.fill: parent
-        active: glass.liquid
+        active: glass.liquid || glass.liquidMade
+        visible: glass.liquid
 
         sourceComponent: LiquidGlass {
             radius: glass.radius
