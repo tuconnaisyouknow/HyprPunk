@@ -1,12 +1,13 @@
 #!/bin/sh
-# The batteries' charge limit, for every battery whose driver has one
-# (charge_control_end_threshold), the same for all of them.
-#   battery-limit get      prints "<limit> <writable: 1 or 0> <kept limit>"
-#   battery-limit set <N>  keeps N (1 to 100, 100 for none) and applies it
-#   battery-limit apply    as root (battery-limit.service, at boot and around sleep):
-#                          lets the wheel group set the limit, then applies the kept
-#                          one, firmwares forgetting it
-# The control center runs it as a user of the wheel group.
+# Stops the batteries charging past a limit, to make them last longer.
+# Works on any battery whose driver offers one (charge_control_end_threshold).
+#
+#   battery-limit get      prints "<limit> <writable: 1 or 0> <saved limit>"
+#   battery-limit set <N>  saves N (1 to 100, 100 for no limit) and applies it
+#   battery-limit apply    as root, at boot and after sleep: opens the limit to the
+#                          wheel group and puts the saved one back, as firmwares forget it
+#
+# The control center calls get and set, as a regular user of the wheel group.
 
 kept=/var/lib/battery-limit/end_threshold
 
@@ -16,8 +17,8 @@ batteries() {
   done
 }
 
-# Some firmwares (ThinkPad, Framework…) refuse an end under the start threshold: the
-# start goes under the end first.
+# Some firmwares (ThinkPad, Framework…) refuse a limit below the point where charging
+# starts again, so that one is lowered first
 apply_limit() {
   status=0
   for dir in $(batteries); do
@@ -51,15 +52,15 @@ set)
   apply_limit "$2"
   ;;
 apply)
-  # Here rather than in a udev rule: some drivers (asus-wmi…) add the limit to the
-  # battery after it appeared, with no event to catch.
+  # Done here rather than in a udev rule: some drivers (asus-wmi…) add the limit
+  # after the battery shows up, with no event to catch
   for dir in $(batteries); do
     for file in "$dir/charge_control_end_threshold" "$dir/charge_control_start_threshold"; do
       [ -e "$file" ] && chgrp wheel "$file" && chmod 0664 "$file"
     done
   done
   limit=$(cat "$kept" 2>/dev/null)
-  # None chosen yet: the firmware's own.
+  # Nothing chosen yet, leave the firmware's own
   [ -n "$limit" ] || exit 0
   apply_limit "$limit"
   ;;
