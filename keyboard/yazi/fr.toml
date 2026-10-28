@@ -1,5 +1,5 @@
-# FR keymap. A TOML linter such as https://taplo.tamasfe.dev/ can use this schema to validate your config.
-# If you encounter any issues, please make an issue at https://github.com/yazi-rs/schemas.
+# Yazi's default keymap with the Vim arrows moved to jklm for AZERTY.
+# keyboard-layoutctl.sh puts it in place when you switch to the French layout.
 schema = "https://yazi-rs.github.io/schemas/keymap.json"
 
 [mgr]
