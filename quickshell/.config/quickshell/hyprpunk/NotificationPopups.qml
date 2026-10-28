@@ -94,9 +94,10 @@ PanelWindow {
     Column {
         id: column
 
-        // Room on the left for the bounce overshoot.
-        x: popups.width - width - 12
-        // The window starts below the bar; the control center starts at the screen top.
+        // Lined up with the windows' borders, 10px from the screen's edge and from the bar
+        // like Hyprland's gaps_out, with room on the left for the bounce overshoot. The
+        // window starts below the bar, and the control center starts at the screen top.
+        x: popups.width - width - 10
         y: Math.max(10, popups.controlCenterBottom - (popups.screen.height - popups.height) + 8)
         width: popups.cardWidth
 
