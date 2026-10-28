@@ -157,7 +157,7 @@ Reboot after the installation completes.
 ├── battery/             # Battery charge limit script and service installed system-wide
 ├── brave/               # Brave managed policy installed system-wide
 ├── btop/                # Btop configuration and theme
-├── cava/                # Audio visualizer configuration, shaders, and themes
+├── cava/                # Audio visualizer configuration
 ├── fastfetch/           # Fastfetch system summary configuration and logo
 ├── fontconfig/          # JetBrainsMono Nerd Font preference
 ├── grub/                # CyberEXS GRUB theme installed system-wide

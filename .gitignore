@@ -5,3 +5,11 @@ avatars/Pictures/Avatars/.sync_*
 wallpapers/Pictures/Wallpapers/.nextcloudsync.log
 wallpapers/Pictures/Wallpapers/.sync_*
 gtk3/.config/gtk-3.0/bookmarks
+
+# btop rewrites its settings whenever you change one in its interface. The repo keeps
+# btop.default.conf instead, copied in at install
+btop/.config/btop/btop.conf
+
+# cava puts its stock shaders and themes back on every launch
+cava/.config/cava/shaders/
+cava/.config/cava/themes/
