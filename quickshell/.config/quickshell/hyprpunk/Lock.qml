@@ -60,8 +60,10 @@ Scope {
 
     function lockNow() {
         snapshotTimeout.stop();
-        if (!sessionLock.locked)
+        if (!sessionLock.locked) {
+            tellBars(true);
             sessionLock.locked = true;
+        }
 
     }
 
@@ -97,6 +99,13 @@ Scope {
         }) || bars[0] || null;
     }
 
+    // Tells the bars when the session locks, so their islands keep still under the lock.
+    function tellBars(sessionLocked) {
+        for (const bar of bars)
+            bar.sessionLocked = sessionLocked;
+
+    }
+
     PamContext {
         id: pam
 
@@ -130,6 +139,7 @@ Scope {
         interval: 1000
         onTriggered: {
             sessionLock.locked = false;
+            tellBars(false);
             locker.unlocking = false;
             cleanup.running = true;
         }

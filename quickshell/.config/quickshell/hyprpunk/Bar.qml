@@ -90,6 +90,11 @@ PanelWindow {
         return null;
     }
     property bool statusOsdVisible: false
+    // While the session is locked, the lock's island shows the OSD and the bar's own one
+    // stays still. It isn't drawn under the lock, so it would only catch up on its
+    // animations once the lock is gone.
+    property bool sessionLocked: false
+    readonly property bool islandOsdShown: statusOsdVisible && !sessionLocked
     property string statusOsdIcon: ""
     property string statusOsdLabel: ""
     property bool statusOsdEnabled: false
@@ -139,7 +144,7 @@ PanelWindow {
     property bool brightnessInitialized: false
     property string keyboardBacklightPath: ""
     property bool keyboardHwInitialized: false
-    property real clockCenterOffset: bar.statusOsdVisible ? 3 : -3
+    property real clockCenterOffset: bar.islandOsdShown ? 3 : -3
     // The regional formats you picked (locale-profilectl.sh). The calendar's day names
     // and first day of the week follow them, even though the shell keeps its startup locale.
     readonly property var regionalLocale: Qt.locale(Session.regionalProfile === "us" ? "en_US" : "fr_FR")
@@ -352,6 +357,16 @@ PanelWindow {
             statusOsdHideDelay.stop();
         else
             statusOsdHideDelay.restart();
+    }
+
+    // Ends the OSD now, as its delay would. Another OSD over the critical battery alert
+    // goes back to the alert, which stays until the computer is plugged in.
+    function endStatusOsd() {
+        statusOsdHideDelay.stop();
+        if (batteryCritical)
+            showBatteryOsd("Battery critical");
+        else
+            statusOsdVisible = false;
     }
 
     // Green while charging, mauve on battery, red for the alerts.
@@ -848,7 +863,7 @@ PanelWindow {
             camera: bar.shellState.cameraInUse
             microphone: bar.shellState.microphoneInUse
             recording: bar.shellState.recording
-            opacity: active && bar.statusOsdVisible && !bar.calendarPopupVisible ? 1 : 0
+            opacity: active && bar.islandOsdShown && !bar.calendarPopupVisible ? 1 : 0
             visible: opacity > 0
 
             Behavior on opacity {
@@ -897,14 +912,14 @@ PanelWindow {
                         bar.statusOsdVisible = false;
                     }
                 }
-                horizontalPadding: bar.statusOsdVisible ? 36 : 20
-                implicitHeight: bar.statusOsdVisible ? 50 : 38
+                horizontalPadding: bar.islandOsdShown ? 36 : 20
+                implicitHeight: bar.islandOsdShown ? 50 : 38
                 contentOpacity: 1
 
                 Label {
                     id: dateTimeLabel
 
-                    visible: !bar.statusOsdVisible
+                    visible: !bar.islandOsdShown
                     text: Qt.formatDateTime(clock.date, "HH:mm")
 
                     HoverHandler {
@@ -945,7 +960,7 @@ PanelWindow {
                 // Privacy: a dot after the time while something is listening or watching,
                 // green for the camera, orange for the microphone alone.
                 Item {
-                    readonly property bool shown: !bar.statusOsdVisible && (bar.shellState.cameraInUse || bar.shellState.microphoneInUse)
+                    readonly property bool shown: !bar.islandOsdShown && (bar.shellState.cameraInUse || bar.shellState.microphoneInUse)
 
                     visible: Layout.preferredWidth > 0
                     Layout.preferredWidth: shown ? 8 : 0
@@ -1000,7 +1015,7 @@ PanelWindow {
                 Item {
                     id: recordingChip
 
-                    readonly property bool shown: !bar.statusOsdVisible && bar.shellState.recording
+                    readonly property bool shown: !bar.islandOsdShown && bar.shellState.recording
 
                     visible: Layout.preferredWidth > 0
                     Layout.preferredWidth: shown ? recordingRow.implicitWidth + 16 : 0
@@ -1115,7 +1130,7 @@ PanelWindow {
 
                 IslandOsd {
                     bar: bar
-                    visible: bar.statusOsdVisible
+                    visible: bar.islandOsdShown
                 }
 
                 Behavior on implicitWidth {
@@ -1164,13 +1179,7 @@ PanelWindow {
                 id: statusOsdHideDelay
 
                 interval: 1500
-                onTriggered: {
-                    // Another OSD over the critical battery alert: back to the alert.
-                    if (bar.batteryCritical)
-                        bar.showBatteryOsd("Battery critical");
-                    else
-                        bar.statusOsdVisible = false;
-                }
+                onTriggered: bar.endStatusOsd()
             }
 
             Timer {
