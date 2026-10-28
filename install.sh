@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Sets up HyprPunk on a fresh Arch install: packages, dotfiles, themes and services.
+# Your old configs are saved to ~/.backup first, everything goes to a log in
+# ~/.local/state/hyprpunk, and if something fails, running it again picks up where it stopped.
 
 set -Eeuo pipefail
 
@@ -17,6 +20,7 @@ locale_regional="fr"
 
 declare -A COMPLETED_STEPS=()
 
+# What the dotfiles take over in your home: backed up, then cleared so stow can link it
 readonly -a USER_CONFIG_PATHS=(
   "Pictures/Avatars"
   "Pictures/Wallpapers"
@@ -50,12 +54,18 @@ readonly -a USER_CONFIG_PATHS=(
   ".highlightrc"
 )
 
+############
+# PLUMBING #
+############
+
+# Everything goes to the screen and to the log
 setup_logging() {
   mkdir -p "$LOG_DIR"
   exec > >(tee -a "$LOG_FILE") 2>&1
   echo "Installation log: $LOG_FILE"
 }
 
+# The steps already done and the answers given, so an interrupted install can resume
 save_state() {
   local state_tmp
   local step
@@ -82,7 +92,7 @@ load_state() {
     case "$key" in
     version) version="$value" ;;
     backup_dir) BACKUP_DIR="$value" ;;
-    # Asked by older installs to pick the lock screen, now the shell's everywhere.
+    # Older installs asked laptop or desktop to pick the lock screen, no longer needed
     pc_type) ;;
     keyboard_layout) keyboard_layout="$value" ;;
     locale_language) locale_language="$value" ;;
@@ -138,6 +148,7 @@ cleanup() {
   fi
 }
 
+# On failure, say which step, which line and where the log is
 on_error() {
   local exit_code=$?
   local line_number="$1"
@@ -157,6 +168,7 @@ on_error() {
   exit "$exit_code"
 }
 
+# Runs a step unless a previous attempt already got through it
 run_step() {
   local step_id="$1"
   current_step="$2"
@@ -176,6 +188,7 @@ run_step() {
 trap 'on_error "$LINENO" "$BASH_COMMAND"' ERR
 trap cleanup EXIT
 
+# Clone a repo, or update it if it's already there
 clone_or_pull() {
   local repo="$1"
   local dir="$2"
@@ -187,6 +200,10 @@ clone_or_pull() {
   fi
 }
 
+#############
+# THE STEPS #
+#############
+
 require_arch() {
   if ! command -v pacman &>/dev/null; then
     echo "This script is only designed for Arch Linux."
@@ -194,6 +211,7 @@ require_arch() {
   fi
 }
 
+# The three questions, asked once at the start
 ask_keyboard_layout() {
   while true; do
     read -rp "Keyboard layout [us/fr] (default: us): " keyboard_layout
@@ -350,6 +368,8 @@ backup_configs() {
   echo "Configuration backup created in: $BACKUP_DIR"
 }
 
+# Oh My Zsh and its plugins, zsh as your shell. Its installer leaves a .zshrc behind,
+# ours replaces it.
 install_oh_my_zsh() {
   clone_or_pull "https://github.com/ohmyzsh/ohmyzsh.git" "$HOME/.oh-my-zsh"
 
@@ -369,12 +389,14 @@ install_oh_my_zsh() {
   rm -f "$HOME/.zshrc"
 }
 
+# Download the dotfiles somewhere temporary first, so a failed clone leaves yours alone
 prepare_dotfiles() {
   prepared_dotfiles_dir=$(mktemp -d "${TMPDIR:-/tmp}/hyprpunk-dotfiles.XXXXXX")
   git clone "$DOTFILES_REPO" "$prepared_dotfiles_dir"
   git -C "$prepared_dotfiles_dir" rev-parse --verify HEAD >/dev/null
 }
 
+# Swap the new dotfiles in, the old folder goes to the backup
 activate_dotfiles() {
   if [[ -d "$BACKUP_DIR/dotfiles" && -d "$DOTFILES_DIR/.git" ]]; then
     rm -rf -- "$prepared_dotfiles_dir"
@@ -391,10 +413,14 @@ activate_dotfiles() {
   prepared_dotfiles_dir=""
 }
 
+# Link each module into your home. The others (sddm, grub, battery…) are installed
+# system-wide by their own steps.
 stow_dotfiles() {
   stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
 }
 
+# qt5ct and qt6ct rewrite their file on every change, so they get a copy instead of a link
+# (qt-configctl.sh can restore them later)
 generate_qt_configs() {
   install -Dm644 \
     "$DOTFILES_DIR/qt5/.config/qt5ct/colors/catppuccin-mocha-mauve.conf" \
@@ -462,14 +488,15 @@ force_raster_widgets=1
 EOF
 }
 
-# The layout also sets the system keymap (login screen and TTYs): a polkit rule lets
-# a later change from the session do it without the password.
+# The layout also goes to the login screen and the TTYs. The polkit rule lets later
+# changes from the shell do the same without a password.
 configure_keyboard() {
   sudo install -Dm644 "$DOTFILES_DIR/keyboard/polkit/50-hyprpunk-keymap.rules" \
     /etc/polkit-1/rules.d/50-hyprpunk-keymap.rules
   "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
 }
 
+# Starting states for the language, screens, wallpaper and touchpad
 configure_locale_profiles() {
   "$HOME/Scripts/locale-profilectl.sh" init "$locale_language" "$locale_regional"
 }
@@ -486,6 +513,7 @@ configure_touchpad() {
   "$HOME/Scripts/touchpadctl.sh" init true
 }
 
+# Which app opens images, PDFs, videos and documents
 set_default_apps() {
   echo "Setting default applications..."
 
@@ -558,6 +586,7 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
+# Catppuccin and Papirus for GTK apps, in dark mode
 apply_themes() {
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
 
@@ -567,6 +596,7 @@ apply_themes() {
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 }
 
+# Generate both locales the shell can switch between
 install_locale() {
   local locale
   for locale in en_US.UTF-8 fr_FR.UTF-8; do
@@ -578,6 +608,7 @@ install_locale() {
   sudo locale-gen
 }
 
+# The login screen, with welcome-to-the-metro to begin with
 install_sddm_theme() {
   local sddm_script="$DOTFILES_DIR/scripts/Scripts/sddm.sh"
 
@@ -585,6 +616,7 @@ install_sddm_theme() {
   "$sddm_script" welcome-to-the-metro
 }
 
+# The boot menu theme, when GRUB is the bootloader
 install_grub_theme() {
   local grub_theme_dir="$DOTFILES_DIR/grub/themes/CyberEXS"
   local grub_theme_target="/boot/grub/themes/CyberEXS"
@@ -614,6 +646,7 @@ install_grub_theme() {
   sudo grub-mkconfig -o /boot/grub/grub.cfg
 }
 
+# Brave's managed settings, when Brave is installed
 install_brave_policy() {
   local policy_src="$DOTFILES_DIR/brave/policies/managed/policy.json"
   local policy_target_dir="/etc/brave/policies/managed"
@@ -627,9 +660,8 @@ install_brave_policy() {
   sudo ln -sf "$policy_src" "$policy_target_dir/policy.json"
 }
 
-# The charge limit set from the control center (battery-limit): battery-limit.service
-# lets the wheel group write it and applies the one kept, at boot and around sleep.
-# Only for batteries whose driver has one.
+# The battery charge limit you set from the control center, on laptops that support one.
+# The service puts it back at boot and after sleep, and lets the wheel group change it.
 install_battery_limit() {
   local battery_dir="$DOTFILES_DIR/battery"
 
@@ -673,6 +705,10 @@ ask_reboot() {
   esac
 }
 
+########
+# MAIN #
+########
+
 main() {
   setup_logging
   initialize_state
@@ -687,6 +723,8 @@ main() {
   run_step "install_yay" "Installing yay" install_yay
   run_step "install_packages" "Installing packages" install_packages
 
+  # Not a step of its own: the download is temporary, so it's redone on every resume
+  # until the dotfiles are in place
   if [[ -z "${COMPLETED_STEPS[activate_dotfiles]:-}" ]]; then
     current_step="Downloading and validating dotfiles"
     printf '\n==> %s\n' "$current_step"
