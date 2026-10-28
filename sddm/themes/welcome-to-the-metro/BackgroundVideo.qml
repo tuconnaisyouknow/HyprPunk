@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtMultimedia
 
+// The theme's video, looping, cropped to fill the screen
 Item {
     readonly property real s: Screen.height / 768
     anchors.fill: parent
