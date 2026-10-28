@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Turns the touchpad on and off, and remembers it. Hyprland applies the saved state
+# through touchpad.lua, and the shell's bar shows it.
+#   touchpadctl.sh toggle | enable | disable   from the touchpad key or the shell
+#   touchpadctl.sh sync                        at login: finds the touchpads again
+#   touchpadctl.sh status
+#   touchpadctl.sh ensure | init [true|false]  makes sure a state is saved (install.sh)
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -21,6 +27,7 @@ Usage:
 EOF
 }
 
+# One change at a time, a key held down sends a few in a row
 acquire_lock() {
   if [[ "${TOUCHPADCTL_LOCKED:-false}" == "true" ]]; then
     return 0
@@ -43,6 +50,8 @@ read_enabled() {
   awk -F= '$1 == "enabled" { print substr($0, length($1) + 2); exit }' "$STATE_FILE"
 }
 
+# Hyprland's pointer devices that are touchpads: those udev flags as one (under the
+# name Hyprland gives them), plus anything called touchpad or trackpad
 load_touchpads() {
   local devices_json udev_touchpads_json
   command -v hyprctl >/dev/null 2>&1 || {
@@ -106,6 +115,7 @@ write_state() {
   mv -f "$tmp" "$STATE_FILE"
 }
 
+# Nothing valid saved yet: the touchpad is on
 ensure_state() {
   local enabled
   enabled="$(read_enabled || true)"
@@ -119,7 +129,7 @@ reload_hyprland() {
   hyprctl reload >/dev/null 2>&1 || true
 }
 
-# The On/Off feedback is shown by the Quickshell bar, which watches the state file.
+# On and off show up in the shell's bar, which watches the state file; only errors notify
 notify_error() {
   notify-send -a Touchpad -i input-touchpad "$1" 2>/dev/null || true
 }
@@ -148,6 +158,7 @@ sync)
   acquire_lock
   ensure_state
   enabled="$(read_enabled)"
+  # Rewrite only when the touchpads changed, or the file still has the old synced= line
   previous="$(sed -n '/^device=/p' "$STATE_FILE" 2>/dev/null || true)"
   load_touchpads
   current="$(while IFS= read -r device; do [[ -n "$device" ]] && printf 'device=%s\n' "$device"; done <<<"$TOUCHPADS")"

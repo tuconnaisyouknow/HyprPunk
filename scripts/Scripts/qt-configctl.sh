@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Writes the qt5ct and qt6ct settings: Kvantum, Catppuccin, Papirus and JetBrains Mono.
+# They're written rather than linked because qt5ct and qt6ct rewrite their file
+# whenever you touch a setting, which would scribble over the dotfiles.
 
 set -euo pipefail
 
@@ -17,6 +20,7 @@ The default target is all.
 EOF
 }
 
+# Same settings for both, only the font line is spelled differently by each Qt
 write_qt5_config() {
   local target="$1"
 
@@ -97,6 +101,7 @@ configure_version() {
     return 1
   fi
 
+  # The palette is always refreshed, the settings only when asked to
   install -Dm644 "$palette_source" "$palette_target"
 
   if [[ "$mode" == "generate" && -e "$config_file" ]]; then
@@ -104,6 +109,7 @@ configure_version() {
     return 0
   fi
 
+  # Write next to it then swap, so a half-written file never gets read
   tmp="$(mktemp --tmpdir="$config_dir" "${version}ct.conf.XXXXXX")"
   "write_${version}_config" "$tmp"
   chmod 644 "$tmp"

@@ -1,10 +1,13 @@
 #!/bin/bash
+# Little helpers to find hardware in /sys, meant to be sourced.
+# Each folder can be swapped through a SYS_*_DIR variable, handy for testing.
 
 power_supply_dir="${SYS_POWER_SUPPLY_DIR:-/sys/class/power_supply}"
 backlight_dir="${SYS_BACKLIGHT_DIR:-/sys/class/backlight}"
 leds_dir="${SYS_LEDS_DIR:-/sys/class/leds}"
 net_dir="${SYS_NET_DIR:-/sys/class/net}"
 
+# The first battery that reports its charge
 find_battery() {
   local device type
 
@@ -40,6 +43,7 @@ battery_status() {
   fi
 }
 
+# Screen brightness in percent, through brightnessctl or straight from /sys
 backlight_percent() {
   local current max device
 
@@ -67,6 +71,7 @@ backlight_percent() {
   return 1
 }
 
+# The keyboard backlight, found by its name whatever the driver
 find_keyboard_backlight() {
   local device name max
 
@@ -89,6 +94,7 @@ find_keyboard_backlight() {
   return 1
 }
 
+# wifi, ethernet or offline, from NetworkManager or else from the interfaces
 network_type() {
   local active_conn device
 

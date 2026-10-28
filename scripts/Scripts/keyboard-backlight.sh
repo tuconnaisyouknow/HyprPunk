@@ -1,4 +1,9 @@
 #!/bin/bash
+# Turns the keyboard backlight off when idle and back on after (see hypridle.conf).
+#   keyboard-backlight.sh off      saves the current level, then switches it off
+#   keyboard-backlight.sh restore  brings the saved level back
+#   keyboard-backlight.sh status   prints the backlight's device name
+# Quietly does nothing on keyboards without a backlight.
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=lib/system-info.sh

@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# Remembers how each screen is set up, and finds it again whichever port it's plugged into.
+#
+# Every screen gets an ID from its EDID (make, model, serial), and under that ID:
+#   mode, scale       resolution, refresh rate and scaling
+#   slot              its number, 1 to 10, shown in the shell
+#   workspaces        the workspaces it holds (its own number by default)
+#   relative          where it sits next to another screen, in a custom layout
+# All of it in ~/.local/state/hyprpunk/monitor-state.conf, which monitors.lua and
+# workspaces.lua read. The shell's display settings drive it through the commands below.
+#
+# Hyprland calls bootstrap at login, sync when a screen is plugged in, and reflow when
+# one goes away (see hyprland.lua).
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -10,6 +22,7 @@ MONITOR_ID=""
 MONITOR_SELECTOR=""
 MIGRATED=false
 
+# One change at a time: plugging two screens fires two syncs at once
 acquire_lock() {
   if [[ "${DISPLAYCTL_LOCKED:-false}" == "true" ]]; then
     return 0
@@ -59,6 +72,7 @@ Usage:
 EOF
 }
 
+# The state file is plain key=value lines, rewritten whole on every change
 read_value() {
   local key="$1"
   [[ -f "$STATE_FILE" ]] || return 0
@@ -96,6 +110,7 @@ delete_matching_values() {
   mv -f "$tmp" "$STATE_FILE"
 }
 
+# Settings from older versions that no longer mean anything
 remove_legacy_state() {
   local dir tmp
   [[ -f "$STATE_FILE" ]] || return 0
@@ -109,6 +124,7 @@ remove_legacy_state() {
   fi
 }
 
+# The state used to live in ~/.config/hypr
 migrate_state_file() {
   [[ -z "${HYPR_MONITOR_STATE:-}" ]] || return 0
   [[ ! -f "$STATE_FILE" && -f "$LEGACY_STATE_FILE" ]] || return 0
@@ -137,6 +153,8 @@ load_monitors() {
   }
 }
 
+# Works out a screen's ID, and the selector Hyprland will match it with (its description,
+# or its port when the description can't tell it apart)
 set_monitor_identity() {
   local output="$1" make="$2" model="$3" serial="$4" description="$5"
   local identity duplicate_count
@@ -172,6 +190,7 @@ set_monitor_identity() {
   )"
 }
 
+# Same, from a port name (DP-1, HDMI-A-1…)
 resolve_monitor() {
   local output="$1" fields
   fields="$(
@@ -189,6 +208,7 @@ resolve_monitor() {
   set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
 }
 
+# Checks the screen really offers a mode, and returns it the way Hyprland spells it
 supported_mode() {
   local output="$1" requested="${2%Hz}"
   local resolution frequency
@@ -231,6 +251,7 @@ supported_mode() {
   fi
 }
 
+# Older states were keyed by port: move those settings under the screen's ID
 migrate_monitor_state() {
   local output="$1" id="$2" selector="$3"
   local legacy_mode legacy_scale legacy_position current_selector
@@ -271,6 +292,7 @@ migrate_monitor_state() {
   fi
 }
 
+# The port a screen is plugged into right now, if it is
 active_output_for_id() {
   local wanted_id="$1"
   local fields output make model serial description
@@ -292,6 +314,7 @@ active_output_for_id() {
   return 1
 }
 
+# Placing A next to B, when B already hangs off A, would chase its own tail
 would_create_layout_cycle() {
   local moved_id="$1" current_id="$2"
   local relation next_id seen=" "
@@ -317,6 +340,7 @@ would_create_layout_cycle() {
   return 1
 }
 
+# The lowest number from 1 to 10 no screen has yet
 next_monitor_slot() {
   awk -F= '
     $1 ~ /^slot\./ && $2 ~ /^[0-9]+$/ { used[$2] = 1 }
@@ -344,6 +368,7 @@ workspace_is_assigned() {
   ' "$STATE_FILE"
 }
 
+# Giving a screen a number another one has swaps their numbers
 write_monitor_slot() {
   local monitor_id="$1" new_slot="$2" current_slot occupant_id dir tmp
   current_slot="$(read_value "slot.$monitor_id" || true)"
@@ -382,6 +407,7 @@ write_monitor_slot() {
   mv -f "$tmp" "$STATE_FILE"
 }
 
+# "3, 1,1" becomes "1,3"; "none" stays empty
 normalize_workspace_list() {
   local list="$1"
   [[ "$list" == "none" ]] && return 0
@@ -399,6 +425,7 @@ normalize_workspace_list() {
     paste -sd, -
 }
 
+# A workspace belongs to one screen only: claiming it takes it from the others
 write_workspace_list() {
   local monitor_id="$1" requested="$2" dir tmp
   dir="$(dirname "$STATE_FILE")"
@@ -430,6 +457,9 @@ write_workspace_list() {
   mv -f "$tmp" "$STATE_FILE"
 }
 
+# Turns the saved "left of / above…" relations into positions for the screens that are
+# plugged in. A missing screen's neighbours hang off whoever is left, and everything
+# is shifted back to 0,0 so no empty space remains.
 reflow_layout() {
   local fields output make model serial description x y logical_width logical_height
   local moved_id updates="" min_x min_y normalized_x normalized_y
@@ -592,6 +622,7 @@ reflow_layout() {
 
 command="${1:-}"
 case "$command" in
+# Makes sure a state file exists and is up to date
 ensure)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
   acquire_lock
@@ -604,12 +635,14 @@ ensure)
     write_value default_scale auto
   fi
   ;;
+# At login
 bootstrap)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
   acquire_lock
   "$0" ensure
   "$0" sync
   ;;
+# A new screen gets a number, workspaces and its best refresh rate; known ones are left alone
 sync | optimize)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
   acquire_lock
@@ -1014,6 +1047,7 @@ reflow)
   acquire_lock
   reflow_layout
   ;;
+# Forget the custom layout, Hyprland lines them up again
 auto-layout)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
   acquire_lock
@@ -1034,6 +1068,7 @@ auto)
     reflow_layout
   fi
   ;;
+# Start over from scratch
 reset)
   [[ $# -eq 1 ]] || { usage >&2; exit 1; }
   acquire_lock
@@ -1044,6 +1079,7 @@ reset)
     echo "Defaults saved; outputs will be detected when Hyprland starts."
   fi
   ;;
+# A fresh state file, from install.sh
 init)
   [[ $# -le 2 ]] || { usage >&2; exit 1; }
   initial_mode="${2:-preferred}"
