@@ -926,6 +926,7 @@ WlSessionLockSurface {
             GlassSurface {
                 radius: parent.radius
                 backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.6)
+                focused: input.activeFocus
             }
 
             Text {

@@ -13,9 +13,26 @@ Item {
     property color backgroundColor: "transparent"
     // Off for panels, which keep their own background and only get the rim.
     property bool tinted: true
+    // A text field you can type in: the rim lights up in mauve, since an empty field
+    // shows no cursor yet.
+    property bool focused: false
+    property real accent: focused ? 1 : 0
+
+    // The rim's color, from the usual pale glass to mauve as the field gets the focus.
+    function rimColor(alpha, focusedAlpha) {
+        return Qt.rgba((205 + (203 - 205) * accent) / 255, (214 + (166 - 214) * accent) / 255, (244 + (247 - 244) * accent) / 255, alpha + (focusedAlpha - alpha) * accent);
+    }
 
     anchors.fill: parent
     z: -1
+
+    Behavior on accent {
+        NumberAnimation {
+            duration: 160
+            easing.type: Easing.OutCubic
+        }
+
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -60,17 +77,17 @@ Item {
 
                 GradientStop {
                     position: 0
-                    color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.38)
+                    color: glass.rimColor(0.38, 0.95)
                 }
 
                 GradientStop {
                     position: 0.45
-                    color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.06)
+                    color: glass.rimColor(0.06, 0.6)
                 }
 
                 GradientStop {
                     position: 1
-                    color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.16)
+                    color: glass.rimColor(0.16, 0.8)
                 }
 
             }
@@ -81,12 +98,13 @@ Item {
                 radius: glass.radius
             }
 
+            // A touch thicker while focused.
             PathRectangle {
-                x: 1
-                y: 1
-                width: Math.max(0, glass.width - 2)
-                height: Math.max(0, glass.height - 2)
-                radius: Math.max(0, glass.radius - 1)
+                x: 1 + 0.5 * glass.accent
+                y: 1 + 0.5 * glass.accent
+                width: Math.max(0, glass.width - 2 - glass.accent)
+                height: Math.max(0, glass.height - 2 - glass.accent)
+                radius: Math.max(0, glass.radius - 1 - 0.5 * glass.accent)
             }
 
         }
