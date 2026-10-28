@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# Remembers the wallpaper and hands it to awww, which forgets it on every restart.
+#   wallpaperctl.sh apply        puts the saved one back, at once (login, new screen)
+#   wallpaperctl.sh set <image>  saves it and shows it with a transition (the shell's selector)
+#   wallpaperctl.sh reset        back to the default one
+#   wallpaperctl.sh ensure       makes sure a valid wallpaper is saved
+#   wallpaperctl.sh init         saves the default one without showing it (install.sh)
+#   wallpaperctl.sh status       prints the saved one
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -6,7 +13,7 @@ STATE_DIR="$STATE_HOME/hyprpunk"
 STATE_FILE="${HYPR_WALLPAPER_STATE:-$STATE_DIR/wallpaper.conf}"
 LOCK_FILE="${STATE_FILE}.lock"
 DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/night-drive-protocol.png"
-# A circle growing from the dynamic island, where the wallpaper selector opens.
+# The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
 usage() {
@@ -21,6 +28,7 @@ Usage:
 EOF
 }
 
+# One change at a time, even when the selector and a new screen ask together
 acquire_lock() {
   if [[ "${WALLPAPERCTL_LOCKED:-false}" == "true" ]]; then
     return 0
@@ -67,6 +75,7 @@ write_state() {
   mv -f "$tmp" "$STATE_FILE"
 }
 
+# A missing or broken saved wallpaper falls back to the default one
 ensure_state() {
   local wallpaper
   wallpaper="$(read_wallpaper || true)"
@@ -77,13 +86,13 @@ ensure_state() {
   write_state "$wallpaper"
 }
 
-# The arguments are passed to awww img, e.g. the transition.
+# Shows the saved wallpaper, the arguments go to awww img (the transition)
 apply_wallpaper() {
   local wallpaper attempts=0
   wallpaper="$(read_wallpaper)"
   validate_wallpaper "$wallpaper"
 
-  # awww-daemon starts with the session and keeps no wallpaper of its own.
+  # awww-daemon starts alongside us at login, give it up to 5 seconds
   until awww query >/dev/null 2>&1; do
     attempts=$((attempts + 1))
     if ((attempts >= 50)); then

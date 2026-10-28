@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Picks the language of the interface and, separately, the regional formats (dates,
+# numbers, money), so you can have an English desktop with French dates.
+# Saved for Hyprland's env.lua, and passed on to systemd and D-Bus so the apps they
+# start follow too. Apps already open keep theirs until restarted.
+#   locale-profilectl.sh get-language | get-regional | list
+#   locale-profilectl.sh set-language <us|fr> | set-regional <us|fr>   from the shell
+#   locale-profilectl.sh init [language] [regional]                    from install.sh
+#   locale-profilectl.sh ensure                                        re-applies the saved ones
 
 set -euo pipefail
 
@@ -11,6 +19,7 @@ usage() {
   echo "Usage: $0 {get-language|get-regional|list|set-language <us|fr>|set-regional <us|fr>|init [us|fr] [us|fr]|ensure}"
 }
 
+# The saved choice, or the fallback when there's none (US language, French formats)
 read_profile() {
   local file="$1" fallback="$2"
   local profile="$fallback"
@@ -73,6 +82,7 @@ export_locale_environment() {
     "LC_IDENTIFICATION=$LC_IDENTIFICATION"
   )
 
+  # Apps launched from now on, by systemd or D-Bus, get the new locale
   if command -v systemctl >/dev/null 2>&1; then
     systemctl --user unset-environment LC_ALL >/dev/null 2>&1 || true
     systemctl --user set-environment "${assignments[@]}" >/dev/null 2>&1 ||

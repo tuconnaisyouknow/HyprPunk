@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# Switches between the US and French layouts, and moves every app's Vim keys with it:
+# hjkl on QWERTY, jklm on AZERTY so they stay under the right hand.
+# Hyprland, Neovim and zsh read the layout themselves; tmux, kitty, less and yazi get
+# small generated files in ~/.local/state/hyprpunk/keyboard.
+#   keyboard-layoutctl.sh get | list
+#   keyboard-layoutctl.sh set <fr|us> | toggle   from the shell
+#   keyboard-layoutctl.sh init [fr|us]           from install.sh, through sudo
+#   keyboard-layoutctl.sh ensure                 rewrites the generated files only
 
 set -euo pipefail
 
@@ -14,9 +22,6 @@ usage() {
   echo "Usage: $0 {get|list|set <fr|us>|toggle|init [fr|us]|ensure}"
 }
 
-# set, toggle and init also change the system keymap (login screen and TTYs);
-# ensure only regenerates the session's files.
-
 get_layout() {
   local layout="us"
   if [[ -r "$STATE_FILE" ]]; then
@@ -28,6 +33,7 @@ get_layout() {
   esac
 }
 
+# Writes stdin to a file in one go, without the heredoc's indentation
 write_file() {
   local target="$1"
   local temporary="$target.tmp.$$"
@@ -36,6 +42,7 @@ write_file() {
   mv -f "$temporary" "$target"
 }
 
+# Yazi's config is a folder: link the shared files, and the AZERTY keymap when needed
 generate_common() {
   local layout="$1"
   mkdir -p "$GENERATED_DIR/yazi"
@@ -51,6 +58,8 @@ generate_common() {
   fi
 }
 
+# AZERTY: tmux's copy mode and pane keys move over, kitty sends Ctrl+M as F12
+# (terminals see it as Enter otherwise), and less scrolls with k and l
 generate_fr() {
   write_file "$GENERATED_DIR/tmux.conf" <<'EOF'
     unbind-key -q -n C-h
@@ -81,6 +90,7 @@ EOF
 EOF
 }
 
+# QWERTY: the usual keys, nothing for kitty or less
 generate_us() {
   write_file "$GENERATED_DIR/tmux.conf" <<'EOF'
     unbind-key -q -n C-h
@@ -106,6 +116,7 @@ EOF
   : >"$GENERATED_DIR/lesskey"
 }
 
+# Let whatever is running pick up the change right away
 reload_apps() {
   if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && command -v hyprctl >/dev/null 2>&1; then
     if ! timeout 2s hyprctl reload >/dev/null 2>&1; then
@@ -124,10 +135,9 @@ system_field() {
   localectl status 2>/dev/null | sed -n "s/^ *X11 $1: //p"
 }
 
-# The system keymap, for SDDM's login screen and the TTYs (localectl also sets the
-# console's from the X11 layout), the model and options kept. Through polkit without
-# a password (keyboard/polkit, installed by install.sh), or through sudo with
-# $2 = sudo (the installer).
+# The same layout for the login screen and the TTYs, keeping the keyboard's model and
+# options. No password thanks to the polkit rule in keyboard/polkit, or through sudo
+# when the installer asks ($2 = sudo).
 apply_system_layout() {
   local layout="$1" prefix=() model options
   [[ "${2:-}" == sudo ]] && prefix=(sudo)

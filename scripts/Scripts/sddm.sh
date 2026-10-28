@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Installs the login screen themes and picks the active one.
+# They're copied rather than linked: SDDM runs as its own user and can't read your home.
+#   sddm.sh install   copies the themes that aren't there yet
+#   sddm.sh update    copies them all again, after you edited one
+#   sddm.sh <theme>   makes it the login screen (the shell's SDDM picker calls this)
 set -euo pipefail
 
 THEMES_DIR="$HOME/.dotfiles/sddm/themes"
@@ -6,6 +11,7 @@ SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
 SDDM_CONF_DIR="/etc/sddm.conf.d"
 SDDM_CONF="$SDDM_CONF_DIR/theme.conf"
 
+# Catppuccin colors for the output
 C_ACCENT='\033[38;2;203;166;247m'
 C_DIM='\033[38;2;166;173;200m'
 C_GREEN='\033[38;2;166;227;161m'
@@ -40,6 +46,7 @@ usage() {
   find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d -printf '  %f\n' | sort >&2
 }
 
+# A theme needs at least these three files for SDDM to load it
 validate_theme_files() {
   local theme_name="$1"
   local theme_path="$THEMES_DIR/$theme_name"
@@ -92,6 +99,7 @@ set_current_theme() {
   local selected_theme="$1"
   local theme_path="$THEMES_DIR/$selected_theme"
 
+  # Just a name, nothing that could point outside the themes folder
   if [[ "$selected_theme" == *"/"* ]] || [[ "$selected_theme" == "."* ]]; then
     error "Invalid theme name: $selected_theme"
     exit 1
@@ -111,6 +119,7 @@ set_current_theme() {
     exit 1
   fi
 
+  # Set Current= in our own drop-in, whatever state it's in
   sudo mkdir -p "$SDDM_CONF_DIR"
 
   if [ ! -f "$SDDM_CONF" ]; then
