@@ -1,3 +1,4 @@
+-- Tell LazyVim to use our theme
 return {
   {
     "LazyVim/LazyVim",

@@ -1,5 +1,6 @@
 local keyboard = require('config.keyboard')
 
+-- LazyVim's dashboard and pickers, made ours
 return {
   'snacks.nvim',
   opts = {
@@ -16,6 +17,7 @@ return {
    ██║   ╚██████╔╝╚██████╗╚██████╔╝██║ ╚████║██║ ╚████║██║  ██║██║███████║
    ╚═╝    ╚═════╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝╚══════╝
 ]],
+        -- The shortcuts on the welcome screen
         keys = {
           { icon = '󰍉 ', key = 'f', desc = 'Find File', action = ":lua Snacks.dashboard.pick('files')" },
           { icon = ' ', key = 'g', desc = 'Live Grep', action = ":lua Snacks.dashboard.pick('live_grep')" },
@@ -28,6 +30,8 @@ return {
       },
     },
 
+    -- Ctrl+hjkl is for panes (see keymaps.lua), so the lists move with Alt + the arrows,
+    -- and the explorer with the arrows themselves. Hidden files are always shown.
     picker = {
       win = {
         input = {

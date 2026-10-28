@@ -1,3 +1,4 @@
+-- Jump anywhere on screen in a few keys, zk to start
 return {
   "folke/flash.nvim",
   event = "VeryLazy",

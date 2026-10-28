@@ -1,3 +1,4 @@
+-- Catppuccin Mocha, see-through so kitty's background shows
 return {
   "catppuccin/nvim",
   lazy = false,
