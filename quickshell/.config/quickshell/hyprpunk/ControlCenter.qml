@@ -39,6 +39,9 @@ PanelWindow {
     property string previousPage: "main"
     property real pageProgress: 1
     property var passwordNetwork: null
+    // Something typed in the Wi-Fi password: the panel then stays open with the pointer
+    // outside, so a slip of the mouse doesn't throw it away.
+    readonly property bool typingPassword: passwordNetwork !== null && pagesLoader.item !== null && pagesLoader.item.password.text !== ""
     // Enterprise network whose credentials are asked on the "enterprise" page.
     property var enterpriseNetwork: null
     // The network you just connected to from here: only its failures ask for credentials,
@@ -413,9 +416,14 @@ PanelWindow {
         previousPage = shownPage;
         shownPage = page;
         pageAnimation.restart();
+        // Leaving the Wi-Fi list drops its password prompt, or the panel would think
+        // you're still typing one and never close.
+        if (page !== "wifi")
+            passwordNetwork = null;
+
     }
-    onPasswordNetworkChanged: {
-        if (passwordNetwork === null && !pillHovered && !panelHovered)
+    onTypingPasswordChanged: {
+        if (!typingPassword && !pillHovered && !panelHovered)
             closeDelay.restart();
 
     }
@@ -1369,7 +1377,7 @@ PanelWindow {
         onTriggered: {
             // Stay open while a Wi-Fi password or enterprise sign-in is being typed
             // (picking a certificate opens a file chooser outside the panel).
-            if (!controlCenter.pillHovered && !controlCenter.panelHovered && controlCenter.passwordNetwork === null && controlCenter.page !== "enterprise" && !(controlCenter.page === "wifiDetail" && pagesLoader.item.wifiDetail.editing))
+            if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.typingPassword && controlCenter.page !== "enterprise" && !(controlCenter.page === "wifiDetail" && pagesLoader.item.wifiDetail.editing))
                 controlCenter.opened = false;
 
         }
