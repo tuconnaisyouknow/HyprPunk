@@ -417,6 +417,11 @@ activate_dotfiles() {
 # system-wide by their own steps.
 stow_dotfiles() {
   stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
+
+  # btop rewrites its settings whenever you change one, so it starts from a copy of
+  # ours, kept out of git, and the settings you already have stay
+  [[ -e "$HOME/.config/btop/btop.conf" ]] ||
+    cp "$HOME/.config/btop/btop.default.conf" "$HOME/.config/btop/btop.conf"
 }
 
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy instead of a link
