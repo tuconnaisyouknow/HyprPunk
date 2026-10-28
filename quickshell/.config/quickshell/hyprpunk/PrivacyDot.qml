@@ -14,15 +14,10 @@ Item {
     implicitWidth: dots.implicitWidth + 6
     implicitHeight: 14
 
-    Rectangle {
-        anchors.fill: parent
-        radius: height / 2
-        color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
-    }
-
     GlassSurface {
         radius: dot.height / 2
         tinted: false
+        backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
     }
 
     Row {
