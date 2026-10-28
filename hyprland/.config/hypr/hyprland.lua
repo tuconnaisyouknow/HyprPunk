@@ -211,6 +211,7 @@ hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "a
 hl.config({
   dwindle = {
     preserve_split = true, -- A split keeps its direction when windows come and go
+    force_split = 2,       -- New windows always open to the right or below, wherever the mouse is
   },
 })
 
