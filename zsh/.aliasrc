@@ -1,28 +1,22 @@
-# YAY config
-alias i='yay -S --needed --noconfirm --removemake'
-alias u='yay -Syu --noconfirm --removemake'
-alias update='yay -Sy --needed --noconfirm --removemake'
-alias r='yay -Rns --noconfirm --removemake'
+# Packages, through yay without the questions
+alias i='yay -S --needed --noconfirm --removemake'       # Install
+alias u='yay -Syu --noconfirm --removemake'              # Update everything
+alias update='yay -Sy --needed --noconfirm --removemake' # Refresh the package lists, then install
+alias r='yay -Rns --noconfirm --removemake'              # Remove, with what it pulled in
 
-# SUDO config (keep user config en variable)
+# sudo keeps your environment (and your aliases, thanks to the trailing space)
 alias sudo='sudo -E '
 alias sudoi='command sudo -i'
 
-# EZA config
+# ls and tree, with colors and icons
 alias ls='eza --color=always --icons=always'
 alias tree='eza --color=always --icons=always --tree'
 
-# NVIM config
+# Short names
 alias vim='nvim'
-
-# FASTFETCH config
 alias ff='fastfetch'
-
-# TMUX config
 alias t='tmux'
-
-# YAZI config
 alias y='yazi'
 
-# BAT config
+# zsh-bat turns cat into bat, rcat is the real one
 alias rcat='\cat'

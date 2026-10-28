@@ -1,8 +1,9 @@
-# AUTOSUGGESTIONS config
+# Vi mode, with Alt+Backspace still deleting a whole word
 bindkey -v
 bindkey -M viins '^[^?' backward-kill-word
 bindkey -M viins '^[^H' backward-kill-word
 
+# hjkl in normal and visual mode, moved to jklm on AZERTY so they stay under the right hand
 keyboard_state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
 keyboard_layout="us"
 [[ -r "$keyboard_state_home/hyprpunk/keyboard-layout" ]] &&
@@ -31,6 +32,9 @@ else
 fi
 
 unset keyboard_layout keyboard_state_home
+
+# Ctrl+Space takes the suggestion, Alt+L and Alt+K go through the history
+# of what starts like the current line
 bindkey -r '^ '
 bindkey -r '^[l'
 bindkey -r '^[k'
