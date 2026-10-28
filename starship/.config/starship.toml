@@ -1,7 +1,10 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+# Give up on scanning a folder after 100 ms, so huge ones don't slow the prompt
 scan_timeout = 100
 
+# One line of pills sliding from one color to the next: who you are, where,
+# the git state, the project's language and the time. Then the prompt itself.
 format = """
 [](fg:surface0)\
 $os\
@@ -23,6 +26,7 @@ $time\
 [ ](fg:sapphire)\
 $line_break$character"""
 
+# Catppuccin Mocha
 palette = 'catppuccin_mocha'
 
 [palettes.catppuccin_mocha]
@@ -53,6 +57,7 @@ base = "#1e1e2e"
 mantle = "#181825"
 crust = "#11111b"
 
+# Who and where: distro icon, user, and the machine's name over SSH only
 [os]
 disabled = false
 style = "bg:surface0 fg:lavender"
@@ -85,6 +90,7 @@ style_user = "bg:surface0 fg:lavender"
 style_root = "bg:surface0 fg:red"
 format = '[ $user]($style)'
 
+# Just a space when you're on your own machine, the hostname takes its place over SSH
 [custom.local_spacer]
 when = 'test -z "$SSH_CONNECTION$SSH_TTY$SSH_CLIENT"'
 format = '[ ](bg:surface0 fg:lavender)'
@@ -94,6 +100,7 @@ ssh_only = true
 ssh_symbol = "󰢹 "
 format = "[@$hostname ](bg:surface0 fg:lavender)[$ssh_symbol](bg:surface0 fg:lavender)"
 
+# The last three folders, the usual ones shown as icons
 [directory]
 style = "fg:base bg:mauve"
 format = "[ $path ]($style)"
@@ -110,6 +117,7 @@ truncation_symbol = "…/"
 "Templates" = " "
 "Videos" = " "
 
+# Branch, then what's waiting: ? untracked, ! modified, ++ staged, ⇡⇣ ahead or behind
 [git_branch]
 symbol = ""
 style = "bg:lavender"
@@ -129,6 +137,8 @@ ahead = '[⇡\(${count}\)](bg:lavender fg:base)'
 diverged = '⇕[\[](bg:lavender fg:base)[⇡\(${ahead_count}\)](bg:lavender fg:base)[⇣\(${behind_count}\)](bg:lavender fg:base)[\]](bg:lavender fg:base)'
 behind = '[⇣\(${count}\)](bg:lavender fg:base)'
 
+# The project's language and its version.
+# The commented ones are ready to go: uncomment them and add them to the format above.
 [nodejs]
 symbol = ""
 style = "bg:sky"
@@ -174,6 +184,7 @@ symbol = ""
 style = "bg:sky"
 format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
 
+# Hours and minutes
 [time]
 disabled = false
 time_format = "%R"
@@ -183,6 +194,7 @@ format = '[[  $time ](fg:base bg:sapphire)]($style)'
 [line_break]
 disabled = false
 
+# The arrow you type after: mauve, red when the last command failed, other colors in Vim modes
 [character]
 disabled = false
 success_symbol = '[ ](bold fg:mauve)'
@@ -192,6 +204,7 @@ vimcmd_replace_one_symbol = '[ ](bold fg:maroon)'
 vimcmd_replace_symbol = '[ ](bold fg:maroon)'
 vimcmd_visual_symbol = '[ ](bold fg:green)'
 
+# What a prompt shrinks to once its command has run (see the transient prompt in .zshrc)
 [profiles]
 transient = """
 $character\
