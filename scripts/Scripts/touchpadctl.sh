@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Turns the touchpad on and off, and remembers it. Hyprland applies the saved state
-# through touchpad.lua, and the shell's bar shows it.
+# through input.lua, and the shell's bar shows it.
 #   touchpadctl.sh toggle | enable | disable   from the touchpad key or the shell
 #   touchpadctl.sh sync                        at login: finds the touchpads again
 #   touchpadctl.sh status

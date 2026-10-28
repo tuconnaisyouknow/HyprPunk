@@ -215,7 +215,7 @@ also rebuild plugin-specific mappings such as Snacks Explorer).
 
 The layout integration covers:
 
-- 🪟 `hyprland/.config/hypr/hyprland.lua`
+- 🪟 `hyprland/.config/hypr/input.lua`
 - ⌨️ `hyprland/.config/hypr/keybindings.lua`
 - 📖 `scripts/Scripts/keyboard-layoutctl.sh` (generated less bindings)
 - 📝 `nvim/.config/nvim/lua/config/keymaps.lua`
@@ -280,7 +280,8 @@ The installer enables or configures:
 The main files to adapt to your machine are:
 
 - ⌨️ `hyprland/.config/hypr/keybindings.lua` for keybindings.
-- 🪟 `hyprland/.config/hypr/hyprland.lua` for window rules and workspaces.
+- 🪟 `hyprland/.config/hypr/rules.lua` for window rules, `looknfeel.lua` for gaps, blur and animations,
+  `input.lua` for the keyboard, mouse and touchpad, and `autostart.lua` for what starts with the session.
 - 🖼️ `wallpapers/Pictures/Wallpapers/` for wallpapers.
 
 ---

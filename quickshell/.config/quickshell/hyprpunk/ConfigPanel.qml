@@ -12,7 +12,8 @@ SearchPanel {
     readonly property var files: [{
         "icon": "",
         "name": "Hyprland",
-        "path": "~/.config/hypr/hyprland.lua"
+        "path": "~/.config/hypr",
+        "command": ["nvim", "+lua Snacks.dashboard.pick(\"files\", { cwd = vim.fn.expand(\"~/.config/hypr\") })"]
     }, {
         "icon": "󰌌",
         "name": "Hyprland keybindings",
