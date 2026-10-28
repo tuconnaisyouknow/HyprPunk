@@ -1,36 +1,46 @@
-# FASTFETCH
+# A little hello in every new terminal, but not in each tmux pane
 if [[ -z "$TMUX" ]]; then
   command -v fastfetch >/dev/null 2>&1 && fastfetch
 fi
 
-# OPTIONAL (if you don't need a ~/.completionrc file you can remove this line)
+# Your own completions in ~/.completionrc, skipped if it doesn't exist
 [[ -f ~/.completionrc ]] && source ~/.completionrc
 
-# Path to your Oh My Zsh installation.
+#############
+# OH MY ZSH #
+#############
+
 export ZSH="$HOME/.oh-my-zsh"
 
-# Theme
+# No theme, Starship draws the prompt
 ZSH_THEME=""
 
-# Plugins
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-bat fzf)
 
-# Source oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
-# Sources
+###############
+# MY OWN BITS #
+###############
+
 source ~/.aliasrc
 source ~/.functionrc
 source ~/.highlightrc
 source ~/.bindingrc
 
-# OPTIONAL (if you don't need a ~/.personalrc file you can remove this line)
+# Your own tweaks in ~/.personalrc, skipped if it doesn't exist
 [[ -f ~/.personalrc ]] && source ~/.personalrc
 
-# FZF config
+#########
+# TOOLS #
+#########
+
+# fzf, with a preview of files (bat) and folders (eza)
 source <(fzf --zsh)
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always -n --line-range :500 {}'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=always {} | head -200'"
+
+# fzf, less and yazi move with the Vim keys of the current layout (jklm on AZERTY)
 keyboard_state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
 keyboard_layout="us"
 [[ -r "$keyboard_state_home/hyprpunk/keyboard-layout" ]] &&
@@ -45,16 +55,20 @@ export LESSKEYIN="$HOME/.local/state/hyprpunk/keyboard/lesskey"
 export YAZI_CONFIG_HOME="$HOME/.local/state/hyprpunk/keyboard/yazi"
 unset keyboard_layout keyboard_state_home
 
-# ZOXIDE config
+# z to jump to the folders you visit most
 eval "$(zoxide init zsh)"
 
-# STARSHIP init
+##########
+# PROMPT #
+##########
+
+# Starship, set up only once even if this file is sourced again
 type starship_zle-keymap-select >/dev/null || \
   {
     eval "$(starship init zsh)"
   }
 
-# STARSHIP transient prompt
+# Transient prompt: once a command is sent, its prompt shrinks to keep the history tidy
 autoload -Uz add-zle-hook-widget
 
 _transient_prompt() {

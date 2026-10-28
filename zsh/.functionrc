@@ -1,3 +1,4 @@
+# fastfetch's image isn't redrawn by tmux on its own, so give it a nudge
 fastfetch() {
   command fastfetch "$@"
   [[ -n "$TMUX" ]] && tmux refresh-client
