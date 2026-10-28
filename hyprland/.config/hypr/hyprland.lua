@@ -4,8 +4,8 @@
 
 local colors = require("mocha")              -- Catppuccin Mocha palette
 local keyboard = __require("keyboard_state") -- Keyboard layout, reloaded when you switch it
-package.loaded["glass_state"] = nil          -- Read again on every reload, like the screens
-local linked, glass = pcall(__require, "glass_state") -- Glass style, reloaded when you switch it
+package.loaded["glass_state"] = nil          -- Glass style, read again on every reload
+local linked, glass = pcall(__require, "glass_state")
 -- Classic until glass_state.lua is linked, so a git pull without stow can't break the config
 if not linked then
   glass = { liquid = false, ignore_alpha = 0.5 }
