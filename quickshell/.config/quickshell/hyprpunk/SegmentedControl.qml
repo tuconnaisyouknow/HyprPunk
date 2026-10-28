@@ -1,9 +1,9 @@
 import QtQuick
 
-// Choice of one option among a few, side by side (the AirPods' listening modes, the
-// sound page's tabs): the chosen one sits on a mauve glass highlight that slides over
-// with a little overshoot. The highlight moves at once on a click, before the device
-// has answered. Compact, an option's icon sits beside its label instead of above it.
+// A few options side by side, one chosen (the AirPods' listening modes, the sound
+// page's tabs). A mauve glass highlight slides under the chosen one with a little
+// overshoot, right away on click, without waiting for the device to answer.
+// In compact mode, icons sit beside their labels instead of above.
 Item {
     id: control
 
@@ -11,7 +11,7 @@ Item {
     required property var options
     property var value: null
     property bool compact: false
-    // The option shown chosen: the one clicked, until value follows (or does not).
+    // What looks chosen: the one just clicked, until value catches up (or doesn't).
     property var shownValue: value
     readonly property int currentIndex: options.findIndex((option) => {
         return option.value === shownValue;
@@ -26,7 +26,7 @@ Item {
         shownValue = value;
     }
 
-    // The device did not take the option: back to its own.
+    // The device said no: back to what it actually uses.
     Timer {
         id: settle
 

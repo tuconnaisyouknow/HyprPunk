@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Labelled text field of the control center's forms, recessed in the glass card like
-// the Wi-Fi password; secret fields hide their letters like the sudo field.
+// A labelled text field for the control center's forms, sunk into the glass like the
+// Wi-Fi password. Secret ones hide what you type.
 ColumnLayout {
     id: field
 

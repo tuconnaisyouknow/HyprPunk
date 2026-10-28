@@ -12,6 +12,12 @@ import Quickshell.Services.UPower
 import Quickshell.Wayland
 import Quickshell.Widgets
 
+// The bar along the top of each screen, a row of pills.
+// On the left, the workspaces (hover for a preview) and the resources (hover for a
+// little btop). In the middle, the dynamic island: clock, calendar, OSDs, and the
+// panels that grow out of it. On the right, the pending updates when there are some
+// (click to install), the Spotify record (hover for the player), and the control
+// pill (hover for the control center).
 PanelWindow {
     id: bar
 
@@ -45,20 +51,20 @@ PanelWindow {
     property bool monitorOpenPending: false
     property bool monitorVisible: false
     property bool monitorPopupVisible: false
-    // How long a pill is hovered before its card opens: passing over the bar on the
-    // way somewhere does not flash cards.
+    // How long to hover a pill before its card opens, so sweeping across the bar on the
+    // way to something else doesn't flash cards everywhere.
     readonly property int hoverOpenDelay: 350
     property bool workspaceOpenPending: false
     property bool workspaceVisible: false
     property bool workspacePopupVisible: false
-    // The workspace the preview card opens on, among the ones the user is not on.
+    // Which of your other workspaces the preview card opens on.
     property var previewWorkspace: null
     readonly property var previewWorkspaces: workspaceSwitcher.workspaces.filter((workspace) => {
         return !workspace.focused;
     }).sort((a, b) => {
         return a.id - b.id;
     })
-    // Picture of the bar for the previews (grabToImage's result, which keeps it alive).
+    // A snapshot of the bar for the previews (keeping grabToImage's result keeps it alive).
     property var barSnapshot: null
     readonly property int workspacePreviewWidth: 400
     // The screen's shape, 16:9 until Hyprland has told which monitor the bar is on.
@@ -74,7 +80,7 @@ PanelWindow {
     property real monitorProgress: monitorVisible ? 1 : 0
     // 0 = popup folded on the cover pill, 1 = player fully open.
     property real musicProgress: musicVisible ? 1 : 0
-    // Only Spotify, browsers and other MPRIS players are ignored.
+    // Only Spotify: browsers and other MPRIS players are ignored.
     readonly property var spotifyPlayer: {
         for (const player of Mpris.players.values) {
             if (player.dbusName === "org.mpris.MediaPlayer2.spotify")
@@ -89,8 +95,8 @@ PanelWindow {
     property bool statusOsdEnabled: false
     // "airpods": a pod and its battery ring instead of an icon, label and gauge.
     // "battery": the battery's alert, its icon, a title and the time left.
-    // "screenshot": the screenshot or recording just taken in small (statusOsdImage, the
-    // recording's first frame), titled statusOsdTitle, a click opens statusOsdFile.
+    // "screenshot": a thumbnail of what was just captured (for a recording, its first
+    // frame), titled statusOsdTitle; a click opens statusOsdFile.
     property string statusOsdKind: ""
     property string statusOsdImage: ""
     property string statusOsdTitle: ""
@@ -103,14 +109,14 @@ PanelWindow {
     property int statusOsdLevel: 0
     property int statusOsdMaxLevel: 0
     readonly property int batteryPercent: Math.round(battery.percentage * 100)
-    // The lowest threshold (20, 10 or 5 %) the battery went under since it was last
-    // plugged in, 0 above them: each is told once, the critical one stays shown.
+    // The lowest warning level (20, 10 or 5 %) crossed since the last time it was plugged
+    // in, 0 above them. Each warning shows once; the critical one stays up.
     property int batteryAlertStage: 0
     readonly property bool batteryCritical: hasBattery && UPower.onBattery && batteryAlertStage === 5
-    // Off while the shell starts, UPower's first values are not a plug or unplug.
+    // Off while the shell starts: UPower's first values aren't a plug or unplug.
     property bool powerEventsReady: false
-    // Seconds left from the battery's own draw, while UPower has no estimate yet
-    // (the first seconds after unplugging), 0 without one.
+    // Time left worked out from the battery's own draw, for the first seconds after
+    // unplugging when UPower has no estimate yet. 0 when there's none.
     property real batteryDrawEstimate: 0
     readonly property real batteryTimeLeft: battery.timeToEmpty > 0 ? battery.timeToEmpty : batteryDrawEstimate
     readonly property bool batteryEstimating: statusOsdVisible && statusOsdKind === "battery" && statusOsdLabel === "On battery" && batteryTimeLeft <= 0
@@ -127,15 +133,15 @@ PanelWindow {
     readonly property int audioVolume: audioSink !== null && audioSink.audio !== null ? Math.round(audioSink.audio.volume * 100) : 0
     readonly property bool audioMuted: audioSink !== null && audioSink.audio !== null && audioSink.audio.muted
     property bool volumeInitialized: false
-    // Output whose volume changes are shown, set again on each change of output.
+    // The output whose volume changes we show, updated whenever the output changes.
     property var volumeSink: audioSink
     property int screenBrightness: 0
     property bool brightnessInitialized: false
     property string keyboardBacklightPath: ""
     property bool keyboardHwInitialized: false
     property real clockCenterOffset: bar.statusOsdVisible ? 3 : -3
-    // Regional formats (locale-profilectl.sh): the calendar's names and first day of the
-    // week follow them, although the shell keeps the locale it was started with.
+    // The regional formats you picked (locale-profilectl.sh). The calendar's day names
+    // and first day of the week follow them, even though the shell keeps its startup locale.
     readonly property var regionalLocale: Qt.locale(Session.regionalProfile === "us" ? "en_US" : "fr_FR")
     readonly property string stateHome: {
         const configuredStateHome = Quickshell.env("XDG_STATE_HOME");
@@ -155,7 +161,7 @@ PanelWindow {
         }
         return connecting;
     }
-    // Active VPN connections ({name, state}), Quickshell.Networking does not expose them.
+    // Active VPNs ({name, state}), which Quickshell.Networking doesn't expose.
     property var vpnConnections: []
     readonly property var vpnConnection: vpnConnections.find((connection) => {
         return connection.state === "activated";
@@ -167,8 +173,8 @@ PanelWindow {
     readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || vpnConnecting
     readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && vpnConnection !== null
 
-    // Where each pill is on the screen, for the lock screen to start from: the resources,
-    // the island and the control pill it keeps, and the others it lets go.
+    // Where each pill sits on screen, so the lock screen can start from there: the ones it
+    // keeps (resources, island, control pill) and the ones it lets go.
     function lockGeometry() {
         const rect = (item) => {
             const origin = item.mapToItem(null, 0, 0);
@@ -317,8 +323,8 @@ PanelWindow {
         statusOsdHideDelay.restart();
     }
 
-    // Plugged in or unplugged: told in the island, unless unplugging gives a low
-    // battery's alert instead.
+    // Plugging in or unplugging shows in the island, unless unplugging brings up a
+    // low-battery warning instead.
     function powerSourceChanged() {
         updateBatteryAlert();
         if (!hasBattery || !powerEventsReady)
@@ -338,7 +344,7 @@ PanelWindow {
         statusOsdKind = "battery";
         statusOsdLabel = title;
         batteryDrawEstimate = 0;
-        // Unplugged: open until the time left is known, then a moment to read it.
+        // Unplugged: stays until the time left is known, then a moment to read it.
         statusOsdHideDelay.interval = title === "On battery" && batteryTimeLeft <= 0 ? 8000 : title === "Charging" || title === "On battery" ? 2500 : 6000;
         statusOsdVisible = true;
         // The critical alert stays until the computer is plugged in.
@@ -356,8 +362,8 @@ PanelWindow {
         return statusOsdLabel === "On battery" ? mauve : red;
     }
 
-    // "64% · 1 h 05 until full" while charging, "64% · 3 h 10 left" on battery, the
-    // percentage alone until UPower has an estimate.
+    // "64% · 1 h 05 until full" while charging, "64% · 3 h 10 left" on battery,
+    // just the percentage until UPower has an estimate.
     function batteryDetail() {
         const seconds = UPower.onBattery ? batteryTimeLeft : battery.timeToFull;
         if (!(seconds > 0))
@@ -391,19 +397,19 @@ PanelWindow {
     }
 
     function showVolumeOsd() {
-        // Checked here too: the volume can change (to 0 while an output goes away)
+        // Checked here too: the volume can change (dropping to 0 as an output goes away)
         // before the output itself does.
         if (audioSink !== volumeSink) {
             resetVolumeOsd();
             return ;
         }
         if (volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
-            // Muting keeps the volume: the gauge stays at its level, in lavender.
+            // Muted, the gauge keeps its level and turns lavender.
             showStatusOsd(volumeIcon(), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
 
     }
 
-    // Another output (e.g. AirPods coming or going) brings its own volume: not a change.
+    // Switching output (AirPods coming or going) brings its own volume, that's not a change.
     function resetVolumeOsd() {
         volumeSink = audioSink;
         volumeInitialized = false;
@@ -416,7 +422,7 @@ PanelWindow {
     onAudioVolumeChanged: showVolumeOsd()
     onAudioMutedChanged: showVolumeOsd()
     onAudioSinkChanged: resetVolumeOsd()
-    // Deferred: during the bar's creation the pill's animations do not exist yet.
+    // Deferred: while the bar is being built, the pill's animations don't exist yet.
     onSpotifyPlayerChanged: Qt.callLater(musicPill.resetDiscs)
     onMicSourceChanged: {
         // Wait for the new source's state before reacting to mute changes.
@@ -431,7 +437,7 @@ PanelWindow {
     implicitHeight: 56
     color: "transparent"
     exclusiveZone: 50
-    // Named so the player popup can be blurred by a blur_popups layer rule.
+    // Named so Hyprland's layer rule can blur the player popup too.
     WlrLayershell.namespace: "hyprpunk-bar"
 
     anchors {
@@ -473,7 +479,7 @@ PanelWindow {
 
                     screen: bar.screen
                     icons: bar.workspaceIcons
-                    // Waits like the other pills. The focused workspace is already on screen.
+                    // Waits like the other pills. No need to preview the workspace you're on.
                     onHoveredWorkspaceChanged: {
                         if (hoveredWorkspace !== null && !hoveredWorkspace.focused && !bar.workspacePopupVisible)
                             workspaceOpenDelay.restart();
@@ -490,8 +496,8 @@ PanelWindow {
                         if (workspaceSwitcher.hoveredWorkspace === null)
                             return ;
 
-                        // The windows' places, which Hyprland only sends when asked, and
-                        // the bar as it stands, laid over every preview.
+                        // Ask Hyprland where the windows are (it only says when asked), and
+                        // snapshot the bar to lay over every preview.
                         Hyprland.refreshToplevels();
                         barContent.grabToImage((result) => {
                             bar.barSnapshot = result;
@@ -585,8 +591,8 @@ PanelWindow {
                             backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
                         }
 
-                        // Laid out at full size, only uncovered while the card grows. Made
-                        // again at each opening, so the windows are captured afresh.
+                        // Laid out at full size and uncovered as the card grows. Rebuilt on every
+                        // opening, so the windows are captured fresh.
                         Loader {
                             x: 14
                             y: 14
@@ -732,7 +738,7 @@ PanelWindow {
                         adjustment: PopupAdjustment.SlideX
                     }
 
-                    // The anchor is only computed on opening: follow the pill when the
+                    // The anchor is only worked out on opening: follow the pill if the
                     // workspaces before it change width.
                     Connections {
                         function onXChanged() {
@@ -769,8 +775,7 @@ PanelWindow {
                         radius: monitorPill.radius
                         color: "transparent"
 
-                        // Same card as the pill it grows from: base at 0.9 with the glass rim,
-                        // so the pill itself seems to grow.
+                        // Same look as the pill it grows from, so it feels like the pill itself is growing.
                         GlassSurface {
                             radius: monitorCard.radius
                             tinted: false
@@ -824,8 +829,8 @@ PanelWindow {
 
         }
 
-        // The privacy and recording dots while the calendar covers the island: right of
-        // its card, at the island's height, following its edge as it grows.
+        // When the calendar covers the island, the privacy and recording dots move to its
+        // right, following its edge as it grows.
         PrivacyDot {
             x: centerGroup.x + clockPill.x + clockPill.width / 2 + calendarCard.width / 2 + 8
             y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
@@ -836,7 +841,7 @@ PanelWindow {
             visible: bar.calendarPopupVisible && opacity > 0
         }
 
-        // The same while the island shows something else (an OSD): right of it.
+        // Same when the island is busy with an OSD: they sit to its right.
         PrivacyDot {
             x: centerGroup.x + clockPill.x + clockPill.width + 8
             y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
@@ -937,8 +942,8 @@ PanelWindow {
 
                 }
 
-                // Privacy: a dot after the time while an app records you, green for the
-                // camera (over the microphone), orange for the microphone alone.
+                // Privacy: a dot after the time while something is listening or watching,
+                // green for the camera, orange for the microphone alone.
                 Item {
                     readonly property bool shown: !bar.statusOsdVisible && (bar.shellState.cameraInUse || bar.shellState.microphoneInUse)
 
@@ -990,8 +995,8 @@ PanelWindow {
 
                 }
 
-                // Recording: a pulsing red dot and the time recorded after the time, a
-                // click stops it.
+                // Recording: a pulsing red dot and how long it's been going, after the time.
+                // Click to stop.
                 Item {
                     id: recordingChip
 
@@ -1140,7 +1145,7 @@ PanelWindow {
                     value: 0
                 }
 
-                // The pill is ~90% open by then, so the content is not cut by its edges.
+                // The pill is ~90% open by then, so its edges don't clip the content.
                 PauseAnimation {
                     duration: 110
                 }
@@ -1231,9 +1236,9 @@ PanelWindow {
                     item: calendarCard
                 }
                 implicitWidth: 322
-                // Sized for a six-week month so the card can animate without being cut.
-                // Not derived from weekRows: the layout updates a frame later, and the
-                // popup would be resized twice (the whole content shakes).
+                // Sized for a six-week month so the card can animate without clipping. Not taken
+                // from weekRows: the layout updates a frame late, and the popup would resize twice
+                // (everything shakes).
                 implicitHeight: calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + 18
                 color: "transparent"
                 grabFocus: false
@@ -1259,8 +1264,7 @@ PanelWindow {
                     radius: clockPill.radius
                     color: "transparent"
 
-                    // Same card as the island it grows from: base at 0.9, blurred by
-                    // the hyprpunk-bar blur_popups layer rule, with the glass rim.
+                    // Same look as the island it grows from: base color at 0.9, blurred, with the glass rim.
                     GlassSurface {
                         radius: calendarCard.radius
                         tinted: false
@@ -1543,8 +1547,8 @@ PanelWindow {
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -(bar.implicitHeight - 50) / 2
             spacing: 9
-            // When the control pill changes width, it publishes before the row has moved
-            // back against the right edge: publish again once the row is in place.
+            // When the control pill changes width, it reports its place before the row has
+            // settled against the right edge, so report again once it has.
             onXChanged: controlPill.publishGeometry()
             onYChanged: controlPill.publishGeometry()
 
@@ -1574,7 +1578,7 @@ PanelWindow {
 
             }
 
-            // Round cover of the Spotify track, opens the player on hover.
+            // The Spotify track's cover as a spinning record. Hover it to open the player.
             DropInSlot {
                 shown: bar.spotifyPlayer !== null
 
@@ -1584,10 +1588,10 @@ PanelWindow {
                     // Angle of the front disc: 0 = upright, where every track starts.
                     property real spin: 0
                     // 0 -> 1 after a new track or a restart: the disc only starts spinning
-                    // once it is upright in the hole.
+                    // once it has settled upright.
                     property real spinFactor: 1
-                    // While the player is open (from the hover until it is fully folded back),
-                    // the disc stops and goes on from the same angle afterwards: no jump.
+                    // While the player is open, the disc pauses and picks up from the same angle
+                    // afterwards, without jumping.
                     readonly property bool displayFrozen: bar.musicPopupVisible
                     readonly property real frontAngle: spin + rewind
                     // Degrees per second: speeds up and slows down like a turntable.
@@ -1610,9 +1614,8 @@ PanelWindow {
                     property bool knownPositionPlaying: false
                     property real trackChangeTime: 0
 
-                    // Pops out then settles, on play, pause and track changes alike. Not
-                    // while the player is open: the pill sits under its cover, and would
-                    // stick out of the card as it grows.
+                    // A little pop on play, pause and track changes. Not while the player is
+                    // open though: the pill sits under the card and would poke out of it.
                     function pulse() {
                         if (displayFrozen)
                             return ;
@@ -1620,8 +1623,7 @@ PanelWindow {
                         pulseAnimation.restart();
                     }
 
-                    // Spotify's 64px variant of the 640px art: the pill shows it at 34px and it
-                    // loads much faster.
+                    // Spotify's 64px cover rather than the 640px one: shown at 34px anyway, and much quicker to load.
                     function pillArt() {
                         return bar.spotifyPlayer.trackArtUrl.replace("/ab67616d0000b273", "/ab67616d00004851");
                     }
@@ -1652,13 +1654,13 @@ PanelWindow {
                         knownPositionPlaying = bar.spotifyPlayer.isPlaying;
                     }
 
-                    // "Previous" past the first seconds restarts the track instead of changing it:
+                    // "Previous" a few seconds in restarts the track instead of changing it:
                     // the position jumps back to 0 on the same track.
                     function checkRestart(position) {
                         const current = position ?? bar.spotifyPlayer.position;
                         const expected = knownPosition + (knownPositionPlaying ? (Date.now() - knownPositionTime) / 1000 : 0);
-                        // Position updates right after a track change are not restarts (they gave
-                        // the new disc an extra turn); "previous" that early changes track anyway.
+                        // A position jump right after a track change isn't a restart (it used to give the
+                        // new disc an extra spin), and "previous" that early changes track anyway.
                         const settled = Date.now() - trackChangeTime > 2000;
                         const restarted = settled && trackId() === currentTrackId && current < 1.5 && expected > 2;
                         rememberPosition(current);
@@ -1698,7 +1700,7 @@ PanelWindow {
                         if (id === currentTrackId)
                             return ;
 
-                        // Without a hint (media keys, phone...): back to the previous track
+                        // No hint (media keys, the phone…): going back to the previous track
                         // in the history means backwards.
                         const history = trackHistory.slice();
                         let direction = skipHint;
@@ -1755,8 +1757,8 @@ PanelWindow {
                     implicitWidth: 38
                     implicitHeight: 38
                     radius: 19
-                    // The pills' card is painted by the hole and the ring below, once
-                    // everywhere: a fill here would show twice under the ring.
+                    // The pill's background is painted by the hole and the ring below; a fill here
+                    // would show twice under the ring.
                     color: "transparent"
 
                     // Shows while a disc rolls in or out of the hole.
@@ -1775,8 +1777,8 @@ PanelWindow {
 
                     }
 
-                    // Two discs: on a track change the old one rolls out of the hole and
-                    // the new one rolls in, forwards or backwards.
+                    // Two discs, so on a track change the old one can roll out while the new one
+                    // rolls in, forwards or backwards.
                     Item {
                         id: discWindow
 
@@ -1834,8 +1836,8 @@ PanelWindow {
                         maskSpreadAtMin: 1
                     }
 
-                    // The pill around the hole, the pills' card. The masks leave a jagged edge
-                    // (worse while spinning): the ring covers it, the hole stays 32px wide.
+                    // The pill around the hole. The masks leave a jagged edge (worse while spinning),
+                    // so the ring covers it; the hole stays 32px wide.
                     Rectangle {
                         anchors.fill: parent
                         radius: width / 2
@@ -1905,8 +1907,8 @@ PanelWindow {
                         }
                     }
 
-                    // Spotify does not always announce the restart (no Seeked signal): after a
-                    // "previous" request, its position is asked directly.
+                    // Spotify doesn't always announce a restart (no Seeked signal), so after
+                    // "previous" we ask for the position directly.
                     Timer {
                         id: restartProbeDelay
 
@@ -1917,8 +1919,8 @@ PanelWindow {
                     Process {
                         id: restartProbe
 
-                        // Position in microseconds, and the track it belongs to: a real track
-                        // change not announced yet must not look like a restart.
+                        // Position in microseconds, plus the track it belongs to, so a track change
+                        // that hasn't been announced yet doesn't look like a restart.
                         command: ["playerctl", "-p", "spotify", "metadata", "--format", "{{position}} {{mpris:trackid}}"]
 
                         stdout: StdioCollector {
@@ -1978,8 +1980,8 @@ PanelWindow {
                         }
 
                         function onTrackArtUrlChanged() {
-                            // Art sometimes arrives after the track change. It also arrives just
-                            // before it, while the old disc is still in front: left to changeTrack.
+                            // The cover sometimes arrives after the track change, and sometimes just before,
+                            // while the old disc is still in front (changeTrack handles that case).
                             if (musicPill.trackId() === musicPill.currentTrackId)
                                 musicPill.frontDisc().source = musicPill.pillArt();
 
@@ -2034,15 +2036,15 @@ PanelWindow {
                     }
 
                     // Opens like the calendar: the card grows out of the cover pill and
-                    // the cover moves to its place in the player.
+                    // the cover glides to its place in the player.
                     PopupWindow {
                         id: musicPopup
 
                         readonly property real progress: bar.musicProgress
                         // The cover settles during the first 70% so it never crosses the fading-in title.
                         readonly property real coverProgress: Math.min(1, progress / 0.7)
-                        // Angle of the pill's disc (-180..180): the cover leaves it at that angle and
-                        // straightens up while opening, and turns back to it while folding.
+                        // The disc's angle (-180..180): the cover leaves at that angle and straightens up
+                        // as the player opens, then turns back to it when folding away.
                         readonly property real discAngle: ((musicPill.frontAngle % 360) + 540) % 360 - 180
 
                         function lerp(from, to) {
@@ -2075,8 +2077,8 @@ PanelWindow {
                             adjustment: PopupAdjustment.SlideX
                         }
 
-                        // The anchor is only computed on opening: follow the pill when it
-                        // resizes or when the control pill after it changes width.
+                        // The anchor is only worked out on opening: follow the pill if it resizes
+                        // or the control pill after it changes width.
                         Connections {
                             function onXChanged() {
                                 musicPopup.anchor.updateAnchor();
@@ -2116,8 +2118,7 @@ PanelWindow {
                             radius: musicPill.radius
                             color: "transparent"
 
-                            // Same card as the pill it grows from: base at 0.9,
-                            // blurred by the hyprpunk-bar blur_popups layer rule, with the glass rim.
+                            // Same look as the pill it grows from: base color at 0.9, blurred, with the glass rim.
                             GlassSurface {
                                 radius: musicCard.radius
                                 tinted: false
@@ -2143,9 +2144,8 @@ PanelWindow {
                                 }
                             }
 
-                            // From the pill's cover (32px circle, 3px inset) to the player's artwork.
-                            // Nothing turns: the pill's disc grows at its frozen angle, and the upright
-                            // square cover fades in over it (and out again while folding back).
+                            // From the pill's little round cover to the player's artwork. Nothing spins: the disc
+                            // grows at its frozen angle and the square cover fades in over it (and back out).
                             Item {
                                 readonly property real size: musicPopup.lerp(32, musicPlayerCard.artSize)
                                 readonly property real squareOpacity: Math.min(1, Math.max(0, (musicPopup.coverProgress - 0.4) / 0.5))
@@ -2491,8 +2491,8 @@ PanelWindow {
     Process {
         id: brightnessProcess
 
-        // The screen's backlight only: without one (a desktop), brightnessctl would
-        // read the first LED instead.
+        // The screen's backlight only. A desktop has none, and brightnessctl would
+        // read the first LED it finds instead.
         command: ["brightnessctl", "-c", "backlight", "-m"]
         running: true
 
@@ -2538,8 +2538,7 @@ PanelWindow {
     }
 
     Process {
-        // Found like hypridle's script finds it (keyboard-backlight.sh): the names vary
-        // between drivers.
+        // Found the same way as keyboard-backlight.sh does, since the name depends on the driver.
         command: ["sh", "-c", "device=$(\"$HOME/Scripts/keyboard-backlight.sh\" status) && echo \"/sys/class/leds/$device\""]
         running: true
 
@@ -2549,8 +2548,8 @@ PanelWindow {
 
     }
 
-    // Some drivers (ASUS, ThinkPad...) change the keyboard backlight themselves on Fn
-    // keys and sysfs sends no inotify event for it, so the value is polled.
+    // Some laptops (ASUS, ThinkPad…) change the keyboard backlight themselves on Fn keys,
+    // with no inotify event from sysfs, so the value is polled.
     FileView {
         id: keyboardBacklightFile
 
@@ -2576,8 +2575,8 @@ PanelWindow {
         onLoaded: updateKeyboardBacklight()
     }
 
-    // Only updated by the driver, i.e. on Fn key presses, never by brightnessctl
-    // (hypridle): such changes always get the OSD.
+    // Only the driver updates this, on Fn key presses, never brightnessctl (hypridle),
+    // so these changes always get the OSD.
     FileView {
         id: keyboardBacklightHwFile
 
@@ -2684,7 +2683,7 @@ PanelWindow {
         target: bar
     }
 
-    // UPower waits for a few readings: the draw is read every second meanwhile.
+    // UPower waits for a few readings first, so meanwhile the draw is read every second.
     Timer {
         running: bar.batteryEstimating
         interval: 1000
@@ -2696,8 +2695,8 @@ PanelWindow {
     Process {
         id: batteryDrawProcess
 
-        // Every system battery's energy and draw (µWh and µW), from its charge and current
-        // times its voltage when it has no energy readings; the draw may be negative.
+        // Each battery's energy and draw (µWh and µW). Batteries that only report charge
+        // and current get multiplied by their voltage. The draw may be negative.
         command: ["sh", "-c", batteryDrawProcess.script]
         readonly property string script: 'for dir in /sys/class/power_supply/*; do
 [ "$(cat "$dir/type" 2>/dev/null)" = Battery ] || continue
@@ -2746,7 +2745,7 @@ done'
         target: bar.shellState
     }
 
-    // Caffeine: the bar is always shown, so its inhibitor holds hypridle off.
+    // Caffeine lives on the bar because the bar is always there, so it keeps hypridle at bay.
     IdleInhibitor {
         window: bar
         enabled: bar.shellState.caffeine

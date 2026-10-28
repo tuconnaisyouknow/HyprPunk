@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Action of the control center's detail pages: a glass row with an icon and a label.
-// A destructive one asks for a second click, red while armed like the session menu.
+// A button row on the control center's detail pages: icon, label, glass.
+// The dangerous ones (forget, delete) turn red and wait for a second click, like the session menu.
 ControlBlock {
     id: action
 

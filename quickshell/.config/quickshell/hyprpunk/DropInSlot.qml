@@ -1,8 +1,8 @@
 import QtQuick
 
-// Holds a pill that comes and goes (the player, the updates): its room opens in the
-// row, then it drops in from the top of the screen and bounces into place; leaving,
-// it flies back up before its room closes. The pill is the slot's only child.
+// A spot in the bar for a pill that comes and goes, like the player or the updates.
+// Room opens up, the pill drops in from above and bounces into place; when it leaves,
+// it flies back up and the room closes behind it. Put the pill inside as its only child.
 Item {
     id: slot
 

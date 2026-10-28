@@ -4,6 +4,8 @@ import Quickshell.Services.SystemTray
 import Quickshell.Wayland
 import Quickshell.Widgets
 
+// The system tray, hidden in the bottom-right corner. Push the pointer into the corner
+// and it unfolds; it folds away again shortly after you leave.
 PanelWindow {
     id: trayCorner
 

@@ -105,15 +105,14 @@ Item {
         asynchronous: true
         cache: true
         fillMode: Image.PreserveAspectCrop
-        // Decoded at its displayed size: scaling the 640px art down on the
-        // GPU only samples a few pixels (uneven black edges on some covers).
+        // Decoded at the size it's shown: letting the GPU shrink the 640px art
+        // leaves ragged black edges on some covers.
         sourceSize.width: disc.decodeSize > 0 ? disc.decodeSize : width
         sourceSize.height: disc.decodeSize > 0 ? disc.decodeSize : height
         visible: false
     }
 
-    // Masked with MultiEffect: a ClippingRectangle drew the cover half a
-    // pixel off-centre.
+    // MultiEffect for the round mask, a ClippingRectangle drew it half a pixel off.
     Rectangle {
         id: artMask
 

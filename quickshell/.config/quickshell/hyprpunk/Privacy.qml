@@ -3,9 +3,9 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
 
-// Whether an app records the microphone or the camera, for the privacy dot: through
-// PipeWire's links, and from the camera's device for the apps opening it themselves
-// (browsers, out of PipeWire's sight).
+// Is anything using the microphone or the camera? Feeds the privacy dot.
+// PipeWire tells us most of it; browsers open the camera themselves, out of
+// PipeWire's sight, so the camera device is checked too.
 Scope {
     id: privacy
 
@@ -14,8 +14,8 @@ Scope {
     // Process names of what has the camera's device open.
     property var cameraUsers: []
 
-    // The names of the apps whose streams are linked to a device of this type, the
-    // shell's own (the sound page's level meter) and the Bluetooth link's left out.
+    // The apps streaming from a device of this kind, leaving out the shell itself
+    // (the sound page's level meter) and the Bluetooth link.
     function recordingApps(type) {
         const names = [];
         for (const group of Pipewire.linkGroups.values) {

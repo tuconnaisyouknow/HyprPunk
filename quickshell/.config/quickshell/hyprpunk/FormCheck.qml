@@ -1,7 +1,7 @@
 import QtQuick
 
-// Check box of the control center's forms: a small glass square, mauve while checked
-// like the toggles, that bounces when clicked.
+// A check box for the control center's forms: a small glass square that turns mauve
+// when checked, and bounces when clicked.
 Item {
     id: check
 

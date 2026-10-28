@@ -1,10 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Connected AirPods on the control center's sound page, like their popup in small: the
-// pods and their case with a battery ring under each, then the choice between noise
-// cancellation and transparency for the models that have them, once connected (only
-// nearby, the AirPods still tell their batteries).
+// Your AirPods on the sound page, a small version of their popup: the pods and the case
+// with their batteries, and once connected, noise cancellation or transparency for the
+// models that have it. Nearby but not connected, you still see the batteries.
 ControlBlock {
     id: panel
 

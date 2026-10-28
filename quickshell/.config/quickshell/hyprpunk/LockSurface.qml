@@ -5,13 +5,13 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// One screen of the lock: the blurred wallpaper, the bar reduced to the resources,
-// the island (a padlock) and the control pill (status only), the time in the top left
-// corner, the player with its lyrics in the middle, and the password prompt at the
-// bottom, shown only while typing. Locking starts from the screen as it was: its bar's
-// pills go away, move or stay, the island grows from the time to the padlock closing,
-// and the screen blurs into the wallpaper. Unlocking, the same the other way round once
-// the padlock has opened.
+// The lock screen on one display: the blurred wallpaper, a slimmed-down bar (resources,
+// the island as a padlock, the status pill), the date and time with the player and its
+// lyrics in the middle, and a password prompt that only shows up while you type.
+//
+// Locking starts from the screen as it was: the bar's pills leave, move or stay, the
+// island grows from the clock into a padlock that clicks shut, and everything blurs into
+// the wallpaper. Unlocking plays it all backwards once the padlock has opened.
 WlSessionLockSurface {
     id: surface
 
@@ -20,8 +20,7 @@ WlSessionLockSurface {
     readonly property bool promptShown: lock.password !== "" || lock.authenticating
     // Where the bar's pills were when locking (Bar.lockGeometry), null until known.
     property var from: null
-    // 0 = the screen as it was, 1 = the lock fully shown: the background and the
-    // lock's own elements.
+    // 0 is the screen as it was, 1 the lock fully in place.
     property real reveal: lock.instant ? 1 : 0
     // 0 = the pills where the bar has them, 1 = where the lock has them.
     property real morph: lock.instant ? 1 : 0
@@ -153,8 +152,8 @@ WlSessionLockSurface {
         target: surface.lock
     }
 
-    // The island shows the time a moment, as the bar's did; the rest of the lock comes
-    // the moment it starts to grow.
+    // The island shows the time for a moment, like the bar's, and the rest of the lock
+    // follows as soon as it starts to grow.
     Timer {
         id: introDelay
 
@@ -207,8 +206,8 @@ WlSessionLockSurface {
         visible: false
     }
 
-    // The screen as it was, its bar replaced by the wallpaper behind it: the lock draws
-    // the pills itself, so none is left blurring in the background.
+    // The screen as it was, with the bar painted over by the wallpaper: the lock draws
+    // its own pills, so no ghost of them is left blurring in the background.
     Item {
         id: frozenScreen
 
@@ -265,8 +264,8 @@ WlSessionLockSurface {
 
         anchors.fill: parent
 
-        // The bar's pills the lock does not keep, cut from the screen as it was: they
-        // fade away where they were (and come back when unlocking).
+        // The bar's pills the lock doesn't keep, cut out of the snapshot: they fade away
+        // where they stood (and come back when unlocking).
         Repeater {
             model: surface.from !== null ? surface.from.others : []
 
@@ -317,8 +316,8 @@ WlSessionLockSurface {
 
         }
 
-        // The island grows like an OSD from the time to lock, unlock or tell a
-        // failed try, and shrinks back to the time to unlock.
+        // The island grows like an OSD to lock, unlock or say a try failed,
+        // and shrinks back to the time once unlocked.
         Pill {
             id: island
 
@@ -338,8 +337,8 @@ WlSessionLockSurface {
             horizontalPadding: expanded ? 36 : 20
             implicitHeight: expanded ? 50 : 38
 
-            // Each part opens and closes its own width, which the island follows: nothing
-            // jumps out of its edges while it grows or shrinks.
+            // Each part opens and closes its own width and the island follows, so nothing
+            // pokes out of its edges while it grows or shrinks.
             Label {
                 visible: Layout.preferredWidth > 0
                 Layout.preferredWidth: surface.islandMode === "clock" ? implicitWidth : 0
@@ -356,8 +355,8 @@ WlSessionLockSurface {
 
             }
 
-            // Hidden at once for the time: its open shackle would overhang the digits
-            // while its width closes.
+            // Hidden straight away when going back to the time: the open shackle would
+            // hang over the digits while the width closes.
             LockIcon {
                 visible: Layout.preferredWidth > 0
                 opacity: surface.padlockShown ? 1 : 0
@@ -454,9 +453,8 @@ WlSessionLockSurface {
                 target: surface.lock
             }
 
-            // Like the bar's OSDs: the new content fades in once the island is ~90% open,
-            // so its edges do not cut it. Between two states with the padlock, only the
-            // text fades: the padlock stays as it is.
+            // Like the bar's OSDs, new content fades in once the island is ~90% open so the
+            // edges don't clip it. Between two padlock states only the text fades.
             Connections {
                 function onIslandModeChanged() {
                     const padlockKept = ["clock", "osd"].indexOf(island.previousMode) < 0 && surface.padlockShown;
@@ -595,9 +593,8 @@ WlSessionLockSurface {
 
         }
 
-        // The date and the time in the middle: the date as wide as the time,
-        // the hours in mauve and the minutes in glass like the pills' (a translucent
-        // base over the blurred background, GlassSurface's rim along their edges).
+        // The date and time in the middle, the date as wide as the time. Hours in mauve,
+        // minutes in glass like the pills: see-through over the blur, with the glass rim.
         Item {
             id: clockBlock
 
@@ -685,8 +682,8 @@ WlSessionLockSurface {
 
                     }
 
-                    // The glyphs blurred a little: where they stay opaque is the glyphs
-                    // without their edges.
+                    // The glyphs blurred a little: what stays opaque is their inside,
+                    // without the edges.
                     Item {
                         id: glyphsInner
 
@@ -769,9 +766,9 @@ WlSessionLockSurface {
                             source: rimLight
                             maskEnabled: true
                             maskSource: glyphs
-                            // The glyphs' antialiased edges kept: their alpha eased from 0
-                            // to 1 instead of cut at a threshold (smoothstep from
-                            // min·(1+spread)−spread to min·(1+spread)).
+                            // Keeps the glyphs' smooth edges: alpha eases from 0 to 1 rather than
+                            // being cut at a threshold (smoothstep from min·(1+spread)−spread
+                            // to min·(1+spread)).
                             maskThresholdMin: 0.5
                             maskSpreadAtMin: 1
                         }
@@ -812,8 +809,8 @@ WlSessionLockSurface {
         Item {
             id: playerBlock
 
-            // Kept while the next track's lyrics load: the player only moves when a track
-            // has none, not each time the lines are looked up.
+            // Kept while the next track's lyrics load, so the player only moves for a track
+            // that has none, not every time lyrics are looked up.
             property bool lyricsShown: lockPlayer.lyricsFound
 
             anchors.horizontalCenter: parent.horizontalCenter
@@ -821,8 +818,8 @@ WlSessionLockSurface {
             anchors.topMargin: 110
             width: lockPlayer.width + (lyricsShown ? 40 + lockLyrics.width : 0)
             height: lockPlayer.height
-            // Shown once it knows where the track is: a new card starts at 0:00 and its
-            // lyrics at the top until playerctl answers, a jump right after waking.
+            // Waits to know where the track is: a fresh card starts at 0:00 with its lyrics
+            // at the top until playerctl answers, which would jump right after waking.
             visible: lockPlayer.player !== null && lockPlayer.positionKnown
             opacity: surface.stage(0.45, 1)
             scale: 0.96 + 0.04 * surface.stage(0.45, 1)
@@ -873,8 +870,8 @@ WlSessionLockSurface {
                 width: 460
                 height: 280
                 visible: opacity > 0
-                // Fades out on a skip once the lines have slid away, and in with the next
-                // ones; their place stays.
+                // On a skip, fades out once the lines have slid away and back in with the
+                // next ones, keeping its place.
                 opacity: lockPlayer.lyricsFound || lockLyrics.leaving ? 1 : 0
                 active: lockPlayer.active && playerBlock.lyricsShown
                 ready: lockPlayer.positionKnown
@@ -911,7 +908,7 @@ WlSessionLockSurface {
 
         }
 
-        // The SDDM theme picker's password field, only shown while typing.
+        // The password field, same as the SDDM picker's, only shown while typing.
         Rectangle {
             id: prompt
 

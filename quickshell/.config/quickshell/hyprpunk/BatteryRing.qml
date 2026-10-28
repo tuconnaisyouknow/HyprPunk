@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Shapes
 
-// Battery ring of the AirPods (the popup and the control center's sound page): a bolt
-// inside while charging, else the pod's letter, the level below.
+// An AirPods battery ring, with the pod's letter inside (a bolt while charging)
+// and the level below. Used by the popup and the sound page.
 Column {
     id: ring
 

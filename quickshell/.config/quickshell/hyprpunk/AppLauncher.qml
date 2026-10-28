@@ -3,12 +3,12 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 
-// Application launcher in the dynamic island: a grid of the applications, the ones
-// launched often first, filtered by a fuzzy search. The query can also be a
-// calculation (Enter copies the result), "> command" (Enter runs it, Shift+Enter
-// in a terminal) or "? words" (web search, also offered when no application
-// matches and on Shift+Enter). Tab or a right click lists the actions of an
-// application.
+// The app launcher in the dynamic island: a grid of your apps, the ones you use most
+// first, narrowed down as you type. It does a bit more too:
+//   2+2       a calculation, Enter copies the result
+//   > cmd     runs a command (Shift+Enter in a terminal)
+//   ? words   searches the web, also offered when no app matches
+// Tab or a right click shows an app's extra actions.
 IslandPanel {
     id: launcher
 
@@ -56,8 +56,8 @@ IslandPanel {
         };
     })) : []
 
-    // Score of a query against a text, 0 when it does not match: whole text, then
-    // prefix, word start, substring and finally (fuzzy) letters in order, close enough.
+    // How well a query matches a text, 0 for not at all. Best is the whole text, then
+    // the start, the start of a word, anywhere, and last the letters in order, close together.
     function matchScore(text, needle, fuzzy) {
         if (!text)
             return 0;
@@ -128,8 +128,8 @@ IslandPanel {
         });
     }
 
-    // Only digits, operators and parentheses (so evaluating it runs no code), with
-    // at least one operator. Commas are decimal points, ^ is the power.
+    // Digits, operators and parentheses only, so evaluating it can't run any code, and at
+    // least one operator. Commas work as decimal points, ^ is a power.
     function calculate(text) {
         if (!/^[\d\s+\-*/%^().,]+$/.test(text) || !/[\d)]\s*[+\-*/%^]\s*[\d(.]/.test(text))
             return null;
@@ -179,7 +179,7 @@ IslandPanel {
         if (command === "")
             return ;
 
-        // Not kitty --hold: it opens a shell afterwards, whose fastfetch hides the output.
+        // Not kitty --hold: it drops into a shell after, and fastfetch would bury the output.
         Session.launch(inTerminal ? [terminal, "-e", "sh", "-c", holdScript, "sh", command] : ["sh", "-c", command]);
     }
 
@@ -235,8 +235,8 @@ IslandPanel {
         selectedIndex = Math.max(top < 0 && dx < 0 && selectedIndex === 0 ? -1 : 0, Math.min(count - 1, selectedIndex + dx + dy * columns));
     }
 
-    // Left/right/down/up with Ctrl and the layout's keys (Ctrl+j/m/k/l on AZERTY,
-    // Ctrl+h/l/j/k on QWERTY), the letters being typed.
+    // Ctrl + the Vim keys move around (Ctrl+h/j/k/l, or j/k/l/m on AZERTY),
+    // since the letters alone go to the search.
     function controlKey(event) {
         if (!(event.modifiers & Qt.ControlModifier))
             return null;

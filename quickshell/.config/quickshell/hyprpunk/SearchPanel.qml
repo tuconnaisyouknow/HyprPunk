@@ -1,8 +1,8 @@
 import QtQuick
 
-// Island card with a glass search field over a list or a grid of results
-// (clipboard, emoji, keybindings). The field keeps the keyboard: the arrows,
-// Tab and Ctrl with the layout's keys move the selection, Enter emits activated.
+// An island card with a search field over a list or grid of results, shared by the
+// clipboard, emoji and keybindings panels. You keep typing in the field while the
+// arrows, Tab or Ctrl + the Vim keys move the selection; Enter picks (activated).
 IslandPanel {
     id: panel
 
@@ -32,8 +32,8 @@ IslandPanel {
 
     }
 
-    // Ctrl with the layout's keys (Ctrl+j/m/k/l on AZERTY, Ctrl+h/l/j/k on
-    // QWERTY), the letters themselves being typed.
+    // Ctrl + the Vim keys (Ctrl+h/j/k/l, or j/k/l/m on AZERTY),
+    // since the letters alone go to the search.
     function controlMove(event) {
         if (!(event.modifiers & Qt.ControlModifier))
             return null;

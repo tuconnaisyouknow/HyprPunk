@@ -1,10 +1,9 @@
 import QtQuick
 import Quickshell
 
-// Screenshot menu in the dynamic island, like the main menu: the screen, a region, or
-// a region then annotated, and recording the screen or a region (stopping it while
-// one runs). Arrows, Tab or the layout's keys pick one, Enter or a click
-// takes it.
+// The screenshot menu, laid out like the main menu: capture the screen, a region,
+// or a region to annotate, or record the screen or a region (or stop the recording).
+// Arrows, Tab or the Vim keys to choose, Enter or a click to go.
 IslandPanel {
     id: menu
 
@@ -42,7 +41,7 @@ IslandPanel {
         "mode": "record-region"
     }])
 
-    // Once the card has folded away, not to be in the screenshot.
+    // Wait for the card to fold away, so it isn't in the picture.
     function run(entry) {
         close();
         shellState.requestScreenshot(entry.mode, screen.name, entry.mode === "stop" ? 0 : 380);

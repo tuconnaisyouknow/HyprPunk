@@ -4,8 +4,8 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
-// A saved Wi-Fi network: its state, then connect or disconnect, modify its credentials
-// (a new password here, NetworkManager's enterprise form for 802.1X) and forget it.
+// A saved Wi-Fi network: how it's doing, connect or disconnect, change its password
+// (or its enterprise sign-in), or forget it.
 ColumnLayout {
     id: page
 

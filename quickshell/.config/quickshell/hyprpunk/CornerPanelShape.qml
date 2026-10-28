@@ -1,8 +1,7 @@
 import QtQuick
 
-// Background of a panel glued to the top-right screen corner: inverted
-// corners where it meets the top and right edges, and a rounded bottom-left
-// corner. The glass rim follows the free edge, from one screen edge to the other.
+// The background of a panel tucked in the top-right corner. It curves into the top and
+// right edges, rounds off at the bottom left, and the glass rim runs along the free edge.
 GlassEdgeShape {
     id: shape
 

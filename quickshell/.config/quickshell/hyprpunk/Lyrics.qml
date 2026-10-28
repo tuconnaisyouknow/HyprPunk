@@ -4,9 +4,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Lyrics of the playing track, looked up on lrclib.net by ~/Scripts/lyrics-lookup.py
-// (which caches them). On unless switched off with the media card's button, a choice
-// kept in the state directory: every lookup tells lrclib what is playing.
+// Lyrics for whatever is playing, fetched from lrclib.net by ~/Scripts/lyrics-lookup.py
+// (which caches them). On by default; the media card has a button to switch them off,
+// since every lookup tells lrclib what you're listening to.
 Singleton {
     id: lyrics
 
@@ -20,7 +20,7 @@ Singleton {
     property var lines: []
     property bool synced: false
     property bool instrumental: false
-    // lrclib is often busy: each failed lookup waits twice as long before the next.
+    // lrclib is often busy, so each failed lookup waits twice as long before trying again.
     property int failures: 0
 
     function setEnabled(on) {
@@ -33,17 +33,16 @@ Singleton {
         if (key === track)
             return ;
 
-        // The same track with a length a little off (MPRIS's and playerctl's, a card
-        // asking before or after its first poll): looking it up again would empty the
-        // lines and could bring other ones.
+        // Same track, length a hair off (MPRIS and playerctl round differently): don't
+        // look it up again, it would blank the lines and might bring different ones.
         const asked = track.split("\n");
         const sameTrack = asked.length === 4 && asked[0] === artist && asked[1] === title && asked[2] === album;
         if (sameTrack && Math.abs(asked[3] - seconds) <= 2)
             return ;
 
-        // The same track with its real length, which came after its title (MPRIS often
-        // gives the previous track's first): looked up again, but the lines found stay
-        // shown until the new ones come, instead of disappearing and coming back.
+        // Same track, but its real length just arrived (MPRIS often sends the previous
+        // track's length first): look it up again, keeping the current lines on screen
+        // until the new ones land, so they don't blink out and back.
         if (sameTrack && answeredTrack === track) {
             track = key;
             answeredTrack = key;

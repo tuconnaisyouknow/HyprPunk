@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Labelled choice of the control center's forms (NetworkManager's combo boxes): the
-// field shows the current option, a click unfolds the options below it.
+// A labelled drop-down for the control center's forms. Shows the current option,
+// and a click unfolds the others underneath.
 ColumnLayout {
     id: select
 

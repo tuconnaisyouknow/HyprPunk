@@ -1,7 +1,7 @@
 import QtQuick
 
-// Press bounce of the control center's buttons: squeezed by a few pixels, then springing
-// back past its size. Animates the target's scale, or another scale-like property.
+// The little bounce of the control center's buttons: squeezed a few pixels, then
+// springing back a touch too far. Plays on the target's scale (or anything like it).
 SequentialAnimation {
     id: bounce
 

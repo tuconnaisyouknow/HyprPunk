@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Annotating a screenshot's region in place, over the frozen screen: pen, highlighter,
-// arrow, rectangle, ellipse (outlined or filled) and text, in the theme's colours and three sizes, a toolbar by the
-// region. Enter (or ✓) saves it with its annotations at the screen's resolution,
-// Escape cancels, Ctrl+Z takes back the last one.
+// Drawing on a screenshot right where it was taken, over the frozen screen: pen,
+// highlighter, arrow, rectangle, ellipse (outlined or filled) and text, in the theme's
+// colors and three sizes, with a toolbar beside the region.
+// Enter (or ✓) saves it at full resolution, Escape cancels, Ctrl+Z undoes.
 Item {
     id: annotator
 
@@ -20,8 +20,9 @@ Item {
     property int size: 1
     // Rectangles and ellipses filled rather than outlined.
     property bool filled: false
-    // The annotations drawn, in the region's coordinates: {tool, color, size, points}
-    // (two points for an arrow, a rectangle or an ellipse, with filled) or {tool: "text", color, size, points, text}.
+    // What's been drawn, in the region's coordinates: {tool, color, size, points}
+    // (two points for arrows, rectangles and ellipses, plus filled), or for text
+    // {tool: "text", color, size, points, text}.
     property var shapes: []
     // The one being drawn.
     property var current: null
@@ -293,8 +294,8 @@ Item {
         Keys.onEscapePressed: annotator.undo()
     }
 
-    // The toolbar, under the region (over it at the bottom of the screen, inside it
-    // when it fills the screen).
+    // The toolbar sits under the region, above it when there's no room below,
+    // and inside it when the region fills the screen.
     Rectangle {
         id: toolbar
 

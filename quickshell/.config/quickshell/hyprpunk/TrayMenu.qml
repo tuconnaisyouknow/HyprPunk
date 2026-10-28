@@ -2,9 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 
-// Menu of a tray application (its DBusMenu), drawn as a card of the shell instead of
-// Qt's native menu. Each submenu is another TrayMenu, loaded from this file and opened
-// beside its entry, on the other side when the screen ends there.
+// A tray app's menu, drawn in the shell's style instead of Qt's. Each submenu is
+// another TrayMenu opening beside its entry, or on the other side near the screen's edge.
 PopupWindow {
     id: menu
 
@@ -15,8 +14,8 @@ PopupWindow {
     // The menu this one is a submenu of, set by its loader.
     property var parentMenu: null
     readonly property bool isRoot: parentMenu === null
-    // Wayland doesn't tell windows where they are: each menu's edges on the screen are
-    // worked out from the tray's, given by the tray item before it opens.
+    // Wayland doesn't tell windows where they are, so each menu works out its place from
+    // the tray's, which the tray item passes along before opening it.
     property real anchorRight: 0
     readonly property real screenWidth: isRoot ? (screen ? screen.width : 1920) : parentMenu.screenWidth
     // A submenu goes on the side its parent went, so it never covers it, unless the
@@ -52,8 +51,8 @@ PopupWindow {
     property bool hasChecks: false
     property bool hasIcons: false
     property real widestRow: 0
-    // Summed here rather than read from the column, which only lays its rows out when the
-    // window draws a frame: an empty menu draws nothing, so it would never grow.
+    // Added up here rather than read from the column, which only lays out once the window
+    // draws, and an empty menu draws nothing, so it would never grow.
     property real rowsHeight: 0
     readonly property real maxHeight: (screen ? screen.height : 1080) - 48
     readonly property bool overflows: rowsHeight + padding * 2 > maxHeight
@@ -101,8 +100,8 @@ PopupWindow {
             return ;
 
         submenuDelay.stop();
-        // Closed before the next one opens, which Wayland only allows from the topmost
-        // menu, and unloaded: the next one is created beside its own row.
+        // Closed and unloaded before the next opens (Wayland only lets the topmost menu
+        // close), then the next one is created beside its own row.
         if (submenuLoader.item !== null)
             submenuLoader.item.close();
 
@@ -128,8 +127,8 @@ PopupWindow {
     function hover(index) {
         currentIndex = index;
         const entry = entryAt(index);
-        // Opened or closed after a short delay, so crossing other rows on the way to the
-        // submenu leaves it open.
+        // A short delay before opening or closing, so cutting across other rows on the way
+        // to the submenu doesn't close it.
         pendingIndex = selectable(entry) && entry.hasChildren ? index : -1;
         if (pendingIndex === openIndex)
             submenuDelay.stop();

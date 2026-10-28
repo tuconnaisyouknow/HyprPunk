@@ -2,9 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The AirPods companion (~/Scripts/airpodsd.py): paired AirPods with their
-// batteries, ear detection and settings, the AirPods in pairing mode next to the
-// computer, and the moments their card should show (case opened, connected, pairing mode).
+// Talks to ~/Scripts/airpodsd.py, the AirPods companion: your paired AirPods with
+// their batteries, ear detection and settings, any AirPods nearby waiting to pair,
+// and when to pop their card up (case opened, connected, pairing mode).
 Scope {
     id: airPods
 
@@ -26,8 +26,8 @@ Scope {
         }) || null;
     }
 
-    // [{level, charging, label}] of the pods (or the headphones): one ring while both
-    // pods agree, a letter on each when they do not.
+    // The battery rings to draw, [{level, charging, label}]: a single ring while both
+    // pods agree, one each with L and R when they don't.
     function podBatteries(device) {
         if (device === null || device.kind === undefined)
             return [];
@@ -84,8 +84,8 @@ Scope {
         send("ignore", address);
     }
 
-    // `qs -c hyprpunk ipc call airpods popup`: the card of the connected AirPods, else
-    // of the nearest paired ones.
+    // `qs -c hyprpunk ipc call airpods popup` shows the connected AirPods' card,
+    // or else the nearest paired ones'.
     IpcHandler {
         function popup(): void {
             const shown = airPods.devices.find((item) => {
@@ -136,7 +136,7 @@ Scope {
 
     }
 
-    // Started again when it stops, e.g. after BlueZ restarted under it.
+    // Restarted if it stops, after BlueZ restarts for instance.
     Timer {
         id: restartDelay
 

@@ -1,8 +1,7 @@
 import QtQuick
 
-// The privacy dots out of the island (beside a card covering it, or the island showing
-// something else): green for the camera, orange for the microphone, red for a screen
-// recording, in a ring of the pills' card as thick as the player's.
+// The privacy dots, for when the island is busy showing something else: green for
+// the camera, orange for the microphone, red while the screen is being recorded.
 Item {
     id: dot
 

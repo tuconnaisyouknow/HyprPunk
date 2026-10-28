@@ -2,9 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Emoji picker in the dynamic island: a grid of the emojis (data/emojis.tsv),
-// the recently used ones first, searched by name and keywords. Enter or a click
-// copies the emoji.
+// The emoji picker: every emoji from data/emojis.tsv, your recent ones first, searchable
+// by name and keyword. Enter or a click copies it.
 SearchPanel {
     id: picker
 

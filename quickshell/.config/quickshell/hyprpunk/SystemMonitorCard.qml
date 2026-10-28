@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 
-// btop-like card for the resources pill: CPU and memory history, per-core
-// load and the busiest processes. Only the content: the bar draws the card.
+// A little btop for the resources pill: CPU and memory over the last minute, each
+// core's load and the busiest processes. Just the content, the bar draws the card.
 Item {
     id: monitor
 
@@ -113,9 +113,9 @@ Item {
         onTriggered: statsProcess.running = true
     }
 
-    // Two top iterations: the first one only has lifetime averages, the second the current load.
-    // top itself is left out, it only shows up because it is measuring. Also run once
-    // at startup, so the first opening already has a list to show while it refreshes.
+    // top runs twice because its first pass only knows lifetime averages. top itself is
+    // left out (it only shows up because it's measuring). Also run once at startup, so
+    // the first opening has something to show while it refreshes.
     Process {
         id: processProcess
 

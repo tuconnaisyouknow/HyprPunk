@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
+// The top of a control center page: a back button, the title, and a toggle if the
+// page has one (Wi-Fi, Bluetooth).
 RowLayout {
     id: header
 
