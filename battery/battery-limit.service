@@ -1,5 +1,5 @@
-# Lets the wheel group set the batteries' charge limit from the control center, and
-# applies the one chosen there: firmwares forget it at boot and around sleep.
+# Puts the battery charge limit back at boot and after sleep, since firmwares forget it,
+# and lets the control center change it without a password
 [Unit]
 Description=Battery charge limit
 After=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
