@@ -1,15 +1,14 @@
--- ################
--- ### MONITORS ###
--- ################
+--------------
+-- MONITORS --
+--------------
 
--- Hyprland wraps `require` to isolate configuration files. monitor_state is a
--- regular Lua module returning a table, so it must use the original loader.
--- Clear its cache because monitor-state.conf can change between config reloads.
+-- monitor_state is a plain Lua table, so it goes through the original require
+-- (Hyprland's own one is for config files). Its cache is cleared so a reload
+-- picks up whatever the display settings just saved.
 package.loaded["monitor_state"] = nil
 local state = __require("monitor_state")
 
--- Catch new displays and provide the complete automatic configuration when no
--- output-specific state has been saved yet.
+-- Any screen we know nothing about yet gets sensible defaults
 hl.monitor({
   output = "",
   mode = state.default_mode or "preferred",
@@ -17,6 +16,7 @@ hl.monitor({
   scale = state.default_scale or "auto",
 })
 
+-- The saved ones get their own mode, scale and, in a custom layout, position
 for _, monitor in ipairs(state.monitors) do
   hl.monitor({
     output = state.selectors[monitor],

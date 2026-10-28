@@ -1,3 +1,5 @@
+-- Reads what the display settings saved in ~/.local/state/hyprpunk/monitor-state.conf.
+-- Without that file, every screen is left to Hyprland's automatic setup.
 local state = {
   default_mode = nil,
   default_scale = "auto",
@@ -19,6 +21,7 @@ if state_file == nil then
   return state
 end
 
+-- One key=value per line, with the screen's name after the dot (mode.DP-1=...)
 for line in state_file:lines() do
   local key, value = line:match("^([%w%._-]+)=(.+)$")
   if key == "default_mode" then
