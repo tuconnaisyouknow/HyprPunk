@@ -20,9 +20,13 @@ Item {
     // The liquid style, chosen in the control center: the lock screen clock's glass, with
     // see-through colors and a soft rim instead of the ring.
     readonly property bool liquid: Session.glassStyle === "liquid"
-    // How much of the background's color stays, at the top and at the bottom.
-    property real liquidTop: 0.6
-    property real liquidBottom: 0.4
+    // How much of the background's color stays, at the top and at the bottom. A dark
+    // panel turns see-through, but a light color like the mauve of a selection gets a
+    // little stronger at the top and fades to its usual self, or it would look grey over
+    // the dark glass.
+    readonly property bool lightBackground: backgroundColor.hslLightness > 0.4
+    property real liquidTop: lightBackground ? 1.15 : 0.6
+    property real liquidBottom: lightBackground ? 0.95 : 0.4
 
     // The rim's color, from the usual pale glass to mauve as the field gets the focus.
     function rimColor(alpha, focusedAlpha) {
@@ -56,12 +60,12 @@ Item {
         gradient: Gradient {
             GradientStop {
                 position: 0
-                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, glass.backgroundColor.a * glass.liquidTop)
+                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, Math.min(1, glass.backgroundColor.a * glass.liquidTop))
             }
 
             GradientStop {
                 position: 1
-                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, glass.backgroundColor.a * glass.liquidBottom)
+                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, Math.min(1, glass.backgroundColor.a * glass.liquidBottom))
             }
 
         }
