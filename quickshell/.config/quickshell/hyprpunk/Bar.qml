@@ -22,41 +22,9 @@ PanelWindow {
     id: bar
 
     required property var shellState
-    property color base: "#1e1e2e"
-    property color surface1: "#45475a"
-    property color lavender: "#b4befe"
-    property color overlay2: "#9399b2"
-    property color mauve: "#cba6f7"
-    property color red: "#f38ba8"
-    property color green: "#a6e3a1"
-    property color peach: "#fab387"
     readonly property var workspaceIcons: ["", "", "", "", "", "", "", "", "", "", ""]
     readonly property var battery: UPower.displayDevice
     readonly property bool hasBattery: battery.ready && battery.isLaptopBattery && battery.isPresent
-    property string cpuTemperature: "--°C"
-    property string cpuFrequency: ""
-    property string cpuModel: ""
-    property string memoryText: "--"
-    property int cpuUsage: 0
-    // [idle, total] jiffies of the last /proc/stat sample.
-    property var cpuStat: [0, 0]
-    property int updateCount: 0
-    property bool calendarVisible: false
-    property bool calendarPopupVisible: false
-    property bool musicVisible: false
-    property bool musicPopupVisible: false
-    // Set while a popup is mapping: it only starts growing once its first frame is on screen.
-    property bool calendarOpenPending: false
-    property bool musicOpenPending: false
-    property bool monitorOpenPending: false
-    property bool monitorVisible: false
-    property bool monitorPopupVisible: false
-    // How long to hover a pill before its card opens, so sweeping across the bar on the
-    // way to something else doesn't flash cards everywhere.
-    readonly property int hoverOpenDelay: 350
-    property bool workspaceOpenPending: false
-    property bool workspaceVisible: false
-    property bool workspacePopupVisible: false
     // Which of your other workspaces the preview card opens on.
     property var previewWorkspace: null
     readonly property var previewWorkspaces: workspaceSwitcher.workspaces.filter((workspace) => {
@@ -72,14 +40,6 @@ PanelWindow {
         const monitor = Hyprland.monitorFor(bar.screen);
         return Math.round(workspacePreviewWidth * (monitor !== null && monitor.width > 0 ? monitor.height / monitor.width : 9 / 16));
     }
-    // 0 = card folded on the workspaces pill, 1 = preview fully open.
-    property real workspaceProgress: workspaceVisible ? 1 : 0
-    // The wallpaper set by wallpaperctl.sh, under the previewed windows.
-    property string wallpaperPath: ""
-    // 0 = card folded on the resources pill, 1 = system monitor fully open.
-    property real monitorProgress: monitorVisible ? 1 : 0
-    // 0 = popup folded on the cover pill, 1 = player fully open.
-    property real musicProgress: musicVisible ? 1 : 0
     // Only Spotify: browsers and other MPRIS players are ignored.
     readonly property var spotifyPlayer: {
         for (const player of Mpris.players.values) {
@@ -125,33 +85,19 @@ PanelWindow {
     property real batteryDrawEstimate: 0
     readonly property real batteryTimeLeft: battery.timeToEmpty > 0 ? battery.timeToEmpty : batteryDrawEstimate
     readonly property bool batteryEstimating: statusOsdVisible && statusOsdKind === "battery" && statusOsdLabel === "On battery" && batteryTimeLeft <= 0
-    property bool lockStateInitialized: false
-    property bool capsLockEnabled: false
-    property bool numLockEnabled: false
-    property bool touchpadStateInitialized: false
-    property bool touchpadEnabled: true
     readonly property var micSource: Pipewire.defaultAudioSource
     readonly property bool micMuted: micSource !== null && micSource.audio !== null && micSource.audio.muted
     property bool micStateInitialized: false
-    property int keyboardBacklight: -1
     readonly property var audioSink: Pipewire.defaultAudioSink
     readonly property int audioVolume: audioSink !== null && audioSink.audio !== null ? Math.round(audioSink.audio.volume * 100) : 0
     readonly property bool audioMuted: audioSink !== null && audioSink.audio !== null && audioSink.audio.muted
     property bool volumeInitialized: false
     // The output whose volume changes we show, updated whenever the output changes.
     property var volumeSink: audioSink
-    property int screenBrightness: 0
-    property bool brightnessInitialized: false
-    property string keyboardBacklightPath: ""
-    property bool keyboardHwInitialized: false
     property real clockCenterOffset: bar.islandOsdShown ? 3 : -3
     // The regional formats you picked (locale-profilectl.sh). The calendar's day names
     // and first day of the week follow them, even though the shell keeps its startup locale.
     readonly property var regionalLocale: Qt.locale(Session.regionalProfile === "us" ? "en_US" : "fr_FR")
-    readonly property string stateHome: {
-        const configuredStateHome = Quickshell.env("XDG_STATE_HOME");
-        return configuredStateHome && configuredStateHome !== "" ? configuredStateHome : Quickshell.env("HOME") + "/.local/state";
-    }
 
     // The connected device first, else one NetworkManager is bringing up.
     readonly property var networkDevice: {
@@ -166,17 +112,8 @@ PanelWindow {
         }
         return connecting;
     }
-    // Active VPNs ({name, state}), which Quickshell.Networking doesn't expose.
-    property var vpnConnections: []
-    readonly property var vpnConnection: vpnConnections.find((connection) => {
-        return connection.state === "activated";
-    }) || vpnConnections.find((connection) => {
-        return connection.state === "activating";
-    }) || null
-    readonly property bool vpnActive: vpnConnection !== null && vpnConnection.state === "activated"
-    readonly property bool vpnConnecting: vpnConnection !== null && !vpnActive
-    readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || vpnConnecting
-    readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && vpnConnection !== null
+    readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || Vpn.connecting
+    readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && Vpn.connection !== null
 
     // Where each pill sits on screen, so the lock screen can start from there: the ones it
     // keeps (resources, island, control pill) and the ones it lets go.
@@ -209,12 +146,6 @@ PanelWindow {
         };
     }
 
-    function closeWorkspacePreview() {
-        workspaceOpenPending = false;
-        workspaceVisible = false;
-        workspaceHideDelay.restart();
-    }
-
     function activeWifiNetwork(device) {
         for (const network of device.networks.values) {
             if (network.connected)
@@ -232,31 +163,17 @@ PanelWindow {
         if (device.type === DeviceType.Wired)
             return device.connected ? "󰈀" : "󰌚";
 
-        // Locked while a VPN is up (or coming up) over the Wi-Fi.
-        const locked = device.connected && bar.vpnConnection !== null;
-        const icons = locked ? ["󰤬", "󰤡", "󰤤", "󰤧", "󰤪"] : ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"];
         const network = bar.activeWifiNetwork(device);
-        const strength = network !== null ? network.signalStrength : 0;
-        return icons[Math.max(0, Math.min(icons.length - 1, Math.floor(strength * icons.length)))];
+        return Icons.wifi(network !== null ? network.signalStrength : 0, device.connected && Vpn.connection !== null);
     }
 
     function capitalized(text) {
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
-    function batteryIcon() {
-        // Plugged in: the same gauge with the charging bolt.
-        const icons = UPower.onBattery ? ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"] : ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"];
-        const percentage = Math.max(0, Math.min(1, bar.battery.percentage));
-        return icons[Math.min(icons.length - 1, Math.floor(percentage * icons.length))];
-    }
-
     // With maxLevel > 0, a gauge of level / maxLevel replaces the On/Off badge.
     function showStatusOsd(icon, label, enabled, level, maxLevel) {
-        calendarCloseDelay.stop();
-        calendarHideDelay.stop();
-        calendarVisible = false;
-        calendarPopupVisible = false;
+        calendarPopup.dismiss();
         statusOsdKind = "";
         statusOsdHideDelay.interval = 1500;
         statusOsdIcon = icon;
@@ -269,10 +186,7 @@ PanelWindow {
     }
 
     function showAirPodsOsd(osd) {
-        calendarCloseDelay.stop();
-        calendarHideDelay.stop();
-        calendarVisible = false;
-        calendarPopupVisible = false;
+        calendarPopup.dismiss();
         statusOsdKind = "airpods";
         statusOsdImage = osd.image;
         statusOsdRingLevel = osd.level;
@@ -314,10 +228,7 @@ PanelWindow {
     }
 
     function showScreenshotOsd(taken) {
-        calendarCloseDelay.stop();
-        calendarHideDelay.stop();
-        calendarVisible = false;
-        calendarPopupVisible = false;
+        calendarPopup.dismiss();
         statusOsdKind = "screenshot";
         statusOsdImage = taken.file;
         statusOsdFile = taken.video || taken.file;
@@ -342,10 +253,7 @@ PanelWindow {
     }
 
     function showBatteryOsd(title) {
-        calendarCloseDelay.stop();
-        calendarHideDelay.stop();
-        calendarVisible = false;
-        calendarPopupVisible = false;
+        calendarPopup.dismiss();
         statusOsdKind = "battery";
         statusOsdLabel = title;
         batteryDrawEstimate = 0;
@@ -372,9 +280,9 @@ PanelWindow {
     // Green while charging, mauve on battery, red for the alerts.
     function batteryOsdColor() {
         if (statusOsdLabel === "Charging")
-            return green;
+            return Theme.green;
 
-        return statusOsdLabel === "On battery" ? mauve : red;
+        return statusOsdLabel === "On battery" ? Theme.mauve : Theme.red;
     }
 
     // "64% · 1 h 05 until full" while charging, "64% · 3 h 10 left" on battery,
@@ -390,27 +298,6 @@ PanelWindow {
         return batteryPercent + "% · " + duration + (UPower.onBattery ? " left" : " until full");
     }
 
-    function volumeIcon() {
-        if (audioMuted)
-            return "";
-
-        if (audioVolume === 0)
-            return "";
-
-        if (audioVolume < 34)
-            return "";
-
-        if (audioVolume < 67)
-            return "";
-
-        return "";
-    }
-
-    function brightnessIcon() {
-        const icons = ["", "", "", "", "", "", "", "", ""];
-        return icons[Math.min(icons.length - 1, Math.floor(screenBrightness * icons.length / 101))];
-    }
-
     function showVolumeOsd() {
         // Checked here too: the volume can change (dropping to 0 as an output goes away)
         // before the output itself does.
@@ -420,7 +307,7 @@ PanelWindow {
         }
         if (volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
             // Muted, the gauge keeps its level and turns lavender.
-            showStatusOsd(volumeIcon(), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
+            showStatusOsd(Icons.volume(audioVolume, audioMuted), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
 
     }
 
@@ -481,12 +368,9 @@ PanelWindow {
                 id: workspacePill
 
                 onHoveredChanged: {
-                    if (!hovered) {
-                        workspaceOpenDelay.stop();
-                        if (bar.workspacePopupVisible)
-                            workspaceCloseDelay.restart();
+                    if (!hovered)
+                        workspacePopup.hoverEnded();
 
-                    }
                 }
 
                 WorkspaceSwitcher {
@@ -496,165 +380,61 @@ PanelWindow {
                     icons: bar.workspaceIcons
                     // Waits like the other pills. No need to preview the workspace you're on.
                     onHoveredWorkspaceChanged: {
-                        if (hoveredWorkspace !== null && !hoveredWorkspace.focused && !bar.workspacePopupVisible)
-                            workspaceOpenDelay.restart();
+                        if (hoveredWorkspace !== null && !hoveredWorkspace.focused && !workspacePopup.mapped)
+                            workspacePopup.hoverStarted();
                         else
-                            workspaceOpenDelay.stop();
+                            workspacePopup.cancelOpen();
                     }
                 }
 
-                Timer {
-                    id: workspaceOpenDelay
+                PillPopup {
+                    id: workspacePopup
 
-                    interval: bar.hoverOpenDelay
-                    onTriggered: {
-                        if (workspaceSwitcher.hoveredWorkspace === null)
-                            return ;
-
-                        // Ask Hyprland where the windows are (it only says when asked), and
-                        // snapshot the bar to lay over every preview.
+                    pill: workspacePill
+                    openable: workspaceSwitcher.hoveredWorkspace !== null
+                    // The preview inside the control center's padding.
+                    implicitWidth: bar.workspacePreviewWidth + 28
+                    implicitHeight: bar.workspacePreviewHeight + 28
+                    // Ask Hyprland where the windows are (it only says when asked), and
+                    // snapshot the bar to lay over every preview.
+                    onOpening: {
                         Hyprland.refreshToplevels();
                         barContent.grabToImage((result) => {
                             bar.barSnapshot = result;
                         });
                         bar.previewWorkspace = workspaceSwitcher.hoveredWorkspace;
-                        workspaceCloseDelay.stop();
-                        workspaceHideDelay.stop();
-                        bar.workspaceOpenPending = true;
-                        bar.workspacePopupVisible = true;
-                    }
-                }
-
-                Timer {
-                    id: workspaceCloseDelay
-
-                    interval: 220
-                    onTriggered: bar.closeWorkspacePreview()
-                }
-
-                Timer {
-                    id: workspaceHideDelay
-
-                    // Lets the card fold back onto the pill first.
-                    interval: 320
-                    onTriggered: bar.workspacePopupVisible = false
-                }
-
-                PopupWindow {
-                    id: workspacePopup
-
-                    readonly property real progress: bar.workspaceProgress
-
-                    function lerp(from, to) {
-                        return from + (to - from) * progress;
                     }
 
-                    visible: bar.workspacePopupVisible
+                    // Rebuilt on every opening, so the windows are captured fresh.
+                    Loader {
+                        x: 14
+                        y: 14
+                        width: bar.workspacePreviewWidth
+                        height: bar.workspacePreviewHeight
+                        active: workspacePopup.mapped
+                        opacity: workspacePopup.expanded ? 1 : 0
 
-                    Connections {
-                        function onFrameSwapped() {
-                            if (bar.workspaceOpenPending) {
-                                bar.workspaceOpenPending = false;
-                                bar.workspaceVisible = true;
+                        sourceComponent: WorkspacePreviewCard {
+                            workspaces: bar.previewWorkspaces
+                            initialWorkspace: bar.previewWorkspace
+                            monitor: workspaceSwitcher.hyprlandMonitor
+                            wallpaper: Session.wallpaper
+                            barImage: bar.barSnapshot !== null ? bar.barSnapshot.url : ""
+                            barRect: Qt.rect(barContent.x, barContent.y, barContent.width, barContent.height)
+                            onWorkspaceChosen: (workspace) => {
+                                workspace.activate();
+                                workspacePopup.close();
                             }
                         }
 
-                        target: workspaceCard.Window.window
-                    }
-
-                    // The preview inside the control center's padding.
-                    implicitWidth: bar.workspacePreviewWidth + 28
-                    implicitHeight: bar.workspacePreviewHeight + 28
-                    color: "transparent"
-                    grabFocus: false
-
-                    anchor {
-                        item: workspacePill
-                        edges: Edges.Top | Edges.Left
-                        gravity: Edges.Bottom | Edges.Right
-                        adjustment: PopupAdjustment.SlideX
-                    }
-
-                    // The anchor is only computed on opening: follow the pill.
-                    Connections {
-                        function onXChanged() {
-                            workspacePopup.anchor.updateAnchor();
-                        }
-
-                        function onYChanged() {
-                            workspacePopup.anchor.updateAnchor();
-                        }
-
-                        target: workspacePill
-                    }
-
-                    ClippingRectangle {
-                        id: workspaceCard
-
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                        width: workspacePopup.lerp(workspacePill.width, workspacePopup.width)
-                        height: workspacePopup.lerp(workspacePill.height, workspacePopup.height)
-                        // The pill's corners: rounder ones would let the pill's show under the card.
-                        radius: workspacePill.radius
-                        color: "transparent"
-
-                        // Same card as the pill it grows from, so the pill itself seems to grow.
-                        GlassSurface {
-                            radius: workspaceCard.radius
-                            tinted: false
-                            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
-                        }
-
-                        // Laid out at full size and uncovered as the card grows. Rebuilt on every
-                        // opening, so the windows are captured fresh.
-                        Loader {
-                            x: 14
-                            y: 14
-                            width: bar.workspacePreviewWidth
-                            height: bar.workspacePreviewHeight
-                            active: bar.workspacePopupVisible
-                            opacity: bar.workspaceVisible ? 1 : 0
-
-                            sourceComponent: WorkspacePreviewCard {
-                                workspaces: bar.previewWorkspaces
-                                initialWorkspace: bar.previewWorkspace
-                                monitor: workspaceSwitcher.hyprlandMonitor
-                                wallpaper: bar.wallpaperPath
-                                barImage: bar.barSnapshot !== null ? bar.barSnapshot.url : ""
-                                barRect: Qt.rect(barContent.x, barContent.y, barContent.width, barContent.height)
-                                onWorkspaceChosen: (workspace) => {
-                                    workspace.activate();
-                                    bar.closeWorkspacePreview();
-                                }
-                            }
-
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: 120
-                                    easing.type: Easing.OutCubic
-                                }
-
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                                easing.type: Easing.OutCubic
                             }
 
                         }
 
-                        HoverHandler {
-                            onHoveredChanged: {
-                                if (hovered) {
-                                    workspaceCloseDelay.stop();
-                                    workspaceHideDelay.stop();
-                                    bar.workspaceVisible = true;
-                                } else {
-                                    workspaceCloseDelay.restart();
-                                }
-                            }
-                        }
-
-                    }
-
-                    mask: Region {
-                        item: workspaceCard
                     }
 
                 }
@@ -667,175 +447,44 @@ PanelWindow {
 
                 visible: bar.width >= 1200
                 onHoveredChanged: {
-                    if (hovered) {
-                        monitorCloseDelay.stop();
-                        monitorHideDelay.stop();
-                        if (!bar.monitorPopupVisible)
-                            monitorOpenDelay.restart();
-                        else
-                            bar.monitorVisible = true;
-                    } else {
-                        monitorOpenDelay.stop();
-                        monitorCloseDelay.restart();
-                    }
+                    if (hovered)
+                        monitorPopup.hoverStarted();
+                    else
+                        monitorPopup.hoverEnded();
                 }
 
                 IconText {
                     icon: ""
-                    text: bar.memoryText
+                    text: SystemStats.memoryText
                 }
 
                 IconText {
                     icon: ""
-                    text: bar.cpuUsage + "%"
+                    text: Math.round(SystemStats.cpuUsage * 100) + "%"
                 }
 
-                Timer {
-                    id: monitorOpenDelay
-
-                    interval: bar.hoverOpenDelay
-                    onTriggered: {
-                        bar.monitorOpenPending = true;
-                        bar.monitorPopupVisible = true;
-                    }
-                }
-
-                Timer {
-                    id: monitorCloseDelay
-
-                    interval: 220
-                    onTriggered: {
-                        bar.monitorOpenPending = false;
-                        bar.monitorVisible = false;
-                        monitorHideDelay.restart();
-                    }
-                }
-
-                Timer {
-                    id: monitorHideDelay
-
-                    // Lets the card fold back onto the pill first.
-                    interval: 320
-                    onTriggered: bar.monitorPopupVisible = false
-                }
-
-                PopupWindow {
+                PillPopup {
                     id: monitorPopup
 
-                    readonly property real progress: bar.monitorProgress
-
-                    function lerp(from, to) {
-                        return from + (to - from) * progress;
-                    }
-
-                    visible: bar.monitorPopupVisible
-
-                    Connections {
-                        function onFrameSwapped() {
-                            if (bar.monitorOpenPending) {
-                                bar.monitorOpenPending = false;
-                                bar.monitorVisible = true;
-                            }
-                        }
-
-                        target: monitorCard.Window.window
-                    }
-
+                    pill: monitorPill
                     implicitWidth: monitorContent.implicitWidth
                     implicitHeight: monitorContent.implicitHeight
-                    color: "transparent"
-                    grabFocus: false
 
-                    anchor {
-                        item: monitorPill
-                        edges: Edges.Top | Edges.Left
-                        gravity: Edges.Bottom | Edges.Right
-                        adjustment: PopupAdjustment.SlideX
-                    }
+                    SystemMonitorCard {
+                        id: monitorContent
 
-                    // The anchor is only worked out on opening: follow the pill if the
-                    // workspaces before it change width.
-                    Connections {
-                        function onXChanged() {
-                            monitorPopup.anchor.updateAnchor();
-                        }
+                        width: monitorPopup.width
+                        opacity: monitorPopup.expanded ? 1 : 0
+                        active: monitorPopup.mapped
 
-                        function onYChanged() {
-                            monitorPopup.anchor.updateAnchor();
-                        }
-
-                        target: monitorPill
-                    }
-
-                    Connections {
-                        function onXChanged() {
-                            monitorPopup.anchor.updateAnchor();
-                        }
-
-                        function onYChanged() {
-                            monitorPopup.anchor.updateAnchor();
-                        }
-
-                        target: monitorPill.parent
-                    }
-
-                    ClippingRectangle {
-                        id: monitorCard
-
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                        width: monitorPopup.lerp(monitorPill.width, monitorPopup.width)
-                        height: monitorPopup.lerp(monitorPill.height, monitorPopup.height)
-                        // The pill's corners: rounder ones would let the pill's show under the card.
-                        radius: monitorPill.radius
-                        color: "transparent"
-
-                        // Same look as the pill it grows from, so it feels like the pill itself is growing.
-                        GlassSurface {
-                            radius: monitorCard.radius
-                            tinted: false
-                            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
-                        }
-
-                        // Laid out at full size, only uncovered while the card grows.
-                        SystemMonitorCard {
-                            id: monitorContent
-
-                            anchors.top: parent.top
-                            anchors.left: parent.left
-                            width: monitorPopup.width
-                            opacity: bar.monitorVisible ? 1 : 0
-                            active: bar.monitorPopupVisible
-                            temperature: bar.cpuTemperature
-                            frequency: bar.cpuFrequency
-                            model: bar.cpuModel
-
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: 120
-                                    easing.type: Easing.OutCubic
-                                }
-
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                                easing.type: Easing.OutCubic
                             }
 
                         }
 
-                        HoverHandler {
-                            onHoveredChanged: {
-                                if (hovered) {
-                                    monitorCloseDelay.stop();
-                                    monitorHideDelay.stop();
-                                    bar.monitorVisible = true;
-                                } else {
-                                    monitorCloseDelay.restart();
-                                }
-                            }
-                        }
-
-                    }
-
-                    mask: Region {
-                        item: monitorCard
                     }
 
                 }
@@ -847,13 +496,13 @@ PanelWindow {
         // When the calendar covers the island, the privacy and recording dots move to its
         // right, following its edge as it grows.
         PrivacyDot {
-            x: centerGroup.x + clockPill.x + clockPill.width / 2 + calendarCard.width / 2 + 8
+            x: centerGroup.x + clockPill.x + clockPill.width / 2 + calendarPopup.card.width / 2 + 8
             y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
             camera: bar.shellState.cameraInUse
             microphone: bar.shellState.microphoneInUse
             recording: bar.shellState.recording
-            opacity: active ? calendarCard.openness : 0
-            visible: bar.calendarPopupVisible && opacity > 0
+            opacity: active ? calendarPopup.progress : 0
+            visible: calendarPopup.mapped && opacity > 0
         }
 
         // Same when the island is busy with an OSD: they sit to its right.
@@ -863,7 +512,7 @@ PanelWindow {
             camera: bar.shellState.cameraInUse
             microphone: bar.shellState.microphoneInUse
             recording: bar.shellState.recording
-            opacity: active && bar.islandOsdShown && !bar.calendarPopupVisible ? 1 : 0
+            opacity: active && bar.islandOsdShown && !calendarPopup.mapped ? 1 : 0
             visible: opacity > 0
 
             Behavior on opacity {
@@ -924,28 +573,10 @@ PanelWindow {
 
                     HoverHandler {
                         onHoveredChanged: {
-                            if (hovered) {
-                                calendarCloseDelay.stop();
-                                calendarHideDelay.stop();
-                                if (!bar.calendarPopupVisible)
-                                    calendarOpenDelay.restart();
-                                else
-                                    bar.calendarVisible = true;
-                            } else {
-                                calendarOpenDelay.stop();
-                                calendarCloseDelay.restart();
-                            }
-                        }
-                    }
-
-                    Timer {
-                        id: calendarOpenDelay
-
-                        interval: bar.hoverOpenDelay
-                        onTriggered: {
-                            calendarPopup.monthOffset = 0;
-                            bar.calendarOpenPending = true;
-                            bar.calendarPopupVisible = true;
+                            if (hovered)
+                                calendarPopup.hoverStarted();
+                            else
+                                calendarPopup.hoverEnded();
                         }
                     }
 
@@ -973,7 +604,7 @@ PanelWindow {
                         height: 8
                         radius: 4
                         scale: parent.shown ? 1 : 0
-                        color: bar.shellState.cameraInUse ? bar.green : bar.peach
+                        color: bar.shellState.cameraInUse ? Theme.green : Theme.peach
 
                         Behavior on scale {
                             NumberAnimation {
@@ -1026,7 +657,7 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: height / 2
-                        color: recordingHover.hovered ? Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.28) : Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.16)
+                        color: recordingHover.hovered ? Theme.alpha(Theme.red, 0.28) : Theme.alpha(Theme.red, 0.16)
 
                         Behavior on color {
                             ColorAnimation {
@@ -1052,7 +683,7 @@ PanelWindow {
                             width: 8
                             height: 8
                             radius: recordingHover.hovered ? 2 : 4
-                            color: bar.red
+                            color: Theme.red
 
                             SequentialAnimation on opacity {
                                 running: recordingChip.shown && !recordingHover.hovered
@@ -1089,8 +720,8 @@ PanelWindow {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: bar.formatDuration(bar.recordingElapsed)
-                            color: bar.red
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: Theme.red
+                            font.family: Theme.font
                             font.pixelSize: 12
                             font.weight: Font.Bold
                             font.features: {
@@ -1182,26 +813,7 @@ PanelWindow {
                 onTriggered: bar.endStatusOsd()
             }
 
-            Timer {
-                id: calendarCloseDelay
-
-                interval: 180
-                onTriggered: {
-                    bar.calendarOpenPending = false;
-                    bar.calendarVisible = false;
-                    calendarHideDelay.restart();
-                }
-            }
-
-            Timer {
-                id: calendarHideDelay
-
-                // Slightly longer than the 280 ms fold so the card is back on the pill first.
-                interval: 320
-                onTriggered: bar.calendarPopupVisible = false
-            }
-
-            PopupWindow {
+            PillPopup {
                 id: calendarPopup
 
                 readonly property date currentDate: clock.date
@@ -1216,8 +828,10 @@ PanelWindow {
                 readonly property int firstWeekday: (displayedMonth.getDay() - bar.regionalLocale.firstDayOfWeek + 7) % 7
                 readonly property int daysInMonth: new Date(displayedYear, displayedMonthNumber + 1, 0).getDate()
                 readonly property int weekRows: Math.ceil((firstWeekday + daysInMonth) / 7)
-                // Card height for the displayed month, measured from the real layout.
+                // Card height for the displayed month, measured from the real layout, and
+                // eased when the next month has a week more or less.
                 readonly property real contentHeight: calendarBody.y + calendarBody.implicitHeight + 18
+                property real animatedHeight: contentHeight
                 property int pendingMonthDelta: 0
 
                 function changeMonth(delta) {
@@ -1228,319 +842,257 @@ PanelWindow {
                     monthTransition.start();
                 }
 
-                visible: bar.calendarPopupVisible
-
-                Connections {
-                    function onFrameSwapped() {
-                        if (bar.calendarOpenPending) {
-                            bar.calendarOpenPending = false;
-                            bar.calendarVisible = true;
-                        }
-                    }
-
-                    target: calendarCard.Window.window
-                }
-
-                mask: Region {
-                    item: calendarCard
-                }
+                pill: clockPill
+                align: Qt.AlignHCenter
+                closeDelay: 180
+                cardHeight: animatedHeight
+                anchor.edges: Edges.Top
+                anchor.gravity: Edges.Bottom
                 implicitWidth: 322
                 // Sized for a six-week month so the card can animate without clipping. Not taken
                 // from weekRows: the layout updates a frame late, and the popup would resize twice
                 // (everything shakes).
                 implicitHeight: calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + 18
-                color: "transparent"
-                grabFocus: false
+                onOpening: monthOffset = 0
 
-                anchor {
-                    item: clockPill
-                    edges: Edges.Top
-                    gravity: Edges.Bottom
-                    adjustment: PopupAdjustment.SlideX
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.NoButton
+                    onWheel: (wheel) => {
+                        if (wheel.angleDelta.y > 0)
+                            calendarPopup.changeMonth(-1);
+                        else if (wheel.angleDelta.y < 0)
+                            calendarPopup.changeMonth(1);
+                        wheel.accepted = true;
+                    }
                 }
 
-                ClippingRectangle {
-                    id: calendarCard
-
-                    // 0 at the pill's size, 1 once fully open (follows the width animation).
-                    readonly property real openness: Math.max(0, Math.min(1, (width - clockPill.width) / Math.max(1, calendarPopup.width - clockPill.width)))
+                Item {
+                    id: expandedClockHeader
 
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: bar.calendarVisible ? calendarPopup.width : clockPill.width
-                    height: bar.calendarVisible ? calendarPopup.contentHeight : clockPill.height
-                    // The pill's corners: rounder ones would let the pill's show under the card.
-                    radius: clockPill.radius
-                    color: "transparent"
+                    width: clockPill.width
+                    height: clockPill.height
 
-                    // Same look as the island it grows from: base color at 0.9, blurred, with the glass rim.
-                    GlassSurface {
-                        radius: calendarCard.radius
-                        tinted: false
-                        backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+                    Label {
+                        anchors.centerIn: parent
+                        text: Qt.formatDateTime(clock.date, "HH:mm")
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        acceptedButtons: Qt.NoButton
-                        onWheel: (wheel) => {
-                            if (wheel.angleDelta.y > 0)
-                                calendarPopup.changeMonth(-1);
-                            else if (wheel.angleDelta.y < 0)
-                                calendarPopup.changeMonth(1);
-                            wheel.accepted = true;
+                }
+
+                Rectangle {
+                    id: calendarSeparator
+
+                    anchors.top: expandedClockHeader.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    height: 1
+                    color: Theme.surface1
+                    opacity: calendarPopup.expanded ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
                         }
+
                     }
 
-                    HoverHandler {
-                        onHoveredChanged: {
-                            if (hovered) {
-                                calendarCloseDelay.stop();
-                                calendarHideDelay.stop();
-                                bar.calendarPopupVisible = true;
-                                bar.calendarVisible = true;
-                            } else {
-                                calendarCloseDelay.restart();
+                }
+
+                IconText {
+                    id: calendarDate
+
+                    anchors.top: calendarSeparator.bottom
+                    anchors.topMargin: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    icon: "󰃭"
+                    text: bar.regionalLocale.toString(clock.date, bar.regionalLocale.dateFormat(Locale.LongFormat))
+                    color: Theme.lavender
+                    font.pixelSize: 15
+                    opacity: calendarPopup.expanded ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                }
+
+                Rectangle {
+                    id: dateSeparator
+
+                    anchors.top: calendarDate.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.topMargin: 10
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    height: 1
+                    color: Theme.surface1
+                    opacity: calendarPopup.expanded ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                }
+
+                ColumnLayout {
+                    id: calendarBody
+
+                    property real monthSlideY: 0
+                    property real monthTransitionOpacity: 1
+
+                    anchors.top: dateSeparator.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: 18
+                    anchors.rightMargin: 18
+                    anchors.topMargin: 8
+                    spacing: 10
+                    opacity: (calendarPopup.expanded ? 1 : 0) * monthTransitionOpacity
+
+                    Label {
+                        id: calendarMonthLabel
+
+                        Layout.alignment: Qt.AlignHCenter
+                        text: bar.capitalized(bar.regionalLocale.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
+                        color: Theme.mauve
+                        font.pixelSize: 18
+                        font.weight: Font.Bold
+                    }
+
+                    GridLayout {
+                        id: calendarGrid
+
+                        // Weekday row (25) and six weeks (29), with their spacing.
+                        readonly property real sixWeekHeight: 25 + 6 * 29 + 6 * rowSpacing
+
+                        Layout.fillWidth: true
+                        columns: 7
+                        columnSpacing: 4
+                        rowSpacing: 4
+
+                        Repeater {
+                            // From the locale's first day, "Lun" rather than "lun.".
+                            model: [0, 1, 2, 3, 4, 5, 6].map((offset) => {
+                                return bar.capitalized(bar.regionalLocale.dayName((bar.regionalLocale.firstDayOfWeek + offset) % 7, Locale.ShortFormat).replace(/\.$/, ""));
+                            })
+
+                            Label {
+                                required property string modelData
+
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 25
+                                text: modelData
+                                color: Theme.mauve
+                                font.pixelSize: 12
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
                             }
-                        }
-                    }
-
-                    Item {
-                        id: expandedClockHeader
-
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: clockPill.width
-                        height: clockPill.height
-
-                        Label {
-                            anchors.centerIn: parent
-                            text: Qt.formatDateTime(clock.date, "HH:mm")
-                        }
-
-                    }
-
-                    Rectangle {
-                        id: calendarSeparator
-
-                        anchors.top: expandedClockHeader.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.leftMargin: 18
-                        anchors.rightMargin: 18
-                        height: 1
-                        color: bar.surface1
-                        opacity: bar.calendarVisible ? 1 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 120
-                                easing.type: Easing.OutCubic
-                            }
 
                         }
 
-                    }
+                        Repeater {
+                            model: calendarPopup.weekRows * 7
 
-                    IconText {
-                        id: calendarDate
+                            Rectangle {
+                                required property int index
+                                readonly property int dayNumber: index - calendarPopup.firstWeekday + 1
+                                readonly property bool validDay: dayNumber >= 1 && dayNumber <= calendarPopup.daysInMonth
+                                readonly property bool isToday: validDay && dayNumber === calendarPopup.currentDay && calendarPopup.displayedMonthNumber === calendarPopup.currentMonth && calendarPopup.displayedYear === calendarPopup.currentYear
 
-                        anchors.top: calendarSeparator.bottom
-                        anchors.topMargin: 10
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        icon: "󰃭"
-                        text: bar.regionalLocale.toString(clock.date, bar.regionalLocale.dateFormat(Locale.LongFormat))
-                        color: bar.lavender
-                        font.pixelSize: 15
-                        opacity: bar.calendarVisible ? 1 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 120
-                                easing.type: Easing.OutCubic
-                            }
-
-                        }
-
-                    }
-
-                    Rectangle {
-                        id: dateSeparator
-
-                        anchors.top: calendarDate.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.topMargin: 10
-                        anchors.leftMargin: 18
-                        anchors.rightMargin: 18
-                        height: 1
-                        color: bar.surface1
-                        opacity: bar.calendarVisible ? 1 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 120
-                                easing.type: Easing.OutCubic
-                            }
-
-                        }
-
-                    }
-
-                    ColumnLayout {
-                        id: calendarBody
-
-                        property real monthSlideY: 0
-                        property real monthTransitionOpacity: 1
-
-                        anchors.top: dateSeparator.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.leftMargin: 18
-                        anchors.rightMargin: 18
-                        anchors.topMargin: 8
-                        spacing: 10
-                        opacity: (bar.calendarVisible ? 1 : 0) * monthTransitionOpacity
-
-                        Label {
-                            id: calendarMonthLabel
-
-                            Layout.alignment: Qt.AlignHCenter
-                            text: bar.capitalized(bar.regionalLocale.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
-                            color: bar.mauve
-                            font.pixelSize: 18
-                            font.weight: Font.Bold
-                        }
-
-                        GridLayout {
-                            id: calendarGrid
-
-                            // Weekday row (25) and six weeks (29), with their spacing.
-                            readonly property real sixWeekHeight: 25 + 6 * 29 + 6 * rowSpacing
-
-                            Layout.fillWidth: true
-                            columns: 7
-                            columnSpacing: 4
-                            rowSpacing: 4
-
-                            Repeater {
-                                // From the locale's first day, "Lun" rather than "lun.".
-                                model: [0, 1, 2, 3, 4, 5, 6].map((offset) => {
-                                    return bar.capitalized(bar.regionalLocale.dayName((bar.regionalLocale.firstDayOfWeek + offset) % 7, Locale.ShortFormat).replace(/\.$/, ""));
-                                })
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 29
+                                radius: 9
+                                color: isToday ? Theme.mauve : "transparent"
 
                                 Label {
-                                    required property string modelData
-
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 25
-                                    text: modelData
-                                    color: bar.mauve
-                                    font.pixelSize: 12
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-
-                            }
-
-                            Repeater {
-                                model: calendarPopup.weekRows * 7
-
-                                Rectangle {
-                                    required property int index
-                                    readonly property int dayNumber: index - calendarPopup.firstWeekday + 1
-                                    readonly property bool validDay: dayNumber >= 1 && dayNumber <= calendarPopup.daysInMonth
-                                    readonly property bool isToday: validDay && dayNumber === calendarPopup.currentDay && calendarPopup.displayedMonthNumber === calendarPopup.currentMonth && calendarPopup.displayedYear === calendarPopup.currentYear
-
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 29
-                                    radius: 9
-                                    color: isToday ? bar.mauve : "transparent"
-
-                                    Label {
-                                        anchors.centerIn: parent
-                                        text: parent.validDay ? parent.dayNumber : ""
-                                        color: parent.isToday ? bar.base : bar.mauve
-                                        font.pixelSize: 14
-                                        font.weight: parent.isToday ? Font.Bold : Font.Medium
-                                    }
-
+                                    anchors.centerIn: parent
+                                    text: parent.validDay ? parent.dayNumber : ""
+                                    color: parent.isToday ? Theme.base : Theme.mauve
+                                    font.pixelSize: 14
+                                    font.weight: parent.isToday ? Font.Bold : Font.Medium
                                 }
 
                             }
 
                         }
 
-                        transform: Translate {
-                            y: calendarBody.monthSlideY
-                        }
-
                     }
 
-                    SequentialAnimation {
-                        id: monthTransition
-
-                        ParallelAnimation {
-                            NumberAnimation {
-                                target: calendarBody
-                                property: "monthSlideY"
-                                to: calendarPopup.pendingMonthDelta > 0 ? -28 : 28
-                                duration: 120
-                                easing.type: Easing.InCubic
-                            }
-
-                            NumberAnimation {
-                                target: calendarBody
-                                property: "monthTransitionOpacity"
-                                to: 0
-                                duration: 100
-                                easing.type: Easing.InCubic
-                            }
-
-                        }
-
-                        ScriptAction {
-                            script: {
-                                calendarPopup.monthOffset += calendarPopup.pendingMonthDelta;
-                                calendarBody.monthSlideY = calendarPopup.pendingMonthDelta > 0 ? 28 : -28;
-                            }
-                        }
-
-                        ParallelAnimation {
-                            NumberAnimation {
-                                target: calendarBody
-                                property: "monthSlideY"
-                                to: 0
-                                duration: 160
-                                easing.type: Easing.OutCubic
-                            }
-
-                            NumberAnimation {
-                                target: calendarBody
-                                property: "monthTransitionOpacity"
-                                to: 1
-                                duration: 140
-                                easing.type: Easing.OutCubic
-                            }
-
-                        }
-
+                    transform: Translate {
+                        y: calendarBody.monthSlideY
                     }
 
-                    Behavior on width {
+                }
+
+                SequentialAnimation {
+                    id: monthTransition
+
+                    ParallelAnimation {
                         NumberAnimation {
-                            duration: 280
+                            target: calendarBody
+                            property: "monthSlideY"
+                            to: calendarPopup.pendingMonthDelta > 0 ? -28 : 28
+                            duration: 120
+                            easing.type: Easing.InCubic
+                        }
+
+                        NumberAnimation {
+                            target: calendarBody
+                            property: "monthTransitionOpacity"
+                            to: 0
+                            duration: 100
+                            easing.type: Easing.InCubic
+                        }
+
+                    }
+
+                    ScriptAction {
+                        script: {
+                            calendarPopup.monthOffset += calendarPopup.pendingMonthDelta;
+                            calendarBody.monthSlideY = calendarPopup.pendingMonthDelta > 0 ? 28 : -28;
+                        }
+                    }
+
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: calendarBody
+                            property: "monthSlideY"
+                            to: 0
+                            duration: 160
+                            easing.type: Easing.OutCubic
+                        }
+
+                        NumberAnimation {
+                            target: calendarBody
+                            property: "monthTransitionOpacity"
+                            to: 1
+                            duration: 140
                             easing.type: Easing.OutCubic
                         }
 
                     }
 
-                    Behavior on height {
-                        NumberAnimation {
-                            duration: 280
-                            easing.type: Easing.OutCubic
-                        }
+                }
 
+                Behavior on animatedHeight {
+                    NumberAnimation {
+                        duration: 280
+                        easing.type: Easing.OutCubic
                     }
 
                 }
@@ -1562,7 +1114,7 @@ PanelWindow {
             onYChanged: controlPill.publishGeometry()
 
             DropInSlot {
-                shown: bar.updateCount > 0
+                shown: Updates.count > 0
 
                 Pill {
                     IconText {
@@ -1571,13 +1123,13 @@ PanelWindow {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: upgradeProcess.running = true
+                            onClicked: Updates.upgrade()
                         }
 
                         // Keeps the last count while the pill flies away.
                         Binding on text {
-                            when: bar.updateCount > 0
-                            value: String(bar.updateCount)
+                            when: Updates.count > 0
+                            value: String(Updates.count)
                             restoreMode: Binding.RestoreNone
                         }
 
@@ -1601,7 +1153,7 @@ PanelWindow {
                     property real spinFactor: 1
                     // While the player is open, the disc pauses and picks up from the same angle
                     // afterwards, without jumping.
-                    readonly property bool displayFrozen: bar.musicPopupVisible
+                    readonly property bool displayFrozen: musicPopup.mapped
                     readonly property real frontAngle: spin + rewind
                     // Degrees per second: speeds up and slows down like a turntable.
                     property real spinSpeed: bar.spotifyPlayer !== null && bar.spotifyPlayer.isPlaying ? 45 : 0
@@ -1775,7 +1327,7 @@ PanelWindow {
                         anchors.fill: parent
                         anchors.margins: 3
                         radius: width / 2
-                        color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+                        color: Theme.panel
                     }
 
                     Behavior on spinSpeed {
@@ -1852,7 +1404,7 @@ PanelWindow {
                         radius: width / 2
                         color: "transparent"
                         border.width: 3
-                        border.color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+                        border.color: Theme.panel
                         antialiasing: true
                     }
 
@@ -2000,232 +1552,104 @@ PanelWindow {
                     }
 
                     HoverHandler {
-                        onHoveredChanged: {
-                            if (hovered) {
-                                musicCloseDelay.stop();
-                                musicHideDelay.stop();
-                                if (!bar.musicPopupVisible)
-                                    musicOpenDelay.restart();
-                                else
-                                    bar.musicVisible = true;
-                            } else {
-                                musicOpenDelay.stop();
-                                musicCloseDelay.restart();
-                            }
-                        }
-                    }
-
-                    Timer {
-                        id: musicOpenDelay
-
-                        interval: bar.hoverOpenDelay
-                        onTriggered: {
-                            bar.musicOpenPending = true;
-                            bar.musicPopupVisible = true;
-                        }
-                    }
-
-                    Timer {
-                        id: musicCloseDelay
-
-                        interval: 220
-                        onTriggered: {
-                            bar.musicOpenPending = false;
-                            bar.musicVisible = false;
-                            musicHideDelay.restart();
-                        }
-                    }
-
-                    Timer {
-                        id: musicHideDelay
-
-                        // Lets the card fold back onto the pill first.
-                        interval: 320
-                        onTriggered: bar.musicPopupVisible = false
+                        onHoveredChanged: hovered ? musicPopup.hoverStarted() : musicPopup.hoverEnded()
                     }
 
                     // Opens like the calendar: the card grows out of the cover pill and
                     // the cover glides to its place in the player.
-                    PopupWindow {
+                    PillPopup {
                         id: musicPopup
 
-                        readonly property real progress: bar.musicProgress
                         // The cover settles during the first 70% so it never crosses the fading-in title.
                         readonly property real coverProgress: Math.min(1, progress / 0.7)
                         // The disc's angle (-180..180): the cover leaves at that angle and straightens up
                         // as the player opens, then turns back to it when folding away.
                         readonly property real discAngle: ((musicPill.frontAngle % 360) + 540) % 360 - 180
 
-                        function lerp(from, to) {
-                            return from + (to - from) * progress;
-                        }
-
-                        visible: bar.musicPopupVisible && bar.spotifyPlayer !== null
-
-                        Connections {
-                            function onFrameSwapped() {
-                                if (bar.musicOpenPending) {
-                                    bar.musicOpenPending = false;
-                                    bar.musicVisible = true;
-                                }
-                            }
-
-                            target: musicCard.Window.window
-                        }
-
+                        pill: musicPill
+                        align: Qt.AlignRight
+                        available: bar.spotifyPlayer !== null
                         implicitWidth: 380
                         // Tall enough for the lyrics: the card grows and shrinks inside it.
                         implicitHeight: musicPlayerCard.fullHeight
-                        color: "transparent"
-                        grabFocus: false
+                        cardHeight: musicPlayerCard.height
+                        anchor.edges: Edges.Top | Edges.Right
+                        anchor.gravity: Edges.Bottom | Edges.Left
 
-                        anchor {
-                            item: musicPill
-                            edges: Edges.Top | Edges.Right
-                            gravity: Edges.Bottom | Edges.Left
-                            adjustment: PopupAdjustment.SlideX
-                        }
+                        MediaPlayerCard {
+                            id: musicPlayerCard
 
-                        // The anchor is only worked out on opening: follow the pill if it resizes
-                        // or the control pill after it changes width.
-                        Connections {
-                            function onXChanged() {
-                                musicPopup.anchor.updateAnchor();
-                            }
-
-                            function onYChanged() {
-                                musicPopup.anchor.updateAnchor();
-                            }
-
-                            function onWidthChanged() {
-                                musicPopup.anchor.updateAnchor();
-                            }
-
-                            target: musicPill
-                        }
-
-                        Connections {
-                            function onXChanged() {
-                                musicPopup.anchor.updateAnchor();
-                            }
-
-                            function onYChanged() {
-                                musicPopup.anchor.updateAnchor();
-                            }
-
-                            target: musicPill.parent
-                        }
-
-                        ClippingRectangle {
-                            id: musicCard
-
+                            active: musicPopup.mapped
                             anchors.top: parent.top
                             anchors.right: parent.right
-                            width: musicPopup.lerp(musicPill.width, musicPopup.width)
-                            height: musicPopup.lerp(musicPill.height, musicPlayerCard.height)
-                            // The pill's corners: rounder ones would let the pill's show under the card.
-                            radius: musicPill.radius
-                            color: "transparent"
-
-                            // Same look as the pill it grows from: base color at 0.9, blurred, with the glass rim.
-                            GlassSurface {
-                                radius: musicCard.radius
-                                tinted: false
-                                backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
-                            }
-
-                            MediaPlayerCard {
-                                id: musicPlayerCard
-
-                                active: bar.musicPopupVisible
-                                anchors.top: parent.top
-                                anchors.right: parent.right
-                                width: musicPopup.width
-                                opacity: Math.max(0, (musicPopup.progress - 0.7) / 0.3)
-                                player: bar.spotifyPlayer
-                                glassVisible: false
-                                coverVisible: false
-                                onSkipRequested: (direction) => {
-                                    musicPill.skipHint = direction;
-                                    if (direction < 0)
-                                        restartProbeDelay.restart();
-
-                                }
-                            }
-
-                            // From the pill's little round cover to the player's artwork. Nothing spins: the disc
-                            // grows at its frozen angle and the square cover fades in over it (and back out).
-                            Item {
-                                readonly property real size: musicPopup.lerp(32, musicPlayerCard.artSize)
-                                readonly property real squareOpacity: Math.min(1, Math.max(0, (musicPopup.coverProgress - 0.4) / 0.5))
-
-                                anchors.top: parent.top
-                                anchors.left: parent.left
-                                anchors.topMargin: musicPopup.lerp(3, musicPlayerCard.artMargin)
-                                // Slides from the right edge to the left one of the growing card, so it is never cut.
-                                anchors.leftMargin: (1 - musicPopup.coverProgress) * (musicCard.width - 3 - size) + musicPopup.coverProgress * musicPlayerCard.artMargin
-                                width: size
-                                height: size
-
-                                CoverDisc {
-                                    anchors.fill: parent
-                                    visible: parent.squareOpacity < 1
-                                    rotation: musicPopup.discAngle
-                                    antialiasing: true
-                                    // Same art as the pill's disc, so both match when it folds back.
-                                    source: bar.spotifyPlayer !== null ? musicPill.pillArt() : ""
-                                    decodeSize: 64
-                                }
-
-                                ClippingRectangle {
-                                    anchors.fill: parent
-                                    opacity: parent.squareOpacity
-                                    visible: opacity > 0
-                                    radius: musicPlayerCard.artRadius
-                                    color: bar.surface1
-
-                                    Image {
-                                        id: musicPopupCover
-
-                                        anchors.fill: parent
-                                        source: bar.spotifyPlayer !== null ? bar.spotifyPlayer.trackArtUrl : ""
-                                        asynchronous: true
-                                        cache: true
-                                        fillMode: Image.PreserveAspectCrop
-                                        // Its size changes while the player opens: smooth downscaling at any size.
-                                        mipmap: true
-                                        visible: status === Image.Ready
-                                    }
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        visible: musicPopupCover.status !== Image.Ready
-                                        text: "󰎆"
-                                        color: bar.mauve
-                                        font.family: "JetBrainsMono Nerd Font"
-                                        font.pixelSize: musicPopup.lerp(16, 24)
-                                    }
-
-                                }
+                            width: musicPopup.width
+                            opacity: Math.max(0, (musicPopup.progress - 0.7) / 0.3)
+                            player: bar.spotifyPlayer
+                            glassVisible: false
+                            coverVisible: false
+                            onSkipRequested: (direction) => {
+                                musicPill.skipHint = direction;
+                                if (direction < 0)
+                                    restartProbeDelay.restart();
 
                             }
-
-                            HoverHandler {
-                                onHoveredChanged: {
-                                    if (hovered) {
-                                        musicCloseDelay.stop();
-                                        musicHideDelay.stop();
-                                        bar.musicVisible = true;
-                                    } else {
-                                        musicCloseDelay.restart();
-                                    }
-                                }
-                            }
-
                         }
 
-                        mask: Region {
-                            item: musicCard
+                        // From the pill's little round cover to the player's artwork. Nothing spins: the disc
+                        // grows at its frozen angle and the square cover fades in over it (and back out).
+                        Item {
+                            readonly property real size: musicPopup.lerp(32, musicPlayerCard.artSize)
+                            readonly property real squareOpacity: Math.min(1, Math.max(0, (musicPopup.coverProgress - 0.4) / 0.5))
+
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.topMargin: musicPopup.lerp(3, musicPlayerCard.artMargin)
+                            // Slides from the right edge to the left one of the growing card, so it is never cut.
+                            anchors.leftMargin: (1 - musicPopup.coverProgress) * (musicPopup.card.width - 3 - size) + musicPopup.coverProgress * musicPlayerCard.artMargin
+                            width: size
+                            height: size
+
+                            CoverDisc {
+                                anchors.fill: parent
+                                visible: parent.squareOpacity < 1
+                                rotation: musicPopup.discAngle
+                                antialiasing: true
+                                // Same art as the pill's disc, so both match when it folds back.
+                                source: bar.spotifyPlayer !== null ? musicPill.pillArt() : ""
+                                decodeSize: 64
+                            }
+
+                            ClippingRectangle {
+                                anchors.fill: parent
+                                opacity: parent.squareOpacity
+                                visible: opacity > 0
+                                radius: musicPlayerCard.artRadius
+                                color: Theme.surface1
+
+                                Image {
+                                    id: musicPopupCover
+
+                                    anchors.fill: parent
+                                    source: bar.spotifyPlayer !== null ? bar.spotifyPlayer.trackArtUrl : ""
+                                    asynchronous: true
+                                    cache: true
+                                    fillMode: Image.PreserveAspectCrop
+                                    // Its size changes while the player opens: smooth downscaling at any size.
+                                    mipmap: true
+                                    visible: status === Image.Ready
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    visible: musicPopupCover.status !== Image.Ready
+                                    text: "󰎆"
+                                    color: Theme.mauve
+                                    font.family: Theme.font
+                                    font.pixelSize: musicPopup.lerp(16, 24)
+                                }
+
+                            }
+
                         }
 
                     }
@@ -2269,112 +1693,6 @@ PanelWindow {
 
     }
 
-    Process {
-        id: resourceProcess
-
-        command: ["sh", "-c", "free -m | awk '/^Mem:/ {printf \"%.1fG\\n\", $3/1024}'; sensors 2>/dev/null | awk '/Package id 0:/ {gsub(/[+°C]/, \"\", $4); printf \"%.0f°C\\n\", $4; found=1; exit} /^Tctl:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} /^Tdie:/ {gsub(/[+°C]/, \"\", $2); printf \"%.0f°C\\n\", $2; found=1; exit} END {if (!found) print \"--°C\"}'; awk '/cpu MHz/ {sum += $4; count++} END {printf \"%.0f MHz\\n\", count ? sum/count : 0}' /proc/cpuinfo; awk -F': ' '/^model name/ {print $2; exit}' /proc/cpuinfo; head -n1 /proc/stat"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const lines = text.trim().split("\n");
-                if (lines.length > 0 && lines[0] !== "")
-                    bar.memoryText = lines[0];
-
-                if (lines.length > 1)
-                    bar.cpuTemperature = lines[1];
-
-                if (lines.length > 3) {
-                    bar.cpuFrequency = lines[2];
-                    bar.cpuModel = lines[3];
-                }
-                const stat = lines.find((line) => {
-                    return line.startsWith("cpu ");
-                });
-                if (stat !== undefined) {
-                    const jiffies = stat.trim().split(/\s+/).slice(1).map(Number);
-                    const idle = jiffies[3] + (jiffies[4] || 0);
-                    const total = jiffies.slice(0, 8).reduce((sum, value) => {
-                        return sum + (value || 0);
-                    }, 0);
-                    if (bar.cpuStat[1] > 0 && total > bar.cpuStat[1])
-                        bar.cpuUsage = Math.round(100 * (1 - (idle - bar.cpuStat[0]) / (total - bar.cpuStat[1])));
-
-                    bar.cpuStat = [idle, total];
-                }
-            }
-        }
-
-    }
-
-    Process {
-        id: vpnProcess
-
-        // NAME last: it is the only field that can hold an (escaped) colon.
-        command: ["nmcli", "-t", "-f", "TYPE,STATE,NAME", "connection", "show", "--active"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const connections = [];
-                for (const line of text.trim().split("\n")) {
-                    const fields = line.split(":");
-                    if (fields.length >= 3 && (fields[0] === "vpn" || fields[0] === "wireguard"))
-                        connections.push({
-                        "state": fields[1],
-                        "name": fields.slice(2).join(":").replace(/\\:/g, ":")
-                    });
-
-                }
-                bar.vpnConnections = connections;
-            }
-        }
-
-    }
-
-    // Any NetworkManager change refreshes the VPN list, coalesced.
-    Process {
-        command: ["nmcli", "monitor"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: vpnRefresh.restart()
-        }
-
-    }
-
-    Timer {
-        id: vpnRefresh
-
-        interval: 250
-        onTriggered: vpnProcess.running = true
-    }
-
-    Process {
-        id: updateProcess
-
-        // Official repos and AUR, counted together.
-        command: ["sh", "-c", "{ checkupdates; yay -Qua; } 2>/dev/null | wc -l"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const count = parseInt(text.trim());
-                bar.updateCount = isNaN(count) ? 0 : count;
-            }
-        }
-
-    }
-
-    Process {
-        id: upgradeProcess
-
-        command: ["kitty", "-e", "yay", "-Syu", "--noconfirm", "--removemake"]
-        // The current locale, not the one the shell was started with.
-        environment: Session.localeEnvironment
-        onExited: updateProcess.running = true
-    }
-
     // The time recorded, for the island.
     Timer {
         interval: 1000
@@ -2382,92 +1700,6 @@ PanelWindow {
         repeat: true
         triggeredOnStart: true
         onTriggered: bar.recordingElapsed = Math.max(0, Math.round((Date.now() - bar.shellState.recordingStarted) / 1000))
-    }
-
-    Timer {
-        interval: 60 * 60 * 1000
-        running: true
-        repeat: true
-        onTriggered: updateProcess.running = true
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: resourceProcess.running = true
-    }
-
-    Timer {
-        interval: 60000
-        running: true
-        repeat: true
-        onTriggered: updateProcess.running = true
-    }
-
-    Process {
-        id: lockStateProcess
-
-        command: ["sh", "-c", "hyprctl devices -j 2>/dev/null | jq -r '([.keyboards[]?.capsLock] | any), ([.keyboards[]?.numLock] | any)'"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const lines = text.trim().split("\n");
-                if (lines.length < 2)
-                    return ;
-
-                const newCapsLock = lines[0] === "true";
-                const newNumLock = lines[1] === "true";
-                if (bar.lockStateInitialized) {
-                    if (newCapsLock !== bar.capsLockEnabled)
-                        bar.showStatusOsd("󰪛", "Caps Lock", newCapsLock);
-
-                    if (newNumLock !== bar.numLockEnabled)
-                        bar.showStatusOsd("󰎤", "Num Lock", newNumLock);
-
-                }
-                bar.capsLockEnabled = newCapsLock;
-                bar.numLockEnabled = newNumLock;
-                bar.lockStateInitialized = true;
-            }
-        }
-
-    }
-
-    Timer {
-        interval: 120
-        running: true
-        repeat: true
-        onTriggered: {
-            if (!lockStateProcess.running)
-                lockStateProcess.running = true;
-
-        }
-    }
-
-    FileView {
-        id: touchpadStateFile
-
-        function updateTouchpadState() {
-            const match = touchpadStateFile.text().match(/(?:^|\n)enabled=(true|false)(?:\n|$)/);
-            if (match === null)
-                return ;
-
-            const enabled = match[1] === "true";
-            if (bar.touchpadStateInitialized && enabled !== bar.touchpadEnabled)
-                bar.showStatusOsd("󰟸", "Touchpad", enabled);
-
-            bar.touchpadEnabled = enabled;
-            bar.touchpadStateInitialized = true;
-        }
-
-        path: bar.stateHome + "/hyprpunk/touchpad-state.conf"
-        watchChanges: true
-        preload: true
-        printErrors: false
-        onLoaded: updateTouchpadState()
-        onTextChanged: updateTouchpadState()
-        onFileChanged: reload()
     }
 
     Connections {
@@ -2479,6 +1711,31 @@ PanelWindow {
         }
 
         target: bar.shellState
+    }
+
+    // The hardware's changes, in this screen's island too.
+    Connections {
+        function onCapsLockToggled(enabled) {
+            bar.showStatusOsd("󰪛", "Caps Lock", enabled);
+        }
+
+        function onNumLockToggled(enabled) {
+            bar.showStatusOsd("󰎤", "Num Lock", enabled);
+        }
+
+        function onTouchpadToggled(enabled) {
+            bar.showStatusOsd("󰟸", "Touchpad", enabled);
+        }
+
+        function onBrightnessShown(percent) {
+            bar.showStatusOsd(Icons.brightness(percent), "Brightness", percent > 0, percent, 100);
+        }
+
+        function onKeyboardBacklightShown(level, max) {
+            bar.showStatusOsd("󰌌", "Keyboard light", level > 0, level, max);
+        }
+
+        target: Devices
     }
 
     PwObjectTracker {
@@ -2497,162 +1754,12 @@ PanelWindow {
         onTriggered: bar.volumeInitialized = true
     }
 
-    Process {
-        id: brightnessProcess
-
-        // The screen's backlight only. A desktop has none, and brightnessctl would
-        // read the first LED it finds instead.
-        command: ["brightnessctl", "-c", "backlight", "-m"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const fields = text.trim().split(",");
-                if (fields.length < 4)
-                    return ;
-
-                const newBrightness = parseInt(fields[3]);
-                const changed = bar.brightnessInitialized && newBrightness !== bar.screenBrightness;
-                // Changes announced by hypridle are not shown (only the next one).
-                const muted = changed && Date.now() < bar.shellState.screenOsdMutedUntil;
-                if (muted)
-                    bar.shellState.screenOsdMutedUntil = 0;
-
-                bar.screenBrightness = newBrightness;
-                if (changed && !muted)
-                    bar.showStatusOsd(bar.brightnessIcon(), "Brightness", newBrightness > 0, newBrightness, 100);
-
-                bar.brightnessInitialized = true;
-            }
-        }
-
-    }
-
-    Process {
-        command: ["udevadm", "monitor", "--kernel", "--subsystem-match=backlight"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: brightnessProcess.running = true
-        }
-
-    }
-
     Timer {
         id: micInitDelay
 
         interval: 500
         running: true
         onTriggered: bar.micStateInitialized = true
-    }
-
-    Process {
-        // Found the same way as keyboard-backlight.sh does, since the name depends on the driver.
-        command: ["sh", "-c", "device=$(\"$HOME/Scripts/keyboard-backlight.sh\" status) && echo \"/sys/class/leds/$device\""]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: bar.keyboardBacklightPath = text.trim()
-        }
-
-    }
-
-    // Some laptops (ASUS, ThinkPad…) change the keyboard backlight themselves on Fn keys,
-    // with no inotify event from sysfs, so the value is polled.
-    FileView {
-        id: keyboardBacklightFile
-
-        function updateKeyboardBacklight() {
-            const level = parseInt(keyboardBacklightFile.text());
-            if (isNaN(level) || level === bar.keyboardBacklight)
-                return ;
-
-            const max = parseInt(keyboardBacklightMaxFile.text()) || 3;
-            // Changes announced by hypridle are not shown (only the next one).
-            const muted = Date.now() < bar.shellState.keyboardOsdMutedUntil;
-            if (muted)
-                bar.shellState.keyboardOsdMutedUntil = 0;
-
-            if (bar.keyboardBacklight >= 0 && !muted)
-                bar.showStatusOsd("󰌌", "Keyboard light", level > 0, level, max);
-
-            bar.keyboardBacklight = level;
-        }
-
-        path: bar.keyboardBacklightPath !== "" ? bar.keyboardBacklightPath + "/brightness" : ""
-        printErrors: false
-        onLoaded: updateKeyboardBacklight()
-    }
-
-    // Only the driver updates this, on Fn key presses, never brightnessctl (hypridle),
-    // so these changes always get the OSD.
-    FileView {
-        id: keyboardBacklightHwFile
-
-        path: bar.keyboardBacklightPath !== "" ? bar.keyboardBacklightPath + "/brightness_hw_changed" : ""
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: {
-            const level = parseInt(text());
-            const max = parseInt(keyboardBacklightMaxFile.text()) || 3;
-            if (bar.keyboardHwInitialized && !isNaN(level))
-                bar.showStatusOsd("󰌌", "Keyboard light", level > 0, level, max);
-
-            // The first load only reads the last value, it is not a key press.
-            bar.keyboardHwInitialized = true;
-        }
-        // Unreadable until the first Fn key press since boot.
-        onLoadFailed: bar.keyboardHwInitialized = true
-    }
-
-    FileView {
-        id: keyboardBacklightMaxFile
-
-        path: bar.keyboardBacklightPath !== "" ? bar.keyboardBacklightPath + "/max_brightness" : ""
-        printErrors: false
-    }
-
-    Timer {
-        interval: 250
-        running: bar.keyboardBacklightPath !== ""
-        repeat: true
-        onTriggered: keyboardBacklightFile.reload()
-    }
-
-    Behavior on musicProgress {
-        NumberAnimation {
-            duration: 280
-            easing.type: Easing.OutCubic
-        }
-
-    }
-
-    FileView {
-        path: Session.stateDir + "/wallpaper.conf"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: {
-            const match = text().match(/^wallpaper=(.*)$/m);
-            bar.wallpaperPath = match ? match[1] : "";
-        }
-    }
-
-    Behavior on workspaceProgress {
-        NumberAnimation {
-            duration: 280
-            easing.type: Easing.OutCubic
-        }
-
-    }
-
-    Behavior on monitorProgress {
-        NumberAnimation {
-            duration: 280
-            easing.type: Easing.OutCubic
-        }
-
     }
 
     Behavior on clockCenterOffset {

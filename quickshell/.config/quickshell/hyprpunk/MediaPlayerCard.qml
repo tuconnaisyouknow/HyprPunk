@@ -220,7 +220,7 @@ Rectangle {
         height: card.artSize
         opacity: card.coverVisible ? 1 : 0
         radius: card.artRadius
-        color: "#45475a"
+        color: Theme.surface1
 
         Image {
             id: albumArt
@@ -238,8 +238,8 @@ Rectangle {
             anchors.centerIn: parent
             visible: albumArt.status !== Image.Ready
             text: "󰎆"
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 24
         }
 
@@ -257,8 +257,8 @@ Rectangle {
             Layout.fillWidth: true
             running: card.active
             text: card.player !== null ? (card.player.trackTitle || card.player.identity) : ""
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 15
             font.weight: Font.DemiBold
         }
@@ -266,8 +266,8 @@ Rectangle {
         Text {
             Layout.fillWidth: true
             text: card.player !== null ? (card.player.trackArtist || card.player.trackAlbum) : ""
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 13
             elide: Text.ElideRight
         }
@@ -298,7 +298,7 @@ Rectangle {
                 width: 3
                 height: parent.height * level
                 radius: 1.5
-                color: "#cba6f7"
+                color: Theme.mauve
 
                 SequentialAnimation on level {
                     running: card.active && card.playing
@@ -347,13 +347,13 @@ Rectangle {
             width: parent.width
             height: progress.active ? 8 : 5
             radius: height / 2
-            color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.14)
+            color: Theme.alpha(Theme.text, 0.14)
 
             Rectangle {
                 width: parent.width * progress.ratio
                 height: parent.height
                 radius: parent.radius
-                color: "#cba6f7"
+                color: Theme.mauve
             }
 
             Behavior on height {
@@ -411,8 +411,8 @@ Rectangle {
         anchors.top: progress.bottom
         anchors.topMargin: 5
         text: card.formatTime(card.shownPosition)
-        color: "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.lavender
+        font.family: Theme.font
         font.pixelSize: 11
         font.features: {
             "tnum": 1
@@ -424,8 +424,8 @@ Rectangle {
         anchors.top: progress.bottom
         anchors.topMargin: 5
         text: "-" + card.formatTime(card.length - card.shownPosition)
-        color: "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.lavender
+        font.family: Theme.font
         font.pixelSize: 11
         font.features: {
             "tnum": 1
@@ -596,8 +596,8 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: control.icon
-            color: control.secondary ? (control.highlighted ? "#cba6f7" : "#7f849c") : "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: control.secondary ? (control.highlighted ? Theme.mauve : Theme.overlay1) : Theme.mauve
+            font.family: Theme.font
             font.pixelSize: control.iconSize
         }
 

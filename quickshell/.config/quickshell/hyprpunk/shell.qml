@@ -4,6 +4,7 @@
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Notifications
 
@@ -45,6 +46,14 @@ ShellRoot {
                 "origin": origin || ""
             };
             panelRequests += 1;
+        }
+
+        // What the last request asks of this panel on this screen ("toggle", "open" or
+        // "close"), or "" when it's meant for another one.
+        function requestedAction(panel, screen) {
+            const request = panelRequest;
+            const target = request.screen || (Hyprland.focusedMonitor !== null ? Hyprland.focusedMonitor.name : "");
+            return request.panel === panel && target === screen.name ? request.action : "";
         }
         // Where the control center ends (screen y), so the popups can sit below it.
         property real controlCenterBottom: 0
@@ -104,10 +113,6 @@ ShellRoot {
             caffeineUntil = minutes > 0 ? Date.now() + minutes * 60000 : 0;
             caffeine = true;
         }
-        // Until these times (ms since epoch), the next keyboard backlight or screen
-        // brightness change shows no OSD. hypridle sets them before it dims things.
-        property real keyboardOsdMutedUntil: 0
-        property real screenOsdMutedUntil: 0
         // Which way the last skip went (1 next, -1 previous), valid until musicSkipUntil,
         // so the bar's discs roll the right way.
         property int musicSkipDirection: 0
@@ -127,9 +132,9 @@ ShellRoot {
         function ignoreNextChange(device: string): void {
             const until = Date.now() + 2000;
             if (device === "keyboard")
-                globalState.keyboardOsdMutedUntil = until;
+                Devices.keyboardOsdMutedUntil = until;
             else if (device === "screen")
-                globalState.screenOsdMutedUntil = until;
+                Devices.screenOsdMutedUntil = until;
         }
 
         target: "osd"
@@ -159,196 +164,33 @@ ShellRoot {
     }
 
     // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("controlcenter", "toggle");
+    Variants {
+        model: ["controlcenter", "notifications", "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "monitor"]
+
+        // Kept around the handler, so ipc show lists only the three functions.
+        Scope {
+            id: panelIpc
+
+            required property string modelData
+
+            IpcHandler {
+                function toggle(): void {
+                    globalState.requestPanel(panelIpc.modelData, "toggle");
+                }
+
+                function open(): void {
+                    globalState.requestPanel(panelIpc.modelData, "open");
+                }
+
+                function close(): void {
+                    globalState.requestPanel(panelIpc.modelData, "close");
+                }
+
+                target: panelIpc.modelData
+            }
+
         }
 
-        function open(): void {
-            globalState.requestPanel("controlcenter", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("controlcenter", "close");
-        }
-
-        target: "controlcenter"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("notifications", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("notifications", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("notifications", "close");
-        }
-
-        target: "notifications"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("session", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("session", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("session", "close");
-        }
-
-        target: "session"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("wallpaper", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("wallpaper", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("wallpaper", "close");
-        }
-
-        target: "wallpaper"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("sddm", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("sddm", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("sddm", "close");
-        }
-
-        target: "sddm"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("launcher", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("launcher", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("launcher", "close");
-        }
-
-        target: "launcher"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("clipboard", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("clipboard", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("clipboard", "close");
-        }
-
-        target: "clipboard"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("emoji", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("emoji", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("emoji", "close");
-        }
-
-        target: "emoji"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("keybindings", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("keybindings", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("keybindings", "close");
-        }
-
-        target: "keybindings"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("menu", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("menu", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("menu", "close");
-        }
-
-        target: "menu"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("config", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("config", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("config", "close");
-        }
-
-        target: "config"
-    }
-
-    IpcHandler {
-        function toggle(): void {
-            globalState.requestPanel("monitor", "toggle");
-        }
-
-        function open(): void {
-            globalState.requestPanel("monitor", "open");
-        }
-
-        function close(): void {
-            globalState.requestPanel("monitor", "close");
-        }
-
-        target: "monitor"
     }
 
     NotificationServer {

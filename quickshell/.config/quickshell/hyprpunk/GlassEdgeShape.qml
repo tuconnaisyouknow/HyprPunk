@@ -5,11 +5,11 @@ import QtQuick.Shapes
 // The background of a panel stuck to the screen's edges. fillPath is the shape,
 // rimPath the free edge that gets the glass rim (not the sides against the screen).
 // The rim is masked by the fill, so it stays inside like GlassSurface's. In the liquid
-// style the fill turns see-through and the rim is LiquidGlass's, kept to the free edge.
+// style the fill turns see-through and the rim looks like LiquidGlass's, kept to the free edge.
 Item {
     id: edge
 
-    property color fillColor: "#313244"
+    property color fillColor: Theme.surface0
     property string fillPath: ""
     property string rimPath: ""
     // For a shape drawn flipped upside down: keeps the brighter rim at the top on screen.
@@ -60,12 +60,12 @@ Item {
 
         GradientStop {
             position: 0
-            color: Qt.rgba(edge.fillColor.r, edge.fillColor.g, edge.fillColor.b, edge.fillColor.a * 0.6)
+            color: Theme.alpha(edge.fillColor, edge.fillColor.a * 0.6)
         }
 
         GradientStop {
             position: 1
-            color: Qt.rgba(edge.fillColor.r, edge.fillColor.g, edge.fillColor.b, edge.fillColor.a * 0.4)
+            color: Theme.alpha(edge.fillColor, edge.fillColor.a * 0.4)
         }
 
     }
@@ -117,17 +117,17 @@ Item {
 
                 GradientStop {
                     position: 0
-                    color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.38)
+                    color: Theme.alpha(Theme.text, 0.38)
                 }
 
                 GradientStop {
                     position: 0.45
-                    color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.06)
+                    color: Theme.alpha(Theme.text, 0.06)
                 }
 
                 GradientStop {
                     position: 1
-                    color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.16)
+                    color: Theme.alpha(Theme.text, 0.16)
                 }
 
             }
@@ -150,9 +150,10 @@ Item {
         maskSpreadAtMin: 1
     }
 
-    // The liquid rim, built like LiquidGlass's with the same blur and thresholds: the
-    // light shows where the blurred shape fades. Then only along the free edge, so the
-    // sides against the screen stay without one.
+    // The liquid rim, with the blur and thresholds LiquidGlass's shader was matched to:
+    // the light shows where the blurred shape fades. Then only along the free edge, so the
+    // sides against the screen stay without one. The shape is any path here, so it keeps
+    // the layers instead of the shader, which only knows rounded rectangles.
     Loader {
         anchors.fill: parent
         active: edge.liquid || edge.liquidMade
@@ -187,17 +188,17 @@ Item {
                 gradient: Gradient {
                     GradientStop {
                         position: 0
-                        color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, edge.lightFromBottom ? 0.16 : 0.38)
+                        color: Theme.alpha(Theme.text, edge.lightFromBottom ? 0.16 : 0.38)
                     }
 
                     GradientStop {
                         position: edge.lightFromBottom ? 0.55 : 0.45
-                        color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.06)
+                        color: Theme.alpha(Theme.text, 0.06)
                     }
 
                     GradientStop {
                         position: 1
-                        color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, edge.lightFromBottom ? 0.38 : 0.16)
+                        color: Theme.alpha(Theme.text, edge.lightFromBottom ? 0.38 : 0.16)
                     }
 
                 }

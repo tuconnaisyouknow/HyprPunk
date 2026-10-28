@@ -15,10 +15,10 @@ PanelWindow {
 
     required property var shellState
     required property var airPods
-    property color base: "#1e1e2e"
-    property color overlay1: "#7f849c"
-    property color textColor: "#cdd6f4"
-    property color mauve: "#cba6f7"
+    property color base: Theme.base
+    property color overlay1: Theme.overlay1
+    property color textColor: Theme.text
+    property color mauve: Theme.mauve
     // BR/EDR address of the AirPods shown, and why: "lid", "connected", "pairing" or
     // "manual" (ipc).
     property string address: ""
@@ -193,7 +193,7 @@ PanelWindow {
         GlassSurface {
             radius: card.radius
             tinted: false
-            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+            backgroundColor: Theme.panel
         }
 
         HoverHandler {
@@ -235,7 +235,7 @@ PanelWindow {
                     lineHeight: 0.95
                     text: popup.shownAirPods !== null ? popup.shownAirPods.name : ""
                     color: popup.textColor
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: Theme.font
                     font.pixelSize: 24
                     font.weight: Font.Bold
                 }
@@ -308,7 +308,7 @@ PanelWindow {
                     Layout.topMargin: 10
                     text: "Not now"
                     color: notNowArea.containsMouse ? popup.textColor : popup.overlay1
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: Theme.font
                     font.pixelSize: 12
 
                     MouseArea {
@@ -354,7 +354,7 @@ PanelWindow {
                     anchors.centerIn: parent
                     text: ""
                     color: closeArea.containsMouse ? popup.mauve : popup.overlay1
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: Theme.font
                     font.pixelSize: 12
                 }
 
@@ -433,14 +433,14 @@ PanelWindow {
         GlassSurface {
             radius: button.radius
             hovered: buttonArea.containsMouse
-            backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, buttonArea.containsMouse ? 0.95 : 0.8)
+            backgroundColor: Theme.alpha(Theme.mauve, buttonArea.containsMouse ? 0.95 : 0.8)
         }
 
         Text {
             anchors.centerIn: parent
             text: button.text
             color: popup.base
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.Bold
         }

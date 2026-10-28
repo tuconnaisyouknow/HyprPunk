@@ -13,7 +13,7 @@ Rectangle {
     y: input.cursorRectangle.y
     width: 8
     height: input.cursorRectangle.height
-    color: "#cba6f7"
+    color: Theme.mauve
     visible: input.activeFocus && !input.readOnly && input.text !== ""
 
     SequentialAnimation {

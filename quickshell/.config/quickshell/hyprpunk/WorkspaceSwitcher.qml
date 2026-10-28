@@ -82,7 +82,7 @@ Item {
         width: 44
         height: 31
         radius: height / 2
-        color: "#cba6f7"
+        color: Theme.mauve
         visible: workspaceSwitcher.activeButtonIndex >= 0
 
         Behavior on x {

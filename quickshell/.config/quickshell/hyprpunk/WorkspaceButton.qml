@@ -30,14 +30,14 @@ Rectangle {
     implicitWidth: active ? 44 : 31
     implicitHeight: 31
     radius: height / 2
-    color: active && drawActiveBackground ? "#cba6f7" : mouse.containsMouse && !active ? "#45475a" : Qt.rgba(69 / 255, 71 / 255, 90 / 255, 0)
+    color: active && drawActiveBackground ? Theme.mauve : mouse.containsMouse && !active ? Theme.surface1 : Theme.alpha(Theme.surface1, 0)
     opacity: occupied || active ? 1 : 0.55
     scale: active ? 1 : 0.94
 
     Text {
         anchors.centerIn: parent
         text: button.icon
-        color: button.activeForeground ? "#1e1e2e" : "#cba6f7"
+        color: button.activeForeground ? Theme.base : Theme.mauve
         font.family: button.iconFont
         font.weight: Font.Normal
         font.pixelSize: 16

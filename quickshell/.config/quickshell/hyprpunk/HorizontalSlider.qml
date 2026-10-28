@@ -7,15 +7,19 @@ Item {
 
     required property real value
     required property string icon
-    property color accent: "#cba6f7"
-    property color trackColor: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.12)
-    property color iconColor: "#1e1e2e"
+    property color accent: Theme.mauve
+    property color trackColor: Theme.alpha(Theme.text, 0.12)
+    property color iconColor: Theme.base
     // Makes the icon a round button inside the fill (mute, on the volume slider),
     // with a glass halo on hover like the player's controls.
     property bool iconButton: false
     // Text inside the track after the icon (an app's name in the mixer), dark over the
     // fill and lavender past it, switching color exactly at the fill's edge.
     property string label: ""
+    // The value the fill shows, easing after the real one. Animating it rather than the
+    // fill's width lets the fill follow the layout at once, so a slider built with the
+    // control center opening doesn't sweep in from zero.
+    property real shownValue: value
 
     signal valueRequested(real value)
     signal iconClicked()
@@ -46,7 +50,7 @@ Item {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: Math.max(parent.height, parent.width * control.value)
+            width: Math.max(parent.height, parent.width * control.shownValue)
             radius: parent.radius
             color: "transparent"
 
@@ -86,14 +90,6 @@ Item {
 
             }
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: 90
-                    easing.type: Easing.OutCubic
-                }
-
-            }
-
         }
 
         Text {
@@ -104,9 +100,9 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             visible: control.label !== ""
             text: control.label
-            color: "#b4befe"
+            color: Theme.lavender
             elide: Text.ElideRight
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: Theme.font
             font.pixelSize: 12
             font.weight: Font.Bold
         }
@@ -178,7 +174,7 @@ Item {
             anchors.centerIn: parent
             text: control.icon
             color: control.iconColor
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: Theme.font
             font.pixelSize: 16
             font.weight: Font.Bold
         }
@@ -204,6 +200,14 @@ Item {
             id: iconBounce
 
             target: iconArea
+        }
+
+    }
+
+    Behavior on shownValue {
+        NumberAnimation {
+            duration: 90
+            easing.type: Easing.OutCubic
         }
 
     }

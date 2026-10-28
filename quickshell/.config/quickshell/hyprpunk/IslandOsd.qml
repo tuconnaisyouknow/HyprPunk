@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
+import Quickshell.Services.UPower
 import Quickshell.Widgets
 
 // Everything the island can briefly show: a level (volume, brightness), an on/off
@@ -16,8 +17,8 @@ RowLayout {
     Text {
         visible: bar.statusOsdVisible && bar.statusOsdKind === ""
         text: bar.statusOsdIcon
-        color: bar.mauve
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.mauve
+        font.family: Theme.font
         font.pixelSize: 20
     }
 
@@ -27,8 +28,8 @@ RowLayout {
         Layout.leftMargin: 4
         Layout.rightMargin: 4
         text: bar.statusOsdLabel
-        color: bar.mauve
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.mauve
+        font.family: Theme.font
         font.pixelSize: 15
         font.weight: Font.Bold
     }
@@ -38,15 +39,15 @@ RowLayout {
         implicitWidth: statusOsdStateText.implicitWidth + 16
         implicitHeight: 24
         radius: 12
-        color: bar.statusOsdEnabled ? bar.mauve : bar.surface1
+        color: bar.statusOsdEnabled ? Theme.mauve : Theme.surface1
 
         Text {
             id: statusOsdStateText
 
             anchors.centerIn: parent
             text: bar.statusOsdEnabled ? "On" : "Off"
-            color: bar.statusOsdEnabled ? bar.base : bar.overlay2
-            font.family: "JetBrainsMono Nerd Font"
+            color: bar.statusOsdEnabled ? Theme.base : Theme.overlay2
+            font.family: Theme.font
             font.pixelSize: 12
             font.weight: Font.Bold
         }
@@ -69,7 +70,7 @@ RowLayout {
                 width: 18
                 height: 8
                 radius: 4
-                color: index < parent.filled ? bar.mauve : bar.surface1
+                color: index < parent.filled ? Theme.mauve : Theme.surface1
 
                 Behavior on color {
                     ColorAnimation {
@@ -90,7 +91,7 @@ RowLayout {
         implicitWidth: Math.round(30 * Math.min(1.8, Math.max(0.6, screenshotThumbnail.implicitWidth / Math.max(1, screenshotThumbnail.implicitHeight))))
         implicitHeight: 30
         radius: 6
-        color: bar.surface1
+        color: Theme.surface1
 
         Image {
             id: screenshotThumbnail
@@ -109,10 +110,10 @@ RowLayout {
             anchors.centerIn: parent
             visible: bar.statusOsdTitle === "Recording"
             text: "󰐊"
-            color: "#cdd6f4"
+            color: Theme.text
             style: Text.Outline
-            styleColor: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.6)
-            font.family: "JetBrainsMono Nerd Font"
+            styleColor: Theme.alpha(Theme.crust, 0.6)
+            font.family: Theme.font
             font.pixelSize: 14
         }
 
@@ -125,16 +126,16 @@ RowLayout {
 
         Text {
             text: bar.statusOsdTitle
-            color: bar.mauve
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.Bold
         }
 
         Text {
             text: bar.statusOsdLabel
-            color: bar.lavender
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 11
         }
 
@@ -146,9 +147,9 @@ RowLayout {
         id: batteryOsdIcon
 
         visible: bar.statusOsdVisible && bar.statusOsdKind === "battery"
-        text: bar.batteryIcon()
+        text: Icons.battery(bar.battery.percentage, UPower.onBattery)
         color: bar.batteryOsdColor()
-        font.family: "JetBrainsMono Nerd Font"
+        font.family: Theme.font
         font.pixelSize: 22
 
         SequentialAnimation on opacity {
@@ -184,15 +185,15 @@ RowLayout {
         Text {
             text: bar.statusOsdLabel
             color: bar.batteryOsdColor()
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.Bold
         }
 
         Text {
             text: bar.batteryDetail()
-            color: bar.lavender
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 11
         }
 
@@ -221,8 +222,8 @@ RowLayout {
             visible: airPodsOsdImage.status !== Image.Ready
             anchors.centerIn: parent
             text: "󱡏"
-            color: bar.mauve
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 22
         }
 
@@ -245,7 +246,7 @@ RowLayout {
         preferredRendererType: Shape.CurveRenderer
 
         ShapePath {
-            strokeColor: bar.surface1
+            strokeColor: Theme.surface1
             strokeWidth: 3.5
             fillColor: "transparent"
 
@@ -261,7 +262,7 @@ RowLayout {
         }
 
         ShapePath {
-            strokeColor: airPodsOsdRing.low ? bar.red : bar.green
+            strokeColor: airPodsOsdRing.low ? Theme.red : Theme.green
             strokeWidth: 3.5
             fillColor: "transparent"
             capStyle: ShapePath.RoundCap
@@ -285,14 +286,14 @@ RowLayout {
         implicitWidth: 160
         implicitHeight: 8
         radius: 4
-        color: bar.surface1
+        color: Theme.surface1
 
         Rectangle {
             width: parent.width * Math.min(1, bar.statusOsdLevel / Math.max(1, bar.statusOsdMaxLevel))
             height: parent.height
             radius: parent.radius
             // Lavender when muted, the bar still shows the level it'll come back to.
-            color: bar.statusOsdEnabled ? bar.mauve : bar.lavender
+            color: bar.statusOsdEnabled ? Theme.mauve : Theme.lavender
 
             Behavior on color {
                 ColorAnimation {

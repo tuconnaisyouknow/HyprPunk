@@ -31,7 +31,7 @@ Item {
             GlassSurface {
                 radius: parent.radius
                 hovered: checkHover.hovered
-                backgroundColor: check.checked ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, checkHover.hovered ? 0.95 : 0.8) : "transparent"
+                backgroundColor: check.checked ? Theme.alpha(Theme.mauve, checkHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {
                     ColorAnimation {
@@ -46,8 +46,8 @@ Item {
                 anchors.centerIn: parent
                 visible: check.checked
                 text: ""
-                color: "#1e1e2e"
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.base
+                font.family: Theme.font
                 font.pixelSize: 11
                 font.weight: Font.Bold
             }
@@ -63,8 +63,8 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: check.label
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 12
         }
 

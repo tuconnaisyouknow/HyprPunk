@@ -13,7 +13,7 @@ ClippingRectangle {
     property int horizontalPadding: 20
     // The panels' card: base at 0.9, blurred by the bar's layer rule. Drawn by the glass
     // rather than the pill, so the liquid style can make it see-through.
-    readonly property color baseColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+    readonly property color baseColor: Theme.panel
 
     implicitWidth: contentRow.implicitWidth + horizontalPadding
     implicitHeight: 38

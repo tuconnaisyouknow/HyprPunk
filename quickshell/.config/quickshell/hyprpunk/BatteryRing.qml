@@ -24,7 +24,7 @@ Column {
             preferredRendererType: Shape.CurveRenderer
 
             ShapePath {
-                strokeColor: Qt.rgba(69 / 255, 71 / 255, 90 / 255, 0.8)
+                strokeColor: Theme.alpha(Theme.surface1, 0.8)
                 strokeWidth: 4
                 fillColor: "transparent"
 
@@ -40,7 +40,7 @@ Column {
             }
 
             ShapePath {
-                strokeColor: ring.low ? "#f38ba8" : "#a6e3a1"
+                strokeColor: ring.low ? Theme.red : Theme.green
                 strokeWidth: 4
                 fillColor: "transparent"
                 capStyle: ShapePath.RoundCap
@@ -70,8 +70,8 @@ Column {
         Text {
             anchors.centerIn: parent
             text: ring.charging ? "󱐋" : ring.battery !== null && ring.battery.label ? ring.battery.label : ""
-            color: ring.charging ? "#a6e3a1" : "#cdd6f4"
-            font.family: "JetBrainsMono Nerd Font"
+            color: ring.charging ? Theme.green : Theme.text
+            font.family: Theme.font
             font.pixelSize: ring.charging ? 17 : 13
             font.weight: Font.Bold
         }
@@ -81,8 +81,8 @@ Column {
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: ring.level === null ? "--" : ring.level + "%"
-        color: ring.low ? "#f38ba8" : "#cdd6f4"
-        font.family: "JetBrainsMono Nerd Font"
+        color: ring.low ? Theme.red : Theme.text
+        font.family: Theme.font
         font.pixelSize: 17
         font.weight: Font.Medium
     }

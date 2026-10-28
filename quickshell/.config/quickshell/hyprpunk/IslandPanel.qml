@@ -1,7 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
-import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 
@@ -28,7 +26,7 @@ PanelWindow {
     // Geometry of the island (the clock pill), published by the bar.
     readonly property var island: shellState.islandPill
     // The Vim left and right keys for the current layout: h/l, or j/m on AZERTY.
-    property string keyboardLayout: "us"
+    readonly property string keyboardLayout: Session.keyboardLayout
     // Panel whose request opened this one ("menu" from the main menu), read on opening.
     property string openedFrom: ""
 
@@ -74,6 +72,18 @@ PanelWindow {
         return event.key === left ? -1 : event.key === right ? 1 : 0;
     }
 
+    // [dx, dy] for Ctrl + the Vim keys (Ctrl+h/j/k/l, or j/k/l/m on AZERTY), null
+    // otherwise. For the panels with a search field, where the letters alone are typed.
+    function controlMove(event) {
+        if (!(event.modifiers & Qt.ControlModifier))
+            return null;
+
+        const keys = keyboardLayout === "fr" ? [Qt.Key_J, Qt.Key_M, Qt.Key_K, Qt.Key_L] : [Qt.Key_H, Qt.Key_L, Qt.Key_J, Qt.Key_K];
+        const moves = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+        const index = keys.indexOf(event.key);
+        return index >= 0 ? moves[index] : null;
+    }
+
     // Gives the keyboard back to the card (and keyTargets), e.g. after a text field.
     function focusCard() {
         card.forceActiveFocus();
@@ -94,23 +104,14 @@ PanelWindow {
         right: true
     }
 
-    FileView {
-        path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk/keyboard-layout"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: panel.keyboardLayout = text().trim() || "us"
-    }
-
     Connections {
         function onPanelRequestsChanged() {
-            const request = panel.shellState.panelRequest;
-            const target = request.screen || (Hyprland.focusedMonitor !== null ? Hyprland.focusedMonitor.name : "");
-            if (request.panel !== panel.panelName || target !== panel.screen.name)
+            const action = panel.shellState.requestedAction(panel.panelName, panel.screen);
+            if (action === "")
                 return ;
 
-            if (request.action === "open" || (request.action === "toggle" && !panel.opened)) {
-                panel.openedFrom = request.origin;
+            if (action === "open" || (action === "toggle" && !panel.opened)) {
+                panel.openedFrom = panel.shellState.panelRequest.origin;
                 panel.open();
             } else
                 panel.close();
@@ -155,7 +156,7 @@ PanelWindow {
         GlassSurface {
             radius: card.radius
             tinted: false
-            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+            backgroundColor: Theme.panel
         }
 
         // Swallows the clicks on the card itself, so only the outside closes the panel.

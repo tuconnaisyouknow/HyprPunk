@@ -78,8 +78,8 @@ SearchPanel {
         anchors.centerIn: parent
         visible: clipboard.results.length === 0
         text: listProcess.running && clipboard.entries.length === 0 ? "Loading…" : clipboard.entries.length === 0 ? "The clipboard is empty" : "No match"
-        color: "#7f849c"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.overlay1
+        font.family: Theme.font
         font.pixelSize: 14
     }
 
@@ -91,6 +91,13 @@ SearchPanel {
         spacing: clipboard.rowSpacing
         boundsBehavior: Flickable.StopAtBounds
         model: clipboard.results
+        currentIndex: clipboard.selectedIndex
+        highlightFollowsCurrentItem: true
+        highlightMoveDuration: 0
+        highlightResizeDuration: 0
+        highlight: SelectionHighlight {
+            view: list
+        }
 
         delegate: Rectangle {
             id: row
@@ -105,12 +112,6 @@ SearchPanel {
             radius: 14
             color: "transparent"
 
-            GlassSurface {
-                radius: parent.radius
-                visible: row.selected
-                hovered: true
-            }
-
             ClippingRectangle {
                 id: thumbnail
 
@@ -121,7 +122,7 @@ SearchPanel {
                 width: 136
                 height: clipboard.imageRowHeight - 16
                 radius: 10
-                color: "#11111b"
+                color: Theme.crust
 
                 Image {
                     anchors.fill: parent
@@ -145,8 +146,8 @@ SearchPanel {
                 maximumLineCount: 1
                 text: row.isImage ? clipboard.imageLabel(row.modelData.text) : row.modelData.text
                 textFormat: Text.PlainText
-                color: row.selected ? "#cba6f7" : row.isImage ? "#b4befe" : "#cdd6f4"
-                font.family: "JetBrainsMono Nerd Font"
+                color: row.selected ? Theme.mauve : row.isImage ? Theme.lavender : Theme.text
+                font.family: Theme.font
                 font.pixelSize: 13
             }
 

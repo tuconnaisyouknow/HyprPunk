@@ -3,28 +3,15 @@ import QtQuick.Layouts
 import Quickshell.Io
 
 // A little btop for the resources pill: CPU and memory over the last minute, each
-// core's load and the busiest processes. Just the content, the bar draws the card.
+// core's load and the busiest processes. Just the content, the bar draws the card,
+// and the numbers come from SystemStats.
 Item {
     id: monitor
 
     // Off while the card is not shown: stops listing the processes.
     property bool active: false
-    property string temperature: "--°C"
-    property string frequency: ""
-    property string model: ""
     // "Intel(R) Core(TM) i7-1065G7 CPU @ 1.30GHz" -> "Intel Core i7-1065G7".
-    readonly property string shortModel: model.replace(/\((R|TM)\)/g, "").replace(/\s+(CPU|Processor)\b.*$/i, "").replace(/\s+\d+-Core.*$/i, "").replace(/\s+/g, " ").trim()
-    readonly property int historyLength: 60
-    property var cpuHistory: []
-    property var memoryHistory: []
-    property real cpuUsage: 0
-    property var coreUsage: []
-    // [idle, total] jiffies of the last sample, index 0 for the whole CPU.
-    property var previousTimes: []
-    property real memoryTotal: 0
-    property real memoryUsed: 0
-    property real swapTotal: 0
-    property real swapUsed: 0
+    readonly property string shortModel: SystemStats.model.replace(/\((R|TM)\)/g, "").replace(/\s+(CPU|Processor)\b.*$/i, "").replace(/\s+\d+-Core.*$/i, "").replace(/\s+/g, " ").trim()
     property string processSort: "cpu"
     // Every process of the last sample, sorted here so switching the sort is instant.
     property var allProcesses: []
@@ -35,44 +22,6 @@ Item {
     function formatKiB(kib) {
         const gib = kib / 1048576;
         return gib >= 1 ? gib.toFixed(1) + "G" : Math.round(kib / 1024) + "M";
-    }
-
-    function pushHistory(history, value) {
-        return history.concat([value]).slice(-historyLength);
-    }
-
-    function parseStats(text) {
-        const times = [];
-        const cores = [];
-        const memory = {};
-        let usage = 0;
-        for (const line of text.trim().split("\n")) {
-            const parts = line.trim().split(/\s+/);
-            if (parts[0].startsWith("cpu")) {
-                const values = parts.slice(1, 9).map(Number);
-                const idle = values[3] + values[4];
-                const total = values.reduce((sum, value) => sum + value, 0);
-                const index = parts[0] === "cpu" ? 0 : parseInt(parts[0].slice(3)) + 1;
-                const previous = previousTimes[index];
-                const load = previous && total > previous[1] ? 1 - (idle - previous[0]) / (total - previous[1]) : 0;
-                times[index] = [idle, total];
-                if (index === 0)
-                    usage = load;
-                else
-                    cores[index - 1] = Math.max(0, Math.min(1, load));
-            } else if (parts[0].endsWith(":")) {
-                memory[parts[0].slice(0, -1)] = Number(parts[1]);
-            }
-        }
-        previousTimes = times;
-        cpuUsage = Math.max(0, Math.min(1, usage));
-        coreUsage = cores;
-        memoryTotal = memory.MemTotal || 0;
-        memoryUsed = memoryTotal - (memory.MemAvailable || 0);
-        swapTotal = memory.SwapTotal || 0;
-        swapUsed = swapTotal - (memory.SwapFree || 0);
-        cpuHistory = pushHistory(cpuHistory, cpuUsage);
-        memoryHistory = pushHistory(memoryHistory, memoryTotal > 0 ? memoryUsed / memoryTotal : 0);
     }
 
     function parseProcesses(text) {
@@ -92,25 +41,12 @@ Item {
 
     implicitWidth: 380
     implicitHeight: column.implicitHeight + 28
+    // The frequency is only read while a card shows it.
+    onActiveChanged: SystemStats.frequencyWatchers += active ? 1 : -1
+    Component.onDestruction: {
+        if (active)
+            SystemStats.frequencyWatchers -= 1;
 
-    // Sampled all the time, so the history is already there when the card opens.
-    Process {
-        id: statsProcess
-
-        command: ["sh", "-c", "grep '^cpu' /proc/stat; grep -E '^(MemTotal|MemAvailable|SwapTotal|SwapFree):' /proc/meminfo"]
-
-        stdout: StdioCollector {
-            onStreamFinished: monitor.parseStats(text)
-        }
-
-    }
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: statsProcess.running = true
     }
 
     // top runs twice because its first pass only knows lifetime averages. top itself is
@@ -137,8 +73,8 @@ Item {
     }
 
     component SectionTitle: Text {
-        color: "#cba6f7"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.mauve
+        font.family: Theme.font
         font.pixelSize: 14
         font.weight: Font.Bold
     }
@@ -149,7 +85,7 @@ Item {
     }
 
     component IconDetail: IconText {
-        color: "#b4befe"
+        color: Theme.lavender
         font.pixelSize: 12
         font.weight: Font.Normal
         font.features: {
@@ -158,8 +94,8 @@ Item {
     }
 
     component Detail: Text {
-        color: "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.lavender
+        font.family: Theme.font
         font.pixelSize: 12
         font.features: {
             "tnum": 1
@@ -199,7 +135,7 @@ Item {
             if (values.length < 2)
                 return ;
 
-            const step = width / (monitor.historyLength - 1);
+            const step = width / (SystemStats.historyLength - 1);
             const startX = width - (values.length - 1) * step;
             const yOf = (value) => {
                 return 1 + (height - 2) * (1 - value);
@@ -210,14 +146,14 @@ Item {
                 ctx.lineTo(startX + i * step, yOf(values[i]));
             ctx.lineWidth = 1.5;
             ctx.lineJoin = "round";
-            ctx.strokeStyle = "#cba6f7";
+            ctx.strokeStyle = Theme.mauve;
             ctx.stroke();
             ctx.lineTo(width, height);
             ctx.lineTo(startX, height);
             ctx.closePath();
             const fill = ctx.createLinearGradient(0, 0, 0, height);
-            fill.addColorStop(0, Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.28));
-            fill.addColorStop(1, Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0));
+            fill.addColorStop(0, Theme.alpha(Theme.mauve, 0.28));
+            fill.addColorStop(1, Theme.alpha(Theme.mauve, 0));
             ctx.fillStyle = fill;
             ctx.fill();
         }
@@ -249,7 +185,7 @@ Item {
                 }
 
                 SectionTitle {
-                    text: Math.round(monitor.cpuUsage * 100) + "%"
+                    text: Math.round(SystemStats.cpuUsage * 100) + "%"
                     font.features: {
                         "tnum": 1
                     }
@@ -258,7 +194,7 @@ Item {
             }
 
             HistoryGraph {
-                values: monitor.cpuHistory
+                values: SystemStats.cpuHistory
             }
 
             // One bar per core, filled from the bottom.
@@ -267,7 +203,7 @@ Item {
                 spacing: 4
 
                 Repeater {
-                    model: monitor.coreUsage.length
+                    model: SystemStats.coreUsage.length
 
                     Rectangle {
                         required property int index
@@ -275,16 +211,16 @@ Item {
                         Layout.fillWidth: true
                         implicitHeight: 24
                         radius: 4
-                        color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.08)
+                        color: Theme.alpha(Theme.text, 0.08)
 
                         Rectangle {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
-                            height: Math.max(radius * 2, parent.height * (monitor.coreUsage[parent.index] || 0))
+                            height: Math.max(radius * 2, parent.height * (SystemStats.coreUsage[parent.index] || 0))
                             radius: parent.radius
-                            color: "#cba6f7"
-                            opacity: 0.35 + 0.65 * (monitor.coreUsage[parent.index] || 0)
+                            color: Theme.mauve
+                            opacity: 0.35 + 0.65 * (SystemStats.coreUsage[parent.index] || 0)
 
                             Behavior on height {
                                 NumberAnimation {
@@ -308,12 +244,12 @@ Item {
                 IconDetail {
                     Layout.fillWidth: true
                     icon: ""
-                    text: monitor.temperature
+                    text: SystemStats.temperature
                 }
 
                 IconDetail {
                     icon: String.fromCodePoint(0xf04c5)
-                    text: monitor.frequency
+                    text: SystemStats.frequency
                 }
 
             }
@@ -332,11 +268,11 @@ Item {
 
                 Detail {
                     Layout.fillWidth: true
-                    text: monitor.formatKiB(monitor.memoryUsed) + " / " + monitor.formatKiB(monitor.memoryTotal)
+                    text: monitor.formatKiB(SystemStats.memoryUsed) + " / " + monitor.formatKiB(SystemStats.memoryTotal)
                 }
 
                 SectionTitle {
-                    text: (monitor.memoryTotal > 0 ? Math.round(monitor.memoryUsed * 100 / monitor.memoryTotal) : 0) + "%"
+                    text: (SystemStats.memoryTotal > 0 ? Math.round(SystemStats.memoryUsed * 100 / SystemStats.memoryTotal) : 0) + "%"
                     font.features: {
                         "tnum": 1
                     }
@@ -345,7 +281,7 @@ Item {
             }
 
             HistoryGraph {
-                values: monitor.memoryHistory
+                values: SystemStats.memoryHistory
             }
 
             RowLayout {
@@ -357,8 +293,8 @@ Item {
                 }
 
                 Detail {
-                    text: monitor.swapTotal > 0 ? monitor.formatKiB(monitor.swapUsed) + " / " + monitor.formatKiB(monitor.swapTotal) : "off"
-                    color: monitor.swapTotal > 0 ? "#b4befe" : "#7f849c"
+                    text: SystemStats.swapTotal > 0 ? monitor.formatKiB(SystemStats.swapUsed) + " / " + monitor.formatKiB(SystemStats.swapTotal) : "off"
+                    color: SystemStats.swapTotal > 0 ? Theme.lavender : Theme.overlay1
                 }
 
             }
@@ -401,7 +337,7 @@ Item {
                             radius: parent.radius
                             hovered: chipHover.hovered
                             opacity: sortChip.selected || chipHover.hovered ? 1 : 0
-                            backgroundColor: sortChip.selected ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, chipHover.hovered ? 0.95 : 0.8) : "transparent"
+                            backgroundColor: sortChip.selected ? Theme.alpha(Theme.mauve, chipHover.hovered ? 0.95 : 0.8) : "transparent"
                         }
 
                         Text {
@@ -409,8 +345,8 @@ Item {
 
                             anchors.centerIn: parent
                             text: sortChip.modelData.label
-                            color: sortChip.selected ? "#1e1e2e" : "#b4befe"
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: sortChip.selected ? Theme.base : Theme.lavender
+                            font.family: Theme.font
                             font.pixelSize: 11
                             font.weight: Font.Bold
                         }
@@ -445,9 +381,9 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: parent.process !== null ? parent.process.name : ""
-                        color: "#cba6f7"
+                        color: Theme.mauve
                         elide: Text.ElideRight
-                        font.family: "JetBrainsMono Nerd Font"
+                        font.family: Theme.font
                         font.pixelSize: 13
                     }
 
@@ -456,14 +392,14 @@ Item {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
                         text: parent.process !== null ? parent.process.cpu.toFixed(1) + "%" : ""
-                        color: monitor.processSort === "cpu" ? "#cba6f7" : "#b4befe"
+                        color: monitor.processSort === "cpu" ? Theme.mauve : Theme.lavender
                     }
 
                     Detail {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
                         text: parent.process !== null ? monitor.formatKiB(parent.process.memory) : ""
-                        color: monitor.processSort === "memory" ? "#cba6f7" : "#b4befe"
+                        color: monitor.processSort === "memory" ? Theme.mauve : Theme.lavender
                     }
 
                 }

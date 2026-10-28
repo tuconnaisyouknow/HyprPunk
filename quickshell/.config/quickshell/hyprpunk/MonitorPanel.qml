@@ -293,7 +293,7 @@ IslandPanel {
         property string text
         property bool selected: false
         property bool dimmed: false
-        property color selectedColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.9)
+        property color selectedColor: Theme.alpha(Theme.mauve, 0.9)
 
         signal clicked()
 
@@ -324,8 +324,8 @@ IslandPanel {
 
             anchors.centerIn: parent
             text: chip.text
-            color: chip.selected ? "#1e1e2e" : chip.dimmed ? "#6c7086" : "#cdd6f4"
-            font.family: "JetBrainsMono Nerd Font"
+            color: chip.selected ? Theme.base : chip.dimmed ? Theme.overlay0 : Theme.text
+            font.family: Theme.font
             font.pixelSize: 12
             font.weight: chip.selected ? Font.Bold : Font.Normal
         }
@@ -367,8 +367,8 @@ IslandPanel {
             anchors.top: parent.top
             anchors.topMargin: 7
             text: settingRow.title
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 13
             font.weight: Font.Bold
         }
@@ -429,15 +429,15 @@ IslandPanel {
             Rectangle {
                 anchors.fill: parent
                 radius: 16
-                color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.5)
+                color: Theme.alpha(Theme.crust, 0.5)
             }
 
             Text {
                 anchors.centerIn: parent
                 visible: monitors.outputs.length === 0
                 text: monitors.busy ? "Loading…" : "No output"
-                color: "#7f849c"
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.overlay1
+                font.family: Theme.font
                 font.pixelSize: 14
             }
 
@@ -460,7 +460,7 @@ IslandPanel {
                     GlassSurface {
                         radius: parent.radius
                         hovered: screenHover.hovered
-                        backgroundColor: screenRect.selected ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.25) : Qt.rgba(49 / 255, 50 / 255, 68 / 255, 0.8)
+                        backgroundColor: screenRect.selected ? Theme.alpha(Theme.mauve, 0.25) : Theme.alpha(Theme.surface0, 0.8)
                     }
 
                     Rectangle {
@@ -468,7 +468,7 @@ IslandPanel {
                         radius: parent.radius
                         color: "transparent"
                         border.width: 2
-                        border.color: "#cba6f7"
+                        border.color: Theme.mauve
                         visible: screenRect.selected
                     }
 
@@ -479,8 +479,8 @@ IslandPanel {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: screenRect.modelData.output.slot || "?"
-                            color: "#cba6f7"
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: Theme.mauve
+                            font.family: Theme.font
                             font.pixelSize: 22
                             font.weight: Font.Bold
                         }
@@ -488,8 +488,8 @@ IslandPanel {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: screenRect.modelData.output.name
-                            color: "#b4befe"
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: Theme.lavender
+                            font.family: Theme.font
                             font.pixelSize: 11
                         }
 
@@ -517,8 +517,8 @@ IslandPanel {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: monitors.selected ? monitors.selected.description + " · " + monitors.selected.width + "x" + monitors.selected.height + " · " + monitors.rateLabel(monitors.selected.refresh_rate) : ""
-            color: "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.overlay1
+            font.family: Theme.font
             font.pixelSize: 12
         }
 
@@ -687,7 +687,7 @@ IslandPanel {
                     height: 34
                     text: monitors.resetArmed ? "Click again to reset" : "Reset all settings"
                     selected: monitors.resetArmed
-                    selectedColor: Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.9)
+                    selectedColor: Theme.alpha(Theme.red, 0.9)
                     onClicked: monitors.reset()
                 }
 
@@ -701,8 +701,8 @@ IslandPanel {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Keep these settings? Reverting in " + monitors.revertCountdown + " s"
-                    color: "#cdd6f4"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.text
+                    font.family: Theme.font
                     font.pixelSize: 13
                 }
 

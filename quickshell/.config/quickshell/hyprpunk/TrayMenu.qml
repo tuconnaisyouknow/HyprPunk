@@ -302,7 +302,7 @@ PopupWindow {
         GlassSurface {
             radius: 16
             tinted: false
-            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+            backgroundColor: Theme.panel
         }
 
         Flickable {
@@ -358,14 +358,14 @@ PopupWindow {
                             x: 8
                             width: parent.width - 16
                             height: 1
-                            color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.12)
+                            color: Theme.alpha(Theme.text, 0.12)
                         }
 
                         Rectangle {
                             visible: !row.modelData.isSeparator
                             anchors.fill: parent
                             radius: 10
-                            color: row.current ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.16) : "transparent"
+                            color: row.current ? Theme.alpha(Theme.mauve, 0.16) : "transparent"
 
                             Behavior on color {
                                 ColorAnimation {
@@ -400,8 +400,8 @@ PopupWindow {
 
                                     return "";
                                 }
-                                color: row.modelData.checkState === Qt.Checked ? "#cba6f7" : "#b4befe"
-                                font.family: "JetBrainsMono Nerd Font"
+                                color: row.modelData.checkState === Qt.Checked ? Theme.mauve : Theme.lavender
+                                font.family: Theme.font
                                 font.pixelSize: 15
                             }
 
@@ -429,8 +429,8 @@ PopupWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 elide: Text.ElideRight
                                 text: row.modelData.text
-                                color: row.current ? "#cba6f7" : "#b4befe"
-                                font.family: "JetBrainsMono Nerd Font"
+                                color: row.current ? Theme.mauve : Theme.lavender
+                                font.family: Theme.font
                                 font.pixelSize: 13
                                 font.weight: row.current ? Font.Medium : Font.Normal
                             }
@@ -447,8 +447,8 @@ PopupWindow {
                             width: visible ? implicitWidth : 0
                             opacity: row.modelData.enabled ? 1 : 0.4
                             text: "󰅂"
-                            color: row.current ? "#cba6f7" : "#b4befe"
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: row.current ? Theme.mauve : Theme.lavender
+                            font.family: Theme.font
                             font.pixelSize: 14
                         }
 

@@ -4,8 +4,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The language settings (locale-profilectl.sh), the glass style (glassctl.sh), and how
-// the shell launches things.
+// The settings the scripts save: the language (locale-profilectl.sh), the glass style
+// (glassctl.sh), the keyboard layout (keyboard-layoutctl.sh) and the wallpaper
+// (wallpaperctl.sh). And how the shell launches things.
 // The shell keeps the environment it started with, so after a language change anything
 // it launched itself would still speak the old one. Apps are started through Hyprland
 // instead, which follows the change, and the shell's own helpers get localeEnvironment.
@@ -18,6 +19,10 @@ Singleton {
     // "classic" or "liquid", the lock screen clock's glass. Switching it restyles every
     // glass surface on the spot, no restart needed.
     property string glassStyle: "classic"
+    // "us" or "fr", whose Vim keys the panels follow (h/l, or j/m on AZERTY).
+    property string keyboardLayout: "us"
+    // The wallpaper's path, empty until known.
+    property string wallpaper: ""
     readonly property string languageLocale: localeOf(languageProfile)
     readonly property string regionalLocale: localeOf(regionalProfile)
     // The variables locale-profilectl.sh exports, for a Process's environment.
@@ -38,6 +43,7 @@ Singleton {
         "LC_ALL": null
     })
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk"
+    readonly property string cacheDir: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/hyprpunk"
 
     function localeOf(profile) {
         return profile === "fr" ? "fr_FR.UTF-8" : "en_US.UTF-8";
@@ -82,6 +88,25 @@ Singleton {
         printErrors: false
         onFileChanged: reload()
         onLoaded: session.glassStyle = text().trim() === "liquid" ? "liquid" : "classic"
+    }
+
+    FileView {
+        path: session.stateDir + "/keyboard-layout"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: session.keyboardLayout = text().trim() || "us"
+    }
+
+    FileView {
+        path: session.stateDir + "/wallpaper.conf"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            const match = text().match(/^wallpaper=(.*)$/m);
+            session.wallpaper = match ? match[1] : "";
+        }
     }
 
 }

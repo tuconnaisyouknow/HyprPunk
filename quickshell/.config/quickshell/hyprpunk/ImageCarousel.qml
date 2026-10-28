@@ -110,7 +110,7 @@ Item {
             ClippingRectangle {
                 anchors.fill: parent
                 radius: 12
-                color: "#11111b"
+                color: Theme.crust
 
                 // The whole image, never cropped.
                 Image {
@@ -129,8 +129,8 @@ Item {
                     anchors.centerIn: parent
                     visible: slide.modelData.image === ""
                     text: slide.modelData.id
-                    color: "#cba6f7"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.mauve
+                    font.family: Theme.font
                     font.pixelSize: 16
                     font.weight: Font.Bold
                 }
@@ -149,7 +149,7 @@ Item {
                 radius: 12
                 color: "transparent"
                 border.width: 2
-                border.color: "#cba6f7"
+                border.color: Theme.mauve
                 opacity: Math.max(0, 1 - slide.distance * 2)
             }
 
@@ -166,14 +166,14 @@ Item {
 
                 GlassSurface {
                     radius: parent.radius
-                    backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.9)
+                    backgroundColor: Theme.alpha(Theme.mauve, 0.9)
                 }
 
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: "#1e1e2e"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.base
+                    font.family: Theme.font
                     font.pixelSize: 13
                 }
 

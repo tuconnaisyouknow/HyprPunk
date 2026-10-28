@@ -8,7 +8,7 @@ Item {
     id: icon
 
     property bool closed: false
-    property color color: "#cba6f7"
+    property color color: Theme.mauve
     // The shackle's two positions: down in the body, or lifted and swung out.
     readonly property real downY: 1
     readonly property real upY: -2.5
@@ -94,7 +94,7 @@ Item {
             width: 2
             height: 3.6
             radius: 1
-            color: "#1e1e2e"
+            color: Theme.base
         }
 
     }

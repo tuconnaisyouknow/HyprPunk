@@ -17,7 +17,7 @@ Rectangle {
     GlassSurface {
         radius: parent.radius
         hovered: switchHover.hovered
-        backgroundColor: toggleSwitch.checked ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, switchHover.hovered ? 0.95 : 0.8) : "transparent"
+        backgroundColor: toggleSwitch.checked ? Theme.alpha(Theme.mauve, switchHover.hovered ? 0.95 : 0.8) : "transparent"
 
         Behavior on backgroundColor {
             ColorAnimation {
@@ -34,7 +34,7 @@ Rectangle {
         width: 18
         height: 18
         radius: 6
-        color: "#1e1e2e"
+        color: Theme.base
 
         Behavior on x {
             NumberAnimation {

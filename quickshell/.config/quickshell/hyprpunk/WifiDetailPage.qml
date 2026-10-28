@@ -146,8 +146,8 @@ ColumnLayout {
                 Text {
                     visible: page.saving
                     text: "Connecting…"
-                    color: "#7f849c"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.overlay1
+                    font.family: Theme.font
                     font.pixelSize: 12
                 }
 
@@ -162,8 +162,8 @@ ColumnLayout {
         visible: text !== ""
         wrapMode: Text.WordWrap
         text: page.error
-        color: "#f38ba8"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.red
+        font.family: Theme.font
         font.pixelSize: 12
     }
 

@@ -32,21 +32,9 @@ IslandPanel {
 
     }
 
-    // Ctrl + the Vim keys (Ctrl+h/j/k/l, or j/k/l/m on AZERTY),
-    // since the letters alone go to the search.
-    function controlMove(event) {
-        if (!(event.modifiers & Qt.ControlModifier))
-            return null;
-
-        const keys = keyboardLayout === "fr" ? [Qt.Key_J, Qt.Key_M, Qt.Key_K, Qt.Key_L] : [Qt.Key_H, Qt.Key_L, Qt.Key_J, Qt.Key_K];
-        const moves = [[-1, 0], [1, 0], [0, 1], [0, -1]];
-        const index = keys.indexOf(event.key);
-        return index >= 0 ? moves[index] : null;
-    }
-
     cardHeight: 2 * cardPadding + fieldHeight + (bodyHeight > 0 ? sectionSpacing + bodyHeight : 0)
     onOpening: {
-        searchInput.text = "";
+        field.text = "";
         selectedIndex = 0;
         if (view)
             view.positionViewAtBeginning();
@@ -54,7 +42,7 @@ IslandPanel {
     }
     onOpenedChanged: {
         if (opened)
-            searchInput.forceActiveFocus();
+            field.input.forceActiveFocus();
 
     }
     onQueryChanged: {
@@ -79,107 +67,42 @@ IslandPanel {
 
     }
 
-    Rectangle {
+    GlassField {
         id: field
 
         anchors.top: parent.top
         anchors.topMargin: panel.cardPadding
         anchors.horizontalCenter: parent.horizontalCenter
         width: panel.bodyWidth
-        height: panel.fieldHeight
-        radius: height / 2
-        color: "transparent"
-
-        GlassSurface {
-            radius: parent.radius
-            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.6)
-            focused: searchInput.activeFocus
+        icon: panel.searchIcon
+        placeholder: panel.placeholder
+        hint: panel.hint
+        onTextChanged: panel.query = text
+        onKeyPressed: (event) => {
+            const move = panel.controlMove(event);
+            const grid = panel.columns > 1;
+            if (move)
+                panel.move(move[0], move[1]);
+            else if (event.key === Qt.Key_Escape)
+                panel.back();
+            else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                panel.count > 0 && panel.activated(panel.selectedIndex, (event.modifiers & Qt.ShiftModifier) !== 0);
+            else if (event.key === Qt.Key_Down)
+                panel.move(0, 1);
+            else if (event.key === Qt.Key_Up)
+                panel.move(0, -1);
+            else if (event.key === Qt.Key_Tab)
+                panel.move(1, 0);
+            else if (event.key === Qt.Key_Backtab)
+                panel.move(-1, 0);
+            else if (grid && event.key === Qt.Key_Left)
+                panel.move(-1, 0);
+            else if (grid && event.key === Qt.Key_Right)
+                panel.move(1, 0);
+            else
+                return ;
+            event.accepted = true;
         }
-
-        Text {
-            id: icon
-
-            anchors.left: parent.left
-            anchors.leftMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
-            text: panel.searchIcon
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 16
-        }
-
-        TextInput {
-            id: searchInput
-
-            anchors.left: icon.right
-            anchors.leftMargin: 10
-            anchors.right: hintText.left
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            color: "#cdd6f4"
-            selectionColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.35)
-            selectedTextColor: "#cdd6f4"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 15
-            clip: true
-            cursorDelegate: Item {
-            }
-            onTextChanged: panel.query = text
-            Keys.onPressed: (event) => {
-                const move = panel.controlMove(event);
-                const grid = panel.columns > 1;
-                if (move)
-                    panel.move(move[0], move[1]);
-                else if (event.key === Qt.Key_Escape)
-                    panel.back();
-                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                    panel.count > 0 && panel.activated(panel.selectedIndex, (event.modifiers & Qt.ShiftModifier) !== 0);
-                else if (event.key === Qt.Key_Down)
-                    panel.move(0, 1);
-                else if (event.key === Qt.Key_Up)
-                    panel.move(0, -1);
-                else if (event.key === Qt.Key_Tab)
-                    panel.move(1, 0);
-                else if (event.key === Qt.Key_Backtab)
-                    panel.move(-1, 0);
-                else if (grid && event.key === Qt.Key_Left)
-                    panel.move(-1, 0);
-                else if (grid && event.key === Qt.Key_Right)
-                    panel.move(1, 0);
-                else
-                    return ;
-                event.accepted = true;
-            }
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: parent.text === ""
-                text: panel.placeholder
-                color: "#7f849c"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: parent.font.pixelSize
-            }
-
-            BlockCursor {
-                input: searchInput
-            }
-
-        }
-
-        Text {
-            id: hintText
-
-            anchors.right: parent.right
-            anchors.rightMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
-            width: Math.min(implicitWidth, field.width / 2)
-            elide: Text.ElideRight
-            text: panel.hint
-            color: "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 12
-        }
-
     }
 
     Item {

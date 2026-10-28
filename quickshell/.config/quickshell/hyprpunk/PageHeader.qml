@@ -31,8 +31,8 @@ RowLayout {
         Text {
             anchors.centerIn: parent
             text: "󰅁"
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 18
         }
 
@@ -60,8 +60,8 @@ RowLayout {
     Text {
         Layout.fillWidth: true
         text: header.title
-        color: "#cba6f7"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.mauve
+        font.family: Theme.font
         font.pixelSize: 18
         font.weight: Font.Bold
     }

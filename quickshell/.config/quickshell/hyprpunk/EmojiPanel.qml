@@ -114,8 +114,8 @@ SearchPanel {
         anchors.centerIn: parent
         visible: picker.results.length === 0
         text: "No emoji"
-        color: "#7f849c"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.overlay1
+        font.family: Theme.font
         font.pixelSize: 14
     }
 
@@ -128,6 +128,13 @@ SearchPanel {
         cellHeight: picker.cellSize
         boundsBehavior: Flickable.StopAtBounds
         model: picker.results
+        currentIndex: picker.selectedIndex
+        highlightFollowsCurrentItem: true
+        highlightMoveDuration: 0
+        highlight: SelectionHighlight {
+            view: grid
+            inset: 3
+        }
 
         delegate: Item {
             id: cell
@@ -135,22 +142,19 @@ SearchPanel {
             required property var modelData
             required property int index
             readonly property bool selected: picker.selectedIndex === index
+            readonly property real pressScale: cellContent.scale
 
             width: picker.cellSize
             height: picker.cellSize
 
             Rectangle {
+                id: cellContent
+
                 anchors.fill: parent
                 anchors.margins: 3
                 radius: 14
                 color: "transparent"
                 scale: cellTap.pressed ? 0.9 : 1
-
-                GlassSurface {
-                    radius: parent.radius
-                    visible: cell.selected
-                    hovered: true
-                }
 
                 Text {
                     anchors.centerIn: parent

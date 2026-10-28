@@ -43,9 +43,9 @@ ControlBlock {
             Text {
                 width: parent.width
                 text: panel.device.name
-                color: "#cba6f7"
+                color: Theme.mauve
                 elide: Text.ElideRight
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: Theme.font
                 font.pixelSize: 15
                 font.weight: Font.Bold
             }
@@ -53,9 +53,9 @@ ControlBlock {
             Text {
                 width: parent.width
                 text: panel.device.connected ? panel.device.model : panel.device.model + " · Nearby"
-                color: "#b4befe"
+                color: Theme.lavender
                 elide: Text.ElideRight
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: Theme.font
                 font.pixelSize: 12
             }
 

@@ -10,7 +10,7 @@ RowLayout {
 
     required property var bar
     // Behind the Ethernet padlock badge: the pill's own color.
-    property color badgeColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+    property color badgeColor: Theme.panel
 
     spacing: 10
 
@@ -39,7 +39,7 @@ RowLayout {
 
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.25)
+                strokeColor: Theme.alpha(Theme.mauve, 0.25)
                 strokeWidth: 2
 
                 PathAngleArc {
@@ -55,7 +55,7 @@ RowLayout {
 
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: "#cba6f7"
+                strokeColor: Theme.mauve
                 strokeWidth: 2
                 capStyle: ShapePath.RoundCap
 
@@ -131,7 +131,7 @@ RowLayout {
 
     IconText {
         visible: status.bar.audioSink !== null
-        icon: status.bar.volumeIcon()
+        icon: Icons.volume(status.bar.audioVolume, status.bar.audioMuted)
         text: status.bar.audioVolume + "%"
     }
 
@@ -140,8 +140,8 @@ RowLayout {
 
         visible: status.bar.hasBattery
         // Red only when it's running out, not while charging.
-        color: UPower.onBattery && status.bar.batteryPercent <= 20 ? status.bar.red : status.bar.mauve
-        icon: status.bar.batteryIcon()
+        color: UPower.onBattery && status.bar.batteryPercent <= 20 ? Theme.red : Theme.mauve
+        icon: Icons.battery(status.bar.battery.percentage, UPower.onBattery)
         text: status.bar.batteryPercent + "%"
 
         // Pulses from 10 %.

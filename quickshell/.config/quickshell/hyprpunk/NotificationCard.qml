@@ -235,8 +235,8 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.rightMargin: 16
                     text: card.summary || card.appName
-                    color: card.critical ? "#f38ba8" : "#cba6f7"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: card.critical ? Theme.red : Theme.mauve
+                    font.family: Theme.font
                     font.pixelSize: 18
                     font.weight: Font.Bold
                     elide: Text.ElideRight
@@ -249,8 +249,8 @@ Rectangle {
                 Layout.fillWidth: true
                 text: card.styledBody(card.body)
                 textFormat: Text.StyledText
-                color: card.critical ? "#f38ba8" : "#cba6f7"
-                font.family: "JetBrainsMono Nerd Font"
+                color: card.critical ? Theme.red : Theme.mauve
+                font.family: Theme.font
                 font.pixelSize: 16
                 wrapMode: Text.Wrap
             }
@@ -275,14 +275,14 @@ Rectangle {
                         GlassSurface {
                             radius: parent.radius
                             hovered: actionArea.containsMouse
-                            backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, actionArea.containsMouse ? 0.95 : 0.8)
+                            backgroundColor: Theme.alpha(Theme.mauve, actionArea.containsMouse ? 0.95 : 0.8)
                         }
 
                         Text {
                             anchors.centerIn: parent
                             text: parent.modelData.text
-                            color: "#1e1e2e"
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: Theme.base
+                            font.family: Theme.font
                             font.pixelSize: 14
                             font.weight: Font.Bold
                         }
@@ -335,8 +335,8 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: ""
-            color: closeArea.containsMouse ? "#cba6f7" : "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
+            color: closeArea.containsMouse ? Theme.mauve : Theme.overlay1
+            font.family: Theme.font
             font.pixelSize: 12
         }
 

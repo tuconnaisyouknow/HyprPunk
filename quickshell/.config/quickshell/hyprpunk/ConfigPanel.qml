@@ -67,8 +67,8 @@ SearchPanel {
         anchors.centerIn: parent
         visible: config.results.length === 0
         text: "No file"
-        color: "#7f849c"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.overlay1
+        font.family: Theme.font
         font.pixelSize: 14
     }
 
@@ -79,6 +79,13 @@ SearchPanel {
         interactive: false
         spacing: config.rowSpacing
         model: config.results
+        currentIndex: config.selectedIndex
+        highlightFollowsCurrentItem: true
+        highlightMoveDuration: 0
+        highlightResizeDuration: 0
+        highlight: SelectionHighlight {
+            view: list
+        }
 
         delegate: Rectangle {
             id: row
@@ -92,12 +99,6 @@ SearchPanel {
             radius: 14
             color: "transparent"
 
-            GlassSurface {
-                radius: parent.radius
-                visible: row.selected
-                hovered: true
-            }
-
             Text {
                 id: fileIcon
 
@@ -106,8 +107,8 @@ SearchPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 22
                 text: row.modelData.icon
-                color: row.selected ? "#cba6f7" : "#b4befe"
-                font.family: "JetBrainsMono Nerd Font"
+                color: row.selected ? Theme.mauve : Theme.lavender
+                font.family: Theme.font
                 font.pixelSize: 18
             }
 
@@ -123,8 +124,8 @@ SearchPanel {
                     width: parent.width
                     elide: Text.ElideRight
                     text: row.modelData.name
-                    color: row.selected ? "#cba6f7" : "#cdd6f4"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: row.selected ? Theme.mauve : Theme.text
+                    font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: row.selected ? Font.Bold : Font.Normal
                 }
@@ -133,8 +134,8 @@ SearchPanel {
                     width: parent.width
                     elide: Text.ElideMiddle
                     text: row.modelData.path
-                    color: "#7f849c"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.overlay1
+                    font.family: Theme.font
                     font.pixelSize: 11
                 }
 

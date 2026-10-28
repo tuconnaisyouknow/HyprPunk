@@ -28,8 +28,8 @@ Item {
         visible: render.status !== Image.Ready
         anchors.centerIn: parent
         text: product.glyph
-        color: "#cdd6f4"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.text
+        font.family: Theme.font
         font.pixelSize: 88
     }
 

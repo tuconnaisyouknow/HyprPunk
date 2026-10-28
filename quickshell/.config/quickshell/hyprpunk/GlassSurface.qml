@@ -20,9 +20,6 @@ Item {
     // The liquid style, chosen in the control center: the lock screen clock's glass, with
     // see-through colors and a soft rim instead of the ring.
     readonly property bool liquid: Session.glassStyle === "liquid"
-    // The soft rim is kept once made, only hidden in the classic style. Building every
-    // surface's rim again at each switch made one frame stutter.
-    property bool liquidMade: false
     // How much of the background's color stays, at the top and at the bottom. A dark
     // panel turns see-through, but a light color like the mauve of a selection gets a
     // little stronger at the top and fades to its usual self, or it would look grey over
@@ -33,7 +30,7 @@ Item {
 
     // The rim's color, from the usual pale glass to mauve as the field gets the focus.
     function rimColor(alpha, focusedAlpha) {
-        return Qt.rgba((205 + (203 - 205) * accent) / 255, (214 + (166 - 214) * accent) / 255, (244 + (247 - 244) * accent) / 255, alpha + (focusedAlpha - alpha) * accent);
+        return Qt.rgba(Theme.text.r + (Theme.mauve.r - Theme.text.r) * accent, Theme.text.g + (Theme.mauve.g - Theme.text.g) * accent, Theme.text.b + (Theme.mauve.b - Theme.text.b) * accent, alpha + (focusedAlpha - alpha) * accent);
     }
 
     anchors.fill: parent
@@ -63,12 +60,12 @@ Item {
         gradient: Gradient {
             GradientStop {
                 position: 0
-                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, Math.min(1, glass.backgroundColor.a * glass.liquidTop))
+                color: Theme.alpha(glass.backgroundColor, Math.min(1, glass.backgroundColor.a * glass.liquidTop))
             }
 
             GradientStop {
                 position: 1
-                color: Qt.rgba(glass.backgroundColor.r, glass.backgroundColor.g, glass.backgroundColor.b, Math.min(1, glass.backgroundColor.a * glass.liquidBottom))
+                color: Theme.alpha(glass.backgroundColor, Math.min(1, glass.backgroundColor.a * glass.liquidBottom))
             }
 
         }
@@ -83,12 +80,12 @@ Item {
         gradient: Gradient {
             GradientStop {
                 position: 0
-                color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, glass.hovered ? 0.17 : 0.11)
+                color: Theme.alpha(Theme.text, glass.hovered ? 0.17 : 0.11)
             }
 
             GradientStop {
                 position: 1
-                color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, glass.hovered ? 0.09 : 0.04)
+                color: Theme.alpha(Theme.text, glass.hovered ? 0.09 : 0.04)
             }
 
         }
@@ -147,30 +144,13 @@ Item {
 
     }
 
-    onLiquidChanged: {
-        if (liquid)
-            liquidMade = true;
-
-    }
-    Component.onCompleted: {
-        if (liquid)
-            liquidMade = true;
-
-    }
-
-    Loader {
-        anchors.fill: parent
-        active: glass.liquid || glass.liquidMade
+    LiquidGlass {
         visible: glass.liquid
-
-        sourceComponent: LiquidGlass {
-            radius: glass.radius
-            rimWidth: 3 + glass.accent
-            rimTop: glass.rimColor(0.38, 0.95)
-            rimMiddle: glass.rimColor(0.06, 0.6)
-            rimBottom: glass.rimColor(0.16, 0.8)
-        }
-
+        radius: glass.radius
+        rimWidth: 3 + glass.accent
+        rimTop: glass.rimColor(0.38, 0.95)
+        rimMiddle: glass.rimColor(0.06, 0.6)
+        rimBottom: glass.rimColor(0.16, 0.8)
     }
 
 }

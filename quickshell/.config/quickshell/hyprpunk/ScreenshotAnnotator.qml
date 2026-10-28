@@ -15,7 +15,7 @@ Item {
     // Where the annotated screenshot is written.
     required property string outputFile
     property string tool: "pen"
-    property color color: "#f38ba8"
+    property color color: Theme.red
     // 0, 1 or 2: small, medium, large.
     property int size: 1
     // Rectangles and ellipses filled rather than outlined.
@@ -48,7 +48,7 @@ Item {
         "value": "text",
         "icon": "󰊄"
     }]
-    readonly property var colors: ["#f38ba8", "#fab387", "#f9e2af", "#a6e3a1", "#89b4fa", "#cba6f7"]
+    readonly property var colors: [Theme.red, Theme.peach, Theme.yellow, Theme.green, Theme.blue, Theme.mauve]
 
     signal finished(string file)
     signal cancelled()
@@ -82,7 +82,7 @@ Item {
         context.lineJoin = "round";
         context.globalAlpha = shape.tool === "highlight" ? 0.4 : 1;
         if (shape.tool === "text") {
-            context.font = "bold " + fontSize(shape) + "px 'JetBrainsMono Nerd Font'";
+            context.font = "bold " + fontSize(shape) + "px '" + Theme.font + "'";
             context.textBaseline = "top";
             shape.text.split("\n").forEach((line, index) => {
                 context.fillText(line, points[0].x, points[0].y + index * fontSize(shape) * 1.25);
@@ -280,7 +280,7 @@ Item {
         y: picture.y + (annotator.textAt !== null ? annotator.textAt.y : 0)
         visible: annotator.textAt !== null
         color: annotator.color
-        font.family: "JetBrainsMono Nerd Font"
+        font.family: Theme.font
         font.pixelSize: [16, 24, 34][annotator.size]
         font.weight: Font.Bold
         cursorVisible: visible
@@ -307,7 +307,7 @@ Item {
         width: toolRow.implicitWidth + 16
         height: 48
         radius: 24
-        color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.92)
+        color: Theme.alpha(Theme.base, 0.92)
 
         GlassSurface {
             radius: toolbar.radius
@@ -370,7 +370,7 @@ Item {
                         radius: width / 2
                         color: "transparent"
                         border.width: parent.chosen ? 2 : 0
-                        border.color: "#cdd6f4"
+                        border.color: Theme.text
 
                         Behavior on width {
                             NumberAnimation {
@@ -416,7 +416,7 @@ Item {
                         width: [6, 10, 15][parent.index]
                         height: width
                         radius: width / 2
-                        color: annotator.size === parent.index ? "#cba6f7" : "#7f849c"
+                        color: annotator.size === parent.index ? Theme.mauve : Theme.overlay1
 
                         Behavior on color {
                             ColorAnimation {
@@ -464,7 +464,7 @@ Item {
         Layout.rightMargin: 4
         implicitWidth: 1
         implicitHeight: 22
-        color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.15)
+        color: Theme.alpha(Theme.text, 0.15)
     }
 
     component ToolButton: Rectangle {
@@ -478,13 +478,13 @@ Item {
         implicitWidth: 34
         implicitHeight: 34
         radius: 17
-        color: chosen ? "#cba6f7" : buttonHover.hovered ? Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.12) : "transparent"
+        color: chosen ? Theme.mauve : buttonHover.hovered ? Theme.alpha(Theme.text, 0.12) : "transparent"
 
         Text {
             anchors.centerIn: parent
             text: button.icon
-            color: button.chosen ? "#1e1e2e" : "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: button.chosen ? Theme.base : Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 17
         }
 

@@ -17,7 +17,7 @@ Item {
     GlassSurface {
         radius: dot.height / 2
         tinted: false
-        backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+        backgroundColor: Theme.panel
     }
 
     Row {
@@ -31,7 +31,7 @@ Item {
             width: 8
             height: 8
             radius: 4
-            color: dot.camera ? "#a6e3a1" : "#fab387"
+            color: dot.camera ? Theme.green : Theme.peach
 
             Behavior on color {
                 ColorAnimation {
@@ -49,7 +49,7 @@ Item {
             width: 8
             height: 8
             radius: 4
-            color: "#f38ba8"
+            color: Theme.red
 
             SequentialAnimation on opacity {
                 running: recordingDot.visible && dot.visible

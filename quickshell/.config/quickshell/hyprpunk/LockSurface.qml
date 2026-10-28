@@ -71,7 +71,7 @@ WlSessionLockSurface {
 
     }
 
-    color: "#11111b"
+    color: Theme.crust
     onBarChanged: freeze()
     Component.onCompleted: freeze()
 
@@ -203,7 +203,7 @@ WlSessionLockSurface {
         id: wallpaper
 
         anchors.fill: parent
-        source: surface.bar !== null && surface.bar.wallpaperPath !== "" ? "file://" + surface.bar.wallpaperPath : ""
+        source: Session.wallpaper !== "" ? "file://" + Session.wallpaper : ""
         sourceSize.width: surface.width
         sourceSize.height: surface.height
         fillMode: Image.PreserveAspectCrop
@@ -311,12 +311,12 @@ WlSessionLockSurface {
 
             IconText {
                 icon: ""
-                text: surface.bar !== null ? surface.bar.memoryText : ""
+                text: SystemStats.memoryText
             }
 
             IconText {
                 icon: ""
-                text: surface.bar !== null ? surface.bar.cpuUsage + "%" : ""
+                text: Math.round(SystemStats.cpuUsage * 100) + "%"
             }
 
         }
@@ -386,8 +386,8 @@ WlSessionLockSurface {
                 Layout.leftMargin: island.expanded && surface.padlockShown ? 10 : 0
                 clip: true
                 text: surface.islandMode === "unlocking" ? "Unlocked" : surface.islandMode === "locking" ? "Locked" : surface.lock.error
-                color: surface.islandMode === "error" ? "#f38ba8" : "#cba6f7"
-                font.family: "JetBrainsMono Nerd Font"
+                color: surface.islandMode === "error" ? Theme.red : Theme.mauve
+                font.family: Theme.font
                 font.pixelSize: 15
                 font.weight: Font.Bold
 
@@ -629,9 +629,9 @@ WlSessionLockSurface {
 
                 width: parent.width
                 text: day.charAt(0).toUpperCase() + day.slice(1)
-                color: "#b4befe"
+                color: Theme.lavender
                 horizontalAlignment: Text.AlignHCenter
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: Theme.font
                 // As wide as the time: measured at 40px, then scaled to its width.
                 font.pixelSize: Math.max(12, Math.floor(40 * parent.width / Math.max(1, dateMetrics.advanceWidth)))
                 font.weight: Font.DemiBold
@@ -640,7 +640,7 @@ WlSessionLockSurface {
                     id: dateMetrics
 
                     text: dateText.text
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: Theme.font
                     font.pixelSize: 40
                     font.weight: Font.DemiBold
                 }
@@ -654,7 +654,7 @@ WlSessionLockSurface {
 
                 Text {
                     text: Qt.formatDateTime(clock.date, "HH")
-                    color: "#cba6f7"
+                    color: Theme.mauve
                     font: minutesText.font
                 }
 
@@ -677,7 +677,7 @@ WlSessionLockSurface {
 
                             text: Qt.formatDateTime(clock.date, ":mm")
                             color: "white"
-                            font.family: "JetBrainsMono Nerd Font"
+                            font.family: Theme.font
                             font.pixelSize: 150
                             font.weight: Font.Bold
                             font.features: {
@@ -718,12 +718,12 @@ WlSessionLockSurface {
                         gradient: Gradient {
                             GradientStop {
                                 position: 0
-                                color: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.5)
+                                color: Theme.alpha(Theme.mauve, 0.5)
                             }
 
                             GradientStop {
                                 position: 1
-                                color: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.32)
+                                color: Theme.alpha(Theme.mauve, 0.32)
                             }
 
                         }
@@ -741,17 +741,17 @@ WlSessionLockSurface {
                         gradient: Gradient {
                             GradientStop {
                                 position: 0
-                                color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.38)
+                                color: Theme.alpha(Theme.text, 0.38)
                             }
 
                             GradientStop {
                                 position: 0.45
-                                color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.06)
+                                color: Theme.alpha(Theme.text, 0.06)
                             }
 
                             GradientStop {
                                 position: 1
-                                color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.16)
+                                color: Theme.alpha(Theme.text, 0.16)
                             }
 
                         }
@@ -863,7 +863,7 @@ WlSessionLockSurface {
                 lyricsInside: false
                 active: player !== null
                 player: surface.bar !== null ? surface.bar.spotifyPlayer : null
-                backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.55)
+                backgroundColor: Theme.alpha(Theme.base, 0.55)
             }
 
             LyricsView {
@@ -883,7 +883,7 @@ WlSessionLockSurface {
                 lines: lockPlayer.lyricsFound ? Lyrics.lines : []
                 synced: Lyrics.synced
                 current: lockPlayer.lyricsLine
-                creditColor: "#bac2de"
+                creditColor: Theme.subtext1
                 onSeekRequested: (seconds) => {
                     if (lockPlayer.player !== null && lockPlayer.player.canSeek)
                         lockPlayer.seek(seconds);
@@ -930,7 +930,7 @@ WlSessionLockSurface {
 
             GlassSurface {
                 radius: parent.radius
-                backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.6)
+                backgroundColor: Theme.field
                 focused: input.activeFocus
             }
 
@@ -941,8 +941,8 @@ WlSessionLockSurface {
                 anchors.leftMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
                 text: surface.lock.authenticating ? "󰔟" : "󰌾"
-                color: "#cba6f7"
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.mauve
+                font.family: Theme.font
                 font.pixelSize: 16
             }
 
@@ -962,9 +962,9 @@ WlSessionLockSurface {
                 // Spaced filled squares and a blinking block cursor, like the SDDM picker.
                 echoMode: TextInput.Password
                 passwordCharacter: "■"
-                color: "#cba6f7"
-                selectionColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.35)
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.mauve
+                selectionColor: Theme.selection
+                font.family: Theme.font
                 font.pixelSize: 14
                 font.letterSpacing: 3
                 clip: true

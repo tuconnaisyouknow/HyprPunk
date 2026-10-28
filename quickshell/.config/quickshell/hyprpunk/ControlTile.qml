@@ -37,7 +37,7 @@ ControlBlock {
             GlassSurface {
                 radius: parent.radius
                 hovered: iconHover.hovered
-                backgroundColor: tile.active ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, iconHover.hovered ? 0.95 : 0.8) : "transparent"
+                backgroundColor: tile.active ? Theme.alpha(Theme.mauve, iconHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {
                     ColorAnimation {
@@ -51,8 +51,8 @@ ControlBlock {
             Text {
                 anchors.centerIn: parent
                 text: tile.icon
-                color: tile.active ? "#1e1e2e" : "#cba6f7"
-                font.family: "JetBrainsMono Nerd Font"
+                color: tile.active ? Theme.base : Theme.mauve
+                font.family: Theme.font
                 font.pixelSize: 17
                 font.weight: Font.Bold
             }
@@ -89,9 +89,9 @@ ControlBlock {
                 Text {
                     width: parent.width
                     text: tile.title
-                    color: "#cba6f7"
+                    color: Theme.mauve
                     elide: Text.ElideRight
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: Font.Bold
                 }
@@ -111,9 +111,9 @@ ControlBlock {
                         width: parent.width
                         visible: !parent.scrolling
                         text: tile.subtitle
-                        color: "#b4befe"
+                        color: Theme.lavender
                         elide: Text.ElideRight
-                        font.family: "JetBrainsMono Nerd Font"
+                        font.family: Theme.font
                         font.pixelSize: 12
                     }
 
@@ -124,8 +124,8 @@ ControlBlock {
                         visible: parent.scrolling
                         running: parent.scrolling
                         text: tile.subtitle
-                        color: "#b4befe"
-                        font.family: "JetBrainsMono Nerd Font"
+                        color: Theme.lavender
+                        font.family: Theme.font
                         font.pixelSize: 12
                     }
 
@@ -146,8 +146,8 @@ ControlBlock {
         Text {
             visible: tile.expandable
             text: "󰅂"
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 16
 
             TapHandler {
