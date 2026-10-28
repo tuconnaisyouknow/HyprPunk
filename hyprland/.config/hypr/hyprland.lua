@@ -10,12 +10,12 @@ local linked, glass = pcall(__require, "glass_state")
 if not linked then
   glass = { liquid = false, ignore_alpha = 0.5 }
 end
-pcall(require, "personal")                   -- Your own tweaks in ~/.config/hypr/personal.lua, skipped if it doesn't exist
-require("monitors")                          -- Screens
-require("keybindings")                       -- Shortcuts
-require("env")                               -- Environment variables
-require("touchpad")                          -- Touchpad on/off toggle
-require("workspaces")                        -- Which workspace lives on which screen, per machine
+pcall(require, "personal") -- Your own tweaks in ~/.config/hypr/personal.lua, skipped if it doesn't exist
+require("monitors")        -- Screens
+require("keybindings")     -- Shortcuts
+require("env")             -- Environment variables
+require("touchpad")        -- Touchpad on/off toggle
+require("workspaces")      -- Which workspace lives on which screen, per machine
 
 ---------------
 -- AUTOSTART --
@@ -101,13 +101,25 @@ hl.layer_rule({ match = { namespace = "hyprpunk-notifications" }, blur = true, i
 hl.layer_rule({ match = { namespace = "hyprpunk-notification-center" }, blur = true, ignore_alpha = glass.ignore_alpha })
 hl.layer_rule({ match = { namespace = "hyprpunk-osd" }, blur = true, ignore_alpha = glass.ignore_alpha })
 hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, ignore_alpha = glass.ignore_alpha })
-hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, blur_popups = true, ignore_alpha = glass.ignore_alpha })
+hl.layer_rule({
+  match = { namespace = "hyprpunk-tray" },
+  blur = true,
+  blur_popups = true,
+  ignore_alpha = glass
+      .ignore_alpha
+})
 -- The island's panels (session menu, wallpaper picker) bring their own animation
 hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = glass.ignore_alpha, no_anim = true })
 -- Screenshot selection appears right away over the frozen screen, no fade
 hl.layer_rule({ match = { namespace = "hyprpunk-screenshot" }, no_anim = true })
 -- In the classic style the bar's pills are opaque, so the blur only shows behind the island and the player
-hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur = true, blur_popups = true, ignore_alpha = glass.ignore_alpha })
+hl.layer_rule({
+  match = { namespace = "hyprpunk-bar" },
+  blur = true,
+  blur_popups = true,
+  ignore_alpha = glass
+      .ignore_alpha
+})
 
 -------------------
 -- LOOK AND FEEL --
@@ -135,7 +147,7 @@ hl.config({
 
 hl.config({
   decoration = {
-    rounding = 5,
+    rounding = 18,
     rounding_power = 2,
 
     -- Slightly see-through, so the wallpaper shows behind the blur
@@ -231,7 +243,7 @@ hl.config({
 
     follow_mouse = 1, -- Focus follows the mouse
 
-    sensitivity = 0, -- From -1.0 to 1.0, 0 leaves the mouse as it is
+    sensitivity = 0,  -- From -1.0 to 1.0, 0 leaves the mouse as it is
 
     touchpad = {
       natural_scroll = false,
