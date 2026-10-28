@@ -61,13 +61,13 @@ Item {
         onClicked: (mouse) => {
             // Some items only have a menu, opened by any click.
             if (root.item.hasMenu && (mouse.button === Qt.RightButton || root.item.onlyMenu)) {
-                if (trayMenu.visible) {
+                if (trayMenu.wanted) {
                     trayMenu.close();
                 } else {
                     // The tray's window ends at the screen's right edge.
                     const window = root.QsWindow.window;
                     trayMenu.anchorRight = window.screen.width - window.width + root.QsWindow.itemPosition(root).x + root.width;
-                    trayMenu.visible = true;
+                    trayMenu.open();
                 }
             } else if (mouse.button === Qt.MiddleButton) {
                 root.item.secondaryActivate();

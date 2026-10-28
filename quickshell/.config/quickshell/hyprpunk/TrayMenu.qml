@@ -17,6 +17,10 @@ PopupWindow {
     // Wayland doesn't tell windows where they are, so each menu works out its place from
     // the tray's, which the tray item passes along before opening it.
     property real anchorRight: 0
+    // Set when the menu is asked for. The window waits for the app's entries before
+    // showing, because a popup that's already up never grows taller and would stay an
+    // empty strip.
+    property bool wanted: false
     readonly property real screenWidth: isRoot ? (screen ? screen.width : 1920) : parentMenu.screenWidth
     // A submenu goes on the side its parent went, so it never covers it, unless the
     // screen ends there.
@@ -93,6 +97,20 @@ PopupWindow {
         rowsHeight = height;
         hasChecks = checks;
         hasIcons = icons;
+        showWhenReady();
+    }
+
+    function open() {
+        wanted = true;
+        giveUp.restart();
+        showWhenReady();
+    }
+
+    function showWhenReady() {
+        if (wanted && !visible && rowsHeight > 0) {
+            giveUp.stop();
+            visible = true;
+        }
     }
 
     function openSubmenu(index, keyboard) {
@@ -120,6 +138,8 @@ PopupWindow {
 
     // Its submenus first, deepest first, then itself.
     function close() {
+        wanted = false;
+        giveUp.stop();
         openSubmenu(-1, false);
         visible = false;
     }
@@ -182,6 +202,7 @@ PopupWindow {
     onVisibleChanged: {
         card.shown = visible;
         if (!visible) {
+            wanted = false;
             openSubmenu(-1, false);
             currentIndex = -1;
             flick.contentY = 0;
@@ -204,8 +225,16 @@ PopupWindow {
     QsMenuOpener {
         id: opener
 
-        // Only while shown: applications refresh their menu each time it opens.
-        menu: menu.visible ? menu.handle : null
+        // Only while the menu is asked for, since apps refresh it every time it opens.
+        menu: menu.wanted ? menu.handle : null
+    }
+
+    // If the app never sends its entries, give up so the next click can try again.
+    Timer {
+        id: giveUp
+
+        interval: 2000
+        onTriggered: menu.wanted = false
     }
 
     Timer {
@@ -219,7 +248,7 @@ PopupWindow {
         id: card
 
         property bool shown: false
-        // Not before the application has sent its entries, which come a moment later.
+        // The window already waits for the entries, this just keeps an empty menu invisible.
         readonly property bool revealed: shown && rowRepeater.count > 0
 
         anchors.fill: parent
@@ -481,7 +510,7 @@ PopupWindow {
             item.backRequested.connect(() => {
                 return menu.openSubmenu(-1, false);
             });
-            item.visible = true;
+            item.open();
         }
     }
 
