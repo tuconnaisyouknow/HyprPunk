@@ -33,10 +33,13 @@ ControlBlock {
             radius: 18
             color: "transparent"
 
-            // Mauve glass while on, plain glass while off.
+            // Mauve glass while on, plain glass while off. As liquid glass it keeps more
+            // of its mauve, or it would turn grey on the dark panel.
             GlassSurface {
                 radius: parent.radius
                 hovered: iconHover.hovered
+                liquidTop: 0.85
+                liquidBottom: 0.6
                 backgroundColor: tile.active ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, iconHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {

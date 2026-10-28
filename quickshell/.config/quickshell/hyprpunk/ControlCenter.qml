@@ -10,8 +10,8 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 
 // The control center, growing out of the bar's right-most pill: Wi-Fi, Bluetooth, sound,
-// brightness, power profile, caffeine, keyboard and language, battery limit. Hover the
-// pill or press Super+C. Wi-Fi, Bluetooth and sound open pages of their own.
+// brightness and glass style, power profile, caffeine, keyboard and language, battery
+// limit. Hover the pill or press Super+C. Wi-Fi, Bluetooth and sound open pages of their own.
 PanelWindow {
     id: controlCenter
 
@@ -724,9 +724,9 @@ PanelWindow {
 
                     }
 
+                    // The brightness when the screen has a backlight, and the glass style.
                     ControlBlock {
                         Layout.fillWidth: true
-                        visible: controlCenter.hasBacklight
                         implicitHeight: brightnessColumn.implicitHeight + 24
 
                         ColumnLayout {
@@ -746,6 +746,7 @@ PanelWindow {
 
                             HorizontalSlider {
                                 Layout.fillWidth: true
+                                visible: controlCenter.hasBacklight
                                 value: controlCenter.brightness / 100
                                 icon: controlCenter.brightnessIcon()
                                 onValueRequested: (value) => {
@@ -753,6 +754,24 @@ PanelWindow {
                                     controlCenter.brightness = requestedBrightness;
                                     controlCenter.pendingBrightness = requestedBrightness;
                                     brightnessWriteDelay.restart();
+                                }
+                            }
+
+                            SegmentedControl {
+                                Layout.fillWidth: true
+                                compact: true
+                                value: Session.glassStyle
+                                options: [{
+                                    "value": "classic",
+                                    "icon": "󰆧",
+                                    "label": "Classic"
+                                }, {
+                                    "value": "liquid",
+                                    "icon": "󰖌",
+                                    "label": "Liquid"
+                                }]
+                                onSelected: (value) => {
+                                    return Quickshell.execDetached([Quickshell.env("HOME") + "/Scripts/glassctl.sh", "set", value]);
                                 }
                             }
 

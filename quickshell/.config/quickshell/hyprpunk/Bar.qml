@@ -2251,7 +2251,7 @@ PanelWindow {
 
                 ControlStatus {
                     bar: bar
-                    badgeColor: controlPill.color
+                    badgeColor: controlPill.baseColor
                 }
 
             }

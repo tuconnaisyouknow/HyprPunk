@@ -11,16 +11,19 @@ ClippingRectangle {
     readonly property alias hovered: pillHover.hovered
     property int spacing: 10
     property int horizontalPadding: 20
+    // The panels' card: base at 0.9, blurred by the bar's layer rule. Drawn by the glass
+    // rather than the pill, so the liquid style can make it see-through.
+    readonly property color baseColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
 
     implicitWidth: contentRow.implicitWidth + horizontalPadding
     implicitHeight: 38
     radius: height / 2
-    // The panels' card: base at 0.9, blurred by the bar's layer rule, with the glass rim.
-    color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+    color: "transparent"
 
     GlassSurface {
         radius: pill.radius
         tinted: false
+        backgroundColor: pill.baseColor
     }
 
     HoverHandler {
