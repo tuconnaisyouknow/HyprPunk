@@ -1,3 +1,5 @@
+-- Language and regional formats chosen from the shell, read separately
+-- so you can have an English desktop with French dates, for instance
 local locales = {
   fr = "fr_FR.UTF-8",
   us = "en_US.UTF-8",

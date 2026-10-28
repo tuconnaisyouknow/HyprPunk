@@ -1,3 +1,5 @@
+-- Catppuccin Mocha. Each color comes twice: ready to use, and as bare hex
+-- for when you want to add your own alpha ("rgba(" .. mauveAlpha .. "cc)")
 return {
   rosewater = "rgb(f5e0dc)",
   rosewaterAlpha = "f5e0dc",

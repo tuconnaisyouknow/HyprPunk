@@ -1,3 +1,8 @@
+----------------
+-- WORKSPACES --
+----------------
+
+-- Pins each workspace to the screen it was given in the display settings
 package.loaded["monitor_state"] = nil
 local state = __require("monitor_state")
 
@@ -15,6 +20,7 @@ for monitor, workspaces in pairs(state.workspaces) do
   end
 end
 
+-- Sorted so the rules always come out in the same order, 1 to 10
 table.sort(assignments, function(left, right)
   return left.workspace < right.workspace
 end)

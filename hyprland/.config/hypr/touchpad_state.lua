@@ -1,3 +1,5 @@
+-- Reads the touchpad toggle saved by touchpadctl.sh: on or off, and which devices it covers.
+-- No file yet means touchpads stay on.
 local state = {
   enabled = true,
   devices = {},

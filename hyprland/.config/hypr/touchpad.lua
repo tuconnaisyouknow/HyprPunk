@@ -1,3 +1,8 @@
+--------------
+-- TOUCHPAD --
+--------------
+
+-- Turns the touchpads on or off as the toggle left them (see touchpad_state.lua)
 package.loaded["touchpad_state"] = nil
 local state = __require("touchpad_state")
 

@@ -1,115 +1,111 @@
--- ###############
--- ### SOURCES ###
--- ###############
+-------------
+-- SOURCES --
+-------------
 
-local colors = require("mocha")              -- Color theme
-local keyboard = __require("keyboard_state") -- Reloadable keyboard profile
-pcall(require, "personal")                   -- OPTIONAL (if you don't need a ~/.config/hypr/personal.lua file you can remove this line)
-require("monitors")                          -- Monitors config
-require("keybindings")                       -- Keybindings
-require("env")                               -- Environement variables
-require("touchpad")                          -- Touchpad toogle conf
-require("workspaces")                        -- Per-computer workspace assignments
+local colors = require("mocha")              -- Catppuccin Mocha palette
+local keyboard = __require("keyboard_state") -- Keyboard layout, reloaded when you switch it
+pcall(require, "personal")                   -- Your own tweaks in ~/.config/hypr/personal.lua, skipped if it doesn't exist
+require("monitors")                          -- Screens
+require("keybindings")                       -- Shortcuts
+require("env")                               -- Environment variables
+require("touchpad")                          -- Touchpad on/off toggle
+require("workspaces")                        -- Which workspace lives on which screen, per machine
 
--- #################
--- ### AUTOSTART ###
--- #################
+---------------
+-- AUTOSTART --
+---------------
 
 hl.on("hyprland.start", function()
-  -- Exporting the Wayland session environment before starting user services
+  -- Hand the Wayland session over to systemd first, so the user services see it
   hl.exec_cmd("dbus-update-activation-environment --systemd --all")
 
-  -- Starting essential hyprland programs
+  -- The desktop itself: screens, touchpad, wallpaper, the shell and idle handling
   hl.exec_cmd("~/Scripts/displayctl.sh bootstrap")
   hl.exec_cmd("~/Scripts/touchpadctl.sh sync")
-  -- awww-daemon does not restore the last wallpaper, wallpaperctl.sh sets it once ready
+  -- awww-daemon forgets the last wallpaper, so wallpaperctl.sh puts it back
   hl.exec_cmd("awww-daemon")
   hl.exec_cmd("~/Scripts/wallpaperctl.sh apply")
   hl.exec_cmd("qs -c hyprpunk")
   hl.exec_cmd("hypridle")
 
-  -- Stopping bluetooth by default on startup
+  -- Bluetooth stays off until you actually need it
   hl.exec_cmd("bluetoothctl power off")
 
-  -- Starting clipboard monitoring to store clipboard history (text, and images
-  -- even when they come with a text type, for the quickshell clipboard thumbnails)
+  -- Clipboard history, text and images alike (images feed the shell's thumbnails)
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
 
-  -- Starting xwayland-satellite instead of XWayland
+  -- X11 apps go through xwayland-satellite rather than Hyprland's XWayland
   hl.exec_cmd("systemctl --user restart xwayland-satellite.service")
 
-  -- Starting gnome keyring for some applications
+  -- Keyring for the apps that store passwords and SSH keys
   hl.exec_cmd("/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh")
 
-  -- Starting the polkit agent for graphical privilege prompts
+  -- Polkit agent, so password prompts show up as a window
   hl.exec_cmd("systemctl --user start hyprpolkitagent")
 end)
 
--- Initialize unknown outputs as soon as Hyprland has finished adding them.
--- Existing output-specific modes are left untouched by displayctl.sh.
+-- A screen gets plugged in: set it up (screens already configured keep their settings)
 hl.on("monitor.added", function()
   hl.exec_cmd("~/Scripts/displayctl.sh sync")
-  -- The new output starts blank under awww, once awww-daemon has picked it up.
+  -- Give awww a second to notice the new screen, otherwise it stays blank
   hl.exec_cmd("sleep 1; ~/Scripts/wallpaperctl.sh apply")
 end)
 
--- Recalculate only the active part of a saved layout when an output vanishes.
--- The persistent relationships remain intact and are restored on reconnection.
+-- A screen goes away: rearrange the ones left, the saved layout comes back on reconnect
 hl.on("monitor.removed", function()
   hl.exec_cmd("~/Scripts/displayctl.sh reflow")
 end)
 
--- ####################
--- ### WINDOW RULES ###
--- ####################
+------------------
+-- WINDOW RULES --
+------------------
 
--- Applications
-hl.window_rule({ match = { class = "kitty" }, workspace = "1" })                -- Assign Kitty to workspace 1
-hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" })        -- Assign Brave to workspace 2
-hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })              -- Assign Spotify to workspace 3
-hl.window_rule({ match = { class = "md.obsidian.Obsidian" }, workspace = "4" }) -- Assign Obsidian to workspace 4
-hl.window_rule({ match = { class = "discord" }, workspace = "5" })              -- Assign Discord to workspace 5
-hl.window_rule({ match = { class = "Element" }, workspace = "5" })              -- Assign Element to workspace 5
-hl.window_rule({ match = { class = "org.kde.dolphin" }, workspace = "6" })      -- Assign Dolphin to workspace 6
+-- Every app has its home
+hl.window_rule({ match = { class = "kitty" }, workspace = "1" })
+hl.window_rule({ match = { class = "brave-browser" }, workspace = "2" })
+hl.window_rule({ match = { class = "Spotify" }, workspace = "3" })
+hl.window_rule({ match = { class = "md.obsidian.Obsidian" }, workspace = "4" })
+hl.window_rule({ match = { class = "discord" }, workspace = "5" })
+hl.window_rule({ match = { class = "Element" }, workspace = "5" })
+hl.window_rule({ match = { class = "org.kde.dolphin" }, workspace = "6" })
 
--- Bitwarden's temporary Brave window is exposed as a separate Chromium app.
--- Keep it out of the dwindle tree so opening it does not split Brave in half.
+-- Bitwarden's little popup is its own Chromium app: float it so it doesn't cut Brave in half
 hl.window_rule({ match = { class = "brave-nngceckbapebfimnlniiiahkandclblb-Default" }, float = true })
 
--- Centering floating windows
-hl.window_rule({ match = { float = true }, center = true }) -- Center all floating windows
+-- Floating windows open in the middle of the screen
+hl.window_rule({ match = { float = true }, center = true })
 
--- ################
--- ### Gestures ###
--- ################
+--------------
+-- GESTURES --
+--------------
 
--- Swipe workspace
+-- Three fingers sideways to change workspace
 hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
--- Move application
+-- Four fingers to drag a window around
 hl.gesture({ fingers = 4, direction = "swipe", action = "move" })
 
--- ###################
--- ### LAYER RULES ###
--- ###################
+-----------------
+-- LAYER RULES --
+-----------------
 
--- Quickshell translucent surfaces: only the painted parts are blurred, not the empty window
+-- The shell's see-through panels: blur only what is drawn, not the empty space around it
 hl.layer_rule({ match = { namespace = "hyprpunk-notifications" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ match = { namespace = "hyprpunk-notification-center" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ match = { namespace = "hyprpunk-osd" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ match = { namespace = "hyprpunk-control-center" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ match = { namespace = "hyprpunk-tray" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
--- Island panels (session menu, wallpaper picker) animate themselves out of the bar island
+-- The island's panels (session menu, wallpaper picker) bring their own animation
 hl.layer_rule({ match = { namespace = "hyprpunk-island" }, blur = true, ignore_alpha = 0.5, no_anim = true })
--- The screenshot's region is chosen over the frozen screen: shown at once, no fade
+-- Screenshot selection appears right away over the frozen screen, no fade
 hl.layer_rule({ match = { namespace = "hyprpunk-screenshot" }, no_anim = true })
--- The bar: its pills are opaque, only the island as an OSD and the popups (the player) show the blur
+-- The bar's pills are opaque, so the blur only shows behind the island and the player
 hl.layer_rule({ match = { namespace = "hyprpunk-bar" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
 
--- #####################
--- ### LOOK AND FEEL ###
--- #####################
+-------------------
+-- LOOK AND FEEL --
+-------------------
 
 hl.config({
   general = {
@@ -136,6 +132,7 @@ hl.config({
     rounding = 5,
     rounding_power = 2,
 
+    -- Slightly see-through, so the wallpaper shows behind the blur
     active_opacity = 0.9,
     inactive_opacity = 0.9,
 
@@ -172,6 +169,7 @@ hl.curve("linear", { type = "bezier", points = { { 0, 0 }, { 1, 1 } } })
 hl.curve("almostLinear", { type = "bezier", points = { { 0.5, 0.5 }, { 0.75, 1.0 } } })
 hl.curve("quick", { type = "bezier", points = { { 0.15, 0 }, { 0.1, 1 } } })
 
+-- Snappy on the way in, quicker on the way out
 hl.animation({ leaf = "global", enabled = true, speed = 10, bezier = "default" })
 hl.animation({ leaf = "border", enabled = true, speed = 5.39, bezier = "easeOutQuint" })
 hl.animation({ leaf = "windows", enabled = true, speed = 4.79, bezier = "easeOutQuint" })
@@ -191,7 +189,7 @@ hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "a
 
 hl.config({
   dwindle = {
-    preserve_split = true, -- You probably want this
+    preserve_split = true, -- A split keeps its direction when windows come and go
   },
 })
 
@@ -203,16 +201,16 @@ hl.config({
 
 hl.config({
   misc = {
-    force_default_wallpaper = -1, -- Set to 0 or 1 to disable the anime mascot wallpapers
-    disable_hyprland_logo = true, -- If true disables the random hyprland logo / anime girl background. :(
-    -- Lets the shell, started again, take back a lock screen it lost (a crash while locked).
+    force_default_wallpaper = -1, -- Hyprland's own wallpaper; awww draws ours on top anyway
+    disable_hyprland_logo = true, -- No logo or anime mascot behind the wallpaper
+    -- If the shell crashes while locked, it can take the lock back once restarted
     allow_session_lock_restore = true,
   },
 })
 
--- #############
--- ### INPUT ###
--- #############
+-----------
+-- INPUT --
+-----------
 
 hl.config({
   input = {
@@ -222,9 +220,9 @@ hl.config({
     kb_options = "",
     kb_rules = "",
 
-    follow_mouse = 1,
+    follow_mouse = 1, -- Focus follows the mouse
 
-    sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
+    sensitivity = 0, -- From -1.0 to 1.0, 0 leaves the mouse as it is
 
     touchpad = {
       natural_scroll = false,
@@ -233,18 +231,18 @@ hl.config({
   },
 })
 
--- ##############################
--- ### WINDOWS AND WORKSPACES ###
--- ##############################
+----------------------------
+-- WINDOWS AND WORKSPACES --
+----------------------------
 
--- Ignore maximize requests from apps. You'll probably like this.
+-- Apps don't get to maximize themselves, the layout decides
 hl.window_rule({
   name = "suppress-maximize-events",
   match = { class = ".*" },
   suppress_event = "maximize",
 })
 
--- Fix some dragging issues with XWayland
+-- Invisible XWayland windows (drag and drop helpers) shouldn't steal focus
 hl.window_rule({
   name = "fix-drag-xwayland",
   match = {
