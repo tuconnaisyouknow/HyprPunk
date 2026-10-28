@@ -1,6 +1,6 @@
-// Lets the user of an active local session change the system keymap (the login
-// screen's and the TTYs') without a password, as keyboard-layoutctl.sh does when the
-// layout changes. Nothing else of localectl: the locale and the rest still ask.
+// When you switch layout, keyboard-layoutctl.sh also sets it for the login screen
+// and the TTYs. This lets it do so without a password, for whoever is sitting at the
+// machine. Only the keymap: the rest of localectl still asks.
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.locale1.set-keyboard" && subject.local && subject.active)
         return polkit.Result.YES;
