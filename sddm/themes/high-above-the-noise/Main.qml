@@ -10,11 +10,13 @@ Rectangle {
     height: Screen.height
     color: root.catBase
 
+    // Everything is drawn for a 768 px tall screen and scaled from there
     readonly property real s: Screen.height / 768
+    // Outside SDDM (a preview), there is no session to pick nor anyone to log in
     property bool isQuickshell: typeof sddm === "undefined" || sddm.hostName === undefined
     property int sessionIndex: (typeof sessionModel !== "undefined" && sessionModel.lastIndex >= 0) ? sessionModel.lastIndex : 0
     property int userIndex: (typeof userModel !== "undefined" && userModel.lastIndex >= 0) ? userModel.lastIndex : 0
-    property real ui: 0
+    property real ui: 0 // Fades the interface in, 0 to 1
 
     // Catppuccin Mocha
     readonly property color catBase: "#11111b"
@@ -29,6 +31,7 @@ Rectangle {
     readonly property color catTopOverlay: "#e011111b"
     readonly property color catBottomOverlay: "#f411111b"
 
+    // Whatever font sits in the theme's font folder
     FolderListModel {
         id: fontFolder
         folder: Qt.resolvedUrl("font")
@@ -40,6 +43,7 @@ Rectangle {
         source: fontFolder.count > 0 ? "font/" + fontFolder.get(0, "fileName") : ""
     }
 
+    // Invisible lists, only there to read the session's and the user's names from SDDM
     ListView {
         id: sessionHelper
         model: typeof sessionModel !== "undefined" ? sessionModel : null
@@ -67,6 +71,7 @@ Rectangle {
         }
     }
 
+    // Ready to type, once SDDM has settled
     Timer {
         interval: 300
         running: true
@@ -99,7 +104,7 @@ Rectangle {
         source: "BackgroundVideo.qml"
     }
 
-    // Scanlines
+    // Two thin mauve lines down the sides
     Rectangle {
         anchors.fill: parent
         z: 1
@@ -107,7 +112,6 @@ Rectangle {
         color: "transparent"
         visible: root.ui > 0
 
-        // Borders
         Rectangle {
             width: 2 * s
             anchors.top: parent.top
@@ -126,7 +130,7 @@ Rectangle {
         }
     }
 
-    // Gradients
+    // Darken the top and the bottom so the text stays readable over the video
     Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
@@ -149,7 +153,7 @@ Rectangle {
         }
     }
 
-    // Error
+    // Shown above the login when the password is wrong
     Text {
         id: errText
         text: ""
@@ -163,7 +167,7 @@ Rectangle {
         opacity: text.length > 0 ? 1 : 0
     }
 
-    // Login
+    // Login, at the bottom center
     Row {
         id: loginPanel
         anchors.horizontalCenter: parent.horizontalCenter
@@ -173,7 +177,7 @@ Rectangle {
         spacing: 8 * s
         opacity: root.ui
 
-        // User
+        // User, click to cycle through them
         Item {
             width: 140 * s
             height: 28 * s
@@ -285,7 +289,7 @@ Rectangle {
                 Behavior on opacity { NumberAnimation { duration: 150 } }
             }
 
-            // Cursor
+            // A blinking block, like a terminal
             Rectangle {
                 id: customCursor
                 width: 8 * s
@@ -312,7 +316,7 @@ Rectangle {
             }
         }
 
-        // Button
+        // Login button
         Item {
             width: 80 * s
             height: 28 * s
@@ -350,7 +354,7 @@ Rectangle {
         }
     }
 
-    // Top HUD
+    // Clock, date and actions along the top
     Item {
         id: topHud
         anchors.top: parent.top
@@ -480,7 +484,7 @@ Rectangle {
             }
         }
 
-        // Actions
+        // Session (click to cycle), reboot and shutdown
         Row {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
