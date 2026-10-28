@@ -48,7 +48,25 @@ Item {
             anchors.bottom: parent.bottom
             width: Math.max(parent.height, parent.width * control.value)
             radius: parent.radius
-            color: fillGlass.liquid ? "transparent" : control.accent
+            color: "transparent"
+
+            // Plain mauve in the classic style. The two fills swap at once when the style
+            // changes, as fading one into the other flashed darker on the way. Each eases
+            // to lavender and back on its own when you mute.
+            Rectangle {
+                anchors.fill: parent
+                visible: !fillGlass.liquid
+                radius: parent.radius
+                color: control.accent
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 140
+                    }
+
+                }
+
+            }
 
             // In the liquid style the fill turns to glass like the selections, so it
             // doesn't look stuck on top of them.
@@ -58,11 +76,12 @@ Item {
                 visible: liquid
                 radius: sliderFill.radius
                 backgroundColor: control.accent
-            }
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: 140
+                Behavior on backgroundColor {
+                    ColorAnimation {
+                        duration: 140
+                    }
+
                 }
 
             }
