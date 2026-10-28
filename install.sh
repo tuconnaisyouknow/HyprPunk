@@ -586,9 +586,12 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Catppuccin and Papirus for GTK apps, in dark mode
+# Catppuccin and Papirus for GTK apps, in dark mode, and bat's theme matching Neovim
 apply_themes() {
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
+
+  # bat only sees the themes in its folder once they're built into its cache
+  bat cache --build >/dev/null
 
   gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-mauve-standard+default'
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
