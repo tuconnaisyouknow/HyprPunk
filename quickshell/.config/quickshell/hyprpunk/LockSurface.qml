@@ -931,7 +931,6 @@ WlSessionLockSurface {
             GlassSurface {
                 radius: parent.radius
                 backgroundColor: Theme.field
-                focused: input.activeFocus
             }
 
             Text {

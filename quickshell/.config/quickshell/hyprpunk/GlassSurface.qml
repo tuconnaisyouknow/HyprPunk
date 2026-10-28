@@ -14,7 +14,7 @@ Item {
     // Off for panels, which keep their own background and only get the rim.
     property bool tinted: true
     // A text field you can type in: the rim lights up in mauve, since an empty field
-    // shows no cursor yet.
+    // shows no cursor yet. Only for fields that share the keyboard with something else.
     property bool focused: false
     property real accent: focused ? 1 : 0
     // The liquid style, chosen in the control center: the lock screen clock's glass, with
