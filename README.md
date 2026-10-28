@@ -120,6 +120,10 @@ Core palette:
 
 The overall look favors soft contrast, mauve borders, dark surfaces, compact menus, and night-city inspired visuals.
 
+The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
+minutes with a soft rim. Switch between them live from the control center's Display block, or with
+`~/Scripts/glassctl.sh set classic|liquid|toggle`.
+
 ---
 
 ## ✅ Installation
@@ -295,6 +299,7 @@ The main files to adapt to your machine are:
 
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
 - 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
+- 🔒 The lock screen is inspired by the one in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
 
 ---
 
