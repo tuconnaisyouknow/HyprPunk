@@ -17,6 +17,9 @@ Rectangle {
     property bool readOnly: false
     property color textColor: Theme.text
     property string fontFamily: Theme.font
+    // The mauve ring while it has the keyboard. Off by default: alone in a panel the
+    // field always has it, and the ring would only be noise.
+    property bool showsFocus: false
 
     // Every key, before the field types it: set event.accepted to keep it.
     signal keyPressed(var event)
@@ -30,7 +33,7 @@ Rectangle {
     GlassSurface {
         radius: parent.radius
         backgroundColor: Theme.field
-        focused: input.activeFocus
+        focused: field.showsFocus && input.activeFocus
     }
 
     Text {
