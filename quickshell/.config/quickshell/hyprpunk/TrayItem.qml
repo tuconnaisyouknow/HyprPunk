@@ -2,6 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 
+// One app in the tray: left click opens it, middle click does its second action,
+// right click shows its menu (apps that only have a menu open it on any click).
 Item {
     id: root
 

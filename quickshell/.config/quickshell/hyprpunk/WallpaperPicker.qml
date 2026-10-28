@@ -2,9 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Wallpaper picker in the dynamic island: a looping carousel of the whole
-// wallpapers, opened on the current one. Arrows, Tab or the wheel turn it, Enter
-// or a click on the centre applies.
+// The wallpaper picker: a looping carousel that opens on your current one.
+// Arrows, Tab or the wheel to browse, Enter or a click on the middle one to apply.
 IslandPanel {
     id: picker
 

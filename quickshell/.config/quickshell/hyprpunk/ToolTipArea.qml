@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 
+// A tooltip that shows up after half a second of hovering.
 Item {
     id: area
 

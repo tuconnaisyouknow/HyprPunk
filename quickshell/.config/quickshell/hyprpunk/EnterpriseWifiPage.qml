@@ -4,11 +4,11 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
-// Credentials of an enterprise Wi-Fi network (WPA/WPA2/WPA3 Enterprise, dynamic WEP,
-// LEAP), the fields of NetworkManager's own Wi-Fi dialog (libnma): authentication
-// method, then that method's identities, certificates and inner authentication.
-// ~/Scripts/wifi-connection.py creates the profile and connects. Opened by edit(), the
-// form starts from the saved profile and replaces it.
+// Signing in to an enterprise Wi-Fi network (eduroam and the like: WPA Enterprise,
+// dynamic WEP, LEAP), with the same fields as NetworkManager's own dialog: the method,
+// then its identity, certificates and inner authentication.
+// ~/Scripts/wifi-connection.py saves it and connects. Through edit(), the form opens
+// on the saved settings and replaces them.
 ColumnLayout {
     id: page
 
@@ -242,7 +242,7 @@ ColumnLayout {
         onBackRequested: page.backRequested()
     }
 
-    // Scrolls past 470px: the control center's window is 680px tall.
+    // Scrolls past 470px, the control center being 680px tall.
     ControlBlock {
         Layout.fillWidth: true
         implicitHeight: Math.min(form.implicitHeight, 470) + 24

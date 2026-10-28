@@ -1,8 +1,7 @@
 import QtQuick
 import Quickshell
 
-// Configuration files in the dynamic island: Enter or a click opens the file in
-// nvim in kitty.
+// Quick access to the config files: Enter or a click opens one in Neovim, in kitty.
 SearchPanel {
     id: config
 

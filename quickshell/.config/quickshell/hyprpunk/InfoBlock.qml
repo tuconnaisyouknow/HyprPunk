@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Facts of a detail page (status, security, address…): label on the left, value on
-// the right, in one glass block.
+// The facts on a detail page (status, security, address…), label on the left and
+// value on the right, in one glass block.
 ControlBlock {
     id: info
 

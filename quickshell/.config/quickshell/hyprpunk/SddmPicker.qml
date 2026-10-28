@@ -2,9 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// SDDM theme picker in the dynamic island: the same carousel as the wallpapers,
-// with the theme previews. Applying runs ~/Scripts/sddm.sh through sudo; when
-// sudo needs the password, a glass field asks for it in the card.
+// Pick the login screen's theme, in the same carousel as the wallpapers. Applying it
+// runs ~/Scripts/sddm.sh through sudo, and if sudo wants your password, the card
+// asks for it right there.
 IslandPanel {
     id: picker
 
@@ -157,8 +157,8 @@ IslandPanel {
         id: applyProcess
 
         stdinEnabled: true
-        // The password goes through stdin only, then stdin is closed so a wrong
-        // password fails instead of waiting for another try.
+        // The password only goes through stdin, which is then closed, so a wrong one
+        // fails straight away instead of sudo waiting for another try.
         onStarted: {
             if (picker.pendingPassword !== "")
                 write(picker.pendingPassword + "\n");
@@ -269,8 +269,8 @@ IslandPanel {
             anchors.rightMargin: 16
             anchors.verticalCenter: parent.verticalCenter
             enabled: !picker.applying
-            // Hidden letters copied from the high-above-the-noise SDDM theme: spaced filled
-            // squares, with its blinking block cursor (BlockCursor).
+            // Hidden letters as little squares, with the blinking block cursor,
+            // just like the high-above-the-noise login screen.
             echoMode: TextInput.Password
             passwordCharacter: "■"
             color: "#cba6f7"

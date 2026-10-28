@@ -4,11 +4,10 @@ import Quickshell.Io
 import Quickshell.Services.Pam
 import Quickshell.Wayland
 
-// The lock screen, in place of hyprlock: a session lock (the compositor keeps the
-// screens locked even if the shell dies) with the bar's look on every screen. The
-// password goes through PAM's login service, like hyprlock's. Locked by
-// `qs -c hyprpunk ipc call lock lock` (the keybind, the session menu and hypridle), or
-// `... lock lockInstantly` before sleep.
+// The lock screen. It's a real session lock: if the shell crashes, the screens stay
+// locked. Every screen gets the bar's look, and the password is checked by PAM like
+// any login. `qs -c hyprpunk ipc call lock lock` locks it (the shortcut, the session
+// menu and hypridle do that), `lock lockInstantly` skips the animation before sleep.
 Scope {
     id: locker
 
@@ -21,17 +20,16 @@ Scope {
     property bool unlocking: false
     // Told in the island after a failed try, "" otherwise.
     property string error: ""
-    // Locked for sleep (the lid closed): the lock shows at once, without its animation,
-    // which would otherwise wait frozen and play on waking.
+    // Locking for sleep (lid closed): no animation, it would freeze and only play on waking.
     property bool instant: false
     readonly property bool locked: sessionLock.locked
-    // The screens as they were, frozen just before locking (uncompressed: a PNG takes
-    // grim most of a second): the lock blurs out of them and back into them.
+    // Snapshots of the screens just before locking, so the lock can blur out of them
+    // and back. Uncompressed, since a PNG takes grim most of a second.
     readonly property string snapshotDir: Quickshell.env("XDG_RUNTIME_DIR")
 
     // Each failed try, for the island to shake.
     signal failed()
-    // Going to sleep while the lock still comes: it ends at once.
+    // Sleep arrives mid-animation: finish it at once.
     signal settled()
 
     function engage(instant) {
@@ -169,8 +167,8 @@ wait'
         onTriggered: locker.error = ""
     }
 
-    // Each screen's wallpaper decoded ahead (a 4K picture takes a good part of a
-    // second): the lock surfaces find it in the image cache and fade it in at once.
+    // Decode each screen's wallpaper ahead of time (a 4K one takes a good part of a
+    // second), so the lock finds it in the cache and can fade it in straight away.
     Variants {
         model: locker.bars
 

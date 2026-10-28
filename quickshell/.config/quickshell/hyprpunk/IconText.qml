@@ -1,8 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Icon then value with the same visible gap whatever the icon: nerd font glyphs share
-// one cell but overflow it by different amounts (the RAM chip, the charging bolt).
+// An icon and its value, with the same gap between them whatever the icon. Nerd Font
+// glyphs all claim one cell but spill out of it by different amounts (the RAM chip,
+// the charging bolt…), so the gap is measured from the ink.
 Item {
     id: iconText
 

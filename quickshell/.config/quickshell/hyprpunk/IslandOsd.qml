@@ -3,9 +3,9 @@ import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell.Widgets
 
-// The island's OSDs, read from the bar: a level (volume, brightness), an on/off state,
-// a screenshot just taken, the battery's alerts and the AirPods. Shared by the bar's
-// island and the lock screen's.
+// Everything the island can briefly show: a level (volume, brightness), an on/off
+// switch, the screenshot you just took, battery alerts and the AirPods.
+// The bar's island and the lock screen's both use it.
 RowLayout {
     id: osd
 
@@ -84,7 +84,7 @@ RowLayout {
 
     }
 
-    // Screenshot: the picture in small, then what became of it.
+    // Screenshot: a thumbnail, then where it went.
     ClippingRectangle {
         visible: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
         implicitWidth: Math.round(30 * Math.min(1.8, Math.max(0.6, screenshotThumbnail.implicitWidth / Math.max(1, screenshotThumbnail.implicitHeight))))
@@ -140,8 +140,8 @@ RowLayout {
 
     }
 
-    // Battery: plugged in (green), unplugged (mauve) or running low (red,
-    // pulsing while critical), a title and the time left or to full.
+    // Battery: green when plugged in, mauve when unplugged, red when low (pulsing when
+    // it's critical), with the time left or until full.
     Text {
         id: batteryOsdIcon
 
@@ -216,7 +216,7 @@ RowLayout {
             mipmap: true
         }
 
-        // No render (AirPods Max, not downloaded yet): the glyph.
+        // No picture yet (or AirPods Max): the glyph instead.
         Text {
             visible: airPodsOsdImage.status !== Image.Ready
             anchors.centerIn: parent
@@ -291,7 +291,7 @@ RowLayout {
             width: parent.width * Math.min(1, bar.statusOsdLevel / Math.max(1, bar.statusOsdMaxLevel))
             height: parent.height
             radius: parent.radius
-            // Lavender while off: a muted volume keeps its level.
+            // Lavender when muted, the bar still shows the level it'll come back to.
             color: bar.statusOsdEnabled ? bar.mauve : bar.lavender
 
             Behavior on color {

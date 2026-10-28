@@ -3,10 +3,10 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// A workspace in small: the wallpaper, its windows captured where they stand on the
-// screen (the floating ones over the tiled ones) and the bar over them. Each window
-// is captured once, when it is shown: a live capture would redraw them all at every
-// frame. The bar is no window: it comes as a picture of it (grabToImage).
+// A workspace in miniature: the wallpaper, its windows where they sit (floating ones
+// on top) and the bar over them. Each window is captured once, when shown, since live
+// captures would redraw them all every frame. The bar isn't a window, so it comes in
+// as a snapshot (grabToImage).
 ClippingRectangle {
     id: preview
 

@@ -3,8 +3,8 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 
-// Clipboard history in the dynamic island: the cliphist entries, newest first,
-// with a thumbnail for the images. Enter or a click copies the entry back.
+// Your clipboard history in the dynamic island, newest first, with thumbnails for
+// images. Enter or a click puts an entry back on the clipboard.
 SearchPanel {
     id: clipboard
 

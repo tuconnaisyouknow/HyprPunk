@@ -1,7 +1,7 @@
 import QtQuick
 
-// Glass block of the control center: grows by a few pixels under the pointer and
-// bounces when pressed (bounce()).
+// A glass block of the control center. It grows a little under the pointer and
+// bounces when pressed (call bounce()).
 Item {
     id: block
 

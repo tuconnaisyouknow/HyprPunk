@@ -4,21 +4,21 @@ import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Widgets
 
-// Now-playing card in the style of Apple's player: artwork, title and artist on
-// top, a scrubbable progress bar with times, then the transport controls, and the
-// lyrics under them, which the microphone button by the equalizer switches off.
+// The now-playing card, in the spirit of Apple's player: artwork, title and artist,
+// a progress bar you can drag, the controls, and the lyrics underneath (the microphone
+// button next to the equalizer turns them off).
 Rectangle {
     id: card
 
     required property var player
     // Drawn under the glass, for a card with no blurred panel behind it.
     property color backgroundColor: "transparent"
-    // Off when the card sits inside another surface that draws its own glass
-    // and cover (the bar's music popup animates them from the cover pill).
+    // Off when something else draws the glass and the cover (the bar's music popup
+    // animates them out of the cover pill).
     property bool glassVisible: true
     property bool coverVisible: true
-    // Off when the lyrics are shown elsewhere (beside the card on the lock screen),
-    // from lyricsLine, lyricsFound and seek().
+    // Off when the lyrics are shown somewhere else (beside the card on the lock screen),
+    // which then uses lyricsLine, lyricsFound and seek().
     property bool lyricsInside: true
     // Artwork geometry, followed by the bar's popup when it animates the cover.
     readonly property int artSize: 56
@@ -27,10 +27,10 @@ Rectangle {
     // Off while the card is not shown: stops polling and animating.
     property bool active: true
     readonly property bool playing: player !== null && player.isPlaying
-    // MprisPlayer.position drifts with Spotify (it keeps counting from the previous
-    // track): position and length are asked with playerctl instead, and the
-    // position runs on between two answers, for a second or so at most: after sleep it
-    // would otherwise run ahead by the whole time asleep until the next answer.
+    // Spotify's MPRIS position drifts (it keeps counting from the previous track), so
+    // position and length come from playerctl. Between two answers the position keeps
+    // ticking, but only for a second or so, otherwise after sleep it would race ahead by
+    // however long the computer slept.
     readonly property string playerctlName: player !== null ? player.dbusName.replace("org.mpris.MediaPlayer2.", "") : ""
     property real polledPosition: 0
     property real polledLength: 0
@@ -48,8 +48,8 @@ Rectangle {
     readonly property int lyricsHeight: 250
     readonly property int fullHeight: playerHeight + lyricsHeight
     readonly property bool lyricsShown: Lyrics.enabled && player !== null
-    // The lyrics are the playing track's: right after a skip they are still the previous
-    // one's until the new ones are asked for, and would scroll back up to its start.
+    // Make sure the lyrics belong to this track: right after a skip they're still the
+    // previous one's, and would scroll back up to its start.
     readonly property bool lyricsCurrent: {
         if (player === null)
             return false;
@@ -57,11 +57,11 @@ Rectangle {
         const asked = Lyrics.track.split("\n");
         return asked[0] === player.trackArtist && asked[1] === player.trackTitle;
     }
-    // The card only grows once there are lines to show, not while looking or for nothing.
+    // The card only grows once there are lines to show.
     readonly property bool lyricsFound: lyricsShown && lyricsCurrent && Lyrics.answeredTrack === Lyrics.track && Lyrics.lines.length > 0
     // The next track's lyrics are being looked for.
     readonly property bool lyricsLoading: lyricsShown && (!lyricsCurrent || Lyrics.status === "loading")
-    // The line being sung, a moment early so it does not read as late.
+    // The line being sung, a hair early so it doesn't feel late.
     readonly property int lyricsLine: {
         if (!Lyrics.synced || Lyrics.answeredTrack !== Lyrics.track)
             return -1;
@@ -146,8 +146,8 @@ Rectangle {
 
         interval: 500
         onTriggered: {
-            // MprisPlayer.length can still be the previous track's: playerctl's first,
-            // whose answer asks again.
+            // The length may still be the previous track's, in MPRIS and in playerctl's first
+            // answer too, so that first answer asks once more.
             if (!card.positionKnown && card.playerctlName !== "") {
                 card.poll();
                 return ;

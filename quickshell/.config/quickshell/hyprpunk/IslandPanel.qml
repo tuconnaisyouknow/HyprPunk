@@ -5,9 +5,9 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// Modal card growing out of the dynamic island like the calendar (session menu,
-// wallpaper picker...). It takes the keyboard while open (Escape closes it, the
-// other keys go to keyTargets) and a click outside the card closes it.
+// The card that grows out of the dynamic island, behind every island panel (session
+// menu, wallpaper picker…). While open it has the keyboard: Escape closes it and other
+// keys go to keyTargets. Clicking anywhere outside closes it too.
 PanelWindow {
     id: panel
 
@@ -27,8 +27,7 @@ PanelWindow {
     property real progress: opened ? 1 : 0
     // Geometry of the island (the clock pill), published by the bar.
     readonly property var island: shellState.islandPill
-    // Left/right keys of the Hyprland binds for the keyboard layout (keyboard_state.lua):
-    // j/m on AZERTY, h/l on QWERTY.
+    // The Vim left and right keys for the current layout: h/l, or j/m on AZERTY.
     property string keyboardLayout: "us"
     // Panel whose request opened this one ("menu" from the main menu), read on opening.
     property string openedFrom: ""
@@ -152,8 +151,7 @@ PanelWindow {
         Keys.forwardTo: panel.keyTargets
         Keys.onEscapePressed: panel.back()
 
-        // Same card as the island it grows from: base at 0.9 (blurred by a layer rule)
-        // with the glass rim.
+        // Same look as the island it grows from: base color at 0.9, blurred, with the glass rim.
         GlassSurface {
             radius: card.radius
             tinted: false
@@ -187,8 +185,8 @@ PanelWindow {
 
     }
 
-    // The privacy and recording dots, out of the island the card covers: right of the
-    // card, at the island's height, following its edge as it grows.
+    // The card covers the island, so the privacy and recording dots move to its right,
+    // following its edge as it grows.
     PrivacyDot {
         x: card.x + card.width + 8
         y: panel.island.top + panel.island.height / 2 - height / 2

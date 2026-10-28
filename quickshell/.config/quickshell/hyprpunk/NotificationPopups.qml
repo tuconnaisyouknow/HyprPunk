@@ -75,8 +75,8 @@ PanelWindow {
     exclusiveZone: 0
     WlrLayershell.namespace: "hyprpunk-notifications"
 
-    // Full height (fixed): resizing the surface while popups move causes visual
-    // glitches, and the stack must have room when pushed below the control center.
+    // Always full height: resizing the window while popups move glitches, and the stack
+    // needs room when the control center pushes it down.
     anchors {
         top: true
         right: true
@@ -136,8 +136,7 @@ PanelWindow {
                     x: popup.slide + swipeOffset
                     width: parent.width
                     notification: popup.modelData
-                    // Floating over the desktop: glass over the same background as Hyprland
-                    // windows (base color at 0.9), blurred by the hyprpunk-notifications layer rule.
+                    // Floating over the desktop, with the same base as the windows (0.9) and the blur behind.
                     backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
                     onSwipedAway: {
                         popup.slide += swipeOffset;
@@ -150,7 +149,7 @@ PanelWindow {
                 }
 
                 Timer {
-                    // expireTimeout is in milliseconds; -1 means "server default", 0 means "never".
+                    // expireTimeout is in milliseconds: -1 means our default, 0 means never.
                     interval: popup.modelData !== null && popup.modelData.expireTimeout > 0 ? popup.modelData.expireTimeout : 5000
                     running: popup.modelData !== null && !popup.leaving && !popupHover.hovered && !popup.critical && popup.modelData.expireTimeout !== 0
                     onTriggered: popups.hide(popup.modelData)

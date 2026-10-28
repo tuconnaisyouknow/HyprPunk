@@ -4,25 +4,28 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 
+// The notification center, tucked against the right edge. A small handle shows there
+// while notifications are waiting: push the pointer against it, or press Super+N,
+// and the panel slides out with everything you missed.
 PanelWindow {
     id: center
 
     required property var notificationServer
     required property var shellState
     property bool opened: false
-    // Opened from a keybind: takes the keyboard so Escape closes it right away.
+    // Opened with the shortcut: it takes the keyboard so Escape closes it.
     property bool openedByKeybind: false
     property bool panelHovered: false
     property bool edgeHovered: false
-    // Opening: the panel slides out of the screen edge (slide) while it stretches
-    // from the size of the edge handle to its full height (stretch).
+    // Opening, the panel slides out of the edge (slide) while stretching from the
+    // handle's size to its full height (stretch).
     property real slide: 0
     property real stretch: 0
     property int previousCount: 0
     readonly property int notificationCount: notificationServer.trackedNotifications.values.length
     readonly property var trackedValues: notificationServer.trackedNotifications.values
-    // Ids of the listed notifications, newest first. A closed notification stays
-    // listed until its exit animation (same as the popups) is over.
+    // The notifications listed, newest first. A closed one stays until its exit
+    // animation is over.
     property var entryIds: []
     property var notificationObjects: ({})
     property var leavingIds: []
@@ -117,7 +120,7 @@ PanelWindow {
         id: indicator
 
         x: center.width - width - 2
-        // The window starts below the bar and is bottom-anchored, so centre on the screen instead.
+        // The window starts below the bar, so center on the screen rather than on the window.
         y: center.height - center.screen.height / 2 - height / 2
         width: 4
         height: 44
@@ -224,9 +227,8 @@ PanelWindow {
             }
         }
 
-        // Glued to the right edge: inverted corners against it and rounded ones on the left.
-        // Same background as the other cards (base at 0.9, blurred by a layer rule), with
-        // the glass rim along the free edge.
+        // Stuck to the right edge: curving into it, rounded on the left, with the same
+        // background as the other cards and the glass rim along the free edge.
         GlassEdgeShape {
             readonly property real w: panel.width
             readonly property real h: panel.height
@@ -285,7 +287,7 @@ PanelWindow {
                             radius: 12
                             color: "transparent"
 
-                            // Mauve glass: the accent color under the glass sheen and rim.
+                            // Mauve glass.
                             GlassSurface {
                                 radius: parent.radius
                                 hovered: clearHover.hovered
@@ -363,7 +365,7 @@ PanelWindow {
                                     exitAnimation.start();
 
                             }
-                            // A delegate scrolled out of view is destroyed before its animation ends.
+                            // A card scrolled out of view is destroyed before its animation ends.
                             Component.onDestruction: {
                                 if (leaving) {
                                     const id = notificationId;

@@ -1,9 +1,8 @@
 import QtQuick
 import Quickshell
 
-// Main menu in the dynamic island: one glass square per panel, the name of the
-// selected one under the row. Arrows, Tab or the layout's keys pick an entry,
-// Enter or a click opens it.
+// The main menu: a row of glass squares, one per panel, with the selected one's name
+// underneath. Arrows, Tab or the Vim keys to choose, Enter or a click to open.
 IslandPanel {
     id: menu
 

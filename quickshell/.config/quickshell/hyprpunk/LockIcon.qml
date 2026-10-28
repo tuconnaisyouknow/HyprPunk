@@ -1,9 +1,9 @@
 import QtQuick
 import QtQuick.Shapes
 
-// The lock screen's padlock, drawn so it can move: closing, the shackle swings back
-// over the body and drops into it with a small click; opening, it pops up and swings
-// round its right leg. Starts open unless closed is set from the start.
+// The lock screen's padlock, drawn by hand so it can move. Closing, the shackle swings
+// back over the body and drops in with a little click; opening, it pops up and swings
+// out on its right leg. It starts open unless closed is set from the start.
 Item {
     id: icon
 

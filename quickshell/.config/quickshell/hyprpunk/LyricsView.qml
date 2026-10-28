@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Effects
 
-// Lyrics in the style of Apple Music: big bold lines, the one being sung lit and
-// held near the top, the others dimmed and blurred the further they are. A click
-// on a timed line seeks to it; scrolling by hand pauses the follow for a moment.
-// When the lines change (another track), the old ones slide up and fade away, and
-// the new ones rise into place one after the other from the line being sung.
+// Lyrics the Apple Music way: big bold lines, the one being sung lit up near the top,
+// the rest dimmer and blurrier the further away they are. Click a line to jump there;
+// scroll by hand and it stops following for a moment.
+// On a new track, the old lines slide up and fade, and the new ones rise into place
+// one after another.
 Item {
     id: view
 
@@ -22,8 +22,8 @@ Item {
     property bool handScrolled: false
     // The LRCLIB credit: dim on a card, brighter straight over a wallpaper.
     property color creditColor: "#6c7086"
-    // False until the player's position is known: the view waits for it, then
-    // starts on the line being sung instead of scrolling down to it from the top.
+    // False until the player's position is known, so the view can start right on the
+    // current line instead of scrolling down to it from the top.
     property bool ready: true
     // Set once the view stands on a line; until then it goes there without scrolling.
     property bool placed: false
@@ -67,9 +67,8 @@ Item {
         Qt.callLater(follow);
     }
 
-    // Once the lines and whether they are synced have both come: Lyrics sets the
-    // lines first, and showing them before would lay them out unsynced, then move
-    // them again.
+    // Waits for both the lines and whether they're timed: Lyrics sets the lines first,
+    // and showing them right away would lay them out untimed, then shuffle them again.
     function update() {
         // The same lines again (looked up once more): nothing moves.
         if (lines.length === shownLines.length && JSON.stringify(lines) === JSON.stringify(shownLines)) {

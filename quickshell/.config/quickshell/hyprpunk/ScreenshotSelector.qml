@@ -4,15 +4,15 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 
-// Choosing a screenshot's region over the frozen screen: drag a region, or click the
-// window under the pointer (outlined as it goes), anywhere else for the whole screen.
-// Escape or a right click cancels. Outside the choice the screen is dimmed, its size
-// shown under it. To annotate, the region then stays in place under the annotator.
+// Picking what to capture, over the frozen screen. Drag out a region, or click a
+// window (it lights up as you hover), or click elsewhere for the whole screen.
+// Escape or a right click cancels. Everything else is dimmed and the size shows
+// underneath. When annotating, the region stays put under the annotator.
 PanelWindow {
     id: selector
 
     required property var shellState
-    // This window's screen, fixed: read from screen, it changes as the window maps.
+    // Fixed once: the window's own screen property shifts while it maps.
     required property string screenName
     readonly property var request: shellState.screenshotSelection
     readonly property bool active: request !== null && request.screen === screenName
@@ -269,8 +269,8 @@ PanelWindow {
 
     }
 
-    // The windows shown on this screen: its workspace's and the open special one's,
-    // floating and fullscreen ones over the others, then the last focused first.
+    // The windows visible on this screen (its workspace and any open special one),
+    // topmost first: fullscreen and floating ones, then by last focus.
     Process {
         id: windowsProcess
 

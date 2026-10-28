@@ -1,10 +1,9 @@
 import QtQuick
 import QtQuick.Shapes
 
-// "Liquid glass" surface: a frosted translucent fill over a blurred layer,
-// with a specular rim that catches the light at the top and glows faintly at
-// the bottom. Placed behind its parent's content, whose own color must stay
-// transparent (it would be drawn over this).
+// The "liquid glass" look: a frosted fill over the blur, with a rim that catches the
+// light at the top and glows faintly at the bottom. It sits behind its parent's
+// content, so the parent itself should stay transparent.
 Item {
     id: glass
 

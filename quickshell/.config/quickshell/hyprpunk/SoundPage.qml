@@ -6,10 +6,10 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 
-// The control center's sound page, in tabs: the outputs to choose from, the microphone
-// (its volume, its level and the inputs to choose from), a mixer of the apps playing,
-// and the Bluetooth audio devices (the AirPods with their batteries and settings). A tab slides in from the side of its own, and scrolls past
-// the panel's height.
+// The control center's sound page, in tabs: where the sound goes, the microphone
+// (volume, level and which one), a mixer for the apps playing, and Bluetooth audio
+// (the AirPods with their batteries and settings). Tabs slide in from the side and
+// scroll when they're taller than the panel.
 ColumnLayout {
     id: page
 
@@ -72,8 +72,8 @@ ColumnLayout {
     readonly property var otherAudio: bluetoothAudio.filter((device) => {
         return airPods.device(device.address) === null;
     })
-    // From pactl, by sink and source name: {label (the port's name for a sound card's
-    // outputs and inputs), available (false for an HDMI output with nothing plugged in)}.
+    // From pactl, by sink and source name: {label (the port's name, for a sound card),
+    // available (false for an HDMI output with nothing plugged in)}.
     property var portInfo: ({
     })
 
@@ -159,8 +159,8 @@ ColumnLayout {
 
     }
 
-    // One tab's content, side by side with the others in a strip: only the one shown
-    // is opaque and takes clicks, the others fade out as they slide away.
+    // One tab, side by side with the others: only the one shown is opaque and clickable,
+    // the others fade as they slide away.
     component TabColumn: ColumnLayout {
         required property int index
         readonly property bool current: index === page.tabIndex
@@ -187,8 +187,8 @@ ColumnLayout {
         font.pixelSize: 12
     }
 
-    // A list laid out at its full height (the page scrolls, not the list): rows fade
-    // and grow in as they come, fade out as they go, the others slide to their place.
+    // A list at full height (the page scrolls, not the list). Rows fade in as they come,
+    // fade out as they go, and the rest slide into place.
     component AnimatedList: ListView {
         implicitHeight: contentHeight
         interactive: false
@@ -337,9 +337,8 @@ ColumnLayout {
         }
     }
 
-    // As tall as the tab shown, up to what the panel has. The view goes a few pixels
-    // past it on every side, over the panel's margins, so a hovered block's zoom and
-    // bounce aren't cut; the blocks stay aligned.
+    // As tall as the tab, up to the panel's height. It spills a few pixels over the
+    // margins on every side so a hovered block's zoom and bounce aren't clipped.
     Item {
         Layout.fillWidth: true
         Layout.preferredHeight: Math.min(page.currentTab.implicitHeight, page.maxHeight - header.implicitHeight - tabBar.implicitHeight - 2 * page.spacing)
@@ -538,8 +537,8 @@ ColumnLayout {
 
                     }
 
-                    // By address: every state of the daemon is a new list, and the panels
-                    // would be made again (losing the mode just chosen) at each one.
+                    // Keyed by address: the daemon sends a new list every time, and the panels would
+                    // otherwise be rebuilt (forgetting the mode you just picked).
                     Repeater {
                         model: ScriptModel {
                             values: page.airPodsShown.map((device) => {

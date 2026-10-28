@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Apple's render of AirPods or their case on the AirPods card, in a fixed box so
-// both line up. Without one (a model Apple's renders do not cover, or not yet
-// downloaded), the glyph stands in.
+// Apple's picture of the AirPods or their case, in a fixed box so both line up.
+// Until it's downloaded, or for a model Apple has no picture of, a glyph stands in.
 Item {
     id: product
 

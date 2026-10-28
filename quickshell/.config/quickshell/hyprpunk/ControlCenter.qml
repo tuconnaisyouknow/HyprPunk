@@ -9,15 +9,18 @@ import Quickshell.Services.Pipewire
 import Quickshell.Wayland
 import Quickshell.Widgets
 
+// The control center, growing out of the bar's right-most pill: Wi-Fi, Bluetooth, sound,
+// brightness, power profile, caffeine, keyboard and language, battery limit. Hover the
+// pill or press Super+C. Wi-Fi, Bluetooth and sound open pages of their own.
 PanelWindow {
     id: controlCenter
 
     required property var shellState
     required property var airPods
     property bool opened: false
-    // Opened from a keybind: takes the keyboard so Escape closes it right away.
+    // Opened with the shortcut: it takes the keyboard so Escape closes it.
     property bool openedByKeybind: false
-    // Hover state of the right-most bar pill, the panel grows out of it.
+    // Whether the pointer is on the bar's right-most pill, which the panel grows out of.
     property bool pillHovered: false
     property bool panelHovered: false
     property real retainedHeight: 0
@@ -28,16 +31,16 @@ PanelWindow {
     // Geometry of that pill (screen coordinates), published by the bar.
     readonly property var pill: shellState.controlPill
     property string page: "main"
-    // Page transition, iOS navigation-like: the sub-page slides in from the right over
-    // the main page, which backs off to the left; the other way round going back.
+    // Pages move like on iOS: a sub-page slides in from the right while the main page
+    // backs off to the left, and the other way round going back.
     property string shownPage: "main"
     property string previousPage: "main"
     property real pageProgress: 1
     property var passwordNetwork: null
     // Enterprise network whose credentials are asked on the "enterprise" page.
     property var enterpriseNetwork: null
-    // Network connected from the panel: only its failures ask for credentials, not
-    // NetworkManager's own reconnections in the background.
+    // The network you just connected to from here: only its failures ask for credentials,
+    // not NetworkManager's own reconnections in the background.
     property var requestedWifi: null
     // Saved network and paired device of the detail pages.
     property var detailNetwork: null
@@ -49,11 +52,11 @@ PanelWindow {
     property string powerProfile: "balanced"
     property var powerProfiles: []
     property bool bluetoothPowerPending: false
-    // Laptops and desktops alike: power-profiles-daemon offers at least saver and balanced.
+    // Laptops and desktops alike: power-profiles-daemon always has at least saver and balanced.
     readonly property bool powerProfilesAvailable: powerProfiles.length > 1
     property int brightness: 0
     property bool hasBacklight: false
-    // Keyboard layout and locale profiles ("fr" or "us"), kept by the hyprpunk scripts.
+    // Keyboard layout and language settings ("fr" or "us"), saved by the scripts.
     readonly property string stateDir: Session.stateDir
     property string keyboardLayout: "us"
     readonly property string localeLanguage: Session.languageProfile
@@ -86,14 +89,13 @@ PanelWindow {
         "minutes": 240,
         "label": "4 hours"
     }]
-    // The batteries' charge limit in % (100 when off), 0 without one. Set with
-    // battery-limit as a user of the wheel group, once installed (battery/, by
-    // install.sh), which also applies it again at boot and around sleep.
+    // The battery charge limit in % (100 for none), 0 when the battery has no such thing.
+    // Changed through battery-limit (see battery/), which install.sh sets up.
     property int chargeLimit: 0
     property bool chargeLimitWritable: false
-    // Why the last limit was not set (one the battery refuses), empty otherwise.
+    // Why the last limit didn't stick (the battery refused it), empty otherwise.
     property string chargeLimitError: ""
-    // The limit turned back on: the last one under 100.
+    // What switching the limit back on restores: the last one under 100.
     property int chargeLimitOn: 80
     readonly property var chargeLimits: [60, 70, 80, 90]
     readonly property var audioSink: Pipewire.defaultAudioSink
@@ -189,7 +191,7 @@ PanelWindow {
         // Back towards the main page: the other way round.
         const direction = pageDepth(page) < pageDepth(previousPage) ? -1 : 1;
         const width = panelWidth - 28;
-        // pageProgress runs linearly: the slide eases out (cubic), the fades below don't.
+        // pageProgress runs linearly: the slide eases out, the fades below don't.
         const slide = 1 - Math.pow(1 - pageProgress, 3);
         if (name === page)
             return (1 - slide) * direction * width * 0.3;
@@ -198,8 +200,7 @@ PanelWindow {
     }
 
     function pageOpacity(name) {
-        // The page left behind is almost gone before the new one shows, so the two
-        // never blur together.
+        // The old page is nearly gone before the new one shows, so they never mush together.
         if (name === page)
             return Math.max(0, Math.min(1, (pageProgress - 0.2) / 0.6));
 
@@ -229,8 +230,8 @@ PanelWindow {
         if (adapter === null)
             return ;
 
-        // BlueZ refuses to power an rfkill-blocked adapter: lift the block first,
-        // the adapter is powered once it is reported as unblocked.
+        // BlueZ won't power an rfkill-blocked adapter: lift the block first, and power it
+        // once it's reported unblocked.
         if (!adapter.enabled && adapter.state === BluetoothAdapterState.Blocked)
             rfkillUnblockProcess.running = true;
         else
@@ -287,7 +288,7 @@ PanelWindow {
         }
     }
 
-    // 802.1X networks (NetworkManager's enterprise form), the others a password.
+    // Enterprise networks get the full form, the others just a password.
     function isEnterprise(network) {
         return [WifiSecurityType.WpaEap, WifiSecurityType.Wpa2Eap, WifiSecurityType.Wpa3SuiteB192, WifiSecurityType.DynamicWep, WifiSecurityType.Leap].includes(network.security);
     }
@@ -496,9 +497,9 @@ PanelWindow {
         target: controlCenter.shellState
     }
 
-    // Hover area around the panel. After switching to a shorter page it keeps the
-    // previous height, so the pointer is not suddenly outside and the panel
-    // does not close under it.
+    // The hover area around the panel. After switching to a shorter page it keeps the
+    // old height for a moment, so the pointer isn't suddenly outside and the panel
+    // doesn't close under it.
     Item {
         id: hoverZone
 
@@ -524,8 +525,7 @@ PanelWindow {
             }
         }
 
-        // Grows out of the pill like the calendar and the player: from the pill's
-        // color and size to the blurred panel.
+        // Grows out of the pill like the calendar and the player do.
         ClippingRectangle {
             id: panel
 
@@ -552,8 +552,7 @@ PanelWindow {
                     controlCenter.close();
             }
 
-            // Same card as the pill it grows from: base at 0.9 (blurred by a layer rule) with
-            // the glass rim, so the pill itself seems to grow.
+            // Same look as the pill it grows from, so it feels like the pill itself is growing.
             GlassSurface {
                 radius: panel.radius
                 tinted: false
@@ -687,8 +686,8 @@ PanelWindow {
 
                     }
 
-                    // Under the columns, as wide as them; caffeine across both without a
-                    // battery's charge limit, for the grid to stay even.
+                    // Below the two columns. Without a charge limit, caffeine spans both
+                    // so the grid stays even.
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: tileColumns.spacing
@@ -824,7 +823,7 @@ PanelWindow {
 
                             HorizontalSlider {
                                 Layout.fillWidth: true
-                                // Muting keeps the volume: the fill stays at its level, in lavender.
+                                // Muted, the fill keeps its level and turns lavender.
                                 value: controlCenter.volume / 100
                                 accent: controlCenter.muted ? "#b4befe" : "#cba6f7"
                                 iconButton: true
@@ -1391,8 +1390,8 @@ PanelWindow {
 
         interval: 380
         onTriggered: {
-            // Keep the panel open while a Wi-Fi password or enterprise credentials are typed
-            // (a certificate may be picked in a file chooser outside it).
+            // Stay open while a Wi-Fi password or enterprise sign-in is being typed
+            // (picking a certificate opens a file chooser outside the panel).
             if (!controlCenter.pillHovered && !controlCenter.panelHovered && controlCenter.passwordNetwork === null && controlCenter.page !== "enterprise" && !(controlCenter.page === "wifiDetail" && wifiDetailPage.editing))
                 controlCenter.opened = false;
 
@@ -1518,8 +1517,8 @@ PanelWindow {
         onTriggered: controlCenter.bluetoothPowerPending = false
     }
 
-    // "<limit> <writable 1|0> <kept limit>", nothing without a battery's limit; read
-    // only without battery-limit.
+    // "<limit> <writable 1|0> <saved limit>", or nothing when the battery has no limit.
+    // Read-only until battery-limit is installed.
     Process {
         id: chargeLimitProcess
 
@@ -1583,8 +1582,8 @@ PanelWindow {
     Process {
         id: brightnessProcess
 
-        // The screen's backlight only: without one (a desktop), brightnessctl would
-        // control the first LED instead, and the Display block is hidden.
+        // The screen's backlight only. A desktop has none, and brightnessctl would grab the
+        // first LED it finds instead, so the Display block is hidden there.
         command: ["brightnessctl", "-c", "backlight", "-m"]
         running: true
 

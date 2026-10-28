@@ -1,5 +1,7 @@
 import QtQuick
 
+// The control center's sliders (volume, brightness, the mixer): a rounded track that
+// fills up in mauve, an icon at the start, drag or click anywhere to set it.
 Item {
     id: control
 
@@ -8,11 +10,11 @@ Item {
     property color accent: "#cba6f7"
     property color trackColor: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.12)
     property color iconColor: "#1e1e2e"
-    // The icon as a round button in the fill (the volume's mute): plain glyph with a
-    // glass halo on hover, like the player's controls.
+    // Makes the icon a round button inside the fill (mute, on the volume slider),
+    // with a glass halo on hover like the player's controls.
     property bool iconButton: false
-    // Written in the track after the icon (the mixer's apps): dark over the fill,
-    // lavender past it, the colour changing right at the fill's edge.
+    // Text inside the track after the icon (an app's name in the mixer), dark over the
+    // fill and lavender past it, switching color exactly at the fill's edge.
     property string label: ""
 
     signal valueRequested(real value)

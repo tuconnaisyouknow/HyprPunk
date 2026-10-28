@@ -2,10 +2,9 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Shapes
 
-// Background of a panel glued to screen edges, with the glass rim of the
-// other cards: fillPath (closed) is filled, and the rim is stroked along
-// rimPath only (the free edge, not the sides against the screen), masked by
-// the fill so it stays inside like GlassSurface's 1px ring.
+// The background of a panel stuck to the screen's edges. fillPath is the shape,
+// rimPath the free edge that gets the glass rim (not the sides against the screen).
+// The rim is masked by the fill, so it stays inside like GlassSurface's.
 Item {
     id: edge
 

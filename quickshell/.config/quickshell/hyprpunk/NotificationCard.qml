@@ -9,17 +9,16 @@ Rectangle {
 
     required property var notification
     readonly property bool alive: notification !== null
-    // Translucent by default, over the blurred notification center panel.
-    // Liquid glass over the blurred notification center panel by default.
+    // Transparent by default, the glass shows over the notification center's blur.
     property color backgroundColor: "transparent"
     // Horizontal offset while the card is dragged; the parent adds it to its x.
     property real swipeOffset: 0
 
-    // Emitted right before a swipe dismisses the notification: the parent takes
-    // over swipeOffset so its exit animation continues from where the card is.
+    // Fired just before a swipe dismisses it, so the parent can take over swipeOffset
+    // and carry on the exit animation from where the card is.
     signal swipedAway()
-    // Last known content: when the notification object is destroyed (closed by
-    // its app), a popup still has to slide out with its text on it.
+    // The last content seen: if the app closes the notification, the popup still
+    // needs its text to slide out with.
     property bool critical: false
     property string summary: ""
     property string body: ""
@@ -27,8 +26,8 @@ Rectangle {
     property string appIcon: ""
     property string image: ""
     property string desktopEntry: ""
-    // Many apps (nm-applet, chat clients...) send their icon as image-path or
-    // image-data instead of app_icon, so try every source the spec allows.
+    // Plenty of apps (nm-applet, chat clients…) send their icon as image-path or
+    // image-data instead of app_icon, so try everything the spec allows.
     readonly property string iconSource: {
         if (image !== "")
             return image;
@@ -44,15 +43,14 @@ Rectangle {
 
         return Quickshell.iconPath("dialog-information");
     }
-    // Per the spec, "default" is triggered by clicking the notification itself
-    // (kitty uses it to focus the emitting window), so it never gets a button.
+    // The "default" action is what clicking the notification does (kitty uses it to
+    // focus its window), so it doesn't get a button of its own.
     property bool hasDefaultAction: false
     property var buttonActions: []
 
-    // Bodies may carry the spec's markup (some apps send <i>...</i> even when
-    // the server does not advertise it): keep bold, italic, underline and line
-    // breaks, drop every other tag (links, and images that would be fetched),
-    // and escape the stray angle brackets of plain-text bodies.
+    // Some apps send markup even when we don't ask for it. Keep bold, italic, underline
+    // and line breaks, drop every other tag (links, images that would be fetched), and
+    // escape stray angle brackets in plain text.
     function styledBody(text) {
         return text.replace(/<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>|[<>]/g, (match, slash, tag) => {
             if (!tag)

@@ -2,9 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Keybindings in the dynamic island: the active Hyprland binds that have a
-// description, searched by description and keys. Enter or a click runs the bind
-// (run_keybinding in keybindings.lua).
+// Every Hyprland shortcut that has a description, searchable by what it does or its
+// keys. Enter or a click runs it for you (through run_keybinding in keybindings.lua).
 SearchPanel {
     id: keybindings
 
@@ -55,8 +54,8 @@ SearchPanel {
             "XF86AudioPlay": "Play",
             "XF86AudioPrev": "Previous"
         };
-        // The clipboard's key, bound by its place (Hyprland gives no keycode back):
-        // ù in AZERTY, ' in QWERTY.
+        // The clipboard's key is bound by position and Hyprland doesn't say which, so name it
+        // here: ù on AZERTY, ' on QWERTY.
         if (bind.key === "" && bind.description === "Open the clipboard history")
             return keyboardLayout === "fr" ? "ù" : "'";
 

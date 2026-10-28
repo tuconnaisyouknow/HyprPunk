@@ -3,22 +3,23 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 
-// Screenshots: of the screen, of a region (or a window) chosen on the frozen screen, or
-// of a region then annotated in place (ScreenshotAnnotator). Saved in ~/Pictures/Screenshots and copied, then
-// shown in the island. Recordings too, of the screen or of a region chosen the same
-// way, with the system's sound (wf-recorder), until asked again or stopped from the
-// island: saved in ~/Videos/Recordings. Asked by the keybinds
-// (`qs -c hyprpunk ipc call screenshot <screen|region|annotate|record|recordRegion|
-// stop|menu>`) and the screenshot menu, through the shell's state.
+// Screenshots and screen recordings.
+// A screenshot is of the whole screen, a region or window picked over the frozen
+// screen, or a region you then draw on (ScreenshotAnnotator). It lands in
+// ~/Pictures/Screenshots, on the clipboard, and in the island for a moment.
+// Recordings (wf-recorder, with the system's sound) go to ~/Videos/Recordings and run
+// until you ask again or stop them from the island.
+// Triggered by the shortcuts (`qs -c hyprpunk ipc call screenshot <screen|region|
+// annotate|record|recordRegion|stop|menu>`) and by the screenshot menu.
 Scope {
     id: screenshot
 
     required property var shellState
-    // While a screenshot is taken, chosen or saved: other requests wait for it.
+    // Busy taking, choosing or saving one: other requests wait their turn.
     property bool busy: false
     property string mode: ""
     property string screenName: ""
-    // The screen's scale: grim's pixels for the selection's logical ones.
+    // The screen's scale, to turn the selection's logical size into grim's pixels.
     property real scale: 1
     // The screen's place in the layout, for the recorded region.
     property point origin: Qt.point(0, 0)
@@ -76,8 +77,8 @@ Scope {
 
     }
 
-    // The keybinds and the menu ask with a delay, for the menu to fold away first. A
-    // recording's request while one runs stops it.
+    // The shortcuts and the menu come with a delay, so the menu can fold away first.
+    // Asking to record while a recording runs stops it.
     Connections {
         function onScreenshotRequestsChanged() {
             const request = screenshot.shellState.screenshotRequest;
@@ -186,7 +187,7 @@ wl-copy --type image/png < "$2" >/dev/null 2>&1'
         }
     }
 
-    // Stopped with SIGINT, for wf-recorder to finish the file.
+    // SIGINT, so wf-recorder finishes the file properly.
     Process {
         id: recorder
 

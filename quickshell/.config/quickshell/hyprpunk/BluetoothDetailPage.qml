@@ -2,8 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Bluetooth
 
-// A paired Bluetooth device: its state, then connect or disconnect and forget it
-// (removes the pairing).
+// A paired Bluetooth device: how it's doing, connect or disconnect, or forget it altogether.
 ColumnLayout {
     id: page
 

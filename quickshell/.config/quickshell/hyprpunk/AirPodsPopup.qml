@@ -5,11 +5,11 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// AirPods card growing out of the dynamic island, laid out like the iPhone's: the
-// name, the pods and their case, a battery ring under each when their case opens or
-// they connect, a Connect button instead for AirPods in pairing mode next to the
-// computer. It folds back once both pods are in the ears. It never takes the keyboard, clicks around it go through,
-// and it folds back on its own.
+// The AirPods card that grows out of the island, like on an iPhone: their name, the
+// pods and the case with a battery ring under each, when you open the case or they
+// connect. AirPods waiting to pair get a Connect button instead.
+// It never grabs the keyboard, clicks around it go through, and it folds away by
+// itself, or as soon as both pods are in your ears.
 PanelWindow {
     id: popup
 
@@ -151,7 +151,7 @@ PanelWindow {
             if (focused === null || focused.name !== popup.screen.name)
                 return ;
 
-            // Connected once in the ears: nothing to show (but on request, "manual").
+            // They connected because they went in your ears: nothing to show, unless asked for ("manual").
             if ((reason === "lid" || reason === "connected") && popup.inEars(popup.airPods.device(address)))
                 return ;
 
@@ -189,8 +189,7 @@ PanelWindow {
         radius: popup.island.height / 2
         color: "transparent"
 
-        // Same card as the island panels and the pills: base at 0.9, blurred
-        // by the hyprpunk-island layer rule, with the glass rim.
+        // Same look as the island panels and the pills: base color at 0.9, blurred, with the glass rim.
         GlassSurface {
             radius: card.radius
             tinted: false

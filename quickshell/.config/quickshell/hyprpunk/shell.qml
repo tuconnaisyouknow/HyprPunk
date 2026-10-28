@@ -7,6 +7,9 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
 
+// Where the shell starts. Holds the state the screens share (which panel is open
+// where, screenshots, caffeine…), answers the `qs -c hyprpunk ipc call …` commands
+// that the shortcuts and scripts send, and puts a bar, popups and panels on every screen.
 ShellRoot {
     QtObject {
         id: globalState
@@ -14,18 +17,18 @@ ShellRoot {
         property bool notificationCenterOpen: false
         property var notificationScreen: null
         property bool controlCenterOpen: false
-        // Requests for a screen's panels: panel is "controlcenter", "notifications",
-        // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji",
-        // "keybindings", "config", "monitor", "screenshot" or "menu", action "toggle",
-        // "open" or "close", screen a screen name (the focused one when empty).
+        // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
+        // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings",
+        // "config", "monitor", "screenshot" or "menu"; action is "toggle", "open" or "close";
+        // screen is a screen's name, or empty for the focused one.
         property var panelRequest: ({
             "panel": "",
             "action": "",
             "screen": ""
         })
         property int panelRequests: 0
-        // The dynamic island (clock pill), the session menu grows out of it (screen
-        // coordinates, centerOffset is the distance from the screen's horizontal centre).
+        // Where the dynamic island (the clock pill) is, for the panels growing out of it.
+        // Screen coordinates; centerOffset is how far it sits from the screen's middle.
         property var islandPill: ({
             "centerOffset": 0,
             "top": 6,
@@ -43,11 +46,11 @@ ShellRoot {
             };
             panelRequests += 1;
         }
-        // Bottom edge of the control center panel (screen y), followed by the popups.
+        // Where the control center ends (screen y), so the popups can sit below it.
         property real controlCenterBottom: 0
         property var controlCenterBottomScreen: null
-        // Right-most bar pill, the control center grows out of it (screen coordinates,
-        // right and top are distances from the screen edges).
+        // Where the bar's right-most pill is, for the control center to grow out of it.
+        // right and top are distances from the screen's edges.
         property var controlPill: ({
             "right": 24,
             "top": 6,
@@ -57,12 +60,11 @@ ShellRoot {
         property bool controlPillHovered: false
         property var controlPillScreen: null
         property bool doNotDisturb: false
-        // Screenshots: asked by the keybinds or the screenshot menu (mode "screen",
-        // "region", "annotate", "record", "record-region" or "stop", screen a screen
-        // name, the focused one when empty, delay in ms), the region being chosen
-        // ({screen, file, scale}) and the last one taken, for the island ({screen,
-        // file, annotated}, or for a recording {screen, file: its first frame, video,
-        // duration in s}).
+        // Screenshots. A request has a mode ("screen", "region", "annotate", "record",
+        // "record-region" or "stop"), a screen (empty for the focused one) and a delay in ms.
+        // Then the region being chosen ({screen, file, scale}), and the last capture for the
+        // island: {screen, file, annotated}, or for a recording {screen, file (its first
+        // frame), video, duration in s}.
         property var screenshotRequest: ({
             "mode": "",
             "screen": "",
@@ -88,12 +90,11 @@ ShellRoot {
             screenshotRequests += 1;
         }
 
-        // Privacy dot: an app records the camera or the microphone.
+        // For the privacy dot: something is using the camera or the microphone.
         readonly property bool cameraInUse: privacyService.cameraInUse
         readonly property bool microphoneInUse: privacyService.microphoneInUse
-        // Caffeine: keeps the computer awake (no dimming, locking or sleep) for
-        // caffeineMinutes, until caffeineUntil (ms since epoch), or until turned off
-        // with 0 minutes.
+        // Caffeine keeps the computer awake (no dimming, locking or sleep) for caffeineMinutes,
+        // until caffeineUntil (ms since epoch). 0 minutes means until you turn it off.
         property bool caffeine: false
         property int caffeineMinutes: 0
         property real caffeineUntil: 0
@@ -103,25 +104,25 @@ ShellRoot {
             caffeineUntil = minutes > 0 ? Date.now() + minutes * 60000 : 0;
             caffeine = true;
         }
-        // Until these times (ms since epoch), the next keyboard backlight or
-        // screen brightness change gets no OSD. Set through IPC by hypridle.
+        // Until these times (ms since epoch), the next keyboard backlight or screen
+        // brightness change shows no OSD. hypridle sets them before it dims things.
         property real keyboardOsdMutedUntil: 0
         property real screenOsdMutedUntil: 0
-        // Skip direction announced through IPC (1 next, -1 previous), valid until
-        // musicSkipUntil, so the bar's discs roll the right way.
+        // Which way the last skip went (1 next, -1 previous), valid until musicSkipUntil,
+        // so the bar's discs roll the right way.
         property int musicSkipDirection: 0
         property real musicSkipUntil: 0
-        // Incremented on each "previous" request, which may restart the track instead.
+        // Counts "previous" presses, since one may just restart the track.
         property int musicPreviousRequests: 0
-        // AirPods OSD on a screen's island, once the AirPods card folds back:
-        // {screen, image (the pods' render, "" for none), level (null when unknown), charging}.
+        // The AirPods OSD a screen's island shows once their card folds away:
+        // {screen, image (their picture, or ""), level (null when unknown), charging}.
         property var airPodsOsd: ({
         })
         property int airPodsOsdRequests: 0
     }
 
     // hypridle calls `qs -c hyprpunk ipc call osd ignoreNextChange <keyboard|screen>`
-    // right before dimming or restoring, so its own changes get no OSD.
+    // right before dimming or restoring, so those changes don't pop an OSD.
     IpcHandler {
         function ignoreNextChange(device: string): void {
             const until = Date.now() + 2000;
@@ -134,8 +135,8 @@ ShellRoot {
         target: "osd"
     }
 
-    // The previous/next keybinds call `qs -c hyprpunk ipc call music <previous|next>`
-    // instead of playerctl directly: MPRIS does not tell which way the track changed.
+    // The previous/next shortcuts go through `qs -c hyprpunk ipc call music <previous|next>`
+    // rather than playerctl, because MPRIS never says which way the track changed.
     IpcHandler {
         function skip(direction: int, command: string): void {
             globalState.musicSkipDirection = direction;
@@ -157,7 +158,7 @@ ShellRoot {
         target: "music"
     }
 
-    // Keybinds call `qs -c hyprpunk ipc call <controlcenter|notifications|session|wallpaper|sddm> <toggle|open|close>`.
+    // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
     IpcHandler {
         function toggle(): void {
             globalState.requestPanel("controlcenter", "toggle");

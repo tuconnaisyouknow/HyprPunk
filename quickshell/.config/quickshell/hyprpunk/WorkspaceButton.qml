@@ -1,5 +1,7 @@
 import QtQuick
 
+// One workspace in the bar, shown by its icon. A few icons come from Font Awesome's
+// brands or older sets, hence the font juggling below.
 Rectangle {
     id: button
 

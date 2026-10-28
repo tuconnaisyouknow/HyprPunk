@@ -1,9 +1,8 @@
 import QtQuick
 
-// Cursor of the shell's prompts, copied from the high-above-the-noise SDDM theme: a
-// blinking mauve block. Placed inside its input, whose own cursor is hidden with
-// `cursorDelegate: Item {}`; shown only once typing has started, so the placeholder
-// stays clear.
+// The blinking mauve block cursor of the shell's prompts, borrowed from the SDDM theme.
+// Put it inside the input and hide the input's own cursor (`cursorDelegate: Item {}`).
+// It only shows once you start typing, so the placeholder stays readable.
 Rectangle {
     id: cursor
 

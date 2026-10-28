@@ -1,9 +1,8 @@
 import QtQuick
 import Quickshell.Widgets
 
-// The workspaces the user is not on, one preview at a time, rounded like the control
-// center's blocks: swiped with the arrows, a drag or the touchpad, dots for where it
-// stands. A click on the preview goes to that workspace.
+// A peek at your other workspaces, one at a time. Swipe through them with the arrows,
+// a drag or the touchpad, the dots show where you are, and a click takes you there.
 ClippingRectangle {
     id: card
 
@@ -157,8 +156,8 @@ ClippingRectangle {
             font.pixelSize: 18
         }
 
-        // A MouseArea takes the click for itself: a TapHandler would let the preview
-        // under it take it too, and go to that workspace.
+        // A MouseArea keeps the click to itself; with a TapHandler the preview
+        // underneath would get it too and jump to that workspace.
         MouseArea {
             id: arrowMouse
 

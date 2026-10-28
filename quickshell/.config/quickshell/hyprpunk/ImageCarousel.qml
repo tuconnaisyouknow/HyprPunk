@@ -1,18 +1,18 @@
 import QtQuick
 import Quickshell.Widgets
 
-// Looping carousel of whole images (wallpapers, SDDM theme previews): the one in
-// the centre is bigger with a mauve ring, the one in use has a check badge.
-// The wheel turns it, a click on a neighbour brings it to the centre and a click
-// on the centre emits activated().
+// A looping carousel of pictures, for the wallpapers and the SDDM themes.
+// The middle one is bigger with a mauve ring, the one in use gets a check mark.
+// Scroll to turn it, click a neighbour to bring it to the middle, click the middle
+// one to pick it (activated()).
 Item {
     id: carousel
 
     // [{ "id": string, "image": path or "" for a placeholder with the id }].
     property var items: []
     property string currentId: ""
-    // Target of the carousel, unbounded so it can loop: the item in the centre
-    // is items[wrap(target)]. position follows it with an animation.
+    // Where the carousel is heading. It keeps counting past the end so it can loop
+    // (the middle item is items[wrap(target)]), and position animates after it.
     property int target: 0
     property real position: 0
     property bool animatePosition: false

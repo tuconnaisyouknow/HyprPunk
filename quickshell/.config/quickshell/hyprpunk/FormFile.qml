@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
 
-// Labelled file choice of the control center's forms (NetworkManager's certificate
-// buttons): shows the file's name or "(None)", picked with zenity's file chooser.
+// A labelled file picker for the control center's forms, like NetworkManager's
+// certificate buttons. Shows the file's name or "(None)", and opens zenity to choose.
 ColumnLayout {
     id: file
 

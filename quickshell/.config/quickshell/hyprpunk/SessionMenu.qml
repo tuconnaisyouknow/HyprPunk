@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
 
-// Session menu (lock, logout, reboot, shutdown) in the dynamic island. Arrows or
-// Tab pick an action, Enter or a click runs it.
+// The session menu: lock, log out, reboot, shut down. Arrows or Tab to choose,
+// Enter or a click to go.
 IslandPanel {
     id: session
 
@@ -115,8 +115,8 @@ IslandPanel {
                 color: "transparent"
                 scale: actionTap.pressed ? 0.92 : 1
 
-                // Plain glass, mauve glass when hovered or selected, red once armed
-                // (a second click or Enter confirms).
+                // Plain glass, mauve when hovered or selected, red once armed
+                // (click again or press Enter to confirm).
                 GlassSurface {
                     radius: parent.radius
                     hovered: actionCard.selected

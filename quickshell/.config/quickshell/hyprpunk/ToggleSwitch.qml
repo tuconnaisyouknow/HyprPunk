@@ -1,7 +1,7 @@
 import QtQuick
 
-// On/off switch of the control center: mauve glass while on, plain glass while off,
-// the knob sliding across, a bounce when clicked.
+// An on/off switch for the control center: mauve glass when on, plain glass when off,
+// the knob sliding across with a little bounce.
 Rectangle {
     id: toggleSwitch
 

@@ -4,10 +4,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The session's locale profiles (locale-profilectl.sh) and how the shell starts programs.
-// The shell keeps the environment it was started with, so after a locale change the
-// programs it starts would keep the old locale: apps go through Hyprland, whose
-// environment follows the profiles, and the shell's own children get localeEnvironment.
+// The language settings (locale-profilectl.sh), and how the shell launches things.
+// The shell keeps the environment it started with, so after a language change anything
+// it launched itself would still speak the old one. Apps are started through Hyprland
+// instead, which follows the change, and the shell's own helpers get localeEnvironment.
 Singleton {
     id: session
 
@@ -49,7 +49,7 @@ Singleton {
         if (workingDirectory)
             line = "cd " + quoted(workingDirectory) + " && exec " + line;
 
-        // A Lua long string needs no escaping, at a level the command can't close.
+        // A Lua long string, with enough = signs that the command can't close it early.
         let level = "=";
         while (line.includes("]" + level + "]"))
             level += "=";

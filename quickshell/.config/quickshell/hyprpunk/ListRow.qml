@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
+// A row in the control center's lists (networks, devices, outputs): icon, title,
+// an optional subtitle and something on the right.
 ControlBlock {
     id: row
 

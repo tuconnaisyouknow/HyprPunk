@@ -2,10 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Monitor settings in the dynamic island: the outputs drawn to scale (a click
-// selects one), then the settings of the selected output, applied right away
-// through ~/Scripts/displayctl.sh. A resolution, refresh rate or scale change asks
-// to be kept and reverts on its own otherwise.
+// Display settings: your screens drawn to scale (click one to select it), then its
+// settings, applied straight away through ~/Scripts/displayctl.sh. A new resolution,
+// refresh rate or scale asks if you want to keep it, and undoes itself if you don't answer.
 IslandPanel {
     id: monitors
 
@@ -90,7 +89,7 @@ IslandPanel {
         infoProcess.running = true;
     }
 
-    // guarded: a resolution, refresh rate or scale change, which can be reverted.
+    // guarded: a resolution, refresh rate or scale change, which can undo itself.
     function apply(args, guarded) {
         if (busy)
             return ;
@@ -606,7 +605,7 @@ IslandPanel {
 
         }
 
-        // Dimmed: assigned to another output (taking it moves it here).
+        // Dimmed: it belongs to another screen (picking it moves it here).
         SettingRow {
             title: "Workspaces"
             visible: monitors.selected !== null

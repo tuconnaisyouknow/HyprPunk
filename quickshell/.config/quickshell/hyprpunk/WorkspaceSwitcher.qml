@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell.Hyprland
 
-// The bar's workspace buttons (1 to 10 on this screen, the empty ones left out but the
-// focused one), with the mauve background sliding to the focused one; tells which
-// one is under the pointer, for the preview card.
+// The bar's workspace buttons: this screen's workspaces from 1 to 10, empty ones
+// hidden unless you're on them. The mauve highlight slides to the active one, and the
+// one under the pointer is passed on to the preview card.
 Item {
     id: workspaceSwitcher
 

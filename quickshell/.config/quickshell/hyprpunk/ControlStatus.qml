@@ -3,8 +3,8 @@ import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell.Services.UPower
 
-// The control pill's content: network (a spinner while it connects), caffeine,
-// volume and battery, read from the bar. Shared by the bar and the lock screen.
+// What the control pill shows: network (a spinner while it connects), caffeine,
+// volume and battery. The bar and the lock screen both use it.
 RowLayout {
     id: status
 
@@ -70,8 +70,8 @@ RowLayout {
 
             }
 
-            // On the GUI thread: an animator, on the render thread, held the whole
-            // shell to 30 frames a second, so every animation played in slow motion.
+            // A plain animation on purpose: an Animator here held the whole shell
+            // to 30 frames a second, and everything played in slow motion.
             RotationAnimation on rotation {
                 running: networkSpinner.visible
                 from: 0
@@ -139,7 +139,7 @@ RowLayout {
         id: batteryPill
 
         visible: status.bar.hasBattery
-        // Red only while it runs out: charging, a low level is fine.
+        // Red only when it's running out, not while charging.
         color: UPower.onBattery && status.bar.batteryPercent <= 20 ? status.bar.red : status.bar.mauve
         icon: status.bar.batteryIcon()
         text: status.bar.batteryPercent + "%"
