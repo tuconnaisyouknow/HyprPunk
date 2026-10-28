@@ -1,17 +1,18 @@
+-- Tab jumps out of quotes and brackets, Shift+Tab back in
 return {
   {
     'abecodes/tabout.nvim',
     lazy = false,
     config = function()
       require('tabout').setup {
-        tabkey = '<Tab>',             -- key to trigger tabout, set to an empty string to disable
-        backwards_tabkey = '<S-Tab>', -- key to trigger backwards tabout, set to an empty string to disable
-        act_as_tab = true,            -- shift content if tab out is not possible
-        act_as_shift_tab = false,     -- reverse shift content if tab out is not possible (if your keyboard/terminal supports <S-Tab>)
-        default_tab = '<C-t>',        -- shift default action (only at the beginning of a line, otherwise <TAB> is used)
-        default_shift_tab = '<C-d>',  -- reverse shift default action,
-        enable_backwards = true,      -- well ...
-        completion = false,           -- if the tabkey is used in a completion pum
+        tabkey = '<Tab>',
+        backwards_tabkey = '<S-Tab>',
+        act_as_tab = true,           -- Nothing to jump out of: a regular Tab
+        act_as_shift_tab = false,
+        default_tab = '<C-t>',       -- Indent at the start of a line
+        default_shift_tab = '<C-d>',
+        enable_backwards = true,
+        completion = false,          -- Tab is left to the completion menu when it's open
         tabouts = {
           { open = "'", close = "'" },
           { open = '"', close = '"' },
@@ -20,23 +21,23 @@ return {
           { open = '[', close = ']' },
           { open = '{', close = '}' }
         },
-        ignore_beginning = true, --[[ if the cursor is at the beginning of a filled element it will rather tab out than shift the content ]]
-        exclude = {} -- tabout will ignore these filetypes
+        ignore_beginning = true,     -- Right after an opening quote, jump out rather than indent
+        exclude = {}
       }
     end,
-    dependencies = { -- These are optional
+    dependencies = {
       "nvim-treesitter/nvim-treesitter",
       "L3MON4D3/LuaSnip",
       "hrsh7th/nvim-cmp"
     },
-    opt = true,              -- Set this to true if the plugin is optional
-    event = 'InsertCharPre', -- Set the event to 'InsertCharPre' for better compatibility
+    opt = true,
+    event = 'InsertCharPre', -- Loads with the first character you type
     priority = 1000,
   },
   {
     "L3MON4D3/LuaSnip",
     keys = function()
-      -- Disable default tab keybinding in LuaSnip
+      -- LuaSnip lets go of Tab, tabout takes it
       return {}
     end,
   },

@@ -1,3 +1,4 @@
+-- Language servers, linters and formatters, installed on their own by Mason
 return {
   {
     "mason-org/mason.nvim",
@@ -24,50 +25,50 @@ return {
     config = function()
       require("mason-tool-installer").setup({
         ensure_installed = {
-          -- Bash config
+          -- Bash
           "bashls",
           "shellcheck",
           "shellharden",
           "shfmt",
 
-          -- Python config
+          -- Python
           "pyright",
           "ruff",
           "black",
 
-          -- HTML config
+          -- HTML
           "html-lsp",
           "htmlhint",
           "prettier",
 
-          -- CSS config
+          -- CSS
           "cssls",
           "stylelint",
 
-          -- React config
+          -- React
           "ts_ls",
           "tailwindcss",
           "eslint",
 
-          -- Java config
+          -- Java
           "jdtls",
           "checkstyle",
           "google-java-format",
 
-          -- Markdown config
+          -- Markdown
           "marksman",
           "markdownlint",
 
-          -- Docker config
+          -- Docker
           "docker_compose_language_service",
           "dockerls",
           "hadolint",
 
-          -- JSON config
+          -- JSON
           "jsonls",
           "fixjson",
 
-          -- Hyprland config
+          -- Hyprland
           "hyprls",
         },
       })
