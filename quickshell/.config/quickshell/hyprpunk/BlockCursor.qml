@@ -2,7 +2,8 @@ import QtQuick
 
 // The blinking mauve block cursor of the shell's prompts, borrowed from the SDDM theme.
 // Put it inside the input and hide the input's own cursor (`cursorDelegate: Item {}`).
-// It only shows once you start typing, so the placeholder stays readable.
+// It only shows once you start typing, so the placeholder stays readable; until then
+// the field's mauve ring tells you where you're typing (GlassSurface's focused).
 Rectangle {
     id: cursor
 

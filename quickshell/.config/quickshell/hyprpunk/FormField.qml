@@ -33,6 +33,16 @@ ColumnLayout {
         radius: 12
         color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.45)
         opacity: field.enabled ? 1 : 0.45
+        // A mauve ring while you can type in it, like the glass fields.
+        border.width: 1.5
+        border.color: Qt.rgba(203 / 255, 166 / 255, 247 / 255, input.activeFocus ? 0.85 : 0)
+
+        Behavior on border.color {
+            ColorAnimation {
+                duration: 160
+            }
+
+        }
 
         TextInput {
             id: input

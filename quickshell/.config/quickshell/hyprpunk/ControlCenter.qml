@@ -966,8 +966,18 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 implicitHeight: 34
                                 radius: 12
-                                // Recessed field inside the glass card.
+                                // Recessed field inside the glass card, with a mauve ring
+                                // while you can type in it.
                                 color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.45)
+                                border.width: 1.5
+                                border.color: Qt.rgba(203 / 255, 166 / 255, 247 / 255, passwordInput.activeFocus ? 0.85 : 0)
+
+                                Behavior on border.color {
+                                    ColorAnimation {
+                                        duration: 160
+                                    }
+
+                                }
 
                                 TextInput {
                                     id: passwordInput
