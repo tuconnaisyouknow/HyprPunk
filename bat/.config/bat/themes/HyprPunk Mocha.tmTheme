@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Catppuccin Mocha for bat, retouched so code gets the same colors as in Neovim.
+     The NEOVIM'S COLORS rules come first, so they win over Catppuccin's own
+     whenever both match a token just as closely. -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
     <key>name</key>
-    <string>Catppuccin Mocha</string>
+    <string>HyprPunk Mocha</string>
     <key>semanticClass</key>
     <string>theme.dark.catppuccin-mocha</string>
     <key>uuid</key>
-    <string>627ce890-fabb-4d39-9819-7be71f4bdca7</string>
+    <string>4c9f1d2e-8b7a-4e35-9a61-2f0d5c8e7b13</string>
     <key>author</key>
     <string>Catppuccin Org</string>
     <key>colorSpaceName</key>
@@ -39,6 +42,347 @@
           <string>#7f849c</string>
         </dict>
       </dict>
+      <!-- ################### -->
+      <!-- # NEOVIM'S COLORS # -->
+      <!-- ################### -->
+      <!-- Operators sky, punctuation overlay2 like Neovim -->
+      <dict>
+        <key>scope</key>
+        <string>keyword.operator, storage.type.function.arrow.ts, keyword.declaration.function.arrow.js, constant.numeric.integer.decimal.file-descriptor, keyword.generator.asterisk, punctuation.separator.annotation.return</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#89dceb</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>keyword.operator.logical.lua, keyword.operator.word, keyword.operator.new, keyword.operator.expression</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#cba6f7</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>punctuation.accessor, keyword.operator.type.annotation, keyword.operator.type.annotation.ts, meta.function.shell punctuation.section.parens.begin.shell, meta.function.shell punctuation.section.parens.end.shell, keyword.operator.type.ts, meta.brace.round, meta.brace.square, punctuation.definition.parameters, punctuation.definition.typeparameters, keyword.operator.logical.continue.shell, keyword.control.conditional.patterns.end.shell, support.function.double-brace</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#9399b2</string>
+        </dict>
+      </dict>
+      <!-- Constants and numbers peach -->
+      <dict>
+        <key>scope</key>
+        <string>constant.language.null, constant.language.undefined, constant.language.null.ts, constant.language.undefined.ts, constant.language.null.js, constant.language.undefined.js, constant.language.nan, constant.language.infinity, storage.type.numeric, constant.numeric punctuation, support.constant.json</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#fab387</string>
+        </dict>
+      </dict>
+      <!-- Imports and modules yellow -->
+      <dict>
+        <key>scope</key>
+        <string>meta.import variable.other.readwrite.alias - meta.block, meta.statement.import meta.generic-name, meta.statement.import meta.import-name, meta.new.expr entity.name.function</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f9e2af</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>constant.language.import-export-all</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f5c2e7</string>
+        </dict>
+      </dict>
+      <!-- Properties lavender -->
+      <dict>
+        <key>scope</key>
+        <string>variable.other.property.ts, variable.other.property.js, variable.object.property, variable.other.property, variable.other.object.property, support.variable.property, meta.object-literal.key, variable.other.enummember, meta.property.lua, string.unquoted.key.lua</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b4befe</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>punctuation.separator.key-value.lua</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#89dceb</string>
+        </dict>
+      </dict>
+      <!-- Built-ins red like Neovim -->
+      <dict>
+        <key>scope</key>
+        <string>support.class.console, variable.language.super, variable.language.this, variable.language.python, support.function.set.shell, support.function.echo.shell, support.function.exit.shell, support.function.printf.shell, support.function.builtin.shell, keyword.control.flow.return.shell</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f38ba8</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>support.function.builtin.lua, meta.decorator, punctuation.decorator, punctuation.decorator.ts, meta.decorator variable.other.readwrite, support.type.builtin.ts, meta.annotation.python</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#fab387</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>support.type.exception.python</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#cba6f7</string>
+        </dict>
+      </dict>
+      <!-- Documentation tags mauve, like @param -->
+      <dict>
+        <key>scope</key>
+        <string>punctuation.definition.block.tag.jsdoc, comment.block.documentation punctuation.definition.block.tag.jsdoc</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#cba6f7</string>
+        </dict>
+      </dict>
+      <!-- Strings: the bits inside them pink, docstrings teal -->
+      <dict>
+        <key>scope</key>
+        <string>punctuation.definition.template-expression, punctuation.section.interpolation, storage.modifier.conversion.python, keyword.operator.optional.ts</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f5c2e7</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>comment.block.documentation.python, comment.block.documentation.python punctuation.definition.comment</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#94e2d5</string>
+        </dict>
+      </dict>
+      <!-- Regular expressions -->
+      <dict>
+        <key>scope</key>
+        <string>string.regexp, string.regexp.ts, string.regexp meta.group.regexp, keyword.control.anchor.regexp, keyword.other.ts</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f5c2e7</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>string.regexp punctuation.definition.string, string.regexp punctuation.definition.string.begin, string.regexp punctuation.definition.string.end, punctuation.definition.group.regexp, punctuation.definition.character-class.regexp</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#9399b2</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>variable.other.regexp</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b4befe</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>constant.other.character-class, constant.other.character-class.regexp, constant.other.character-class.range.regexp, constant.other.character-class.set.regexp</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#fab387</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>keyword.operator.quantifier.regexp, keyword.operator.or.regexp</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#89dceb</string>
+        </dict>
+      </dict>
+      <!-- Shell: arguments green, expansions pink -->
+      <dict>
+        <key>scope</key>
+        <string>meta.function-call.arguments.shell, variable.parameter.option.shell, punctuation.definition.parameter.shell</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#a6e3a1</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>punctuation.definition.variable.shell, string punctuation.definition.variable.shell, meta.conditional.case.clause.patterns keyword.operator.regexp.quantifier.shell, punctuation.section.parens.begin.shell, punctuation.section.parens.end.shell, punctuation.section.expansion.parameter, meta.group.expansion.parameter keyword.operator</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f5c2e7</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>keyword.operator.regexp.quantifier.shell</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#cdd6f4</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>meta.conditional.case.clause.patterns.shell</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#a6e3a1</string>
+        </dict>
+      </dict>
+      <!-- JSON keys lavender -->
+      <dict>
+        <key>scope</key>
+        <string>source.json meta.mapping.key string, source.json meta.mapping.key punctuation.definition.string.begin, source.json meta.mapping.key punctuation.definition.string.end</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b4befe</string>
+        </dict>
+      </dict>
+      <!-- Markdown, each heading level its own color -->
+      <dict>
+        <key>scope</key>
+        <string>markup.heading.1, markup.heading.1 entity.name.section, markup.heading.1 punctuation.definition.heading</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f38ba8</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.heading.2, markup.heading.2 entity.name.section, markup.heading.2 punctuation.definition.heading</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#fab387</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.heading.3, markup.heading.3 entity.name.section, markup.heading.3 punctuation.definition.heading</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f9e2af</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.heading.4, markup.heading.4 entity.name.section, markup.heading.4 punctuation.definition.heading</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#a6e3a1</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.heading.5, markup.heading.5 entity.name.section, markup.heading.5 punctuation.definition.heading</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#74c7ec</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.heading.6, markup.heading.6 entity.name.section, markup.heading.6 punctuation.definition.heading</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b4befe</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.bold punctuation.definition.bold, markup.italic punctuation.definition.italic</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f38ba8</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>markup.raw.inline, markup.raw.inline punctuation.definition.raw, punctuation.definition.raw.code-fence</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#a6e3a1</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>meta.link.inline.description, meta.link.inline punctuation.definition.link, meta.link.inline punctuation.definition.metadata</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#b4befe</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>punctuation.definition.list_item</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#94e2d5</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>punctuation.definition.blockquote</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#f5c2e7</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key>
+        <string>constant.other.language-name</string>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key>
+          <string>#74c7ec</string>
+        </dict>
+      </dict>
+      <!-- ############## -->
+      <!-- # CATPPUCCIN # -->
+      <!-- ############## -->
       <dict>
         <key>name</key>
         <string>Basic text &amp; variable names (incl. leading punctuation)</string>
