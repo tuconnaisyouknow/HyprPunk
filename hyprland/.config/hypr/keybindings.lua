@@ -1,3 +1,6 @@
+-- Every shortcut, each with the description the shell's keybindings panel shows
+-- (Super+Ctrl+K). Loaded by hyprland.lua.
+
 -----------------
 -- MY PROGRAMS --
 -----------------
@@ -7,32 +10,10 @@ local fileManager = "dolphin"
 local notepad = "obsidian"
 local menu = "qs -c hyprpunk ipc call launcher toggle"
 local browser = "brave"
-local music = "spotify-launcher"
+local music = "spicetify auto"
 local keyboard = __require("keyboard_state")
 
--- Every binding is remembered by its description, so the shell's keybindings panel
--- can run one when you click it (through hyprctl eval run_keybinding(...))
-local keybindingActions = {}
-
-function run_keybinding(description)
-  local action = keybindingActions[description]
-  assert(action ~= nil, "unknown keybinding: " .. description)
-
-  if type(action) == "function" then
-    action()
-  else
-    hl.dispatch(action)
-  end
-end
-
--- Like hl.bind, but a description is mandatory: it's what the panel shows
-local function bind(keys, dispatcher, description, opts)
-  assert(type(description) == "string" and description ~= "", "keybinding description is required")
-  keybindingActions[description] = dispatcher
-  opts = opts or {}
-  opts.description = description
-  return hl.bind(keys, dispatcher, opts)
-end
+local bind = require("lib.bind").bind
 
 -- Floating windows slide by a few pixels, tiled ones swap places with their neighbour
 local function move_active_window_or_dispatch(direction, delta)

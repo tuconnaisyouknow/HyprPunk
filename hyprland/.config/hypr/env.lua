@@ -1,3 +1,6 @@
+-- The environment every app started from the session inherits: language, cursor,
+-- Wayland hints for GTK and Qt, and your editor. Loaded by hyprland.lua.
+
 ---------------------------
 -- ENVIRONMENT VARIABLES --
 ---------------------------
@@ -7,17 +10,12 @@
 local locale = __require("locale_state")
 hl.env("LANG", locale.language)
 hl.env("LC_MESSAGES", locale.language)
-hl.env("LC_CTYPE", locale.regional)
-hl.env("LC_NUMERIC", locale.regional)
-hl.env("LC_TIME", locale.regional)
-hl.env("LC_COLLATE", locale.regional)
-hl.env("LC_MONETARY", locale.regional)
-hl.env("LC_PAPER", locale.regional)
-hl.env("LC_NAME", locale.regional)
-hl.env("LC_ADDRESS", locale.regional)
-hl.env("LC_TELEPHONE", locale.regional)
-hl.env("LC_MEASUREMENT", locale.regional)
-hl.env("LC_IDENTIFICATION", locale.regional)
+for _, variable in ipairs({
+  "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE", "LC_MONETARY", "LC_PAPER",
+  "LC_NAME", "LC_ADDRESS", "LC_TELEPHONE", "LC_MEASUREMENT", "LC_IDENTIFICATION",
+}) do
+  hl.env(variable, locale.regional)
+end
 
 -- Rosé Pine cursor, for X11 and Wayland apps alike
 hl.env("XCURSOR_SIZE", "24")

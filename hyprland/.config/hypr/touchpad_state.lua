@@ -1,26 +1,18 @@
 -- Reads the touchpad toggle saved by touchpadctl.sh: on or off, and which devices it covers.
 -- No file yet means touchpads stay on.
-local state = {
+local state = __require("lib.state")
+
+local touchpad = {
   enabled = true,
   devices = {},
 }
 
-local state_home = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
-local state_path = state_home .. "/hyprpunk/touchpad-state.conf"
-local state_file = io.open(state_path, "r")
-
-if state_file == nil then
-  return state
-end
-
-for line in state_file:lines() do
-  local key, value = line:match("^([%w_-]+)=(.+)$")
-  if key == "enabled" then
-    state.enabled = value == "true"
-  elseif key == "device" then
-    table.insert(state.devices, value)
+for _, entry in ipairs(state.pairs("touchpad-state.conf") or {}) do
+  if entry.key == "enabled" then
+    touchpad.enabled = entry.value == "true"
+  elseif entry.key == "device" then
+    table.insert(touchpad.devices, entry.value)
   end
 end
 
-state_file:close()
-return state
+return touchpad

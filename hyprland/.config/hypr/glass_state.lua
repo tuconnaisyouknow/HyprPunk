@@ -1,14 +1,8 @@
 -- Reads the shell's glass style saved by glassctl.sh. The liquid glass is more
 -- see-through, so the layers' blur has to reach fainter pixels for it to show.
-local state_home = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
-local state_file = io.open(state_home .. "/hyprpunk/glass-style", "r")
-local style = state_file and state_file:read("*l") or "classic"
+local state = __require("lib.state")
 
-if state_file then
-  state_file:close()
-end
-
-local liquid = style == "liquid"
+local liquid = state.line("glass-style", "classic") == "liquid"
 
 return {
   liquid = liquid,

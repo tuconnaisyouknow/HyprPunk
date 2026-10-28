@@ -13,17 +13,14 @@ local state = {
   monitors = {},
 }
 
-local state_home = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
-local state_path = state_home .. "/hyprpunk/monitor-state.conf"
-local state_file = io.open(state_path, "r")
-
-if state_file == nil then
+local entries = __require("lib.state").pairs("monitor-state.conf")
+if entries == nil then
   return state
 end
 
 -- One key=value per line, with the screen's name after the dot (mode.DP-1=...)
-for line in state_file:lines() do
-  local key, value = line:match("^([%w%._-]+)=(.+)$")
+for _, entry in ipairs(entries) do
+  local key, value = entry.key, entry.value
   if key == "default_mode" then
     state.default_mode = value
   elseif key == "default_scale" then
@@ -56,5 +53,4 @@ for line in state_file:lines() do
   end
 end
 
-state_file:close()
 return state

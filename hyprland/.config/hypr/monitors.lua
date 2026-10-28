@@ -1,12 +1,12 @@
+-- Each screen's mode, scale and position, as the shell's display settings saved them.
+-- Loaded by hyprland.lua.
+
 --------------
 -- MONITORS --
 --------------
 
--- monitor_state is a plain Lua table, so it goes through the original require
--- (Hyprland's own one is for config files). Its cache is cleared so a reload
--- picks up whatever the display settings just saved.
-package.loaded["monitor_state"] = nil
-local state = __require("monitor_state")
+-- Read fresh, so a reload picks up whatever the display settings just saved
+local state = __require("lib.state").fresh("monitor_state")
 
 -- Any screen we know nothing about yet gets sensible defaults
 hl.monitor({

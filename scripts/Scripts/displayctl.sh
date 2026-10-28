@@ -10,7 +10,7 @@
 # workspaces.lua read. The shell's display settings drive it through the commands below.
 #
 # Hyprland calls bootstrap at login, sync when a screen is plugged in, and reflow when
-# one goes away (see hyprland.lua).
+# one goes away (see autostart.lua).
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"

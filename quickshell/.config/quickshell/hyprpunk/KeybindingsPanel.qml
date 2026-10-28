@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 
 // Every Hyprland shortcut that has a description, searchable by what it does or its
-// keys. Enter or a click runs it for you (through run_keybinding in keybindings.lua).
+// keys. Enter or a click runs it for you (through run_keybinding in lib/bind.lua).
 SearchPanel {
     id: keybindings
 

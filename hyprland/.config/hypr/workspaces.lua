@@ -1,10 +1,11 @@
+-- Pins workspaces to screens, as the shell's display settings chose. Loaded by hyprland.lua.
+
 ----------------
 -- WORKSPACES --
 ----------------
 
 -- Pins each workspace to the screen it was given in the display settings
-package.loaded["monitor_state"] = nil
-local state = __require("monitor_state")
+local state = __require("lib.state").fresh("monitor_state")
 
 local assignments = {}
 
