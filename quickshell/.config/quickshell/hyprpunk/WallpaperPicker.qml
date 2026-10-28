@@ -8,7 +8,6 @@ IslandPanel {
     id: picker
 
     readonly property string wallpaperDir: Quickshell.env("HOME") + "/Pictures/Wallpapers"
-    readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk/wallpaper.conf"
     readonly property string wallpaperctl: Quickshell.env("HOME") + "/Scripts/wallpaperctl.sh"
     readonly property int cardPadding: 14
 
@@ -52,19 +51,6 @@ IslandPanel {
 
     }
 
-    FileView {
-        path: picker.stateFile
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: {
-            const match = text().match(/^wallpaper=(.*)$/m);
-            if (match)
-                carousel.currentId = match[1];
-
-        }
-    }
-
     Process {
         id: applyProcess
 
@@ -79,27 +65,19 @@ IslandPanel {
         }
     }
 
-    Item {
+    CarouselKeys {
         id: keys
 
-        Keys.onPressed: (event) => {
-            const direction = picker.horizontalKey(event);
-            if (direction !== 0) {
-                carousel.step(direction);
-                event.accepted = true;
-            }
-        }
-        Keys.onLeftPressed: carousel.step(-1)
-        Keys.onRightPressed: carousel.step(1)
-        Keys.onTabPressed: carousel.step(1)
-        Keys.onBacktabPressed: carousel.step(-1)
-        Keys.onReturnPressed: picker.apply()
-        Keys.onEnterPressed: picker.apply()
+        panel: picker
+        carousel: carousel
+        onPicked: picker.apply()
     }
+
 
     ImageCarousel {
         id: carousel
 
+        currentId: Session.wallpaper
         anchors.top: parent.top
         anchors.topMargin: picker.cardPadding
         anchors.left: parent.left

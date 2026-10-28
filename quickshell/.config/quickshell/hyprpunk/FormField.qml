@@ -1,28 +1,32 @@
 import QtQuick
 import QtQuick.Layouts
 
-// A labelled text field for the control center's forms, sunk into the glass like the
-// Wi-Fi password. Secret ones hide what you type.
+// A text field for the control center's forms and the Wi-Fi password, sunk into the
+// glass, with its label above when it has one. Secret ones hide what you type.
 ColumnLayout {
     id: field
 
-    required property string label
+    property string label: ""
     property alias text: input.text
     property string placeholder: ""
     property bool secret: false
     // Shown in clear by a "Show password" check.
     property bool revealed: false
     property string tooltip: ""
+    // Escape gives up (escaped()) instead of reaching the page.
+    property bool escapable: false
     readonly property alias input: input
 
     signal accepted()
+    signal escaped()
 
     spacing: 5
 
     Text {
+        visible: field.label !== ""
         text: field.label
-        color: "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.lavender
+        font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
     }
@@ -31,11 +35,11 @@ ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: 34
         radius: 12
-        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.45)
+        color: Theme.recessed
         opacity: field.enabled ? 1 : 0.45
         // A mauve ring while you can type in it, like the glass fields.
         border.width: 1.5
-        border.color: Qt.rgba(203 / 255, 166 / 255, 247 / 255, input.activeFocus ? 0.85 : 0)
+        border.color: Theme.alpha(Theme.mauve, input.activeFocus ? 0.85 : 0)
 
         Behavior on border.color {
             ColorAnimation {
@@ -53,22 +57,28 @@ ColumnLayout {
             verticalAlignment: TextInput.AlignVCenter
             echoMode: field.secret && !field.revealed ? TextInput.Password : TextInput.Normal
             passwordCharacter: "■"
-            color: "#cba6f7"
-            selectionColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.35)
-            selectedTextColor: "#cdd6f4"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            selectionColor: Theme.selection
+            selectedTextColor: Theme.text
+            font.family: Theme.font
             font.pixelSize: 14
             font.letterSpacing: field.secret && !field.revealed ? 3 : 0
             clip: true
             cursorDelegate: Item {
             }
             onAccepted: field.accepted()
+            Keys.onEscapePressed: (event) => {
+                event.accepted = field.escapable;
+                if (field.escapable)
+                    field.escaped();
+
+            }
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: parent.text === ""
                 text: field.placeholder
-                color: "#6c7086"
+                color: Theme.overlay0
                 font.family: parent.font.family
                 font.pixelSize: parent.font.pixelSize
             }

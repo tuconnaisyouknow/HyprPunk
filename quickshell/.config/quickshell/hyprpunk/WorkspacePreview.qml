@@ -27,7 +27,7 @@ ClippingRectangle {
 
     implicitHeight: Math.round(width * screenHeight / screenWidth)
     radius: 12
-    color: "#11111b"
+    color: Theme.crust
 
     Image {
         anchors.fill: parent
@@ -56,9 +56,9 @@ ClippingRectangle {
             visible: size[0] > 0 && size[1] > 0
             z: ipc.fullscreen ? 2 : ipc.floating ? 1 : 0
             radius: 4
-            color: "#313244"
+            color: Theme.surface0
             border.width: 1
-            border.color: modelData.activated ? "#cba6f7" : Qt.rgba(180 / 255, 190 / 255, 254 / 255, 0.25)
+            border.color: modelData.activated ? Theme.mauve : Theme.alpha(Theme.lavender, 0.25)
 
             // While the capture comes, or when the window cannot be captured.
             IconImage {
@@ -100,15 +100,15 @@ ClippingRectangle {
         width: emptyLabel.implicitWidth + 24
         height: emptyLabel.implicitHeight + 12
         radius: height / 2
-        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.7)
+        color: Theme.alpha(Theme.crust, 0.7)
 
         Text {
             id: emptyLabel
 
             anchors.centerIn: parent
             text: "Empty"
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 13
             font.weight: Font.DemiBold
         }

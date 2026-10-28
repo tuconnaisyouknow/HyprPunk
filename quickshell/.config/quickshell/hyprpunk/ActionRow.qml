@@ -20,7 +20,7 @@ ControlBlock {
     Rectangle {
         anchors.fill: parent
         radius: action.radius
-        color: Qt.rgba(243 / 255, 139 / 255, 168 / 255, 0.9)
+        color: Theme.alpha(Theme.red, 0.9)
         opacity: action.armed ? 1 : 0
 
         Behavior on opacity {
@@ -40,8 +40,8 @@ ControlBlock {
 
         Text {
             text: action.icon
-            color: action.armed ? "#1e1e2e" : action.destructive ? "#f38ba8" : "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: action.armed ? Theme.base : action.destructive ? Theme.red : Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 17
         }
 
@@ -49,8 +49,8 @@ ControlBlock {
             Layout.fillWidth: true
             elide: Text.ElideRight
             text: action.armed ? action.confirmLabel : action.label
-            color: action.armed ? "#1e1e2e" : action.destructive ? "#f38ba8" : "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: action.armed ? Theme.base : action.destructive ? Theme.red : Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.Bold
         }

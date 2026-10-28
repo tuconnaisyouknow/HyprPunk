@@ -19,7 +19,7 @@ IslandPanel {
     property string pendingPassword: ""
     // Font of the active theme (its font/ folder), used by the password field like on its login screen.
     property string themeFont: ""
-    readonly property string passwordFont: themeFontLoader.status === FontLoader.Ready ? themeFontLoader.name : "JetBrainsMono Nerd Font"
+    readonly property string passwordFont: themeFontLoader.status === FontLoader.Ready ? themeFontLoader.name : Theme.font
 
     function apply() {
         const theme = carousel.centreId;
@@ -45,7 +45,7 @@ IslandPanel {
 
     function cancelPassword() {
         askingPassword = false;
-        passwordInput.text = "";
+        passwordField.text = "";
         focusCard();
     }
 
@@ -56,7 +56,7 @@ IslandPanel {
     keyTargets: [keys]
     onOpening: {
         askingPassword = false;
-        passwordInput.text = "";
+        passwordField.text = "";
         listProcess.running = true;
         currentFile.reload();
         carousel.centreOn(carousel.currentId);
@@ -64,12 +64,12 @@ IslandPanel {
     onOpenedChanged: {
         if (!opened) {
             askingPassword = false;
-            passwordInput.text = "";
+            passwordField.text = "";
         }
     }
     onAskingPasswordChanged: {
         if (askingPassword)
-            passwordInput.forceActiveFocus();
+            passwordField.input.forceActiveFocus();
 
     }
 
@@ -171,11 +171,11 @@ IslandPanel {
             const errors = applyErrors.text.trim();
             if (exitCode === 0) {
                 picker.askingPassword = false;
-                passwordInput.text = "";
+                passwordField.text = "";
                 currentFile.reload();
                 picker.close();
             } else if (picker.askingPassword && /incorrect password|try again|password is required/i.test(errors)) {
-                passwordInput.text = "";
+                passwordField.text = "";
                 shake.restart();
             } else {
                 Quickshell.execDetached(["notify-send", "-u", "critical", "Failed to apply SDDM theme", errors.split("\n").pop() || picker.pendingTheme]);
@@ -189,23 +189,14 @@ IslandPanel {
 
     }
 
-    Item {
+    CarouselKeys {
         id: keys
 
-        Keys.onPressed: (event) => {
-            const direction = picker.horizontalKey(event);
-            if (direction !== 0) {
-                carousel.step(direction);
-                event.accepted = true;
-            }
-        }
-        Keys.onLeftPressed: carousel.step(-1)
-        Keys.onRightPressed: carousel.step(1)
-        Keys.onTabPressed: carousel.step(1)
-        Keys.onBacktabPressed: carousel.step(-1)
-        Keys.onReturnPressed: picker.apply()
-        Keys.onEnterPressed: picker.apply()
+        panel: picker
+        carousel: carousel
+        onPicked: picker.apply()
     }
+
 
     // Kept at full width and centred, so it does not reflow while the card shrinks.
     ImageCarousel {
@@ -227,8 +218,9 @@ IslandPanel {
 
     }
 
-    // Password for sudo, alone in the shrunk card.
-    Rectangle {
+    // Password for sudo, alone in the shrunk card, its hidden letters like on the login
+    // screen, in the theme's own font.
+    GlassField {
         id: passwordField
 
         property real shakeOffset: 0
@@ -236,75 +228,25 @@ IslandPanel {
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: shakeOffset
         width: 300
-        height: 44
-        radius: 22
-        color: "transparent"
         visible: opacity > 0
         opacity: picker.askingPassword ? 1 : 0
         scale: picker.askingPassword ? 1 : 0.92
+        enabled: !picker.applying
+        icon: picker.applying ? "󰔟" : "󰌾"
+        secret: true
+        textColor: Theme.mauve
+        fontFamily: picker.passwordFont
+        placeholder: picker.applying ? "Applying…" : "Password for sudo"
+        onAccepted: {
+            if (text !== "")
+                picker.run(text);
 
-        GlassSurface {
-            radius: parent.radius
-            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.6)
-            focused: passwordInput.activeFocus
         }
-
-        Text {
-            id: lockIcon
-
-            anchors.left: parent.left
-            anchors.leftMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
-            text: picker.applying ? "󰔟" : "󰌾"
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 16
-        }
-
-        TextInput {
-            id: passwordInput
-
-            anchors.left: lockIcon.right
-            anchors.leftMargin: 10
-            anchors.right: parent.right
-            anchors.rightMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
-            enabled: !picker.applying
-            // Hidden letters as little squares, with the blinking block cursor,
-            // just like the high-above-the-noise login screen.
-            echoMode: TextInput.Password
-            passwordCharacter: "■"
-            color: "#cba6f7"
-            selectionColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.35)
-            font.family: picker.passwordFont
-            font.pixelSize: 14
-            font.letterSpacing: 3
-            clip: true
-            cursorDelegate: Item {
-            }
-            onAccepted: {
-                if (text !== "")
-                    picker.run(text);
-
-            }
-            Keys.onEscapePressed: (event) => {
+        onKeyPressed: (event) => {
+            if (event.key === Qt.Key_Escape) {
                 picker.cancelPassword();
                 event.accepted = true;
             }
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: parent.text === ""
-                text: picker.applying ? "Applying…" : "Password for sudo"
-                color: "#7f849c"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: parent.font.pixelSize
-            }
-
-            BlockCursor {
-                input: passwordInput
-            }
-
         }
 
         Behavior on opacity {
@@ -324,6 +266,7 @@ IslandPanel {
         }
 
     }
+
 
     // Wrong password: the field shakes like on macOS.
     SequentialAnimation {

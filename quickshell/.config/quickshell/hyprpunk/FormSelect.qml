@@ -19,8 +19,8 @@ ColumnLayout {
 
     Text {
         text: select.label
-        color: "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.lavender
+        font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
     }
@@ -31,7 +31,7 @@ ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: 34
         radius: 12
-        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, boxHover.hovered ? 0.6 : 0.45)
+        color: Theme.alpha(Theme.crust, boxHover.hovered ? 0.6 : 0.45)
         opacity: select.enabled ? 1 : 0.45
 
         Text {
@@ -42,8 +42,8 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: select.current ? select.current.label : ""
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 14
         }
 
@@ -54,9 +54,9 @@ ColumnLayout {
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: "󰅀"
-            color: "#b4befe"
+            color: Theme.lavender
             rotation: select.expanded ? 180 : 0
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: Theme.font
             font.pixelSize: 14
 
             Behavior on rotation {
@@ -123,7 +123,7 @@ ColumnLayout {
                     width: optionColumn.width
                     height: 32
                     radius: 10
-                    color: optionHover.hovered ? Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.16) : "transparent"
+                    color: optionHover.hovered ? Theme.alpha(Theme.mauve, 0.16) : "transparent"
 
                     Text {
                         anchors.left: parent.left
@@ -133,8 +133,8 @@ ColumnLayout {
                         anchors.verticalCenter: parent.verticalCenter
                         elide: Text.ElideRight
                         text: option.modelData.label
-                        color: option.index === select.currentIndex ? "#cba6f7" : "#b4befe"
-                        font.family: "JetBrainsMono Nerd Font"
+                        color: option.index === select.currentIndex ? Theme.mauve : Theme.lavender
+                        font.family: Theme.font
                         font.pixelSize: 13
                         font.weight: option.index === select.currentIndex ? Font.Bold : Font.Normal
                     }
@@ -147,8 +147,8 @@ ColumnLayout {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: option.index === select.currentIndex
                         text: ""
-                        color: "#cba6f7"
-                        font.family: "JetBrainsMono Nerd Font"
+                        color: Theme.mauve
+                        font.family: Theme.font
                         font.pixelSize: 12
                     }
 

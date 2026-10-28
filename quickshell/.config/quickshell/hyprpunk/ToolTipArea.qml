@@ -55,15 +55,15 @@ Item {
             implicitWidth: tooltipText.implicitWidth + 18
             implicitHeight: tooltipText.implicitHeight + 10
             radius: 7
-            color: "#313244"
+            color: Theme.surface0
 
             Text {
                 id: tooltipText
 
                 anchors.centerIn: parent
                 text: area.text
-                color: "#cba6f7"
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.mauve
+                font.family: Theme.font
                 font.pixelSize: 14
                 font.weight: Font.Medium
             }

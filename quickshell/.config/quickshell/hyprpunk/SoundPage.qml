@@ -182,8 +182,8 @@ ColumnLayout {
     }
 
     component EmptyText: Text {
-        color: "#7f849c"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.overlay1
+        font.family: Theme.font
         font.pixelSize: 12
     }
 
@@ -285,8 +285,8 @@ ColumnLayout {
                     anchors.centerIn: parent
                     visible: !appIcon.visible
                     text: "󰎆"
-                    color: "#cba6f7"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.mauve
+                    font.family: Theme.font
                     font.pixelSize: 18
                 }
 
@@ -296,7 +296,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 label: page.appName(app.modelData)
                 value: app.audio !== null ? app.audio.volume : 0
-                accent: app.audio !== null && app.audio.muted ? "#b4befe" : "#cba6f7"
+                accent: app.audio !== null && app.audio.muted ? Theme.lavender : Theme.mauve
                 iconButton: true
                 icon: app.audio !== null ? page.volumeIcon(app.audio.volume, app.audio.muted) : "󰖁"
                 onValueRequested: (value) => {
@@ -414,7 +414,7 @@ ColumnLayout {
                                 Layout.fillWidth: true
                                 label: page.source !== null ? page.outputLabel(page.source) : "No microphone"
                                 value: page.sourceAudio !== null ? page.sourceAudio.volume : 0
-                                accent: page.sourceAudio !== null && page.sourceAudio.muted ? "#b4befe" : "#cba6f7"
+                                accent: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.lavender : Theme.mauve
                                 iconButton: true
                                 icon: page.sourceAudio === null || page.sourceAudio.muted ? "󰍭" : "󰍬"
                                 onValueRequested: (value) => {
@@ -438,13 +438,13 @@ ColumnLayout {
                                 Layout.rightMargin: 4
                                 implicitHeight: 6
                                 radius: 3
-                                color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.12)
+                                color: Theme.alpha(Theme.text, 0.12)
 
                                 Rectangle {
                                     height: parent.height
                                     width: Math.max(parent.height, parent.width * level)
                                     radius: parent.radius
-                                    color: page.sourceAudio !== null && page.sourceAudio.muted ? "#7f849c" : "#a6e3a1"
+                                    color: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.overlay1 : Theme.green
                                     opacity: level > 0.01 ? 1 : 0.4
                                     property real level: {
                                         const peak = page.sourceAudio !== null && page.sourceAudio.muted ? 0 : sourcePeak.peak;

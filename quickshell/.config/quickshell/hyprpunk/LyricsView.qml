@@ -21,7 +21,7 @@ Item {
     // Scrolled by hand: the view stops following until resumeFollow runs out.
     property bool handScrolled: false
     // The LRCLIB credit: dim on a card, brighter straight over a wallpaper.
-    property color creditColor: "#6c7086"
+    property color creditColor: Theme.overlay0
     // False until the player's position is known, so the view can start right on the
     // current line instead of scrolling down to it from the top.
     property bool ready: true
@@ -160,7 +160,7 @@ Item {
                 visible: view.shownLines.length > 0
                 text: view.shownSynced ? "Lyrics from LRCLIB" : "Not synced · Lyrics from LRCLIB"
                 color: view.creditColor
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: Theme.font
                 font.pixelSize: 11
             }
 
@@ -279,8 +279,8 @@ Item {
         width: column.width
         wrapMode: Text.WordWrap
         text: pause ? "• • •" : (modelData.text || " ")
-        color: lit ? "#cba6f7" : "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: lit ? Theme.mauve : Theme.lavender
+        font.family: Theme.font
         font.pixelSize: view.shownSynced ? 19 : 16
         font.weight: Font.Bold
         lineHeight: 1.1

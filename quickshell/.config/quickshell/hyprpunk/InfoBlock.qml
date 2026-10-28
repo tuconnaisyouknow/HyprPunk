@@ -34,8 +34,8 @@ ControlBlock {
 
                 Text {
                     text: modelData.label
-                    color: "#b4befe"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.lavender
+                    font.family: Theme.font
                     font.pixelSize: 13
                 }
 
@@ -44,8 +44,8 @@ ControlBlock {
                     horizontalAlignment: Text.AlignRight
                     elide: Text.ElideRight
                     text: modelData.value
-                    color: "#cba6f7"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: Theme.mauve
+                    font.family: Theme.font
                     font.pixelSize: 13
                     font.weight: Font.Bold
                 }

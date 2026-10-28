@@ -19,7 +19,7 @@ ClippingRectangle {
     signal workspaceChosen(var workspace)
 
     radius: 18
-    color: "#11111b"
+    color: Theme.crust
 
     ListView {
         id: list
@@ -88,7 +88,7 @@ ClippingRectangle {
         width: dots.implicitWidth + 16
         height: 16
         radius: height / 2
-        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.65)
+        color: Theme.alpha(Theme.crust, 0.65)
 
         Row {
             id: dots
@@ -106,7 +106,7 @@ ClippingRectangle {
                     width: index === list.currentIndex ? 14 : 6
                     height: 6
                     radius: 3
-                    color: index === list.currentIndex ? "#cba6f7" : "#7f849c"
+                    color: index === list.currentIndex ? Theme.mauve : Theme.overlay1
 
                     Behavior on width {
                         NumberAnimation {
@@ -143,7 +143,7 @@ ClippingRectangle {
         width: 30
         height: 30
         radius: 15
-        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, arrowMouse.containsMouse ? 0.85 : 0.65)
+        color: Theme.alpha(Theme.crust, arrowMouse.containsMouse ? 0.85 : 0.65)
         opacity: shown ? 1 : 0
         visible: opacity > 0
         scale: arrowMouse.pressed ? 0.88 : 1
@@ -151,8 +151,8 @@ ClippingRectangle {
         Text {
             anchors.centerIn: parent
             text: arrow.icon
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 18
         }
 

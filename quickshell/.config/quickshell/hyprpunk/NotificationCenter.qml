@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 
 // The notification center, tucked against the right edge. A small handle shows there
@@ -125,7 +124,7 @@ PanelWindow {
         width: 4
         height: 44
         radius: 2
-        color: "#cba6f7"
+        color: Theme.mauve
         opacity: center.notificationCount > 0 && !center.opened ? (center.shellState.doNotDisturb ? 0.35 : 0.9) : 0
 
         SequentialAnimation {
@@ -185,12 +184,11 @@ PanelWindow {
 
     Connections {
         function onPanelRequestsChanged() {
-            const request = center.shellState.panelRequest;
-            const target = request.screen || (Hyprland.focusedMonitor !== null ? Hyprland.focusedMonitor.name : "");
-            if (request.panel !== "notifications" || target !== center.screen.name)
+            const action = center.shellState.requestedAction("notifications", center.screen);
+            if (action === "")
                 return ;
 
-            const open = request.action === "open" || (request.action === "toggle" && !center.opened);
+            const open = action === "open" || (action === "toggle" && !center.opened);
             edgePushDelay.stop();
             closeDelay.stop();
             if (open)
@@ -235,7 +233,7 @@ PanelWindow {
             readonly property string freeEdge: "M " + w + " 0 " + "C " + w + " 13 " + (w - 11) + " 24 " + (w - 24) + " 24 " + "L 24 24 " + "C 11 24 1 35 1 48 " + "L 1 " + (h - 48) + " " + "C 1 " + (h - 35) + " 11 " + (h - 24) + " 24 " + (h - 24) + " " + "L " + (w - 24) + " " + (h - 24) + " " + "C " + (w - 11) + " " + (h - 24) + " " + w + " " + (h - 13) + " " + w + " " + h
 
             anchors.fill: parent
-            fillColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+            fillColor: Theme.panel
             fillPath: freeEdge + " L " + w + " 0"
             rimPath: freeEdge
         }
@@ -276,7 +274,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             icon: "󰂚"
                             text: "Notifications"
-                            color: "#cba6f7"
+                            color: Theme.mauve
                             font.pixelSize: 18
                             font.weight: Font.Bold
                         }
@@ -291,7 +289,7 @@ PanelWindow {
                             GlassSurface {
                                 radius: parent.radius
                                 hovered: clearHover.hovered
-                                backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, clearHover.hovered ? 0.95 : 0.8)
+                                backgroundColor: Theme.alpha(Theme.mauve, clearHover.hovered ? 0.95 : 0.8)
                             }
 
                             IconText {
@@ -300,7 +298,7 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 icon: "󰎟"
                                 text: "Clear"
-                                color: "#1e1e2e"
+                                color: Theme.base
                                 font.pixelSize: 14
                                 font.weight: Font.Bold
                             }
@@ -335,7 +333,7 @@ PanelWindow {
                             visible: center.entryIds.length === 0
                             icon: "󰂚"
                             text: "No notifications"
-                            color: "#7f849c"
+                            color: Theme.overlay1
                             font.pixelSize: 16
                             font.weight: Font.Normal
                         }

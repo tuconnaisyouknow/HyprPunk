@@ -17,6 +17,9 @@ Item {
         return option.value === shownValue;
     })
     readonly property real segmentWidth: width / Math.max(1, options.length)
+    // Where the highlight sits, in segments. Sliding this rather than the highlight's x
+    // lets it follow the layout at once, so it doesn't fly in when the control is built.
+    property real highlightIndex: Math.max(0, currentIndex)
 
     signal selected(var value)
 
@@ -42,7 +45,7 @@ Item {
     Rectangle {
         id: highlight
 
-        x: control.currentIndex * control.segmentWidth + 3
+        x: control.highlightIndex * control.segmentWidth + 3
         y: 3
         width: control.segmentWidth - 6
         height: control.height - 6
@@ -53,16 +56,7 @@ Item {
         GlassSurface {
             radius: highlight.radius
             hovered: true
-            backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.85)
-        }
-
-        Behavior on x {
-            NumberAnimation {
-                duration: 320
-                easing.type: Easing.OutBack
-                easing.overshoot: 1.2
-            }
-
+            backgroundColor: Theme.alpha(Theme.mauve, 0.85)
         }
 
     }
@@ -95,8 +89,8 @@ Item {
 
                     Text {
                         text: segment.modelData.icon
-                        color: segment.chosen ? "#1e1e2e" : "#cba6f7"
-                        font.family: "JetBrainsMono Nerd Font"
+                        color: segment.chosen ? Theme.base : Theme.mauve
+                        font.family: Theme.font
                         font.pixelSize: control.compact ? 16 : 20
 
                         Behavior on color {
@@ -110,8 +104,8 @@ Item {
 
                     Text {
                         text: segment.modelData.label
-                        color: segment.chosen ? "#1e1e2e" : "#b4befe"
-                        font.family: "JetBrainsMono Nerd Font"
+                        color: segment.chosen ? Theme.base : Theme.lavender
+                        font.family: Theme.font
                         font.pixelSize: control.compact ? 12 : 10
                         font.weight: segment.chosen ? Font.Bold : Font.Medium
 
@@ -168,6 +162,15 @@ Item {
 
             }
 
+        }
+
+    }
+
+    Behavior on highlightIndex {
+        NumberAnimation {
+            duration: 320
+            easing.type: Easing.OutBack
+            easing.overshoot: 1.2
         }
 
     }

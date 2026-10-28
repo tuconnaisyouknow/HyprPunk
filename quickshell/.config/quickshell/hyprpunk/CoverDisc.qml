@@ -8,8 +8,8 @@ Item {
 
     property url source
     // Blank record shown until the cover is loaded (crust and mauve).
-    property color vinylColor: "#11111b"
-    property color labelColor: "#cba6f7"
+    property color vinylColor: Theme.crust
+    property color labelColor: Theme.mauve
     // Decoding size, 0 = the displayed size (set it when the disc is resized).
     property int decodeSize: 0
     readonly property int status: art.status
@@ -39,7 +39,7 @@ Item {
                 radius: width / 2
                 color: "transparent"
                 border.width: 1
-                border.color: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.07)
+                border.color: Theme.alpha(Theme.text, 0.07)
                 antialiasing: true
             }
 
@@ -52,7 +52,7 @@ Item {
 
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Qt.rgba(205 / 255, 214 / 255, 244 / 255, 0.28)
+                strokeColor: Theme.alpha(Theme.text, 0.28)
                 strokeWidth: 1.6
                 capStyle: ShapePath.RoundCap
 

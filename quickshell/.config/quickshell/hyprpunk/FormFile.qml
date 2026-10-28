@@ -18,8 +18,8 @@ ColumnLayout {
 
     Text {
         text: file.label
-        color: "#b4befe"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.lavender
+        font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
     }
@@ -30,7 +30,7 @@ ColumnLayout {
         Layout.fillWidth: true
         implicitHeight: 34
         radius: 12
-        color: Qt.rgba(17 / 255, 17 / 255, 27 / 255, boxHover.hovered ? 0.6 : 0.45)
+        color: Theme.alpha(Theme.crust, boxHover.hovered ? 0.6 : 0.45)
         opacity: file.enabled ? 1 : 0.45
 
         Text {
@@ -41,8 +41,8 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideMiddle
             text: file.path !== "" ? file.path.split("/").pop() : "(None)"
-            color: file.path !== "" ? "#cba6f7" : "#6c7086"
-            font.family: "JetBrainsMono Nerd Font"
+            color: file.path !== "" ? Theme.mauve : Theme.overlay0
+            font.family: Theme.font
             font.pixelSize: 14
         }
 
@@ -55,8 +55,8 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             visible: file.path !== ""
             text: ""
-            color: clearHover.hovered ? "#cba6f7" : "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
+            color: clearHover.hovered ? Theme.mauve : Theme.overlay1
+            font.family: Theme.font
             font.pixelSize: 12
 
             HoverHandler {
@@ -78,8 +78,8 @@ ColumnLayout {
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: file.choosing ? "󰔟" : "󰉋"
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 14
         }
 

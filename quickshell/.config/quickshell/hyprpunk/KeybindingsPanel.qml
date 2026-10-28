@@ -125,8 +125,8 @@ SearchPanel {
         anchors.centerIn: parent
         visible: keybindings.results.length === 0
         text: bindsProcess.running && keybindings.binds.length === 0 ? "Loading…" : "No keybinding"
-        color: "#7f849c"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.overlay1
+        font.family: Theme.font
         font.pixelSize: 14
     }
 
@@ -138,6 +138,13 @@ SearchPanel {
         spacing: keybindings.rowSpacing
         boundsBehavior: Flickable.StopAtBounds
         model: keybindings.results
+        currentIndex: keybindings.selectedIndex
+        highlightFollowsCurrentItem: true
+        highlightMoveDuration: 0
+        highlightResizeDuration: 0
+        highlight: SelectionHighlight {
+            view: list
+        }
 
         delegate: Rectangle {
             id: row
@@ -151,12 +158,6 @@ SearchPanel {
             radius: 14
             color: "transparent"
 
-            GlassSurface {
-                radius: parent.radius
-                visible: row.selected
-                hovered: true
-            }
-
             Text {
                 anchors.left: parent.left
                 anchors.leftMargin: 14
@@ -165,8 +166,8 @@ SearchPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 text: row.modelData.description
-                color: row.selected ? "#cba6f7" : "#cdd6f4"
-                font.family: "JetBrainsMono Nerd Font"
+                color: row.selected ? Theme.mauve : Theme.text
+                font.family: Theme.font
                 font.pixelSize: 13
             }
 
@@ -199,8 +200,8 @@ SearchPanel {
 
                             anchors.centerIn: parent
                             text: parent.modelData
-                            color: "#cba6f7"
-                            font.family: "JetBrainsMono Nerd Font"
+                            color: Theme.mauve
+                            font.family: Theme.font
                             font.pixelSize: 12
                             font.weight: Font.Bold
                         }

@@ -138,7 +138,7 @@ PanelWindow {
                     width: parent.width
                     notification: popup.modelData
                     // Floating over the desktop, with the same base as the windows (0.9) and the blur behind.
-                    backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+                    backgroundColor: Theme.panel
                     onSwipedAway: {
                         popup.slide += swipeOffset;
                         swipeOffset = 0;

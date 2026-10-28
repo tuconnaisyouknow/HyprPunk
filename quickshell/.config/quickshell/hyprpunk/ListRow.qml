@@ -28,8 +28,8 @@ ControlBlock {
 
         Text {
             text: row.icon
-            color: row.highlighted ? "#cba6f7" : "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: row.highlighted ? Theme.mauve : Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 18
         }
 
@@ -40,9 +40,9 @@ ControlBlock {
             Text {
                 width: parent.width
                 text: row.title
-                color: "#cba6f7"
+                color: Theme.mauve
                 elide: Text.ElideRight
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: Theme.font
                 font.pixelSize: 14
                 font.weight: row.highlighted ? Font.Bold : Font.Medium
             }
@@ -51,9 +51,9 @@ ControlBlock {
                 width: parent.width
                 visible: text !== ""
                 text: row.subtitle
-                color: "#b4befe"
+                color: Theme.lavender
                 elide: Text.ElideRight
-                font.family: "JetBrainsMono Nerd Font"
+                font.family: Theme.font
                 font.pixelSize: 12
             }
 
@@ -62,8 +62,8 @@ ControlBlock {
         Text {
             visible: text !== ""
             text: row.trailing
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 14
         }
 
@@ -92,8 +92,8 @@ ControlBlock {
             Text {
                 anchors.centerIn: parent
                 text: "󰋽"
-                color: detailsArea.containsMouse ? "#cba6f7" : "#b4befe"
-                font.family: "JetBrainsMono Nerd Font"
+                color: detailsArea.containsMouse ? Theme.mauve : Theme.lavender
+                font.family: Theme.font
                 font.pixelSize: 17
             }
 

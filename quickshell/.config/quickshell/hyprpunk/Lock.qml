@@ -185,7 +185,7 @@ wait'
         Image {
             required property var modelData
 
-            source: modelData.wallpaperPath !== "" ? "file://" + modelData.wallpaperPath : ""
+            source: Session.wallpaper !== "" ? "file://" + Session.wallpaper : ""
             sourceSize.width: modelData.screen.width
             sourceSize.height: modelData.screen.height
             fillMode: Image.PreserveAspectCrop

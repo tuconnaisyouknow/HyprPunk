@@ -533,8 +533,8 @@ ColumnLayout {
         visible: text !== ""
         wrapMode: Text.WordWrap
         text: page.error
-        color: "#f38ba8"
-        font.family: "JetBrainsMono Nerd Font"
+        color: Theme.red
+        font.family: Theme.font
         font.pixelSize: 12
     }
 
@@ -546,8 +546,8 @@ ColumnLayout {
             Layout.fillWidth: true
             elide: Text.ElideRight
             text: page.loading ? "Loading the saved settings…" : page.connecting ? "Connecting…" : page.missing !== "" ? page.missing.charAt(0).toUpperCase() + page.missing.slice(1) : ""
-            color: "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.overlay1
+            font.family: Theme.font
             font.pixelSize: 12
         }
 
@@ -565,7 +565,7 @@ ColumnLayout {
             GlassSurface {
                 radius: parent.radius
                 hovered: connectHover.hovered
-                backgroundColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, connectHover.hovered && connectButton.available ? 0.95 : 0.8)
+                backgroundColor: Theme.alpha(Theme.mauve, connectHover.hovered && connectButton.available ? 0.95 : 0.8)
             }
 
             Text {
@@ -573,8 +573,8 @@ ColumnLayout {
 
                 anchors.centerIn: parent
                 text: (page.connecting ? "󰔟  " : "") + (page.editing ? "Save" : "Connect")
-                color: "#1e1e2e"
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.base
+                font.family: Theme.font
                 font.pixelSize: 13
                 font.weight: Font.Bold
             }

@@ -78,7 +78,7 @@ PanelWindow {
     Item {
         id: dim
 
-        readonly property color shade: Qt.rgba(17 / 255, 17 / 255, 27 / 255, 0.55)
+        readonly property color shade: Theme.alpha(Theme.crust, 0.55)
         readonly property var rect: selector.focusRect !== null ? selector.focusRect : {
             "x": 0,
             "y": 0,
@@ -129,7 +129,7 @@ PanelWindow {
             radius: 4
             color: "transparent"
             border.width: 2
-            border.color: "#cba6f7"
+            border.color: Theme.mauve
         }
 
         // The region's size, under it (over it at the bottom of the screen).
@@ -140,7 +140,7 @@ PanelWindow {
             width: sizeLabel.implicitWidth + 20
             height: 26
             radius: 13
-            color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+            color: Theme.panel
 
             Text {
                 id: sizeLabel
@@ -149,8 +149,8 @@ PanelWindow {
                 readonly property real scale: selector.request !== null ? selector.request.scale : 1
 
                 text: Math.round(dim.rect.width * scale) + " × " + Math.round(dim.rect.height * scale)
-                color: "#cba6f7"
-                font.family: "JetBrainsMono Nerd Font"
+                color: Theme.mauve
+                font.family: Theme.font
                 font.pixelSize: 12
                 font.weight: Font.Bold
             }
@@ -167,7 +167,7 @@ PanelWindow {
         width: hint.implicitWidth + 32
         height: 34
         radius: 17
-        color: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+        color: Theme.panel
         opacity: selector.dragging || selector.annotatedRegion !== null ? 0 : 1
 
         GlassSurface {
@@ -180,8 +180,8 @@ PanelWindow {
 
             anchors.centerIn: parent
             text: "Drag a region · Click a window · Esc to cancel"
-            color: "#b4befe"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.lavender
+            font.family: Theme.font
             font.pixelSize: 12
         }
 

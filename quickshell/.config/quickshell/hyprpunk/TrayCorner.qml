@@ -66,7 +66,7 @@ PanelWindow {
         CornerPanelShape {
             anchors.fill: parent
             // Same as the control center, blurred by a layer rule.
-            fillColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.9)
+            fillColor: Theme.panel
             lightFromBottom: true
             visible: width >= 64 && height >= 64
 

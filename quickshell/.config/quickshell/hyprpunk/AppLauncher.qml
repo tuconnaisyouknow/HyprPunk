@@ -235,31 +235,19 @@ IslandPanel {
         selectedIndex = Math.max(top < 0 && dx < 0 && selectedIndex === 0 ? -1 : 0, Math.min(count - 1, selectedIndex + dx + dy * columns));
     }
 
-    // Ctrl + the Vim keys move around (Ctrl+h/j/k/l, or j/k/l/m on AZERTY),
-    // since the letters alone go to the search.
-    function controlKey(event) {
-        if (!(event.modifiers & Qt.ControlModifier))
-            return null;
-
-        const keys = keyboardLayout === "fr" ? [Qt.Key_J, Qt.Key_M, Qt.Key_K, Qt.Key_L] : [Qt.Key_H, Qt.Key_L, Qt.Key_J, Qt.Key_K];
-        const moves = [[-1, 0], [1, 0], [0, 1], [0, -1]];
-        const index = keys.indexOf(event.key);
-        return index >= 0 ? moves[index] : null;
-    }
-
     panelName: "launcher"
     cardWidth: columns * cellWidth + 2 * cardPadding
     cardHeight: 2 * cardPadding + fieldHeight + (actionsEntry ? sectionSpacing + actionRows.length * (rowHeight + rowSpacing) - rowSpacing : (special !== "" ? sectionSpacing + rowHeight : 0) + (gridRows > 0 ? sectionSpacing + gridRows * cellHeight : 0))
     onOpening: {
         query = "";
-        searchInput.text = "";
+        field.text = "";
         actionsEntry = null;
         selectedIndex = 0;
         grid.positionViewAtBeginning();
     }
     onOpenedChanged: {
         if (opened)
-            searchInput.forceActiveFocus();
+            field.input.forceActiveFocus();
 
     }
     // The calculation comes first, the web search fallback is the only choice.
@@ -301,112 +289,50 @@ IslandPanel {
     }
 
     // Search field.
-    Rectangle {
+    GlassField {
         id: field
 
         anchors.top: parent.top
         anchors.topMargin: launcher.cardPadding
         anchors.horizontalCenter: parent.horizontalCenter
         width: launcher.cardWidth - 2 * launcher.cardPadding
-        height: launcher.fieldHeight
-        radius: height / 2
-        color: "transparent"
-
-        GlassSurface {
-            radius: parent.radius
-            backgroundColor: Qt.rgba(30 / 255, 30 / 255, 46 / 255, 0.6)
-            focused: searchInput.activeFocus
-        }
-
-        Text {
-            id: searchIcon
-
-            anchors.left: parent.left
-            anchors.leftMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
-            text: launcher.actionsEntry ? "󰅂" : "󰍉"
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 16
-        }
-
-        TextInput {
-            id: searchInput
-
-            anchors.left: searchIcon.right
-            anchors.leftMargin: 10
-            anchors.right: modeHint.left
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            color: "#cdd6f4"
-            selectionColor: Qt.rgba(203 / 255, 166 / 255, 247 / 255, 0.35)
-            selectedTextColor: "#cdd6f4"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 15
-            clip: true
-            cursorDelegate: Item {
-            }
-            readOnly: launcher.actionsEntry !== null
-            onTextChanged: launcher.query = text
-            Keys.onPressed: (event) => {
-                const shift = (event.modifiers & Qt.ShiftModifier) !== 0;
-                const controlMove = launcher.controlKey(event);
-                if (controlMove) {
-                    launcher.move(controlMove[0], controlMove[1]);
-                } else if (event.key === Qt.Key_Escape) {
-                    if (launcher.actionsEntry)
-                        launcher.actionsEntry = null;
-                    else
-                        launcher.back();
-                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    launcher.activate(shift);
-                } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
-                    if (launcher.actionsEntry)
-                        launcher.actionsEntry = null;
-                    else if (launcher.selectedIndex >= 0)
-                        launcher.showActions(launcher.results[launcher.selectedIndex]);
-                } else if (event.key === Qt.Key_Left) {
-                    launcher.move(-1, 0);
-                } else if (event.key === Qt.Key_Right) {
-                    launcher.move(1, 0);
-                } else if (event.key === Qt.Key_Up) {
-                    launcher.move(0, -1);
-                } else if (event.key === Qt.Key_Down) {
-                    launcher.move(0, 1);
-                } else {
-                    return ;
-                }
-                event.accepted = true;
-            }
-
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                visible: parent.text === ""
-                text: launcher.actionsEntry ? launcher.actionsEntry.name : "Search apps, > command, ? web"
-                color: launcher.actionsEntry ? "#cdd6f4" : "#7f849c"
-                font.family: "JetBrainsMono Nerd Font"
-                font.pixelSize: parent.font.pixelSize
-            }
-
-            BlockCursor {
-                input: searchInput
-            }
-
-        }
-
+        icon: launcher.actionsEntry ? "󰅂" : "󰍉"
+        readOnly: launcher.actionsEntry !== null
+        placeholder: launcher.actionsEntry ? launcher.actionsEntry.name : "Search apps, > command, ? web"
+        placeholderColor: launcher.actionsEntry ? Theme.text : Theme.overlay1
         // What Enter will do in the current mode.
-        Text {
-            id: modeHint
-
-            anchors.right: parent.right
-            anchors.rightMargin: 16
-            anchors.verticalCenter: parent.verticalCenter
-            text: launcher.actionsEntry ? "Tab back" : launcher.mode === "command" ? "Run" : launcher.mode === "web" ? "Web" : launcher.special === "calc" ? "Calc" : ""
-            color: "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 12
+        hint: launcher.actionsEntry ? "Tab back" : launcher.mode === "command" ? "Run" : launcher.mode === "web" ? "Web" : launcher.special === "calc" ? "Calc" : ""
+        onTextChanged: launcher.query = text
+        onKeyPressed: (event) => {
+            const shift = (event.modifiers & Qt.ShiftModifier) !== 0;
+            const controlMove = launcher.controlMove(event);
+            if (controlMove) {
+                launcher.move(controlMove[0], controlMove[1]);
+            } else if (event.key === Qt.Key_Escape) {
+                if (launcher.actionsEntry)
+                    launcher.actionsEntry = null;
+                else
+                    launcher.back();
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                launcher.activate(shift);
+            } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+                if (launcher.actionsEntry)
+                    launcher.actionsEntry = null;
+                else if (launcher.selectedIndex >= 0)
+                    launcher.showActions(launcher.results[launcher.selectedIndex]);
+            } else if (event.key === Qt.Key_Left) {
+                launcher.move(-1, 0);
+            } else if (event.key === Qt.Key_Right) {
+                launcher.move(1, 0);
+            } else if (event.key === Qt.Key_Up) {
+                launcher.move(0, -1);
+            } else if (event.key === Qt.Key_Down) {
+                launcher.move(0, 1);
+            } else {
+                return ;
+            }
+            event.accepted = true;
         }
-
     }
 
     // Calculation, command or web search.
@@ -438,8 +364,8 @@ IslandPanel {
             anchors.leftMargin: 18
             anchors.verticalCenter: parent.verticalCenter
             text: launcher.special === "calc" ? "󰃬" : launcher.special === "command" ? "" : "󰖟"
-            color: "#cba6f7"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.mauve
+            font.family: Theme.font
             font.pixelSize: 20
         }
 
@@ -451,8 +377,8 @@ IslandPanel {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: launcher.special === "calc" ? "= " + launcher.calculation : launcher.modeArgument !== "" ? launcher.modeArgument : launcher.special === "command" ? "Type a command" : "Type a search"
-            color: launcher.modeArgument !== "" ? "#cdd6f4" : "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
+            color: launcher.modeArgument !== "" ? Theme.text : Theme.overlay1
+            font.family: Theme.font
             font.pixelSize: launcher.special === "calc" ? 18 : 15
             font.weight: launcher.special === "calc" ? Font.Bold : Font.Normal
         }
@@ -464,8 +390,8 @@ IslandPanel {
             anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
             text: launcher.special === "calc" ? "Enter copies" : launcher.special === "command" ? "Shift+Enter in " + launcher.terminal : "Search the web"
-            color: "#7f849c"
-            font.family: "JetBrainsMono Nerd Font"
+            color: Theme.overlay1
+            font.family: Theme.font
             font.pixelSize: 12
         }
 
@@ -502,6 +428,14 @@ IslandPanel {
         cellHeight: launcher.cellHeight
         boundsBehavior: Flickable.StopAtBounds
         model: launcher.results
+        currentIndex: launcher.selectedIndex
+        highlightFollowsCurrentItem: true
+        highlightMoveDuration: 0
+        highlight: SelectionHighlight {
+            view: grid
+            radius: 18
+            inset: 4
+        }
 
         delegate: Item {
             id: cell
@@ -509,22 +443,19 @@ IslandPanel {
             required property var modelData
             required property int index
             readonly property bool selected: launcher.selectedIndex === index
+            readonly property real pressScale: cellContent.scale
 
             width: launcher.cellWidth
             height: launcher.cellHeight
 
             Rectangle {
+                id: cellContent
+
                 anchors.fill: parent
                 anchors.margins: 4
                 radius: 18
                 color: "transparent"
                 scale: cellTap.pressed ? 0.94 : 1
-
-                GlassSurface {
-                    radius: parent.radius
-                    visible: cell.selected
-                    hovered: true
-                }
 
                 IconImage {
                     id: appIcon
@@ -547,8 +478,8 @@ IslandPanel {
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
                     text: cell.modelData.name
-                    color: cell.selected ? "#cba6f7" : "#cdd6f4"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: cell.selected ? Theme.mauve : Theme.text
+                    font.family: Theme.font
                     font.pixelSize: 12
                     font.weight: cell.selected ? Font.Bold : Font.Normal
                 }
@@ -638,8 +569,8 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     text: actionRow.modelData.name
-                    color: actionRow.selected ? "#cba6f7" : "#cdd6f4"
-                    font.family: "JetBrainsMono Nerd Font"
+                    color: actionRow.selected ? Theme.mauve : Theme.text
+                    font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: actionRow.selected ? Font.Bold : Font.Normal
                 }
