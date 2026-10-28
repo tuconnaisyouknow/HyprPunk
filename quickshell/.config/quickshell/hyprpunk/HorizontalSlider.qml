@@ -32,7 +32,13 @@ Item {
 
         anchors.fill: parent
         radius: height / 2
-        color: control.trackColor
+        color: fillGlass.liquid ? "transparent" : control.trackColor
+
+        // The empty track too, with the liquid glass's rim.
+        GlassSurface {
+            visible: liquid
+            radius: sliderTrack.radius
+        }
 
         Rectangle {
             id: sliderFill
@@ -42,7 +48,17 @@ Item {
             anchors.bottom: parent.bottom
             width: Math.max(parent.height, parent.width * control.value)
             radius: parent.radius
-            color: control.accent
+            color: fillGlass.liquid ? "transparent" : control.accent
+
+            // In the liquid style the fill turns to glass like the selections, so it
+            // doesn't look stuck on top of them.
+            GlassSurface {
+                id: fillGlass
+
+                visible: liquid
+                radius: sliderFill.radius
+                backgroundColor: control.accent
+            }
 
             Behavior on color {
                 ColorAnimation {
