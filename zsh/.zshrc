@@ -71,15 +71,23 @@ type starship_zle-keymap-select >/dev/null || \
 # Transient prompt: once a command is sent, its prompt shrinks to keep the history tidy
 autoload -Uz add-zle-hook-widget
 
+# kitty finds your prompt by a mark it slips into it. Swapping the prompt drops that mark,
+# and kitty then thinks a command is still running and asks before closing the window
+_prompt_mark() {
+  (( ${+functions[_ksi_precmd]} )) && PROMPT=$'%{\e]133;A\a%}'$PROMPT
+}
+
 _transient_prompt() {
   PROMPT='$(starship prompt --profile transient --terminal-width=$COLUMNS --keymap=${KEYMAP:-})'
   RPROMPT=''
+  _prompt_mark
   zle reset-prompt
 }
 
 _restore_prompt() {
   PROMPT='$(starship prompt --terminal-width=$COLUMNS --keymap=${KEYMAP:-})'
   RPROMPT='$(starship prompt --right --terminal-width=$COLUMNS --keymap=${KEYMAP:-})'
+  _prompt_mark
   zle reset-prompt
 }
 
