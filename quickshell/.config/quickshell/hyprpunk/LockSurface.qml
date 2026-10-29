@@ -409,12 +409,15 @@ WlSessionLockSurface {
 
             }
 
-            // The bar's OSD, its width opening and closing like the other parts.
+            // The bar's OSD, its width opening and closing like the other parts. It's only
+            // clipped while it closes, since its content fades in once it's nearly open. That
+            // way a wider state ("Off" after "On") spills into the island's padding while the
+            // width catches up, instead of being cut.
             Item {
                 visible: Layout.preferredWidth > 0
                 Layout.preferredWidth: surface.islandMode === "osd" ? osdLoader.implicitWidth : 0
                 implicitHeight: osdLoader.implicitHeight
-                clip: true
+                clip: surface.islandMode !== "osd"
 
                 Loader {
                     id: osdLoader

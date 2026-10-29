@@ -563,6 +563,10 @@ PanelWindow {
                 }
                 horizontalPadding: bar.islandOsdShown ? 36 : 20
                 implicitHeight: bar.islandOsdShown ? 50 : 38
+                // Grows two pixels at a time, so centring it on the bar and its content in it
+                // never lands on a half pixel and the content stops shaking as it resizes.
+                Layout.preferredWidth: 2 * Math.round(implicitWidth / 2)
+                Layout.preferredHeight: 2 * Math.round(implicitHeight / 2)
                 contentOpacity: 1
 
                 Label {
@@ -593,7 +597,9 @@ PanelWindow {
                 Item {
                     readonly property bool shown: !bar.islandOsdShown && (bar.shellState.cameraInUse || bar.shellState.microphoneInUse)
 
-                    visible: Layout.preferredWidth > 0
+                    // Gone at once when an OSD takes the island, or its shrinking would pull
+                    // the OSD sideways while it grows.
+                    visible: !bar.islandOsdShown && Layout.preferredWidth > 0
                     Layout.preferredWidth: shown ? 8 : 0
                     Layout.leftMargin: shown ? -2 : -clockPill.spacing
                     implicitHeight: 8
@@ -648,7 +654,8 @@ PanelWindow {
 
                     readonly property bool shown: !bar.islandOsdShown && bar.shellState.recording
 
-                    visible: Layout.preferredWidth > 0
+                    // Gone at once when an OSD takes the island, like the privacy dot.
+                    visible: !bar.islandOsdShown && Layout.preferredWidth > 0
                     Layout.preferredWidth: shown ? recordingRow.implicitWidth + 16 : 0
                     Layout.leftMargin: shown ? 0 : -clockPill.spacing
                     implicitHeight: 24

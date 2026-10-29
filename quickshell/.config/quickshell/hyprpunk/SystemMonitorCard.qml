@@ -392,7 +392,7 @@ Item {
                     Detail {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
-                        // top counts a share of one core, the card a share of the whole CPU like btop
+                        // top counts a share of one core, the card a share of the whole CPU like btop.
                         text: parent.process !== null ? (parent.process.cpu / Math.max(1, SystemStats.coreUsage.length)).toFixed(1) + "%" : ""
                         color: monitor.processSort === "cpu" ? Theme.mauve : Theme.lavender
                     }
