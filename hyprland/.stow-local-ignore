@@ -1,0 +1,5 @@
+# What stow leaves out of ~/.config/hypr. The personal examples are only there for
+# install.sh to copy, so linking them would just clutter your config folder.
+# This list replaces stow's own, which nothing in this module needed anyway.
+
+^/\.config/hypr/personal\.example

@@ -422,6 +422,12 @@ stow_dotfiles() {
   # ours, kept out of git, and the settings you already have stay
   [[ -e "$HOME/.config/btop/btop.conf" ]] ||
     cp "$HOME/.config/btop/btop.default.conf" "$HOME/.config/btop/btop.conf"
+
+  # Your Hyprland tweaks live in a folder of your own, out of git, so a pull never
+  # touches them. It starts from the commented examples, which stow leaves out, and
+  # files you have stay.
+  mkdir -p "$HOME/.config/hypr/personal"
+  cp --update=none "$DOTFILES_DIR/hyprland/.config/hypr/personal.example/"*.lua "$HOME/.config/hypr/personal/"
 }
 
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy instead of a link
