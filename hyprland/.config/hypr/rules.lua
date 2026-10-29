@@ -1,5 +1,5 @@
 -- Where each app opens and how windows behave, then how Hyprland blurs and animates
--- the shell's own layers. Loaded by hyprland.lua.
+-- the shell's own layers. Loaded by hyprland.lua, before your personal/rules.lua.
 
 package.loaded["glass_state"] = nil -- Glass style, read again on every reload
 local linked, glass = pcall(__require, "glass_state")
@@ -23,8 +23,14 @@ local homes = {
   { class = "org.kde.dolphin", workspace = "6" },
 }
 
+-- Opens an app on its workspace. Also for personal/rules.lua: a second call for the
+-- same app wins, so it moves one of these elsewhere too.
+function hyprpunk.app(class, workspace)
+  hl.window_rule({ match = { class = class }, workspace = tostring(workspace) })
+end
+
 for _, home in ipairs(homes) do
-  hl.window_rule({ match = { class = home.class }, workspace = home.workspace })
+  hyprpunk.app(home.class, home.workspace)
 end
 
 -- Bitwarden's little popup is its own Chromium app: float it so it doesn't cut Brave in half

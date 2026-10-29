@@ -1,19 +1,36 @@
 -- Every shortcut, each with the description the shell's keybindings panel shows
--- (Super+Ctrl+K). Loaded by hyprland.lua.
+-- (Super+Ctrl+K). Loaded by hyprland.lua, before your personal/keybindings.lua.
 
------------------
--- MY PROGRAMS --
------------------
+--------------
+-- PROGRAMS --
+--------------
 
-local terminal = "kitty"
-local fileManager = "dolphin"
-local notepad = "obsidian"
+-- The apps the shortcuts below open. Change one in personal/keybindings.lua
+-- (hyprpunk.programs.music = "...") and its shortcut follows.
+hyprpunk.programs = {
+  terminal = "kitty",
+  files = "dolphin",
+  browser = "brave",
+  notes = "obsidian",
+  music = "spotify-launcher",
+  chat = "discord",
+}
+
+-- Read when the key is pressed rather than now, so a change made after this file still counts
+local function launch(program)
+  return function()
+    hl.dispatch(hl.dsp.exec_cmd(hyprpunk.programs[program]))
+  end
+end
+
 local menu = "qs -c hyprpunk ipc call launcher toggle"
-local browser = "brave"
-local music = "spicetify auto"
 local keyboard = __require("keyboard_state")
 
-local bind = require("lib.bind").bind
+local binds = require("lib.bind")
+local bind = binds.bind
+hyprpunk.bind = binds.bind
+hyprpunk.rebind = binds.rebind
+hyprpunk.unbind = binds.unbind
 
 -- Floating windows slide by a few pixels, tiled ones swap places with their neighbour
 local function move_active_window_or_dispatch(direction, delta)
@@ -44,12 +61,12 @@ local shell = "qs -c hyprpunk ipc call "
 -- APPS --
 ----------
 
-bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal), "Open the terminal")
-bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), "Open the file manager")
-bind(mainMod .. " + B", hl.dsp.exec_cmd(browser), "Open the web browser")
-bind(mainMod .. " + O", hl.dsp.exec_cmd(notepad), "Open Obsidian")
-bind(mainMod .. " + P", hl.dsp.exec_cmd(music), "Open Spotify")
-bind(mainMod .. " + D", hl.dsp.exec_cmd("discord"), "Open Discord")
+bind(mainMod .. " + T", launch("terminal"), "Open the terminal")
+bind(mainMod .. " + E", launch("files"), "Open the file manager")
+bind(mainMod .. " + B", launch("browser"), "Open the web browser")
+bind(mainMod .. " + O", launch("notes"), "Open the notes")
+bind(mainMod .. " + P", launch("music"), "Open the music player")
+bind(mainMod .. " + D", launch("chat"), "Open the chat")
 
 -----------
 -- SHELL --

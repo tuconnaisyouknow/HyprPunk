@@ -277,12 +277,24 @@ The installer enables or configures:
 
 ## 🔧 Customization
 
-The main files to adapt to your machine are:
+Everything you're meant to change lives outside the dotfiles, so `git pull` brings you every update without
+touching your preferences:
 
-- ⌨️ `hyprland/.config/hypr/keybindings.lua` for keybindings.
-- 🪟 `hyprland/.config/hypr/rules.lua` for window rules, `looknfeel.lua` for gaps, blur and animations,
-  `input.lua` for the keyboard, mouse and touchpad, and `autostart.lua` for what starts with the session.
-- 🖼️ `wallpapers/Pictures/Wallpapers/` for wallpapers.
+- 🎛️ **The shell's settings** (keyboard layout, displays, glass style, language…) are saved in
+  `~/.local/state/hyprpunk/` as you pick them.
+- 🧩 **Your Hyprland preferences** go in `~/.config/hypr/personal/`. The installer fills it with commented examples
+  from `hyprland/.config/hypr/personal.example/`, one per subject, each loaded after HyprPunk's own file so
+  whatever you set wins:
+  - ⌨️ `keybindings.lua` to swap the apps the shortcuts open (`hyprpunk.programs.music = "spicetify auto"`), or
+    add, rebind and free shortcuts with `hyprpunk.bind`, `hyprpunk.rebind` and `hyprpunk.unbind`.
+  - 🪟 `rules.lua` to send your apps to a workspace with `hyprpunk.app("org.gnome.Geary", 6)`, plus any window rule.
+  - 🖱️ `input.lua` for the mouse, touchpad and gestures. The keyboard layout comes from the shell's settings.
+  - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
+    `hyprpunk.autostart.remove`.
+
+We advise you to leave the rest of the dotfiles as they are. They're linked straight from the repository, so any
+edit there clashes with the next `git pull`, and the modules expect each other as they ship. If something you need
+can't be done from these files, open an issue rather than patching HyprPunk itself.
 
 ---
 

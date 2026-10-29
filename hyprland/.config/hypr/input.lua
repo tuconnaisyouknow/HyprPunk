@@ -1,4 +1,5 @@
--- The keyboard, mouse and touchpad, and the touchpad's gestures. Loaded by hyprland.lua.
+-- The keyboard, mouse and touchpad, and the touchpad's gestures. Loaded by hyprland.lua,
+-- before your personal/input.lua.
 
 local keyboard = __require("keyboard_state") -- Keyboard layout, reloaded when you switch it
 
