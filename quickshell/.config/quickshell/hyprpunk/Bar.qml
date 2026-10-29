@@ -496,8 +496,8 @@ PanelWindow {
         // When the calendar covers the island, the privacy and recording dots move to its
         // right, following its edge as it grows.
         PrivacyDot {
-            x: centerGroup.x + clockPill.x + clockPill.width / 2 + calendarPopup.card.width / 2 + 8
-            y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
+            x: Math.round(centerGroup.x + clockPill.x + clockPill.width / 2 + calendarPopup.card.width / 2 + 8)
+            y: Math.round(centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2)
             camera: bar.shellState.cameraInUse
             microphone: bar.shellState.microphoneInUse
             recording: bar.shellState.recording
@@ -507,8 +507,8 @@ PanelWindow {
 
         // Same when the island is busy with an OSD: they sit to its right.
         PrivacyDot {
-            x: centerGroup.x + clockPill.x + clockPill.width + 8
-            y: centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2
+            x: Math.round(centerGroup.x + clockPill.x + clockPill.width + 8)
+            y: Math.round(centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2)
             camera: bar.shellState.cameraInUse
             microphone: bar.shellState.microphoneInUse
             recording: bar.shellState.recording
