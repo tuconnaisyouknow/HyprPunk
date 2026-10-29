@@ -141,7 +141,9 @@ PanelWindow {
     ClippingRectangle {
         id: card
 
-        x: panel.width / 2 + panel.island.centerOffset - width / 2
+        // On whole pixels, like the content below: half pixels while the card grows make
+        // everything in it shake.
+        x: Math.round(panel.width / 2 + panel.island.centerOffset - width / 2)
         y: panel.island.top
         width: panel.lerp(panel.island.width, panel.cardWidth)
         height: panel.lerp(panel.island.height, panel.cardHeight)
@@ -164,11 +166,13 @@ PanelWindow {
             anchors.fill: parent
         }
 
-        // Laid out at full size, only uncovered while the card grows.
+        // Laid out at full size, only uncovered while the card grows. It stays put on
+        // screen rather than following the card's own rounding, which would nudge it by a
+        // pixel now and then.
         Item {
             id: contentArea
 
-            anchors.horizontalCenter: parent.horizontalCenter
+            x: Math.round(panel.width / 2 + panel.island.centerOffset - width / 2) - card.x
             anchors.top: parent.top
             width: panel.cardWidth
             height: panel.cardHeight
@@ -189,8 +193,8 @@ PanelWindow {
     // The card covers the island, so the privacy and recording dots move to its right,
     // following its edge as it grows.
     PrivacyDot {
-        x: card.x + card.width + 8
-        y: panel.island.top + panel.island.height / 2 - height / 2
+        x: Math.round(card.x + card.width + 8)
+        y: Math.round(panel.island.top + panel.island.height / 2 - height / 2)
         camera: panel.shellState.cameraInUse
         microphone: panel.shellState.microphoneInUse
         recording: panel.shellState.recording
