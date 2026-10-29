@@ -82,8 +82,18 @@ Rectangle {
 
     GlassSurface {
         radius: card.radius
-        hovered: cardArea.containsMouse
+        hovered: cardHover.hovered
         backgroundColor: card.backgroundColor
+    }
+
+    // Lit wherever the pointer is on the card, the close cross and the buttons included.
+    // A MouseArea would lose it to the ones on top, and it would never light up on cards
+    // you can't click, though you can still swipe them away.
+    HoverHandler {
+        id: cardHover
+
+        enabled: card.alive
+        cursorShape: card.hasDefaultAction ? Qt.PointingHandCursor : Qt.ArrowCursor
     }
 
     Binding {
@@ -206,8 +216,6 @@ Rectangle {
 
         anchors.fill: parent
         enabled: card.alive && card.hasDefaultAction
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
         onClicked: card.invokeAction("default")
     }
 
