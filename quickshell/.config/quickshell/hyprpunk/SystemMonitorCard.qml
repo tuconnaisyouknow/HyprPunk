@@ -49,14 +49,15 @@ Item {
 
     }
 
-    // top runs twice because its first pass only knows lifetime averages. top itself is
-    // left out (it only shows up because it's measuring). Also run once at startup, so
-    // the first opening has something to show while it refreshes.
+    // top runs twice because its first pass only knows lifetime averages, and waits a
+    // whole second in between, since a shorter wait makes the numbers jump in 2% steps.
+    // top itself is left out (it only shows up because it's measuring). Also run once at
+    // startup, so the first opening has something to show while it refreshes.
     Process {
         id: processProcess
 
         running: true
-        command: ["sh", "-c", "LC_ALL=C top -b -n 2 -d 0.5 -e k -w 512 | awk '/^top -/ {n++} n == 2 && /^ *[0-9]+ / && $12 != \"top\" {print $9, $6, $12}'"]
+        command: ["sh", "-c", "LC_ALL=C top -b -n 2 -d 1 -e k -w 512 | awk '/^top -/ {n++} n == 2 && /^ *[0-9]+ / && $12 != \"top\" {print $9, $6, $12}'"]
 
         stdout: StdioCollector {
             onStreamFinished: monitor.parseProcesses(text)
@@ -391,7 +392,8 @@ Item {
                     Detail {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
-                        text: parent.process !== null ? parent.process.cpu.toFixed(1) + "%" : ""
+                        // top counts a share of one core, the card a share of the whole CPU like btop
+                        text: parent.process !== null ? (parent.process.cpu / Math.max(1, SystemStats.coreUsage.length)).toFixed(1) + "%" : ""
                         color: monitor.processSort === "cpu" ? Theme.mauve : Theme.lavender
                     }
 
