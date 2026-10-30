@@ -110,7 +110,7 @@ bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd(shell .. "screenshot recordRegio
 
 bind(mainMod .. " + Q", hl.dsp.window.close(), "Close the focused window")
 bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }), "Toggle floating mode for the focused window")
-bind("F11", hl.dsp.window.fullscreen(), "Toggle fullscreen mode", { locked = true, repeating = true })
+bind("F11", hl.dsp.window.fullscreen(), "Toggle fullscreen mode", { locked = true })
 bind(mainMod .. " + S", hl.dsp.layout("togglesplit"), "Toggle the split direction")
 
 -- Vim-style arrows, shifted one key right on AZERTY (see keyboard_state.lua)
@@ -178,9 +178,9 @@ bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUD
 bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
   "Decrease the output volume", { locked = true, repeating = true })
 bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-  "Mute or unmute the audio output", { locked = true, repeating = true })
+  "Mute or unmute the audio output", { locked = true })
 bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
-  "Mute or unmute the microphone", { locked = true, repeating = true })
+  "Mute or unmute the microphone", { locked = true })
 
 -- Screen and touchpad
 bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5%+"),
@@ -188,7 +188,7 @@ bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5
 bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5%-"),
   "Decrease the screen brightness", { locked = true, repeating = true })
 bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpadctl.sh toggle"),
-  "Enable or disable the touchpad", { locked = true, repeating = true })
+  "Enable or disable the touchpad", { locked = true })
 
 -----------
 -- MEDIA --
