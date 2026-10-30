@@ -7,9 +7,10 @@ alias r='yay -Rns --noconfirm --removemake'              # Remove, with what it 
 alias sudo='sudo -E '
 alias sudoi='command sudo -i'
 
-# ls and tree, with colors and icons
-alias ls='eza --color=always --icons=always'
-alias tree='eza --color=always --icons=always --tree'
+# ls and tree, with colors and icons in the terminal but plain names when piped,
+# so grep and friends don't trip on the escape codes
+alias ls='eza --color=auto --icons=auto'
+alias tree='eza --color=auto --icons=auto --tree'
 
 # Short names
 alias vim='nvim'
