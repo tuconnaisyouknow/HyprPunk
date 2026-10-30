@@ -1,7 +1,9 @@
 import QtQuick
 import Quickshell
 
-// Quick access to the config files: Enter or a click opens one in Neovim, in kitty.
+// Quick access to your own config files, the ones git pull never touches: Enter or a
+// click opens one in Neovim, in kitty. HyprPunk's own files stay out, since an edit
+// there would clash with the next update.
 SearchPanel {
     id: config
 
@@ -12,29 +14,32 @@ SearchPanel {
     readonly property var files: [{
         "icon": "",
         "name": "Hyprland",
-        "path": "~/.config/hypr",
-        "command": ["nvim", "+lua Snacks.dashboard.pick(\"files\", { cwd = vim.fn.expand(\"~/.config/hypr\") })"]
+        "path": "~/.config/hypr/personal",
+        "command": ["nvim", "+lua Snacks.dashboard.pick(\"files\", { cwd = vim.fn.expand(\"~/.config/hypr/personal\") })"]
     }, {
         "icon": "󰌌",
         "name": "Hyprland keybindings",
-        "path": "~/.config/hypr/keybindings.lua"
+        "path": "~/.config/hypr/personal/keybindings.lua"
     }, {
-        "icon": "",
-        "name": "Hypridle",
-        "path": "~/.config/hypr/hypridle.conf"
+        "icon": "󰖲",
+        "name": "Window rules",
+        "path": "~/.config/hypr/personal/rules.lua"
     }, {
-        "icon": "",
-        "name": "Neovim",
-        "path": "~/.config/nvim",
-        "command": ["nvim", "+lua Snacks.dashboard.pick(\"files\", { cwd = vim.fn.stdpath(\"config\") })"]
+        "icon": "󰍽",
+        "name": "Mouse and touchpad",
+        "path": "~/.config/hypr/personal/input.lua"
     }, {
-        "icon": "",
-        "name": "Starship",
-        "path": "~/.config/starship.toml"
+        "icon": "󱓞",
+        "name": "Autostart",
+        "path": "~/.config/hypr/personal/autostart.lua"
     }, {
-        "icon": "",
-        "name": "Kitty",
-        "path": "~/.config/kitty/kitty.conf"
+        "icon": "󰆍",
+        "name": "Zsh",
+        "path": "~/.personalrc"
+    }, {
+        "icon": "󰉹",
+        "name": "Zsh completions",
+        "path": "~/.completionrc"
     }]
     readonly property var results: {
         const words = query.toLowerCase().split(/\s+/).filter((word) => {

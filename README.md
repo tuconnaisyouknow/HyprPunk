@@ -415,12 +415,24 @@ can't be done from these files, open an issue rather than patching HyprPunk itse
 
 ---
 
+## 🩺 Troubleshooting
+
+- 📜 **The installer stopped halfway.** Run the same command again, it picks up where it left off. Every run is
+  logged to `~/.local/state/hyprpunk/install-<date>.log`, the place to look for what failed.
+- 🧊 **The shell froze or vanished.** `Super + Alt + Q` restarts it. To see why it went wrong, run
+  `qs -c hyprpunk log` in a terminal, or add `-f` to follow it live.
+- 🪟 **Hyprland doesn't take your change.** It rereads its config on its own when you save. Run `hyprctl reload` to
+  force it, and `hyprctl configerrors` to list the mistakes it found. Its full log is in
+  `$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/hyprland.log`.
+- 💤 **The screen doesn't lock or dim.** `Super + Alt + I` restarts hypridle.
+- 🎬 **The login screen stays black or falls back to a plain one.** `journalctl -b -u sddm` shows what SDDM
+  complained about at the last boot.
+
+---
+
 ## 🚧 Roadmap
 
-- 📦 Add a dependency table per module.
-- 🩺 Add troubleshooting notes for SDDM and Hyprland.
-- 🌆 Update the installer to use the `HyprPunk` name everywhere.
-- ♻️ Add uninstall or backup restore instructions.
+- 🔄 Add a way to update HyprPunk.
 
 ---
 
