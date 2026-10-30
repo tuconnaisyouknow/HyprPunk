@@ -98,12 +98,6 @@ hl.config({
 })
 
 hl.config({
-  master = {
-    new_status = "master",
-  },
-})
-
-hl.config({
   misc = {
     force_default_wallpaper = -1, -- Hyprland's own wallpaper; awww draws ours on top anyway
     disable_hyprland_logo = true, -- No logo or anime mascot behind the wallpaper
