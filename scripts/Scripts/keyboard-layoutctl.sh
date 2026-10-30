@@ -58,7 +58,7 @@ generate_common() {
   fi
 }
 
-# AZERTY: tmux's copy mode and pane keys move over, kitty sends Ctrl+M as F12
+# AZERTY: tmux's copy mode, pane keys and session picker move over, kitty sends Ctrl+M as F12
 # (terminals see it as Enter otherwise), and less scrolls with k and l
 generate_fr() {
   write_file "$GENERATED_DIR/tmux.conf" <<'EOF'
@@ -80,6 +80,8 @@ generate_fr() {
     set -g @vim_navigator_mapping_down "C-k"
     set -g @vim_navigator_mapping_up "C-l"
     set -g @vim_navigator_mapping_right "F12"
+    set -g @sessionx-bind-scroll-down "alt-k"
+    set -g @sessionx-bind-scroll-up "alt-l"
 EOF
   write_file "$GENERATED_DIR/kitty.conf" <<'EOF'
     map ctrl+m send_key f12
@@ -111,6 +113,8 @@ generate_us() {
     set -g @vim_navigator_mapping_down "C-j"
     set -g @vim_navigator_mapping_up "C-k"
     set -g @vim_navigator_mapping_right "C-l"
+    set -g @sessionx-bind-scroll-down "alt-j"
+    set -g @sessionx-bind-scroll-up "alt-k"
 EOF
   : >"$GENERATED_DIR/kitty.conf"
   : >"$GENERATED_DIR/lesskey"
