@@ -265,7 +265,7 @@ The installer enables or configures:
 - 🎬 `sddm`
 - 📶 `bluetooth`
 - ⚡ `power-profiles-daemon`
-- 🧱 `xwayland-satellite.service`
+- 🧱 `xwayland-satellite` for X11 apps, started with the session, with Hyprland's own XWayland turned off
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🛡️ `hyprpolkitagent`
