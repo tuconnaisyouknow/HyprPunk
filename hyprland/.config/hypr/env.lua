@@ -26,11 +26,10 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- Tell GTK and Qt apps they're on Wayland, under Hyprland, with the Qt theme from qt5ct/qt6ct
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
-hl.env("XDG_CURRENT_SESSION", "Hyprland")
+hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 hl.env("XDG_MENU_PREFIX", "mate-") -- Borrow MATE's app menu so Dolphin's "Open with" isn't empty
-hl.env("GDK_SCALE", "1")
 hl.env("GDK_BACKEND", "wayland")
-hl.env("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
+hl.env("QT_ENABLE_HIGHDPI_SCALING", "1") -- Qt 6 always scales, this brings the Qt 5 apps along
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct:qt6ct")
