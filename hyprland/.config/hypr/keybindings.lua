@@ -157,7 +157,7 @@ bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), "Switch to t
 -- SESSION --
 -------------
 
-bind(mainMod .. " + CTRL + l", hl.dsp.exec_cmd(shell .. "lock lock"), "Lock the screen")
+bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd(shell .. "lock lock"), "Lock the screen")
 bind(mainMod .. " + Escape", hl.dsp.exec_cmd(shell .. "session toggle"),
   "Open the session menu (lock, logout, reboot, shutdown)")
 
