@@ -701,8 +701,6 @@ enable_services() {
   sudo systemctl enable sddm
   sudo systemctl enable bluetooth
   sudo systemctl enable power-profiles-daemon
-
-  systemctl --user enable xwayland-satellite.service
 }
 
 ask_reboot() {

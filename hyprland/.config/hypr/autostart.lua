@@ -1,6 +1,23 @@
--- What starts with Hyprland (the shell, the wallpaper, idle handling…) and what runs
--- when a screen is plugged in or unplugged. Loaded by hyprland.lua, before your
--- personal/autostart.lua.
+-- What starts with Hyprland (the shell, the wallpaper, idle handling, the X11 server…)
+-- and what runs when a screen is plugged in or unplugged. Loaded by hyprland.lua,
+-- before your personal/autostart.lua.
+
+--------------
+-- X11 APPS --
+--------------
+
+-- X11 apps go through xwayland-satellite alone, which handles Qt apps better than
+-- Hyprland's own XWayland. With both running they fought over the same display.
+hl.config({
+  xwayland = {
+    enabled = false,
+  },
+})
+
+-- SDDM's login screen keeps :0 for itself, so satellite gets a set display rather
+-- than whichever is free first
+local x11Display = ":1"
+hl.env("DISPLAY", x11Display)
 
 ---------------
 -- AUTOSTART --
@@ -27,8 +44,8 @@ local startup = {
   { name = "clipboard-text", command = "wl-paste --type text --watch cliphist store" },
   { name = "clipboard-images", command = "wl-paste --type image --watch cliphist store" },
 
-  -- X11 apps go through xwayland-satellite rather than Hyprland's XWayland
-  { name = "xwayland", command = "systemctl --user restart xwayland-satellite.service" },
+  -- X11 apps, since Hyprland's own XWayland is off (see above)
+  { name = "xwayland", command = "xwayland-satellite " .. x11Display },
 
   -- Keyring for the apps that store passwords and SSH keys
   { name = "keyring", command = "/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh" },

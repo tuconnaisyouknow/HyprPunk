@@ -46,20 +46,6 @@ hl.window_rule({
   suppress_event = "maximize",
 })
 
--- Invisible XWayland windows (drag and drop helpers) shouldn't steal focus
-hl.window_rule({
-  name = "fix-drag-xwayland",
-  match = {
-    class = "^$",
-    title = "^$",
-    xwayland = true,
-    float = true,
-    fullscreen = true,
-    pin = true,
-  },
-  no_focus = true,
-})
-
 -----------------
 -- LAYER RULES --
 -----------------
