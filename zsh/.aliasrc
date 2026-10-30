@@ -1,7 +1,6 @@
 # Packages, through yay without the questions
 alias i='yay -S --needed --noconfirm --removemake'       # Install
 alias u='yay -Syu --noconfirm --removemake'              # Update everything
-alias update='yay -Sy --needed --noconfirm --removemake' # Refresh the package lists, then install
 alias r='yay -Rns --noconfirm --removemake'              # Remove, with what it pulled in
 
 # sudo keeps your environment (and your aliases, thanks to the trailing space)
