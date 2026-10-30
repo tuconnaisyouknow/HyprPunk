@@ -36,6 +36,10 @@ local startup = {
   { name = "wallpaper", command = "~/Scripts/wallpaperctl.sh apply" },
   { name = "shell", command = "qs -c hyprpunk" },
   { name = "idle", command = "hypridle" },
+  -- Your Documents, Pictures, Videos… folders, kept in English whatever your language so
+  -- screenshots land next to the wallpapers in ~/Pictures. A desktop does this at each
+  -- login, and xdg-user-dirs' own service waits for a systemd target Hyprland never reaches.
+  { name = "user-dirs", command = "LC_ALL=C xdg-user-dirs-update" },
 
   -- Bluetooth stays off until you actually need it
   { name = "bluetooth", command = "bluetoothctl power off" },

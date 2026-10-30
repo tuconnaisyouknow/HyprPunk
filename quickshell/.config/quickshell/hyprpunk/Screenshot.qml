@@ -5,10 +5,10 @@ import Quickshell.Io
 
 // Screenshots and screen recordings.
 // A screenshot is of the whole screen, a region or window picked over the frozen
-// screen, or a region you then draw on (ScreenshotAnnotator). It lands in
-// ~/Pictures/Screenshots, on the clipboard, and in the island for a moment.
-// Recordings (wf-recorder, with the system's sound) go to ~/Videos/Recordings and run
-// until you ask again or stop them from the island.
+// screen, or a region you then draw on (ScreenshotAnnotator). It lands in Screenshots
+// in your pictures folder, on the clipboard, and in the island for a moment.
+// Recordings (wf-recorder, with the system's sound) go to Recordings in your videos
+// folder and run until you ask again or stop them from the island.
 // Triggered by the shortcuts (`qs -c hyprpunk ipc call screenshot <screen|region|
 // annotate|record|recordRegion|stop|menu>`) and by the screenshot menu.
 Scope {
@@ -25,8 +25,13 @@ Scope {
     property point origin: Qt.point(0, 0)
     // The whole screen, frozen before the selection is shown over it.
     property string frozenFile: ""
-    readonly property string folder: Quickshell.env("HOME") + "/Pictures/Screenshots"
-    readonly property string videoFolder: Quickshell.env("HOME") + "/Videos/Recordings"
+
+    // Your pictures or videos folder, wherever user-dirs.dirs puts it, or the usual
+    // one before xdg-user-dirs has run.
+    function userDir(name, fallback) {
+        const match = userDirs.text().match(new RegExp("^XDG_" + name + "_DIR=\"(.*)\"$", "m"));
+        return match ? match[1].replace(/^\$HOME/, Quickshell.env("HOME")) : Quickshell.env("HOME") + "/" + fallback;
+    }
 
     function capture(mode, name) {
         const monitor = Hyprland.monitors.values.find((item) => {
@@ -36,6 +41,8 @@ Scope {
             return ;
 
         busy = true;
+        // The folders file only appears at the first login, maybe after the shell started
+        userDirs.reload();
         screenshot.mode = mode;
         screenName = monitor.name;
         scale = monitor.lastIpcObject.scale || 1;
@@ -52,7 +59,7 @@ Scope {
     // rect: the logical region on the screen, null for the whole screen; with a file,
     // the region already annotated.
     function save(rect) {
-        const file = folder + "/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
+        const file = userDir("PICTURES", "Pictures") + "/Screenshots/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
         const crop = rect === null || rect.file ? "" : [rect.width, rect.height, rect.x, rect.y].map((value) => {
             return Math.round(value * scale);
         }).join(":");
@@ -63,7 +70,7 @@ Scope {
 
     // rect: the logical region on the screen, null for the whole screen.
     function record(rect) {
-        const file = videoFolder + "/Recording_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".mp4";
+        const file = userDir("VIDEOS", "Videos") + "/Recordings/Recording_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".mp4";
         const area = rect === null ? ["-o", screenName] : ["-g", Math.round(origin.x + rect.x) + "," + Math.round(origin.y + rect.y) + " " + Math.round(rect.width) + "x" + Math.round(rect.height)];
         recorder.file = file;
         recorder.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && shift && exec wf-recorder -y --audio=@DEFAULT_MONITOR@ -F "crop=trunc(iw/2)*2:trunc(ih/2)*2" -x yuv420p "$@"', "sh", file].concat(area).concat(["-f", file]);
@@ -235,6 +242,16 @@ ffmpeg -loglevel error -y -i "$1" -frames:v 1 -vf scale=-2:180 "$2"'
 
     Process {
         id: cleanup
+    }
+
+    // ~/.config/user-dirs.dirs, written by xdg-user-dirs-update at each login
+    FileView {
+        id: userDirs
+
+        path: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/user-dirs.dirs"
+        // Read on the spot, so a capture right after the reload sees the folders
+        blockLoading: true
+        printErrors: false
     }
 
     IpcHandler {

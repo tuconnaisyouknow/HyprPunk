@@ -230,7 +230,8 @@ you'd bind to your own shortcuts.
 | Record a region or a window, or stop | `Super + Shift + R` |
 
 Screenshots are saved in `~/Pictures/Screenshots` and copied to the clipboard. Recordings, with the system's sound,
-go to `~/Videos/Recordings`, and stop from the same shortcut or from their timer in the island.
+go to `~/Videos/Recordings`, and stop from the same shortcut or from their timer in the island. Both follow you if you
+move your pictures or videos folder in `~/.config/user-dirs.dirs`.
 
 ### 🔒 Locking and sleep
 
