@@ -19,17 +19,14 @@ plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-bat 
 
 source $ZSH/oh-my-zsh.sh
 
-###############
-# MY OWN BITS #
-###############
+#######################
+# HYPRPUNK'S OWN BITS #
+#######################
 
 source ~/.aliasrc
 source ~/.functionrc
 source ~/.highlightrc
 source ~/.bindingrc
-
-# Your own tweaks in ~/.personalrc, skipped if it doesn't exist
-[[ -f ~/.personalrc ]] && source ~/.personalrc
 
 #########
 # TOOLS #
@@ -93,3 +90,11 @@ _restore_prompt() {
 
 add-zle-hook-widget zle-line-finish _transient_prompt
 add-zle-hook-widget line-init _restore_prompt
+
+#################
+# YOUR OWN BITS #
+#################
+
+# Your own tweaks in ~/.personalrc, skipped if it doesn't exist. Read last, so they
+# win over anything above, fzf's options and the prompt included.
+[[ -f ~/.personalrc ]] && source ~/.personalrc
