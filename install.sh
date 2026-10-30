@@ -1,28 +1,26 @@
 #!/usr/bin/env bash
-# Sets up HyprPunk on a fresh Arch install: packages, dotfiles, themes and services.
-# Your old configs are saved to ~/.backup first, everything goes to a log in
-# ~/.local/state/hyprpunk, and if something fails, running it again picks up where it stopped.
+# Sets up HyprPunk on a fresh minimal Arch install: packages, dotfiles, themes and services.
+# It refuses to run over an existing setup, logs everything to ~/.local/state/hyprpunk,
+# and if something fails, running it again picks up where it stopped.
 
 set -Eeuo pipefail
 
 DOTFILES_REPO="https://github.com/tuconnaisyouknow/HyprPunk.git"
 DOTFILES_DIR="$HOME/.dotfiles"
-GITHUB_DIR="$HOME/GitHub"
-BACKUP_DIR="$HOME/.backup/system-$(date +%Y-%m-%d_%H-%M-%S)"
 LOG_DIR="$HOME/.local/state/hyprpunk"
 LOG_FILE="$LOG_DIR/install-$(date +%Y-%m-%d_%H-%M-%S).log"
 STATE_FILE="$LOG_DIR/install.state"
 current_step="Initialisation"
-prepared_dotfiles_dir=""
 sudo_keepalive_pid=""
 keyboard_layout=""
 locale_language="us"
-locale_regional="fr"
+locale_regional="us"
 
 declare -A COMPLETED_STEPS=()
 
-# What the dotfiles take over in your home: backed up, then cleared so stow can link it
+# What HyprPunk takes over in your home. Finding any of it means the system isn't fresh.
 readonly -a USER_CONFIG_PATHS=(
+  ".dotfiles"
   "Pictures/Wallpapers"
   "Scripts"
   ".oh-my-zsh"
@@ -33,9 +31,7 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/fontconfig"
   ".config/gtk-3.0"
   ".config/gtk-4.0"
-  ".config/hypr/hypridle.conf"
-  ".config/hypr/hyprland.conf"
-  ".config/hypr/hyprland.lua"
+  ".config/hypr"
   ".config/kitty"
   ".config/kdeglobals"
   ".config/Kvantum"
@@ -46,12 +42,18 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/starship.toml"
   ".config/tmux"
   ".config/yazi"
-  ".lesskey"
   ".zshrc"
   ".bindingrc"
   ".aliasrc"
   ".functionrc"
   ".highlightrc"
+)
+
+# Login screens and desktops that would mean someone already set this system up
+readonly -a OTHER_DESKTOP_PACKAGES=(
+  gdm lightdm lxdm ly greetd sddm
+  gnome-shell plasma-workspace xfce4-session cinnamon mate-session-manager
+  budgie-desktop lxqt-session i3-wm sway hyprland niri
 )
 
 ############
@@ -73,7 +75,6 @@ save_state() {
   state_tmp=$(mktemp --tmpdir="$LOG_DIR" install-state.XXXXXX)
   {
     printf 'version=1\n'
-    printf 'backup_dir=%s\n' "$BACKUP_DIR"
     printf 'keyboard_layout=%s\n' "$keyboard_layout"
     printf 'locale_language=%s\n' "$locale_language"
     printf 'locale_regional=%s\n' "$locale_regional"
@@ -91,9 +92,6 @@ load_state() {
   while IFS='=' read -r key value; do
     case "$key" in
     version) version="$value" ;;
-    backup_dir) BACKUP_DIR="$value" ;;
-    # Older installs asked laptop or desktop to pick the lock screen, no longer needed
-    pc_type) ;;
     keyboard_layout) keyboard_layout="$value" ;;
     locale_language) locale_language="$value" ;;
     locale_regional) locale_regional="$value" ;;
@@ -103,10 +101,6 @@ load_state() {
 
   [[ "$version" == "1" ]] || {
     echo "Unsupported installation state version: ${version:-missing}" >&2
-    return 1
-  }
-  [[ "$BACKUP_DIR" == "$HOME/.backup/system-"* ]] || {
-    echo "Invalid backup directory in installation state: $BACKUP_DIR" >&2
     return 1
   }
   [[ -z "$keyboard_layout" || "$keyboard_layout" == "us" || "$keyboard_layout" == "fr" ]] || {
@@ -123,29 +117,20 @@ load_state() {
   }
 }
 
+# An interrupted install always resumes: starting over would find its own half-done
+# work and take it for an existing setup
 initialize_state() {
-  local answer
-
   if [[ -f "$STATE_FILE" ]]; then
-    read -rp "An unfinished installation was found. Resume it? [Y/n]: " answer
-    case "$answer" in
-    n | N)
-      rm -f -- "$STATE_FILE"
-      ;;
-    *)
-      load_state
-      echo "Resuming installation. Backup directory: $BACKUP_DIR"
-      ;;
-    esac
+    load_state
+    echo "Resuming the installation that was interrupted."
+  else
+    require_fresh_system
   fi
 
   save_state
 }
 
 cleanup() {
-  if [[ -n "$prepared_dotfiles_dir" && -d "$prepared_dotfiles_dir" ]]; then
-    rm -rf -- "$prepared_dotfiles_dir"
-  fi
   if [[ -n "$sudo_keepalive_pid" ]]; then
     kill "$sudo_keepalive_pid" 2>/dev/null || true
   fi
@@ -218,9 +203,50 @@ clone_or_pull() {
 # THE STEPS #
 #############
 
+# Your own user, in the wheel group, so the dotfiles land in your home and sudo works
+require_regular_user() {
+  if ((EUID == 0)); then
+    echo "Run the installer as your own user, not as root." >&2
+    echo "Create one first with: useradd -m -G wheel <name>, then let the wheel group use sudo with: EDITOR=nano visudo" >&2
+    exit 1
+  fi
+  if ! command -v sudo &>/dev/null; then
+    echo "sudo is missing. Install it as root with: pacman -S sudo" >&2
+    exit 1
+  fi
+  if ! id -nG | grep -qw wheel; then
+    echo "$USER isn't in the wheel group. Add it as root with: usermod -aG wheel $USER, then log in again." >&2
+    exit 1
+  fi
+}
+
 require_arch() {
   if ! command -v pacman &>/dev/null; then
-    echo "This script is only designed for Arch Linux."
+    echo "This script is only designed for Arch Linux." >&2
+    exit 1
+  fi
+}
+
+# HyprPunk only goes on a fresh minimal Arch. Finding something it would take over, or
+# another desktop, means the system is already set up, so it stops before touching it.
+require_fresh_system() {
+  local path package
+  local -a found=()
+
+  for path in "${USER_CONFIG_PATHS[@]}"; do
+    if [[ -e "$HOME/$path" || -L "$HOME/$path" ]]; then
+      found+=("$HOME/$path")
+    fi
+  done
+  for package in "${OTHER_DESKTOP_PACKAGES[@]}"; do
+    if pacman -Q "$package" &>/dev/null; then
+      found+=("$package, already installed")
+    fi
+  done
+
+  if ((${#found[@]})); then
+    echo "HyprPunk only installs on a fresh minimal Arch Linux, and this one is already set up:" >&2
+    printf '  - %s\n' "${found[@]}" >&2
     exit 1
   fi
 }
@@ -266,14 +292,14 @@ ask_locale_language() {
 
 ask_locale_regional() {
   while true; do
-    read -rp "Regional formats [us/fr] (default: fr): " locale_regional
+    read -rp "Regional formats [us/fr] (default: us): " locale_regional
     locale_regional="${locale_regional,,}"
     case "$locale_regional" in
-    "" | fr)
-      locale_regional="fr"
+    "" | us)
+      locale_regional="us"
       break
       ;;
-    us)
+    fr)
       break
       ;;
     *)
@@ -283,18 +309,24 @@ ask_locale_regional() {
   done
 }
 
+# yay is built in /tmp, which Arch keeps in memory, so nothing is left in your home and
+# a build cut short is gone at the next reboot
 install_yay() {
-  if ! command -v yay &>/dev/null; then
-    sudo pacman -S --needed --noconfirm git base-devel
+  local build_dir
 
-    mkdir -p "$GITHUB_DIR"
-    clone_or_pull "https://aur.archlinux.org/yay.git" "$GITHUB_DIR/yay"
-
-    (
-      cd "$GITHUB_DIR/yay"
-      makepkg -si --noconfirm --rmdeps
-    )
+  if command -v yay &>/dev/null; then
+    return
   fi
+
+  sudo pacman -S --needed --noconfirm git base-devel
+
+  build_dir=$(mktemp -d "${TMPDIR:-/tmp}/hyprpunk-yay.XXXXXX")
+  git clone "https://aur.archlinux.org/yay.git" "$build_dir"
+  (
+    cd "$build_dir"
+    makepkg -si --noconfirm --rmdeps
+  )
+  rm -rf -- "$build_dir"
 }
 
 update_system() {
@@ -349,39 +381,6 @@ install_packages() {
     qt6-multimedia-ffmpeg
 }
 
-clean_user_configs() {
-  echo "Cleaning previous user configs..."
-
-  local path
-  for path in "${USER_CONFIG_PATHS[@]}"; do
-    rm -rf -- "${HOME:?}/$path"
-  done
-}
-
-backup_configs() {
-  local path
-  local -a existing_user_configs=()
-
-  mkdir -p "$BACKUP_DIR"
-
-  [[ -f /boot/grub/grub.cfg ]] && sudo cp /boot/grub/grub.cfg "$BACKUP_DIR/"
-  [[ -f /etc/default/grub ]] && sudo cp /etc/default/grub "$BACKUP_DIR/"
-  [[ -f /etc/sddm.conf ]] && sudo cp /etc/sddm.conf "$BACKUP_DIR/"
-
-  for path in "${USER_CONFIG_PATHS[@]}"; do
-    [[ -e "$HOME/$path" || -L "$HOME/$path" ]] && existing_user_configs+=("$path")
-  done
-
-  if ((${#existing_user_configs[@]})); then
-    (
-      cd "$HOME"
-      tar -czf "$BACKUP_DIR/user-configs.tar.gz" -- "${existing_user_configs[@]}"
-    )
-  fi
-
-  echo "Configuration backup created in: $BACKUP_DIR"
-}
-
 # Oh My Zsh and its plugins, zsh as your shell. Its installer leaves a .zshrc behind,
 # ours replaces it.
 install_oh_my_zsh() {
@@ -403,28 +402,16 @@ install_oh_my_zsh() {
   rm -f "$HOME/.zshrc"
 }
 
-# Download the dotfiles somewhere temporary first, so a failed clone leaves yours alone
-prepare_dotfiles() {
-  prepared_dotfiles_dir=$(mktemp -d "${TMPDIR:-/tmp}/hyprpunk-dotfiles.XXXXXX")
-  git clone "$DOTFILES_REPO" "$prepared_dotfiles_dir"
-  git -C "$prepared_dotfiles_dir" rev-parse --verify HEAD >/dev/null
-}
-
-# Swap the new dotfiles in, the old folder goes to the backup
-activate_dotfiles() {
-  if [[ -d "$BACKUP_DIR/dotfiles" && -d "$DOTFILES_DIR/.git" ]]; then
-    rm -rf -- "$prepared_dotfiles_dir"
-    prepared_dotfiles_dir=""
-    echo "Dotfiles were already activated before the previous interruption."
+# The dotfiles go straight to ~/.dotfiles, which the fresh system check found empty.
+# A clone that got through is kept, one cut short by an interruption starts over.
+clone_dotfiles() {
+  if [[ -d "$DOTFILES_DIR/.git" ]] && git -C "$DOTFILES_DIR" rev-parse --verify HEAD &>/dev/null; then
+    echo "The dotfiles are already downloaded."
     return
   fi
 
-  if [[ -d "$DOTFILES_DIR" ]]; then
-    mv "$DOTFILES_DIR" "$BACKUP_DIR/dotfiles"
-  fi
-
-  mv "$prepared_dotfiles_dir" "$DOTFILES_DIR"
-  prepared_dotfiles_dir=""
+  rm -rf -- "$DOTFILES_DIR"
+  git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
 }
 
 # Link each module into your home. The others (sddm, grub, battery…) are installed
@@ -444,73 +431,10 @@ stow_dotfiles() {
   cp --update=none "$DOTFILES_DIR/hyprland/.config/hypr/personal.example/"*.lua "$HOME/.config/hypr/personal/"
 }
 
-# qt5ct and qt6ct rewrite their file on every change, so they get a copy instead of a link
-# (qt-configctl.sh can restore them later)
+# qt5ct and qt6ct rewrite their file on every change, so they get a copy written by
+# qt-configctl.sh instead of a link (the same script restores them later)
 generate_qt_configs() {
-  install -Dm644 \
-    "$DOTFILES_DIR/qt5/.config/qt5ct/colors/catppuccin-mocha-mauve.conf" \
-    "$HOME/.config/qt5ct/colors/catppuccin-mocha-mauve.conf"
-  install -Dm644 \
-    "$DOTFILES_DIR/qt6/.config/qt6ct/colors/catppuccin-mocha-mauve.conf" \
-    "$HOME/.config/qt6ct/colors/catppuccin-mocha-mauve.conf"
-
-  cat >"$HOME/.config/qt5ct/qt5ct.conf" <<EOF
-[Appearance]
-color_scheme_path=$HOME/.config/qt5ct/colors/catppuccin-mocha-mauve.conf
-custom_palette=true
-icon_theme=Papirus-Dark
-standard_dialogs=default
-style=kvantum-dark
-
-[Fonts]
-fixed="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
-general="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
-
-[Interface]
-activate_item_on_single_click=1
-buttonbox_layout=0
-cursor_flash_time=1000
-dialog_buttons_have_icons=1
-double_click_interval=400
-keyboard_scheme=2
-menus_have_icons=true
-show_shortcuts_in_context_menus=true
-toolbutton_style=4
-underline_shortcut=1
-wheel_scroll_lines=3
-
-[Troubleshooting]
-force_raster_widgets=1
-EOF
-
-  cat >"$HOME/.config/qt6ct/qt6ct.conf" <<EOF
-[Appearance]
-color_scheme_path=$HOME/.config/qt6ct/colors/catppuccin-mocha-mauve.conf
-custom_palette=true
-icon_theme=Papirus-Dark
-standard_dialogs=default
-style=kvantum-dark
-
-[Fonts]
-fixed="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
-general="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
-
-[Interface]
-activate_item_on_single_click=1
-buttonbox_layout=0
-cursor_flash_time=1000
-dialog_buttons_have_icons=1
-double_click_interval=400
-keyboard_scheme=2
-menus_have_icons=true
-show_shortcuts_in_context_menus=true
-toolbutton_style=4
-underline_shortcut=1
-wheel_scroll_lines=3
-
-[Troubleshooting]
-force_raster_widgets=1
-EOF
+  "$HOME/Scripts/qt-configctl.sh" restore all
 }
 
 # The layout also goes to the login screen and the TTYs. The polkit rule lets later
@@ -663,6 +587,9 @@ install_grub_theme() {
   sudo mkdir -p /boot/grub/themes
   sudo cp -ru "$grub_theme_dir" /boot/grub/themes/
 
+  # A broken GRUB config means a machine that won't boot, so its original is kept aside
+  [[ -e /etc/default/grub.bak ]] || sudo cp /etc/default/grub /etc/default/grub.bak
+
   if grep -q '^#GRUB_THEME=' /etc/default/grub; then
     sudo sed -i "s|^#GRUB_THEME=.*|GRUB_THEME=$grub_theme_config|" /etc/default/grub
   elif grep -q '^GRUB_THEME=' /etc/default/grub; then
@@ -674,7 +601,8 @@ install_grub_theme() {
   sudo grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-# Brave's managed settings, when Brave is installed
+# Brave's managed settings, when Brave is installed. Copied rather than linked, so only
+# root can change what applies to every account, like the rest of /etc.
 install_brave_policy() {
   local policy_src="$DOTFILES_DIR/brave/policies/managed/policy.json"
   local policy_target_dir="/etc/brave/policies/managed"
@@ -684,8 +612,7 @@ install_brave_policy() {
     return
   fi
 
-  sudo mkdir -p "$policy_target_dir"
-  sudo ln -sf "$policy_src" "$policy_target_dir/policy.json"
+  sudo install -Dm644 "$policy_src" "$policy_target_dir/policy.json"
 }
 
 # The battery charge limit you set from the control center, on laptops that support one.
@@ -696,10 +623,6 @@ install_battery_limit() {
   if ! compgen -G "/sys/class/power_supply/*/charge_control_end_threshold" >/dev/null; then
     echo "No battery charge limit on this computer, skipping."
     return
-  fi
-
-  if ! id -nG | grep -qw wheel; then
-    echo "Warning: $USER is not in the wheel group, the charge limit stays read-only in the control center."
   fi
 
   sudo install -Dm755 "$battery_dir/battery-limit" /usr/local/bin/battery-limit
@@ -718,6 +641,8 @@ enable_services() {
 }
 
 ask_reboot() {
+  local answer
+
   read -rp "Do you want to reboot now ? [y/n]: " answer
 
   case "$answer" in
@@ -736,10 +661,11 @@ ask_reboot() {
 ########
 
 main() {
+  require_regular_user
+  require_arch
   setup_logging
   initialize_state
 
-  run_step "require_arch" "Checking the operating system" require_arch
   run_step "ask_keyboard_layout" "Selecting the keyboard layout" ask_keyboard_layout
   run_step "ask_locale_language" "Selecting the interface language" ask_locale_language
   run_step "ask_locale_regional" "Selecting regional formats" ask_locale_regional
@@ -751,23 +677,10 @@ main() {
   keep_sudo_alive
 
   run_step "update_system" "Updating the system" update_system
-
-  run_step "create_github_dir" "Creating the GitHub directory" mkdir -p "$GITHUB_DIR"
   run_step "install_yay" "Installing yay" install_yay
   run_step "install_packages" "Installing packages" install_packages
-
-  # Not a step of its own: the download is temporary, so it's redone on every resume
-  # until the dotfiles are in place
-  if [[ -z "${COMPLETED_STEPS[activate_dotfiles]:-}" ]]; then
-    current_step="Downloading and validating dotfiles"
-    printf '\n==> %s\n' "$current_step"
-    prepare_dotfiles
-  fi
-
-  run_step "backup_configs" "Backing up existing configuration" backup_configs
-  run_step "clean_user_configs" "Cleaning previous user configs" clean_user_configs
   run_step "install_oh_my_zsh" "Installing Oh My Zsh" install_oh_my_zsh
-  run_step "activate_dotfiles" "Activating the downloaded dotfiles" activate_dotfiles
+  run_step "clone_dotfiles" "Downloading the dotfiles" clone_dotfiles
   run_step "stow_dotfiles" "Linking dotfiles" stow_dotfiles
   run_step "generate_qt_configs" "Generating Qt configuration" generate_qt_configs
   run_step "configure_keyboard" "Configuring the keyboard" configure_keyboard

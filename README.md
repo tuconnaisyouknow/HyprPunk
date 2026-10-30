@@ -132,7 +132,9 @@ minutes with a soft rim. Switch between them live from the control center's Disp
 > HyprPunk only installs on a **fresh minimal Arch Linux** installation, with nothing else set up yet.
 >
 > It takes over your user configuration, sets up SDDM and GRUB, installs its packages, and enables its services.
-> It isn't made to go over an existing desktop or an already configured system.
+> So it checks first, and stops without changing anything if it finds configs it would take over (like
+> `~/.config/hypr` or `~/.dotfiles`), another login screen, or another desktop. Nothing is backed up, apart from
+> `/etc/default/grub`, kept as `/etc/default/grub.bak`.
 
 ### 📋 Requirements
 
@@ -149,9 +151,10 @@ bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/re
 ```
 
 The script asks for the keyboard layout, interface language, and regional formats first, then your password once.
-After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. The locale defaults preserve
-an English interface (`en_US.UTF-8`) with French regional conventions (`fr_FR.UTF-8`). Both locales are generated during
-installation.
+After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. Left empty, the
+answers give a US layout and English for both the interface and the formats (`en_US.UTF-8`). English and French
+(`fr_FR.UTF-8`) are both generated during installation, so you can switch later. If the installation stops, run the
+same command again and it picks up where it left off.
 
 Reboot after the installation completes.
 

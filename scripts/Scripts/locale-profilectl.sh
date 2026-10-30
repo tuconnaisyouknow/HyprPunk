@@ -19,7 +19,7 @@ usage() {
   echo "Usage: $0 {get-language|get-regional|list|set-language <us|fr>|set-regional <us|fr>|init [us|fr] [us|fr]|ensure}"
 }
 
-# The saved choice, or the fallback when there's none (US language, French formats)
+# The saved choice, or the fallback when there's none (English for both)
 read_profile() {
   local file="$1" fallback="$2"
   local profile="$fallback"
@@ -129,11 +129,11 @@ apply_profiles() {
 
 case "${1:-}" in
 get-language) read_profile "$LANGUAGE_FILE" us ;;
-get-regional) read_profile "$REGIONAL_FILE" fr ;;
+get-regional) read_profile "$REGIONAL_FILE" us ;;
 list) printf 'us\nfr\n' ;;
 set-language)
   [[ $# -eq 2 ]] || { usage >&2; exit 2; }
-  apply_profiles "$2" "$(read_profile "$REGIONAL_FILE" fr)"
+  apply_profiles "$2" "$(read_profile "$REGIONAL_FILE" us)"
   ;;
 set-regional)
   [[ $# -eq 2 ]] || { usage >&2; exit 2; }
@@ -141,10 +141,10 @@ set-regional)
   ;;
 init)
   [[ $# -le 3 ]] || { usage >&2; exit 2; }
-  apply_profiles "${2:-us}" "${3:-fr}"
+  apply_profiles "${2:-us}" "${3:-us}"
   ;;
 ensure)
-  apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$(read_profile "$REGIONAL_FILE" fr)"
+  apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$(read_profile "$REGIONAL_FILE" us)"
   ;;
 *) usage >&2; exit 2 ;;
 esac
