@@ -129,11 +129,20 @@ minutes with a soft rim. Switch between them live from the control center's Disp
 ## ✅ Installation
 
 > [!CAUTION]
-> The installer is designed for a fresh minimal Arch Linux installation.
+> HyprPunk only installs on a **fresh minimal Arch Linux** installation, with nothing else set up yet.
 >
-> It may remove or replace existing user configurations, modify SDDM and GRUB, install system packages, and enable services. Read the script before running it on an existing desktop setup.
+> It takes over your user configuration, sets up SDDM and GRUB, installs its packages, and enables its services.
+> It isn't made to go over an existing desktop or an already configured system.
 
-Run the installer:
+### 📋 Requirements
+
+- A fresh Arch Linux, installed with the minimal profile (for example `archinstall` with no desktop).
+- A user account in the `wheel` group with `sudo` working. Run the installer as that user, not as root.
+- An internet connection. The dotfiles alone weigh about 500 MB to download, mostly the screenshots, wallpapers and
+  login screen videos, and the packages come on top.
+- GRUB is optional: its theme is skipped with any other bootloader.
+
+### ▶️ Run it
 
 ```sh
 bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)
@@ -146,6 +155,105 @@ installation.
 
 Reboot after the installation completes.
 
+> [!NOTE]
+> Only two keyboard layouts are supported, **QWERTY US** and **AZERTY FR**, and only two languages and regional
+> formats, **English (`en_US`)** and **French (`fr_FR`)**. Other layouts and locales aren't handled.
+
+### 📦 What gets installed
+
+HyprPunk installs its own choice of applications, without asking. You can remove any of them afterwards with
+`yay -Rns <package>`, and give its shortcut another app from your personal files (see [Customization](#-customization)).
+
+- 🌐 **Brave**, with **uBlock Origin Lite** and the **Catppuccin Mocha** theme installed by its policy, and Rewards,
+  Wallet and AI Chat turned off.
+- 🎵 **Spotify** (`spotify-launcher`), 📓 **Obsidian** and 💬 **Discord**.
+- 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
+  music files, set as the default apps for those files.
+- 📁 **Dolphin** and **Ark** for files and archives, **Seahorse** for the keyring.
+- 📝 **Neovim** and **Lazygit**, with `cargo` and `npm` for the language servers Neovim's Mason downloads on its first
+  start, with their linters and formatters: Bash, Python, HTML, CSS, TypeScript and React, Java, Markdown, Docker,
+  JSON and Hyprland.
+
+---
+
+## 🚀 First Steps
+
+> [!TIP]
+> These are enough to find your way around on the first login. **`Super + Ctrl + K`** lists every other shortcut,
+> and clicking one in that list runs it.
+
+| Shortcut | What it does |
+|---|---|
+| `Super + T` | Open the terminal (Kitty) |
+| `Alt + Space` | Open the application launcher |
+| `Ctrl + Alt + Space` | Open the main menu |
+| `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery…) |
+| `Super + N` | Open the notification center |
+| `Super + Q` | Close the focused window |
+| `Super + 1` … `Super + 0` | Switch to a workspace, add `Shift` to send the window there |
+| `Super + Escape` | Open the session menu (lock, log out, reboot, shut down) |
+| `Super + Ctrl + K` | Show all the keybindings |
+
+`Super` is the Windows key. The arrows follow Vim, `h j k l` on QWERTY and `j k l m` on AZERTY: `Super` with one of
+them moves the focus, and adding `Shift` moves the window.
+
+### 🏝️ Shell panels
+
+Every panel of the shell opens with `qs -c hyprpunk ipc call <panel> toggle` (or `open`, `close`), which is also what
+you'd bind to your own shortcuts.
+
+| Panel | Shortcut |
+|---|---|
+| `launcher` | `Alt + Space` |
+| `menu` | `Ctrl + Alt + Space` |
+| `clipboard` | `Ctrl + '` on QWERTY, `Ctrl + ù` on AZERTY |
+| `emoji` | `Super + ;` |
+| `keybindings` | `Super + Ctrl + K` |
+| `wallpaper` | `Super + Ctrl + W` |
+| `sddm` | `Super + Ctrl + G` |
+| `session` | `Super + Escape` |
+| `controlcenter` | `Super + C` |
+| `notifications` | `Super + N` |
+| `config`, `monitor`, `screenshot` | From the main menu |
+
+### 📸 Screenshots and recordings
+
+| Capture | Shortcut |
+|---|---|
+| The active screen | `Print` |
+| A region or a window | `Super + Shift + S` |
+| A region, annotated in place | `Super + Ctrl + S` |
+| Record the active screen, or stop | `Shift + Print` |
+| Record a region or a window, or stop | `Super + Shift + R` |
+
+Screenshots are saved in `~/Pictures/Screenshots` and copied to the clipboard. Recordings, with the system's sound,
+go to `~/Videos/Recordings`, and stop from the same shortcut or from their timer in the island.
+
+### 🔒 Locking and sleep
+
+The screen locks with `Super + Ctrl + L`, from the session menu, or after 5½ minutes without use. The screen dims
+first, at 5 minutes, and the computer goes to sleep after 30 minutes. Before sleeping, the screen locks at once,
+without its animation. The lock is held by Hyprland itself, so the screens stay locked even if the shell crashes.
+
+### 🎵 Music player
+
+The bar's spinning record, its player card and the lock screen's player and synced lyrics follow **Spotify only**.
+Other players, like a video in the browser or mpv, still work with the media keys but don't show there. This is a
+choice, not something you can switch: setting `hyprpunk.programs.music` to another app only changes what
+`Super + P` opens.
+
+### 🎧 AirPods
+
+The shell talks to AirPods directly, every model included, once Bluetooth is on (it starts off at each login):
+
+- AirPods in pairing mode near the computer show a card with a Connect button.
+- Opening the case of paired AirPods, or connecting them, shows their batteries.
+- Putting a pod in your ear connects them, unless they're busy playing or on a call with another device.
+- Taking a pod out pauses the music, and putting it back resumes it.
+
+The first connection saves their keys in `~/.local/state/hyprpunk/airpods-keys.json`, which tells your AirPods apart
+from other people's nearby.
+
 ---
 
 ## 📁 Structure
@@ -153,7 +261,6 @@ Reboot after the installation completes.
 ```text
 .
 ├── assets/screenshots/  # Images used by this README
-├── avatars/             # User avatars
 ├── bat/                 # Bat configuration and Catppuccin theme
 ├── battery/             # Battery charge limit script and service installed system-wide
 ├── brave/               # Brave managed policy installed system-wide
@@ -191,7 +298,7 @@ Most top-level configuration directories are GNU Stow modules that symlink into 
 ## ⌨️ Keyboard Layout
 
 > [!NOTE]
-> These dotfiles support **AZERTY FR** and **QWERTY US** keyboard layouts.
+> Only **AZERTY FR** and **QWERTY US** are supported. Any other layout would leave the Vim-style keys in the wrong place.
 
 The installer offers two keyboard profiles:
 
@@ -234,9 +341,10 @@ Hyprland reads the selected XKB layout dynamically instead of hard-coding:
 kb_layout = keyboard.xkb
 ```
 
-### Locale profiles
+### 🌍 Locale profiles
 
-The interface language (`LANG` and `LC_MESSAGES`) and regional formats (the other `LC_*` categories) are independent.
+The interface language (`LANG` and `LC_MESSAGES`) and regional formats (the other `LC_*` categories) are independent,
+and each is either English (`us`, `en_US.UTF-8`) or French (`fr`, `fr_FR.UTF-8`), the only two locales installed.
 They can be changed after installation from the command line:
 
 ```bash
@@ -292,6 +400,10 @@ touching your preferences:
   - 🖱️ `input.lua` for the mouse, touchpad and gestures. The keyboard layout comes from the shell's settings.
   - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
     `hyprpunk.autostart.remove`.
+- 🐚 **Your shell tweaks** go in files of your own, each skipped when it doesn't exist:
+  - `~/.personalrc`, read at the very end of `.zshrc`, so your aliases, functions, options and variables win over
+    HyprPunk's, fzf's and the prompt's.
+  - `~/.completionrc`, read before Oh My Zsh sets up completion, the place to add your own completions to `fpath`.
 
 We advise you to leave the rest of the dotfiles as they are. They're linked straight from the repository, so any
 edit there clashes with the next `git pull`, and the modules expect each other as they ship. If something you need
@@ -301,7 +413,6 @@ can't be done from these files, open an issue rather than patching HyprPunk itse
 
 ## 🚧 Roadmap
 
-- ⌨️ Document the main keybindings.
 - 📦 Add a dependency table per module.
 - 🩺 Add troubleshooting notes for SDDM and Hyprland.
 - 🌆 Update the installer to use the `HyprPunk` name everywhere.
@@ -314,6 +425,10 @@ can't be done from these files, open an issue rather than patching HyprPunk itse
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
 - 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
 - 🔒 The lock screen is inspired by the one in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
+- 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
+- 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
+- 🔤 The login screens use [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) by Stefie Justprince, under the SIL Open Font License 1.1 (`OFL.txt` next to the font).
+- 💤 The Neovim configuration starts from the [LazyVim starter](https://github.com/LazyVim/starter), under the Apache License 2.0 (`nvim/.config/nvim/LICENSE`).
 
 ---
 
@@ -327,4 +442,10 @@ Looking for my Windows configuration?
 
 ## 📜 License
 
-MIT. Feel free to explore, fork, and adapt.
+The code and configuration are under the MIT license. Feel free to explore, fork, and adapt.
+
+The MIT license doesn't cover the artwork. The wallpapers, the Fastfetch logo, the login screen videos and the
+CyberEXS GRUB theme belong to their respective authors and are shared here for personal use only, without any
+license from them. If you made one of them and want it credited or removed, please open an issue.
+
+The parts listed in the [Credits](#-credits) keep their own licenses.
