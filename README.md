@@ -136,10 +136,11 @@ minutes with a soft rim. Switch between them live from the control center's Disp
 Run the installer:
 
 ```sh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)"
+bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)
 ```
 
-During installation, the script asks for the keyboard layout, interface language, and regional formats. The locale defaults preserve
+The script asks for the keyboard layout, interface language, and regional formats first, then your password once.
+After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. The locale defaults preserve
 an English interface (`en_US.UTF-8`) with French regional conventions (`fr_FR.UTF-8`). Both locales are generated during
 installation.
 

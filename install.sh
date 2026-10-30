@@ -14,6 +14,7 @@ LOG_FILE="$LOG_DIR/install-$(date +%Y-%m-%d_%H-%M-%S).log"
 STATE_FILE="$LOG_DIR/install.state"
 current_step="Initialisation"
 prepared_dotfiles_dir=""
+sudo_keepalive_pid=""
 keyboard_layout=""
 locale_language="us"
 locale_regional="fr"
@@ -146,6 +147,20 @@ cleanup() {
   if [[ -n "$prepared_dotfiles_dir" && -d "$prepared_dotfiles_dir" ]]; then
     rm -rf -- "$prepared_dotfiles_dir"
   fi
+  if [[ -n "$sudo_keepalive_pid" ]]; then
+    kill "$sudo_keepalive_pid" 2>/dev/null || true
+  fi
+}
+
+# Asks for your password once, then keeps sudo awake in the background, so a long
+# package build can't stop the install at a password prompt while you're away
+keep_sudo_alive() {
+  sudo -v
+  while kill -0 "$$" 2>/dev/null; do
+    sudo -n true 2>/dev/null || true
+    sleep 50
+  done &
+  sudo_keepalive_pid=$!
 }
 
 # On failure, say which step, which line and where the log is
@@ -726,10 +741,17 @@ main() {
   initialize_state
 
   run_step "require_arch" "Checking the operating system" require_arch
-  run_step "update_system" "Updating the system" update_system
   run_step "ask_keyboard_layout" "Selecting the keyboard layout" ask_keyboard_layout
   run_step "ask_locale_language" "Selecting the interface language" ask_locale_language
   run_step "ask_locale_regional" "Selecting regional formats" ask_locale_regional
+
+  # The questions are all behind you, so the rest runs on its own until the reboot
+  # question at the end. Not a step of its own, since a resumed install needs sudo again.
+  current_step="Asking for your password"
+  printf '\n==> %s\n' "$current_step"
+  keep_sudo_alive
+
+  run_step "update_system" "Updating the system" update_system
 
   run_step "create_github_dir" "Creating the GitHub directory" mkdir -p "$GITHUB_DIR"
   run_step "install_yay" "Installing yay" install_yay
