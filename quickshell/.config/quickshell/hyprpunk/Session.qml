@@ -15,7 +15,7 @@ Singleton {
 
     // "us" or "fr".
     property string languageProfile: "us"
-    property string regionalProfile: "fr"
+    property string regionalProfile: "us"
     // "classic" or "liquid", the lock screen clock's glass. Switching it restyles every
     // glass surface on the spot, no restart needed.
     property string glassStyle: "classic"
@@ -79,7 +79,7 @@ Singleton {
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
-        onLoaded: session.regionalProfile = text().trim() || "fr"
+        onLoaded: session.regionalProfile = text().trim() || "us"
     }
 
     FileView {

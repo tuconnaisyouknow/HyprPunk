@@ -13,5 +13,5 @@ end
 
 return {
   language = read_profile("language", "us"),
-  regional = read_profile("regional", "fr"),
+  regional = read_profile("regional", "us"),
 }
