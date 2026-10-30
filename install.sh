@@ -23,7 +23,6 @@ declare -A COMPLETED_STEPS=()
 
 # What the dotfiles take over in your home: backed up, then cleared so stow can link it
 readonly -a USER_CONFIG_PATHS=(
-  "Pictures/Avatars"
   "Pictures/Wallpapers"
   "Scripts"
   ".oh-my-zsh"
@@ -431,7 +430,7 @@ activate_dotfiles() {
 # Link each module into your home. The others (sddm, grub, battery…) are installed
 # system-wide by their own steps.
 stow_dotfiles() {
-  stow --dir "$DOTFILES_DIR" --target "$HOME" avatars bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
+  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
   # ours, kept out of git, and the settings you already have stay
