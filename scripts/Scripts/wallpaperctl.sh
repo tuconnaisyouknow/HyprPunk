@@ -12,7 +12,7 @@ STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_DIR="$STATE_HOME/hyprpunk"
 STATE_FILE="${HYPR_WALLPAPER_STATE:-$STATE_DIR/wallpaper.conf}"
 LOCK_FILE="${STATE_FILE}.lock"
-DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/night-drive-protocol.png"
+DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/waiting-for-the-last-transmission.jpg"
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
@@ -107,18 +107,27 @@ apply_wallpaper() {
 command="${1:-}"
 case "$command" in
 ensure)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   ;;
 apply)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   apply_wallpaper --transition-type none
   ;;
 set)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   wallpaper="$(realpath -m -s -- "$2")"
   validate_wallpaper "$wallpaper"
@@ -126,12 +135,18 @@ set)
   apply_wallpaper "${TRANSITION[@]}"
   ;;
 status)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   wallpaper="$(read_wallpaper || true)"
   printf 'wallpaper=%s\n' "${wallpaper:-$DEFAULT_WALLPAPER}"
   ;;
 reset | init)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   validate_wallpaper "$DEFAULT_WALLPAPER"
   write_state "$DEFAULT_WALLPAPER"
