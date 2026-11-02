@@ -29,7 +29,7 @@ The screen blurs into the lock, with the date and time over the player and its s
 
 #### 🏝️ Dynamic island
 
-The clock's island grows into every panel, the password prompts for admin rights and the apps' file pickers included, and shows the volume, brightness, keyboard light, microphone and touchpad changes.
+The clock's island grows into every panel, the password prompts for admin rights, the apps' file pickers and the screen share picker included, and shows the volume, brightness, keyboard light, microphone and touchpad changes.
 
 ![osd](./assets/screenshots/osd.webp)
 
@@ -282,7 +282,7 @@ from other people's nearby.
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum Catppuccin Mocha Mauve theme
 ├── nvim/                # Neovim Lua configuration
-├── portal/              # Sends the apps' Open and Save dialogs to the shell's file picker
+├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── qt5/                 # Source palette for generated Qt5ct configuration
 ├── qt6/                 # Source palette for generated Qt6ct configuration
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
