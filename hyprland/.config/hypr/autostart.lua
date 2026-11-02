@@ -26,32 +26,32 @@ hl.env("DISPLAY", x11Display)
 -- Each one named, so personal/autostart.lua can drop one with hyprpunk.autostart.remove("bluetooth")
 local startup = {
   -- Hand the Wayland session over to systemd first, so the user services see it
-  { name = "systemd", command = "dbus-update-activation-environment --systemd --all" },
+  { name = "systemd",          command = "dbus-update-activation-environment --systemd --all" },
 
   -- The desktop itself: screens, touchpad, wallpaper, the shell and idle handling
-  { name = "displays", command = "~/Scripts/displayctl.sh bootstrap" },
-  { name = "touchpad", command = "~/Scripts/touchpadctl.sh sync" },
+  { name = "displays",         command = "~/Scripts/displayctl.sh bootstrap" },
+  { name = "touchpad",         command = "~/Scripts/touchpadctl.sh sync" },
   -- awww-daemon forgets the last wallpaper, so wallpaperctl.sh puts it back
   { name = "wallpaper-daemon", command = "awww-daemon" },
-  { name = "wallpaper", command = "~/Scripts/wallpaperctl.sh apply" },
-  { name = "shell", command = "qs -c hyprpunk" },
-  { name = "idle", command = "hypridle" },
+  { name = "wallpaper",        command = "~/Scripts/wallpaperctl.sh apply" },
+  { name = "shell",            command = "qs -c hyprpunk" },
+  { name = "idle",             command = "hypridle" },
   -- Your Documents, Pictures… folders, in English so screenshots land next to the
   -- wallpapers. xdg-user-dirs' own service waits for a systemd target Hyprland never reaches.
-  { name = "user-dirs", command = "LC_ALL=C xdg-user-dirs-update" },
+  { name = "user-dirs",        command = "LC_ALL=C xdg-user-dirs-update" },
 
   -- Bluetooth stays off until you need it
-  { name = "bluetooth", command = "bluetoothctl power off" },
+  { name = "bluetooth",        command = "bluetoothctl power off" },
 
   -- Clipboard history, text and images alike (images feed the shell's thumbnails)
-  { name = "clipboard-text", command = "wl-paste --type text --watch cliphist store" },
+  { name = "clipboard-text",   command = "wl-paste --type text --watch cliphist store" },
   { name = "clipboard-images", command = "wl-paste --type image --watch cliphist store" },
 
   -- X11 apps, since Hyprland's own XWayland is off (see above)
-  { name = "xwayland", command = "xwayland-satellite " .. x11Display },
+  { name = "xwayland",         command = "xwayland-satellite " .. x11Display },
 
   -- Keyring for the apps that store passwords and SSH keys
-  { name = "keyring", command = "/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh" },
+  { name = "keyring",          command = "/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh" },
 }
 
 -- The list only runs once the whole config is read, so your additions and removals count
