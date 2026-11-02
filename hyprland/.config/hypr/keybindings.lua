@@ -13,7 +13,6 @@ hyprpunk.programs = {
   browser = "brave",
   notes = "obsidian",
   music = "spotify-launcher",
-  chat = "discord",
 }
 
 -- Read when the key is pressed rather than now, so a change made after this file still counts
@@ -66,7 +65,6 @@ bind(mainMod .. " + E", launch("files"), "Open the file manager")
 bind(mainMod .. " + B", launch("browser"), "Open the web browser")
 bind(mainMod .. " + O", launch("notes"), "Open the notes")
 bind(mainMod .. " + P", launch("music"), "Open the music player")
-bind(mainMod .. " + D", launch("chat"), "Open the chat")
 
 -----------
 -- SHELL --
