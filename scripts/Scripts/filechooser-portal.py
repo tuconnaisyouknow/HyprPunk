@@ -42,7 +42,9 @@ def load_mime_globs():
     dirs += os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":")
     for directory in dirs:
         try:
-            with open(os.path.join(directory, "mime", "globs2"), encoding="utf-8") as file:
+            with open(
+                os.path.join(directory, "mime", "globs2"), encoding="utf-8"
+            ) as file:
                 for line in file:
                     if line.startswith("#"):
                         continue
@@ -116,21 +118,38 @@ class Portal(dbus.service.Object):
     def Get(self, interface, name):
         if interface == FILE_CHOOSER and name == "version":
             return dbus.UInt32(4)
-        raise dbus.exceptions.DBusException("No such property " + name, name="org.freedesktop.DBus.Error.InvalidArgs")
+        raise dbus.exceptions.DBusException(
+            "No such property " + name, name="org.freedesktop.DBus.Error.InvalidArgs"
+        )
 
     @dbus.service.method(PROPERTIES, in_signature="s", out_signature="a{sv}")
     def GetAll(self, interface):
         return {"version": dbus.UInt32(4)} if interface == FILE_CHOOSER else {}
 
-    @dbus.service.method(FILE_CHOOSER, in_signature="osssa{sv}", out_signature="ua{sv}", async_callbacks=("reply", "error"))
+    @dbus.service.method(
+        FILE_CHOOSER,
+        in_signature="osssa{sv}",
+        out_signature="ua{sv}",
+        async_callbacks=("reply", "error"),
+    )
     def OpenFile(self, handle, app_id, parent_window, title, options, reply, error):
         self.add("open", handle, app_id, title, options, reply)
 
-    @dbus.service.method(FILE_CHOOSER, in_signature="osssa{sv}", out_signature="ua{sv}", async_callbacks=("reply", "error"))
+    @dbus.service.method(
+        FILE_CHOOSER,
+        in_signature="osssa{sv}",
+        out_signature="ua{sv}",
+        async_callbacks=("reply", "error"),
+    )
     def SaveFile(self, handle, app_id, parent_window, title, options, reply, error):
         self.add("save", handle, app_id, title, options, reply)
 
-    @dbus.service.method(FILE_CHOOSER, in_signature="osssa{sv}", out_signature="ua{sv}", async_callbacks=("reply", "error"))
+    @dbus.service.method(
+        FILE_CHOOSER,
+        in_signature="osssa{sv}",
+        out_signature="ua{sv}",
+        async_callbacks=("reply", "error"),
+    )
     def SaveFiles(self, handle, app_id, parent_window, title, options, reply, error):
         self.add("saveFiles", handle, app_id, title, options, reply)
 
@@ -156,9 +175,21 @@ class Portal(dbus.service.Object):
             "directory": bool(options.get("directory", False)) or mode == "saveFiles",
             "folder": folder if os.path.isdir(folder) else os.path.expanduser("~"),
             "name": name,
-            "files": [os.path.basename(decode_path(file)) for file in options.get("files", [])],
-            "filters": [{"name": str(item[0]), "globs": filter_globs(item[1])} for item in filters],
-            "filter": next((index for index, item in enumerate(filters) if current is not None and item[0] == current[0]), 0),
+            "files": [
+                os.path.basename(decode_path(file)) for file in options.get("files", [])
+            ],
+            "filters": [
+                {"name": str(item[0]), "globs": filter_globs(item[1])}
+                for item in filters
+            ],
+            "filter": next(
+                (
+                    index
+                    for index, item in enumerate(filters)
+                    if current is not None and item[0] == current[0]
+                ),
+                0,
+            ),
         }
         self.dialogs[dialog_id] = {
             "message": message,
@@ -203,7 +234,9 @@ class Portal(dbus.service.Object):
             return
         # SaveFiles: the shell picks a folder, the app's names go in it.
         if dialog["message"]["mode"] == "saveFiles":
-            paths = [os.path.join(paths[0], name) for name in dialog["message"]["files"]]
+            paths = [
+                os.path.join(paths[0], name) for name in dialog["message"]["files"]
+            ]
         results = {"uris": dbus.Array([to_uri(path) for path in paths], signature="s")}
         filter_index = message.get("filter")
         if isinstance(filter_index, int) and 0 <= filter_index < len(dialog["filters"]):
@@ -214,7 +247,10 @@ class Portal(dbus.service.Object):
 def main():
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus.SessionBus()
-    if bus.request_name(BUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE) != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER:
+    if (
+        bus.request_name(BUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
+        != dbus.bus.REQUEST_NAME_REPLY_PRIMARY_OWNER
+    ):
         print("filechooser-portal: already running", file=sys.stderr)
         sys.exit(1)
     portal = Portal(bus)
@@ -230,7 +266,12 @@ def main():
         loop.quit()
         return False
 
-    GLib.io_add_watch(sys.stdin, GLib.PRIORITY_DEFAULT, GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR, on_stdin)
+    GLib.io_add_watch(
+        sys.stdin,
+        GLib.PRIORITY_DEFAULT,
+        GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR,
+        on_stdin,
+    )
     loop.run()
 
 

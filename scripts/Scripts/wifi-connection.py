@@ -68,7 +68,11 @@ def build(request):
     key_mgmt = request.get("keyMgmt", "wpa-eap")
     security = {"key-mgmt": key_mgmt}
     settings = {
-        "connection": {"id": ssid, "uuid": str(uuid.uuid4()), "type": "802-11-wireless"},
+        "connection": {
+            "id": ssid,
+            "uuid": str(uuid.uuid4()),
+            "type": "802-11-wireless",
+        },
         "802-11-wireless": {
             "ssid": dbus.ByteArray(ssid.encode()),
             "mode": "infrastructure",
@@ -107,7 +111,11 @@ def build(request):
             x[name] = request[key]
     if request.get("peapVersion") in ("0", "1"):
         x["phase1-peapver"] = request["peapVersion"]
-    for key, name in (("caCert", "ca-cert"), ("clientCert", "client-cert"), ("privateKey", "private-key")):
+    for key, name in (
+        ("caCert", "ca-cert"),
+        ("clientCert", "client-cert"),
+        ("privateKey", "private-key"),
+    ):
         if request.get(key):
             x[name] = cert(request[key])
     settings["802-1x"] = x
@@ -118,7 +126,10 @@ def wifi_device(bus):
     manager = dbus.Interface(bus.get_object(NM, NM_PATH), NM)
     for path in manager.GetDevices():
         device = bus.get_object(NM, path)
-        if device.Get(NM + ".Device", "DeviceType", dbus_interface=PROPERTIES) == DEVICE_TYPE_WIFI:
+        if (
+            device.Get(NM + ".Device", "DeviceType", dbus_interface=PROPERTIES)
+            == DEVICE_TYPE_WIFI
+        ):
             return path
     return None
 
@@ -127,7 +138,9 @@ def same_network(bus, ssid):
     settings = dbus.Interface(bus.get_object(NM, SETTINGS_PATH), NM + ".Settings")
     found = []
     for path in settings.ListConnections():
-        connection = dbus.Interface(bus.get_object(NM, path), NM + ".Settings.Connection")
+        connection = dbus.Interface(
+            bus.get_object(NM, path), NM + ".Settings.Connection"
+        )
         try:
             values = connection.GetSettings()
         except dbus.DBusException:
@@ -148,7 +161,7 @@ def delete(bus, path):
 def path_of(value):
     # Back from the path scheme; certificates stored as data have no path to show.
     raw = bytes(value).rstrip(b"\0")
-    return raw[len(b"file://"):].decode() if raw.startswith(b"file://") else ""
+    return raw[len(b"file://") :].decode() if raw.startswith(b"file://") else ""
 
 
 def read(ssid):
@@ -157,14 +170,18 @@ def read(ssid):
     if not found:
         print(json.dumps({}), flush=True)
         return
-    connection = dbus.Interface(bus.get_object(NM, found[0]), NM + ".Settings.Connection")
+    connection = dbus.Interface(
+        bus.get_object(NM, found[0]), NM + ".Settings.Connection"
+    )
     settings = connection.GetSettings()
     security = settings.get("802-11-wireless-security", {})
     values = {"keyMgmt": str(security.get("key-mgmt", ""))}
     if security.get("auth-alg") == "leap":
         values.update(eap="leap", identity=str(security.get("leap-username", "")))
         try:
-            secrets = connection.GetSecrets("802-11-wireless-security").get("802-11-wireless-security", {})
+            secrets = connection.GetSecrets("802-11-wireless-security").get(
+                "802-11-wireless-security", {}
+            )
             values["password"] = str(secrets.get("leap-password", ""))
         except dbus.DBusException:
             pass
@@ -194,7 +211,11 @@ def read(ssid):
     for name, key in text.items():
         if name in x:
             values[key] = str(x[name])
-    for name, key in (("ca-cert", "caCert"), ("client-cert", "clientCert"), ("private-key", "privateKey")):
+    for name, key in (
+        ("ca-cert", "caCert"),
+        ("client-cert", "clientCert"),
+        ("private-key", "privateKey"),
+    ):
         if name in x:
             values[key] = path_of(x[name])
     print(json.dumps(values), flush=True)
@@ -220,7 +241,9 @@ def main():
     previous = same_network(bus, request["ssid"])
     manager = dbus.Interface(bus.get_object(NM, NM_PATH), NM)
     try:
-        connection, active = manager.AddAndActivateConnection(build(request), device, "/")
+        connection, active = manager.AddAndActivateConnection(
+            build(request), device, "/"
+        )
     except dbus.DBusException as error:
         reply(False, error.get_dbus_message() or str(error))
         return
@@ -252,11 +275,15 @@ def main():
             finish(False, DEVICE_REASONS.get(state["reason"], "Connection failed"))
 
     bus.add_signal_receiver(on_device, "StateChanged", NM + ".Device", NM, device)
-    bus.add_signal_receiver(on_active, "StateChanged", NM + ".Connection.Active", NM, active)
+    bus.add_signal_receiver(
+        on_active, "StateChanged", NM + ".Connection.Active", NM, active
+    )
     GLib.timeout_add_seconds(TIMEOUT, lambda: finish(False, "The connection timed out"))
     # It may have got there before the receivers were in place.
     try:
-        current = bus.get_object(NM, active).Get(NM + ".Connection.Active", "State", dbus_interface=PROPERTIES)
+        current = bus.get_object(NM, active).Get(
+            NM + ".Connection.Active", "State", dbus_interface=PROPERTIES
+        )
         if current == ACTIVE_ACTIVATED:
             finish(True)
     except dbus.DBusException:

@@ -127,7 +127,11 @@ IMAGE_NAMES = {
     0x2024: "airpods_pro_2",
     0x2027: "airpods_pro_3",
 }
-IMAGES_DIR = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "hyprpunk", "airpods")
+IMAGES_DIR = os.path.join(
+    os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"),
+    "hyprpunk",
+    "airpods",
+)
 
 
 def log(*parts):
@@ -260,7 +264,9 @@ class AapSession:
             return False
         self.attempts += 1
         try:
-            self.sock = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_SEQPACKET, socket.BTPROTO_L2CAP)
+            self.sock = socket.socket(
+                socket.AF_BLUETOOTH, socket.SOCK_SEQPACKET, socket.BTPROTO_L2CAP
+            )
             self.sock.setblocking(False)
             result = self.sock.connect_ex((self.address, AAP_PSM))
         except OSError as error:
@@ -269,7 +275,11 @@ class AapSession:
         if result not in (0, errno.EINPROGRESS, errno.EAGAIN):
             log("aap connect", self.address, os.strerror(result))
             return self.retry()
-        self.watch = GLib.io_add_watch(self.sock.fileno(), GLib.IO_OUT | GLib.IO_ERR | GLib.IO_HUP, self.on_connected)
+        self.watch = GLib.io_add_watch(
+            self.sock.fileno(),
+            GLib.IO_OUT | GLib.IO_ERR | GLib.IO_HUP,
+            self.on_connected,
+        )
         return False
 
     def retry(self):
@@ -285,7 +295,9 @@ class AapSession:
             self.watch = None
             self.retry()
             return False
-        self.watch = GLib.io_add_watch(self.sock.fileno(), GLib.IO_IN | GLib.IO_ERR | GLib.IO_HUP, self.on_readable)
+        self.watch = GLib.io_add_watch(
+            self.sock.fileno(), GLib.IO_IN | GLib.IO_ERR | GLib.IO_HUP, self.on_readable
+        )
         self.send(AAP_HANDSHAKE)
         # Not every model acknowledges the features packet.
         GLib.timeout_add(1500, self.request_notifications)
@@ -387,7 +399,11 @@ class AapSession:
     def set_control(self, name, value):
         identifier = CONTROL_IDS[name]
         kind = CONTROLS[identifier][1]
-        byte = (0x01 if value else 0x02) if kind == "switch" else max(0, min(100, int(value)))
+        byte = (
+            (0x01 if value else 0x02)
+            if kind == "switch"
+            else max(0, min(100, int(value)))
+        )
         if self.sock is None or not self.ready:
             return
         self.send(AAP_CONTROL + bytes([identifier, byte, 0, 0, 0]))
@@ -466,7 +482,9 @@ class Daemon:
     def __init__(self):
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         self.bus = dbus.SystemBus()
-        self.manager = dbus.Interface(self.bus.get_object(BLUEZ, "/"), "org.freedesktop.DBus.ObjectManager")
+        self.manager = dbus.Interface(
+            self.bus.get_object(BLUEZ, "/"), "org.freedesktop.DBus.ObjectManager"
+        )
         self.adapter_path = None
         self.adapter_powered = False
         self.scanning = False
@@ -497,11 +515,32 @@ class Daemon:
 
         self.agent = Agent(self.bus, self)
         self.agent_registered = False
-        self.bus.add_signal_receiver(self.on_interfaces_added, "InterfacesAdded", "org.freedesktop.DBus.ObjectManager", BLUEZ)
-        self.bus.add_signal_receiver(self.on_interfaces_removed, "InterfacesRemoved", "org.freedesktop.DBus.ObjectManager", BLUEZ)
-        self.bus.add_signal_receiver(self.on_properties_changed, "PropertiesChanged", PROPERTIES, BLUEZ, path_keyword="path")
+        self.bus.add_signal_receiver(
+            self.on_interfaces_added,
+            "InterfacesAdded",
+            "org.freedesktop.DBus.ObjectManager",
+            BLUEZ,
+        )
+        self.bus.add_signal_receiver(
+            self.on_interfaces_removed,
+            "InterfacesRemoved",
+            "org.freedesktop.DBus.ObjectManager",
+            BLUEZ,
+        )
+        self.bus.add_signal_receiver(
+            self.on_properties_changed,
+            "PropertiesChanged",
+            PROPERTIES,
+            BLUEZ,
+            path_keyword="path",
+        )
         try:
-            self.bus.add_signal_receiver(self.on_bluez_owner, "NameOwnerChanged", "org.freedesktop.DBus", arg0=BLUEZ)
+            self.bus.add_signal_receiver(
+                self.on_bluez_owner,
+                "NameOwnerChanged",
+                "org.freedesktop.DBus",
+                arg0=BLUEZ,
+            )
         except dbus.DBusException:
             pass
         GLib.io_add_watch(sys.stdin.fileno(), GLib.IO_IN | GLib.IO_HUP, self.on_stdin)
@@ -514,16 +553,26 @@ class Daemon:
         try:
             with open(KEYS_FILE) as file:
                 stored = json.load(file)
-            return {address: {kind: bytes.fromhex(value) for kind, value in keys.items()} for address, keys in stored.items()}
+            return {
+                address: {kind: bytes.fromhex(value) for kind, value in keys.items()}
+                for address, keys in stored.items()
+            }
         except (OSError, ValueError):
             return {}
 
     def store_keys(self, address, keys):
-        self.keys[address] = {kind: bytes.fromhex(value) for kind, value in keys.items()}
+        self.keys[address] = {
+            kind: bytes.fromhex(value) for kind, value in keys.items()
+        }
         os.makedirs(state_dir(), exist_ok=True)
-        stored = {addr: {kind: value.hex() for kind, value in entry.items()} for addr, entry in self.keys.items()}
+        stored = {
+            addr: {kind: value.hex() for kind, value in entry.items()}
+            for addr, entry in self.keys.items()
+        }
         temporary = KEYS_FILE + ".tmp"
-        with open(os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w") as file:
+        with open(
+            os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w"
+        ) as file:
             json.dump(stored, file)
         os.replace(temporary, KEYS_FILE)
         log("stored the proximity keys of", address)
@@ -551,7 +600,9 @@ class Daemon:
 
     def register_agent(self):
         try:
-            agent_manager = dbus.Interface(self.bus.get_object(BLUEZ, "/org/bluez"), "org.bluez.AgentManager1")
+            agent_manager = dbus.Interface(
+                self.bus.get_object(BLUEZ, "/org/bluez"), "org.bluez.AgentManager1"
+            )
             agent_manager.RegisterAgent(AGENT_PATH, "NoInputNoOutput")
         except dbus.DBusException as error:
             if "AlreadyExists" not in error.get_dbus_name():
@@ -600,7 +651,9 @@ class Daemon:
 
     def is_airpods(self, props):
         # Apple's vendor id also covers Beats: the product id tells AirPods apart.
-        match = re.search(r"v004cp([0-9a-f]{4})", str(props.get("Modalias", "")).lower())
+        match = re.search(
+            r"v004cp([0-9a-f]{4})", str(props.get("Modalias", "")).lower()
+        )
         if match:
             return int(match.group(1), 16) in MODELS
         return bool(NAME_PATTERN.search(str(props.get("Name", props.get("Alias", "")))))
@@ -608,8 +661,12 @@ class Daemon:
     def on_device(self, path, props, changed=None):
         address = str(props.get("Address", ""))
         manufacturer = props.get("ManufacturerData", {})
-        if APPLE in manufacturer and (changed is None or "ManufacturerData" in changed or "RSSI" in changed):
-            self.on_advertisement(path, address, bytes(manufacturer[APPLE]), int(props.get("RSSI", -127)))
+        if APPLE in manufacturer and (
+            changed is None or "ManufacturerData" in changed or "RSSI" in changed
+        ):
+            self.on_advertisement(
+                path, address, bytes(manufacturer[APPLE]), int(props.get("RSSI", -127))
+            )
         if props.get("Paired", False) and self.is_airpods(props):
             self.track(path, address, props, changed)
         elif self.pairing_target is None:
@@ -640,7 +697,15 @@ class Daemon:
                 "controls": {},
             }
         was_connected = device["connected"]
-        device.update({"name": name, "model": model, "modelId": model_id, "kind": kind, "connected": connected})
+        device.update(
+            {
+                "name": name,
+                "model": model,
+                "modelId": model_id,
+                "kind": kind,
+                "connected": connected,
+            }
+        )
         self.paths[address] = path
         if connected and address not in self.sessions:
             self.sessions[address] = AapSession(self, address)
@@ -650,7 +715,12 @@ class Daemon:
             device["controls"] = {}
             for part in ("left", "right"):
                 device[part]["inEar"] = False
-        if changed is not None and "Connected" in changed and connected and not was_connected:
+        if (
+            changed is not None
+            and "Connected" in changed
+            and connected
+            and not was_connected
+        ):
             self.on_connected(address)
         if changed is not None and "Connected" in changed:
             self.update_scanning()
@@ -661,7 +731,10 @@ class Daemon:
         seen = self.seen.get(address, {})
         # The AirPods connect to the last device on their own as their case opens:
         # they wait in the case (or in a hand) until an ear asks for them.
-        own = now - self.requested.get(address, 0) > 30 and now - seen.get("lidTime", 0) < LID_CONNECT_WINDOW
+        own = (
+            now - self.requested.get(address, 0) > 30
+            and now - seen.get("lidTime", 0) < LID_CONNECT_WINDOW
+        )
         if not own:
             self.popup(address, "connected")
             return
@@ -710,7 +783,11 @@ class Daemon:
         if path in self.resolved:
             return self.resolved[path]
         for owner, keys in self.keys.items():
-            if owner in self.devices and keys.get("irk") and resolves(keys["irk"], address):
+            if (
+                owner in self.devices
+                and keys.get("irk")
+                and resolves(keys["irk"], address)
+            ):
                 self.resolved[path] = owner
                 return owner
         # Without keys (before the first connection), the closest AirPods of a
@@ -720,7 +797,8 @@ class Daemon:
         candidates = [
             known
             for known, device in self.devices.items()
-            if device.get("modelId") == message["model"] and not self.keys.get(known, {}).get("irk")
+            if device.get("modelId") == message["model"]
+            and not self.keys.get(known, {}).get("irk")
         ]
         return candidates[0] if len(candidates) == 1 else None
 
@@ -745,8 +823,15 @@ class Daemon:
         # The AAP session knows better while connected.
         if not device["precise"] or not device["connected"]:
             if device["kind"] == "headphones":
-                side = message["left"] if message["left"]["level"] is not None else message["right"]
-                device["headset"] = {"level": side["level"], "charging": side["charging"]}
+                side = (
+                    message["left"]
+                    if message["left"]["level"] is not None
+                    else message["right"]
+                )
+                device["headset"] = {
+                    "level": side["level"],
+                    "charging": side["charging"],
+                }
             else:
                 for part in ("left", "right", "case"):
                     device[part].update(message[part])
@@ -797,7 +882,11 @@ class Daemon:
                 emit({"event": "lidClosed", "address": address})
                 self.update_scanning()
                 dirty = True
-        if self.pairing_scan_until and now > self.pairing_scan_until and self.pairing_target is None:
+        if (
+            self.pairing_scan_until
+            and now > self.pairing_scan_until
+            and self.pairing_target is None
+        ):
             self.pairing_scan_until = 0
             self.pairing = None
             self.update_scanning()
@@ -823,7 +912,9 @@ class Daemon:
         adapter = dbus.Interface(self.bus.get_object(BLUEZ, self.adapter_path), ADAPTER)
         try:
             if wanted:
-                adapter.SetDiscoveryFilter({"Transport": "auto" if pairing else "le", "DuplicateData": True})
+                adapter.SetDiscoveryFilter(
+                    {"Transport": "auto" if pairing else "le", "DuplicateData": True}
+                )
                 if not self.scanning:
                     adapter.StartDiscovery()
             elif self.scanning:
@@ -838,7 +929,11 @@ class Daemon:
     # Pairing new AirPods.
 
     def on_pairing_advertisement(self, message, rssi):
-        if rssi < NEAR_RSSI or self.pairing_target is not None or message["model"] not in MODELS:
+        if (
+            rssi < NEAR_RSSI
+            or self.pairing_target is not None
+            or message["model"] not in MODELS
+        ):
             return
         self.pairing_model = message["model"]
         if not self.pairing_scan_until:
@@ -890,7 +985,9 @@ class Daemon:
             self.pairing_target = None
             self.pairing = None
             self.pairing_scan_until = 0
-            self.bus.get_object(BLUEZ, path).Set(DEVICE, "Trusted", True, dbus_interface=PROPERTIES)
+            self.bus.get_object(BLUEZ, path).Set(
+                DEVICE, "Trusted", True, dbus_interface=PROPERTIES
+            )
             self.connect(address, path)
             self.update_scanning()
             self.changed()
@@ -919,7 +1016,9 @@ class Daemon:
         proxy.Connect(
             dbus_interface=DEVICE,
             reply_handler=lambda: None,
-            error_handler=lambda error: log("connect", address, error.get_dbus_message()),
+            error_handler=lambda error: log(
+                "connect", address, error.get_dbus_message()
+            ),
             timeout=30,
         )
 
@@ -929,7 +1028,9 @@ class Daemon:
             self.bus.get_object(BLUEZ, path).Disconnect(
                 dbus_interface=DEVICE,
                 reply_handler=lambda: None,
-                error_handler=lambda error: log("disconnect", address, error.get_dbus_message()),
+                error_handler=lambda error: log(
+                    "disconnect", address, error.get_dbus_message()
+                ),
             )
 
     # Automatic pause when a pod leaves an ear, and resume when it is back.
@@ -949,7 +1050,9 @@ class Daemon:
     @staticmethod
     def player_status():
         try:
-            return subprocess.run(["playerctl", "status"], capture_output=True, text=True, timeout=2).stdout.strip()
+            return subprocess.run(
+                ["playerctl", "status"], capture_output=True, text=True, timeout=2
+            ).stdout.strip()
         except (OSError, subprocess.TimeoutExpired):
             return ""
 
@@ -1006,19 +1109,26 @@ class Daemon:
         name = IMAGE_NAMES.get(model_id)
         if name is None:
             return None
-        paths = {part: os.path.join(IMAGES_DIR, f"{name}_{part}.png") for part in ("buds", "case")}
+        paths = {
+            part: os.path.join(IMAGES_DIR, f"{name}_{part}.png")
+            for part in ("buds", "case")
+        }
         if all(os.path.exists(path) for path in paths.values()):
             return paths
         if name not in self.downloads:
             self.downloads.add(name)
-            threading.Thread(target=self.download, args=(name, paths), daemon=True).start()
+            threading.Thread(
+                target=self.download, args=(name, paths), daemon=True
+            ).start()
         return None
 
     def download(self, name, paths):
         try:
             os.makedirs(IMAGES_DIR, exist_ok=True)
             for part, path in paths.items():
-                with urllib.request.urlopen(IMAGE_URL.format(f"{name}_{part}"), timeout=20) as response:
+                with urllib.request.urlopen(
+                    IMAGE_URL.format(f"{name}_{part}"), timeout=20
+                ) as response:
                     data = response.read()
                 with open(path + ".tmp", "wb") as file:
                     file.write(data)
@@ -1034,11 +1144,17 @@ class Daemon:
         self.emit_pending = False
         pairing = None
         if self.pairing is not None:
-            pairing = {key: value for key, value in self.pairing.items() if key != "path"}
+            pairing = {
+                key: value for key, value in self.pairing.items() if key != "path"
+            }
             pairing["images"] = self.images(pairing["modelId"])
         for device in self.devices.values():
             device["images"] = self.images(device["modelId"])
-        state = {"event": "state", "devices": list(self.devices.values()), "pairing": pairing}
+        state = {
+            "event": "state",
+            "devices": list(self.devices.values()),
+            "pairing": pairing,
+        }
         # Every advertisement lands here, most of them change nothing.
         serialized = json.dumps(state, sort_keys=True)
         if serialized != self.last_state:

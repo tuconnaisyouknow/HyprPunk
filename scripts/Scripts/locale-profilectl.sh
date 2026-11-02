@@ -132,19 +132,31 @@ get-language) read_profile "$LANGUAGE_FILE" us ;;
 get-regional) read_profile "$REGIONAL_FILE" us ;;
 list) printf 'us\nfr\n' ;;
 set-language)
-  [[ $# -eq 2 ]] || { usage >&2; exit 2; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 2
+  }
   apply_profiles "$2" "$(read_profile "$REGIONAL_FILE" us)"
   ;;
 set-regional)
-  [[ $# -eq 2 ]] || { usage >&2; exit 2; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 2
+  }
   apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$2"
   ;;
 init)
-  [[ $# -le 3 ]] || { usage >&2; exit 2; }
+  [[ $# -le 3 ]] || {
+    usage >&2
+    exit 2
+  }
   apply_profiles "${2:-us}" "${3:-us}"
   ;;
 ensure)
   apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$(read_profile "$REGIONAL_FILE" us)"
   ;;
-*) usage >&2; exit 2 ;;
+*)
+  usage >&2
+  exit 2
+  ;;
 esac

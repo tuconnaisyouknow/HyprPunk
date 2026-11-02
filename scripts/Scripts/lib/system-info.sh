@@ -81,13 +81,13 @@ find_keyboard_backlight() {
 
     name=$(basename "$device")
     case "$name" in
-      *kbd_backlight*|*keyboard*|*kbd-backlight*)
-        max=$(cat "$device/max_brightness")
-        if [ "$max" -gt 0 ] 2>/dev/null; then
-          printf '%s\n' "$name"
-          return 0
-        fi
-        ;;
+    *kbd_backlight* | *keyboard* | *kbd-backlight*)
+      max=$(cat "$device/max_brightness")
+      if [ "$max" -gt 0 ] 2>/dev/null; then
+        printf '%s\n' "$name"
+        return 0
+      fi
+      ;;
     esac
   done
 
@@ -101,10 +101,10 @@ network_type() {
   if command -v nmcli >/dev/null 2>&1; then
     active_conn=$(nmcli -t -f DEVICE,TYPE,STATE dev 2>/dev/null | awk -F: '$3 == "connected" && ($2 == "wifi" || $2 == "ethernet") { print $2; exit }')
     case "$active_conn" in
-      wifi|ethernet)
-        printf '%s\n' "$active_conn"
-        return 0
-        ;;
+    wifi | ethernet)
+      printf '%s\n' "$active_conn"
+      return 0
+      ;;
     esac
   fi
 
