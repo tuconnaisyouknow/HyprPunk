@@ -15,7 +15,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # No theme, Starship draws the prompt
 ZSH_THEME=""
 
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-bat fzf)
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting you-should-use zsh-bat)
 
 source $ZSH/oh-my-zsh.sh
 
