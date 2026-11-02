@@ -346,7 +346,7 @@ install_packages() {
     bluez bluez-utils power-profiles-daemon upower \
     python-dbus python-gobject python-cryptography zenity \
     pipewire-pulse wireplumber playerctl \
-    gnome-keyring seahorse hyprpolkitagent \
+    gnome-keyring seahorse \
     \
     hyprland awww hypridle \
     grim wf-recorder hyprcursor hyprpicker \

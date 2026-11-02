@@ -29,7 +29,7 @@ The screen blurs into the lock, with the date and time over the player and its s
 
 #### 🏝️ Dynamic island
 
-The clock's island grows into every panel and shows the volume, brightness, keyboard light, microphone and touchpad changes.
+The clock's island grows into every panel, the password prompts for admin rights included, and shows the volume, brightness, keyboard light, microphone and touchpad changes.
 
 ![osd](./assets/screenshots/osd.webp)
 
@@ -382,7 +382,6 @@ The installer enables or configures:
 - 🧱 `xwayland-satellite` for X11 apps, started with the session, with Hyprland's own XWayland turned off
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
-- 🛡️ `hyprpolkitagent`
 - 🎨 GTK, Qt, and Kvantum themes
 - 📁 Papirus Dark icons with Catppuccin Mocha Mauve folders
 - 🕹️ CyberEXS GRUB theme when GRUB is present

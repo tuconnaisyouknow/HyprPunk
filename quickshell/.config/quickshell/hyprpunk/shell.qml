@@ -10,6 +10,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import Quickshell.Services.Polkit
 
 // Where the shell starts. Holds the state the screens share (which panel is open
 // where, screenshots, caffeine…), answers the `qs -c hyprpunk ipc call …` commands
@@ -23,8 +24,8 @@ ShellRoot {
         property bool controlCenterOpen: false
         // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
         // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings",
-        // "config", "monitor", "screenshot" or "menu"; action is "toggle", "open" or "close";
-        // screen is a screen's name, or empty for the focused one.
+        // "config", "monitor", "screenshot", "polkit" or "menu"; action is "toggle", "open"
+        // or "close"; screen is a screen's name, or empty for the focused one.
         property var panelRequest: ({
             "panel": "",
             "action": "",
@@ -209,6 +210,26 @@ ShellRoot {
         onNotification: (notification) => {
             notification.tracked = true;
         }
+    }
+
+    // The shell answers the password prompts itself, on the focused screen.
+    PolkitAgent {
+        id: polkitAgent
+
+        onAuthenticationRequestStarted: globalState.requestPanel("polkit", "open")
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        PolkitPrompt {
+            required property var modelData
+
+            screen: modelData
+            shellState: globalState
+            agent: polkitAgent
+        }
+
     }
 
     Variants {
