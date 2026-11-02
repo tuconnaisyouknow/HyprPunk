@@ -36,6 +36,17 @@ end
 -- Bitwarden's little popup is its own Chromium app: float it so it doesn't cut Brave in half
 hl.window_rule({ match = { class = "brave-nngceckbapebfimnlniiiahkandclblb-Default" }, float = true })
 
+-- Floats every window of an app but its main one, picked by the title it opens with.
+-- For the apps whose dialogs don't say they belong to their main window, so they'd get
+-- tiled: cut off when they need more room than the tile, or drawn small in a tile
+-- blurred all around. Also for personal/rules.lua.
+function hyprpunk.float_dialogs(class, main_title)
+  hl.window_rule({ match = { class = class, initial_title = "negative:" .. main_title }, float = true })
+end
+
+-- GIMP's preferences and splash, among others
+hyprpunk.float_dialogs("^gimp$", "^(GNU Image Manipulation Program|.* – GIMP)$")
+
 -- Floating windows open in the middle of the screen
 hl.window_rule({ match = { float = true }, center = true })
 
