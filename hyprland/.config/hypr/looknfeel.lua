@@ -12,11 +12,12 @@ hl.config({
     gaps_in = 5,
     gaps_out = 10,
 
-    border_size = 2,
+    -- A thin mauve line marks the window you're in, the others have none
+    border_size = 1,
 
     col = {
-      active_border = colors.mauve,
-      inactive_border = colors.lavender,
+      active_border = "rgba(" .. colors.mauveAlpha .. "b3)",
+      inactive_border = "rgba(00000000)",
     },
 
     resize_on_border = false,
@@ -36,11 +37,17 @@ hl.config({
     active_opacity = 0.9,
     inactive_opacity = 0.9,
 
+    -- The windows you're not in fade back a little
+    dim_inactive = true,
+    dim_strength = 0.12,
+
+    -- A faint mauve glow around the window you're in, a plain shadow for the others
     shadow = {
       enabled = true,
-      range = 4,
-      render_power = 3,
-      color = "rgba(1a1a1aee)",
+      range = 14,
+      render_power = 4,
+      color = "rgba(" .. colors.mauveAlpha .. "26)",
+      color_inactive = "rgba(1a1a1a99)",
     },
 
     blur = {
