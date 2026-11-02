@@ -1,7 +1,10 @@
 //@ pragma UseQApplication
 //@ pragma Env QT_QPA_PLATFORMTHEME = qt6ct
+//@ pragma Env QSG_DISTANCEFIELD_ANTIALIASING = gray
 //@ pragma IconTheme Papirus-Dark
 
+// Gray antialiasing for the text: colored edges assume an opaque background and
+// glitch through the see-through glass, worst over a light page.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
