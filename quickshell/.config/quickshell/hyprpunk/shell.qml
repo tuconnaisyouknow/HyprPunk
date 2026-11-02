@@ -24,8 +24,9 @@ ShellRoot {
         property bool controlCenterOpen: false
         // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
         // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings",
-        // "config", "monitor", "screenshot", "polkit", "filechooser" or "menu"; action is
-        // "toggle", "open" or "close"; screen is a screen's name, or empty for the focused one.
+        // "config", "monitor", "screenshot", "polkit", "filechooser", "screenshare" or
+        // "menu"; action is "toggle", "open" or "close"; screen is a screen's name, or
+        // empty for the focused one.
         property var panelRequest: ({
             "panel": "",
             "action": "",
@@ -74,7 +75,7 @@ ShellRoot {
         property var controlPillScreen: null
         property bool doNotDisturb: false
         // Screenshots. A request has a mode ("screen", "region", "annotate", "record",
-        // "record-region" or "stop"), a screen (empty for the focused one) and a delay in ms.
+        // "record-region", "share-region" or "stop"), a screen (empty for the focused one) and a delay in ms.
         // Then the region being chosen ({screen, file, scale}), and the last capture for the
         // island: {screen, file, annotated}, or for a recording {screen, file (its first
         // frame), video, duration in s}.
@@ -248,6 +249,28 @@ ShellRoot {
             screen: modelData
             shellState: globalState
             chooser: fileChooser
+        }
+
+    }
+
+    // What an app gets to see when it shares your screen, through
+    // xdg-desktop-portal-hyprland, on the focused screen too.
+    ScreenShare {
+        id: screenShare
+
+        shellState: globalState
+        onRequested: globalState.requestPanel("screenshare", "open")
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        ScreenSharePanel {
+            required property var modelData
+
+            screen: modelData
+            shellState: globalState
+            share: screenShare
         }
 
     }

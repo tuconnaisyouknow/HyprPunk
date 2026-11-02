@@ -114,6 +114,13 @@ Scope {
                 screenshot.record(rect);
                 return ;
             }
+            // The region an app gets to share: ScreenShare takes it from here.
+            if (screenshot.mode === "share-region") {
+                cleanup.command = ["rm", "-f", screenshot.frozenFile];
+                cleanup.running = true;
+                screenshot.busy = false;
+                return ;
+            }
             screenshot.save(rect);
         }
 
