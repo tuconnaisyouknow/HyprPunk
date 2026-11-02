@@ -701,7 +701,7 @@ IslandPanel {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Keep these settings? Reverting in " + monitors.revertCountdown + " s"
-                    color: Theme.text
+                    color: Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 13
                 }

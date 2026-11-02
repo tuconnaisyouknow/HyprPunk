@@ -28,7 +28,7 @@ Item {
         visible: render.status !== Image.Ready
         anchors.centerIn: parent
         text: product.glyph
-        color: Theme.text
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 88
     }

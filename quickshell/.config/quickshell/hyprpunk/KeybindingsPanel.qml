@@ -166,7 +166,7 @@ SearchPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 text: row.modelData.description
-                color: row.selected ? Theme.mauve : Theme.text
+                color: row.selected ? Theme.mauve : Theme.lavender
                 font.family: Theme.font
                 font.pixelSize: 13
             }

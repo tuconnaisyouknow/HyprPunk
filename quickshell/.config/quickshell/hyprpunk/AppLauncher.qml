@@ -299,7 +299,7 @@ IslandPanel {
         icon: launcher.actionsEntry ? "󰅂" : "󰍉"
         readOnly: launcher.actionsEntry !== null
         placeholder: launcher.actionsEntry ? launcher.actionsEntry.name : "Search apps, > command, ? web"
-        placeholderColor: launcher.actionsEntry ? Theme.text : Theme.alpha(Theme.lavender, 0.5)
+        placeholderColor: launcher.actionsEntry ? Theme.lavender : Theme.alpha(Theme.lavender, 0.5)
         // What Enter will do in the current mode.
         hint: launcher.actionsEntry ? "Tab back" : launcher.mode === "command" ? "Run" : launcher.mode === "web" ? "Web" : launcher.special === "calc" ? "Calc" : ""
         onTextChanged: launcher.query = text
@@ -377,7 +377,7 @@ IslandPanel {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: launcher.special === "calc" ? "= " + launcher.calculation : launcher.modeArgument !== "" ? launcher.modeArgument : launcher.special === "command" ? "Type a command" : "Type a search"
-            color: launcher.modeArgument !== "" ? Theme.text : Theme.alpha(Theme.lavender, 0.5)
+            color: launcher.modeArgument !== "" ? Theme.lavender : Theme.alpha(Theme.lavender, 0.5)
             font.family: Theme.font
             font.pixelSize: launcher.special === "calc" ? 18 : 15
             font.weight: launcher.special === "calc" ? Font.Bold : Font.Normal
@@ -478,7 +478,7 @@ IslandPanel {
                     horizontalAlignment: Text.AlignHCenter
                     elide: Text.ElideRight
                     text: cell.modelData.name
-                    color: cell.selected ? Theme.mauve : Theme.text
+                    color: cell.selected ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 12
                     font.weight: cell.selected ? Font.Bold : Font.Normal
@@ -569,7 +569,7 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     text: actionRow.modelData.name
-                    color: actionRow.selected ? Theme.mauve : Theme.text
+                    color: actionRow.selected ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: actionRow.selected ? Font.Bold : Font.Normal

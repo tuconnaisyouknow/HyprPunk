@@ -15,7 +15,6 @@ PanelWindow {
     required property var airPods
     property color base: Theme.base
     property color lavender: Theme.lavender
-    property color textColor: Theme.text
     property color mauve: Theme.mauve
     // BR/EDR address of the AirPods shown, and why: "lid", "connected", "pairing" or
     // "manual" (ipc).
@@ -232,7 +231,7 @@ PanelWindow {
                     elide: Text.ElideRight
                     lineHeight: 0.95
                     text: popup.shownAirPods !== null ? popup.shownAirPods.name : ""
-                    color: popup.textColor
+                    color: popup.mauve
                     font.family: Theme.font
                     font.pixelSize: 24
                     font.weight: Font.Bold
@@ -305,7 +304,7 @@ PanelWindow {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: 10
                     text: "Not now"
-                    color: notNowArea.containsMouse ? popup.textColor : popup.lavender
+                    color: notNowArea.containsMouse ? popup.mauve : popup.lavender
                     font.family: Theme.font
                     font.pixelSize: 12
 

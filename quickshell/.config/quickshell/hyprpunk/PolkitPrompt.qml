@@ -128,7 +128,7 @@ IslandPanel {
                     wrapMode: Text.Wrap
                     maximumLineCount: 4
                     elide: Text.ElideRight
-                    color: Theme.text
+                    color: Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 13
                     lineHeight: 1.15

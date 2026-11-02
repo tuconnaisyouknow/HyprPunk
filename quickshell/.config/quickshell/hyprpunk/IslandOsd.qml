@@ -110,7 +110,7 @@ RowLayout {
             anchors.centerIn: parent
             visible: bar.statusOsdTitle === "Recording"
             text: "󰐊"
-            color: Theme.text
+            color: Theme.mauve
             style: Text.Outline
             styleColor: Theme.alpha(Theme.crust, 0.6)
             font.family: Theme.font

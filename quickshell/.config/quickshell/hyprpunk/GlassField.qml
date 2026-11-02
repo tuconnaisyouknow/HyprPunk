@@ -15,7 +15,7 @@ Rectangle {
     property string hint: ""
     property bool secret: false
     property bool readOnly: false
-    property color textColor: Theme.text
+    property color textColor: Theme.mauve
     property string fontFamily: Theme.font
     // The mauve ring while it has the keyboard. Off by default: alone in a panel the
     // field always has it, and the ring would only be noise.
