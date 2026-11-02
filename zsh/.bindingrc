@@ -3,12 +3,8 @@ bindkey -v
 bindkey -M viins '^[^?' backward-kill-word
 bindkey -M viins '^[^H' backward-kill-word
 
-# hjkl in normal and visual mode, moved to jklm on AZERTY so they stay under the right hand
-keyboard_state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
-keyboard_layout="us"
-[[ -r "$keyboard_state_home/hyprpunk/keyboard-layout" ]] &&
-  IFS= read -r keyboard_layout <"$keyboard_state_home/hyprpunk/keyboard-layout"
-
+# hjkl in normal and visual mode, moved to jklm on AZERTY so they stay under the right hand.
+# .zshrc reads the layout before loading this file.
 if [[ "$keyboard_layout" != "fr" ]]; then
   bindkey -M vicmd 'h' backward-char
   bindkey -M vicmd 'j' down-line-or-history
@@ -30,8 +26,6 @@ else
   bindkey -M visual 'l' up-line-or-history
   bindkey -M visual 'm' forward-char
 fi
-
-unset keyboard_layout keyboard_state_home
 
 # Ctrl+Space takes the suggestion, Alt+L and Alt+K go through the history
 # of what starts like the current line

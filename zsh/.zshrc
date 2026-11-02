@@ -23,6 +23,13 @@ source $ZSH/oh-my-zsh.sh
 # HYPRPUNK'S OWN BITS #
 #######################
 
+# The keyboard layout picked in the shell, read once for .bindingrc's Vim keys and the
+# tools below
+hyprpunk_state="${XDG_STATE_HOME:-$HOME/.local/state}/hyprpunk"
+keyboard_layout="us"
+[[ -r "$hyprpunk_state/keyboard-layout" ]] &&
+  IFS= read -r keyboard_layout <"$hyprpunk_state/keyboard-layout"
+
 source ~/.aliasrc
 source ~/.functionrc
 source ~/.highlightrc
@@ -38,19 +45,15 @@ export FZF_CTRL_T_OPTS="--preview 'bat --color=always -n --line-range :500 {}'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=always {} | head -200'"
 
 # fzf, less and yazi move with the Vim keys of the current layout (jklm on AZERTY)
-keyboard_state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
-keyboard_layout="us"
-[[ -r "$keyboard_state_home/hyprpunk/keyboard-layout" ]] &&
-  IFS= read -r keyboard_layout <"$keyboard_state_home/hyprpunk/keyboard-layout"
 if [[ "$keyboard_layout" != "fr" ]]; then
   export FZF_DEFAULT_OPTS="--bind=ctrl-j:down,ctrl-k:up"
 else
   export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
 fi
 unset LESSKEY
-export LESSKEYIN="$HOME/.local/state/hyprpunk/keyboard/lesskey"
-export YAZI_CONFIG_HOME="$HOME/.local/state/hyprpunk/keyboard/yazi"
-unset keyboard_layout keyboard_state_home
+export LESSKEYIN="$hyprpunk_state/keyboard/lesskey"
+export YAZI_CONFIG_HOME="$hyprpunk_state/keyboard/yazi"
+unset keyboard_layout hyprpunk_state
 
 # z to jump to the folders you visit most
 eval "$(zoxide init zsh)"
