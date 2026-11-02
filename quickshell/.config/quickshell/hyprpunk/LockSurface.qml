@@ -74,10 +74,12 @@ WlSessionLockSurface {
     onBarChanged: freeze()
     Component.onCompleted: freeze()
 
+    // Ticks every second though it shows minutes: its timer stands still during sleep,
+    // so on waking it would keep the old time up to a minute.
     SystemClock {
         id: clock
 
-        precision: SystemClock.Minutes
+        precision: SystemClock.Seconds
     }
 
     NumberAnimation {
