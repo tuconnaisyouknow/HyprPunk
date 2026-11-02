@@ -72,7 +72,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: config.results.length === 0
         text: "No file"
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 14
     }
@@ -139,7 +139,7 @@ SearchPanel {
                     width: parent.width
                     elide: Text.ElideMiddle
                     text: row.modelData.path
-                    color: Theme.overlay1
+                    color: Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 11
                 }

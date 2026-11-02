@@ -345,7 +345,7 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: ""
-            color: closeArea.containsMouse ? Theme.mauve : Theme.overlay1
+            color: closeArea.containsMouse ? Theme.mauve : Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
         }

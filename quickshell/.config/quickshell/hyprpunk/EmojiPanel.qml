@@ -114,7 +114,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: picker.results.length === 0
         text: "No emoji"
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 14
     }

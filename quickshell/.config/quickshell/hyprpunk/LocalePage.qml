@@ -77,7 +77,7 @@ ColumnLayout {
         Layout.topMargin: 6
         wrapMode: Text.WordWrap
         text: "New apps use it right away. Log out and back in to apply it to the apps already open."
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 12
     }

@@ -414,7 +414,7 @@ Item {
                         width: [6, 10, 15][parent.index]
                         height: width
                         radius: width / 2
-                        color: annotator.size === parent.index ? Theme.mauve : Theme.overlay1
+                        color: annotator.size === parent.index ? Theme.mauve : Theme.lavender
 
                         Behavior on color {
                             ColorAnimation {

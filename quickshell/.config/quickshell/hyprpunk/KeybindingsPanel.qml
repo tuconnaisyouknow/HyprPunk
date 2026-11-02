@@ -125,7 +125,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: keybindings.results.length === 0
         text: bindsProcess.running && keybindings.binds.length === 0 ? "Loading…" : "No keybinding"
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 14
     }

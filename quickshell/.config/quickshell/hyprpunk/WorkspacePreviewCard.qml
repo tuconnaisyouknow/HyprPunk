@@ -106,7 +106,7 @@ ClippingRectangle {
                     width: index === list.currentIndex ? 14 : 6
                     height: 6
                     radius: 3
-                    color: index === list.currentIndex ? Theme.mauve : Theme.overlay1
+                    color: index === list.currentIndex ? Theme.mauve : Theme.lavender
 
                     Behavior on width {
                         NumberAnimation {

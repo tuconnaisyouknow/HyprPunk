@@ -78,7 +78,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: clipboard.results.length === 0
         text: listProcess.running && clipboard.entries.length === 0 ? "Loading…" : clipboard.entries.length === 0 ? "The clipboard is empty" : "No match"
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 14
     }

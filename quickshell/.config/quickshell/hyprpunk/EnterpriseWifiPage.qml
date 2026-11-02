@@ -544,7 +544,7 @@ ColumnLayout {
             Layout.fillWidth: true
             elide: Text.ElideRight
             text: page.loading ? "Loading the saved settings…" : page.connecting ? "Connecting…" : page.missing !== "" ? page.missing.charAt(0).toUpperCase() + page.missing.slice(1) : ""
-            color: Theme.overlay1
+            color: Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
         }

@@ -594,7 +594,7 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: control.icon
-            color: control.secondary ? (control.highlighted ? Theme.mauve : Theme.overlay1) : Theme.mauve
+            color: control.secondary ? (control.highlighted ? Theme.mauve : Theme.lavender) : Theme.mauve
             font.family: Theme.font
             font.pixelSize: control.iconSize
         }

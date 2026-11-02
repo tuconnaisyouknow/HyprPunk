@@ -41,7 +41,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideMiddle
             text: file.path !== "" ? file.path.split("/").pop() : "(None)"
-            color: file.path !== "" ? Theme.mauve : Theme.overlay0
+            color: file.path !== "" ? Theme.mauve : Theme.alpha(Theme.lavender, 0.5)
             font.family: Theme.font
             font.pixelSize: 14
         }
@@ -55,7 +55,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             visible: file.path !== ""
             text: ""
-            color: clearHover.hovered ? Theme.mauve : Theme.overlay1
+            color: clearHover.hovered ? Theme.mauve : Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
 

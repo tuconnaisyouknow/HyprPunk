@@ -10,7 +10,7 @@ Rectangle {
     property alias text: input.text
     property alias input: input
     property string placeholder: ""
-    property color placeholderColor: Theme.overlay1
+    property color placeholderColor: Theme.alpha(Theme.lavender, 0.5)
     // At the right, e.g. what Enter will do. It never takes more than half the field.
     property string hint: ""
     property bool secret: false
@@ -98,7 +98,7 @@ Rectangle {
         width: Math.min(implicitWidth, field.width / 2)
         elide: Text.ElideRight
         text: field.hint
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 12
     }

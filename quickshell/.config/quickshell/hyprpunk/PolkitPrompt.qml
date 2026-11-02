@@ -140,7 +140,7 @@ IslandPanel {
                     visible: prompt.actionId !== ""
                     text: prompt.actionId
                     elide: Text.ElideMiddle
-                    color: Theme.overlay0
+                    color: Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 11
                 }
@@ -187,7 +187,7 @@ IslandPanel {
             text: prompt.flow ? prompt.flow.supplementaryMessage : ""
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
-            color: prompt.flow && prompt.flow.supplementaryIsError ? Theme.red : Theme.overlay1
+            color: prompt.flow && prompt.flow.supplementaryIsError ? Theme.red : Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
         }
