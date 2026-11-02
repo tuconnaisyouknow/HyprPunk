@@ -4,6 +4,8 @@ import Quickshell.Hyprland
 import Quickshell.Services.Notifications
 import Quickshell.Wayland
 
+// New notifications, stacked in the top right corner. They leave after a few seconds
+// unless hovered or critical, and Focus keeps all but the critical ones away.
 PanelWindow {
     id: popups
 

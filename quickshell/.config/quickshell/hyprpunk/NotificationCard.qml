@@ -4,6 +4,8 @@ import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
 
+// One notification, in the popups and the notification center. Swipe it right to
+// dismiss it.
 Rectangle {
     id: card
 

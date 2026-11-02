@@ -1,3 +1,6 @@
+# Everything a new terminal's zsh loads. Your own bits go in ~/.personalrc and
+# ~/.completionrc, so git pull never clashes with them.
+
 # A little hello in every new terminal, but not in each tmux pane
 if [[ -z "$TMUX" ]]; then
   command -v fastfetch >/dev/null 2>&1 && fastfetch

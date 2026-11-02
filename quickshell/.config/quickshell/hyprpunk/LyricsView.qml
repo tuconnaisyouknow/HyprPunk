@@ -1,11 +1,9 @@
 import QtQuick
 import QtQuick.Effects
 
-// Lyrics the Apple Music way: big bold lines, the one being sung lit up near the top,
-// the rest dimmer and blurrier the further away they are. Click a line to jump there;
-// scroll by hand and it stops following for a moment.
-// On a new track, the old lines slide up and fade, and the new ones rise into place
-// one after another.
+// Lyrics the Apple Music way: the line being sung lit up near the top, the rest dimmer
+// and blurrier the further away they are. Click a line to jump there; scroll by hand
+// and it stops following for a moment.
 Item {
     id: view
 

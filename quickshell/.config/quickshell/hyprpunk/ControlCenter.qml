@@ -8,9 +8,8 @@ import Quickshell.Services.Pipewire
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// The control center, growing out of the bar's right-most pill: Wi-Fi, Bluetooth, sound,
-// brightness and glass style, power profile, caffeine, keyboard and language, battery
-// limit. Hover the pill or press Super+C. Wi-Fi, Bluetooth and sound open pages of their own.
+// The control center, growing out of the bar's right-most pill. Hover the pill or
+// press Super+C.
 PanelWindow {
     id: controlCenter
 

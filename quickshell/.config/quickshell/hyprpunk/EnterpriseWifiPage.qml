@@ -4,11 +4,9 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 
-// Signing in to an enterprise Wi-Fi network (eduroam and the like: WPA Enterprise,
-// dynamic WEP, LEAP), with the same fields as NetworkManager's own dialog: the method,
-// then its identity, certificates and inner authentication.
-// ~/Scripts/wifi-connection.py saves it and connects. Through edit(), the form opens
-// on the saved settings and replaces them.
+// Signing in to an enterprise Wi-Fi network like eduroam, with the same fields as
+// NetworkManager's own dialog. ~/Scripts/wifi-connection.py saves it and connects.
+// Through edit(), the form opens on the saved settings and replaces them.
 ColumnLayout {
     id: page
 

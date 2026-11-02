@@ -3,14 +3,9 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 
-// Screenshots and screen recordings.
-// A screenshot is of the whole screen, a region or window picked over the frozen
-// screen, or a region you then draw on (ScreenshotAnnotator). It lands in Screenshots
-// in your pictures folder, on the clipboard, and in the island for a moment.
-// Recordings (wf-recorder, with the system's sound) go to Recordings in your videos
-// folder and run until you ask again or stop them from the island.
-// Triggered by the shortcuts (`qs -c hyprpunk ipc call screenshot <screen|region|
-// annotate|record|recordRegion|stop|menu>`) and by the screenshot menu.
+// Screenshots and screen recordings, asked for by the shortcuts and the screenshot
+// menu (`qs -c hyprpunk ipc call screenshot …`). Screenshots go to Screenshots in your
+// pictures folder and the clipboard, recordings to Recordings in your videos folder.
 Scope {
     id: screenshot
 

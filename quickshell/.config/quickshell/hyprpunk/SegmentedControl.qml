@@ -1,9 +1,8 @@
 import QtQuick
 
-// A few options side by side, one chosen (the AirPods' listening modes, the sound
-// page's tabs). A mauve glass highlight slides under the chosen one with a little
-// overshoot, right away on click, without waiting for the device to answer.
-// In compact mode, icons sit beside their labels instead of above.
+// A few options side by side, one chosen. The highlight moves right away on click,
+// without waiting for the device to answer. In compact mode, icons sit beside their
+// labels instead of above.
 Item {
     id: control
 

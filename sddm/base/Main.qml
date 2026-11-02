@@ -4,6 +4,8 @@ import Qt5Compat.GraphicalEffects
 import Qt.labs.folderlistmodel
 import SddmComponents 2.0
 
+// The login screen every theme shares, drawn over the theme's own video. sddm.sh
+// copies it into each theme.
 Rectangle {
     id: root
     width: Screen.width

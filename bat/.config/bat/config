@@ -1,1 +1,2 @@
---theme="HyprPunk Mocha"
+# bat, which zsh-bat also puts behind cat. Its theme in themes/ only works once
+# bat cache --build has run, which the installer does.

@@ -5,11 +5,9 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// The AirPods card that grows out of the island, like on an iPhone: their name, the
-// pods and the case with a battery ring under each, when you open the case or they
-// connect. AirPods waiting to pair get a Connect button instead.
-// It never grabs the keyboard, clicks around it go through, and it folds away by
-// itself, or as soon as both pods are in your ears.
+// The AirPods card that grows out of the island when you open the case or they
+// connect, like on an iPhone. AirPods waiting to pair get a Connect button instead.
+// It never takes the keyboard and folds away by itself, or once both pods are in.
 PanelWindow {
     id: popup
 

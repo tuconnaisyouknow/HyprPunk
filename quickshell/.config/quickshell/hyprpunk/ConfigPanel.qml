@@ -1,9 +1,8 @@
 import QtQuick
 import Quickshell
 
-// Quick access to your own config files, the ones git pull never touches: Enter or a
-// click opens one in Neovim, in kitty. HyprPunk's own files stay out, since an edit
-// there would clash with the next update.
+// Quick access to your own config files, opened in Neovim. HyprPunk's own files stay
+// out, since editing them would clash with the next git pull.
 SearchPanel {
     id: config
 

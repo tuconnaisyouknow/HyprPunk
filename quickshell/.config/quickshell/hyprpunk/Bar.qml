@@ -9,12 +9,9 @@ import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import Quickshell.Wayland
 
-// The bar along the top of each screen, a row of pills.
-// On the left, the workspaces (hover for a preview) and the resources (hover for a
-// little btop). In the middle, the dynamic island: clock, calendar, OSDs, and the
-// panels that grow out of it. On the right, the pending updates when there are some
-// (click to install), the Spotify record (hover for the player), and the control
-// pill (hover for the control center).
+// The bar along the top of each screen, a row of pills: workspaces and resources on
+// the left, the dynamic island in the middle, updates, the Spotify record and the
+// control pill on the right. Most pills open a card on hover.
 PanelWindow {
     id: bar
 

@@ -4,9 +4,7 @@ import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Widgets
 
-// The now-playing card, in the spirit of Apple's player: artwork, title and artist,
-// a progress bar you can drag, the controls, and the lyrics underneath (the microphone
-// button next to the equalizer turns them off).
+// The now-playing card, in the spirit of Apple's player, with the lyrics underneath.
 Rectangle {
     id: card
 

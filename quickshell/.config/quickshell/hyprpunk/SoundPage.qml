@@ -6,10 +6,8 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 
-// The control center's sound page, in tabs: where the sound goes, the microphone
-// (volume, level and which one), a mixer for the apps playing, and Bluetooth audio
-// (the AirPods with their batteries and settings). Tabs slide in from the side and
-// scroll when they're taller than the panel.
+// The control center's sound page, in tabs: output, input, the apps playing and
+// Bluetooth audio. A tab taller than the panel scrolls.
 ColumnLayout {
     id: page
 
