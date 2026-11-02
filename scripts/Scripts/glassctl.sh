@@ -36,15 +36,24 @@ write_style() {
 
 case "${1:-}" in
 get)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   read_style
   ;;
 set)
-  [[ $# -eq 2 && ("$2" == "classic" || "$2" == "liquid") ]] || { usage >&2; exit 1; }
+  [[ $# -eq 2 && ("$2" == "classic" || "$2" == "liquid") ]] || {
+    usage >&2
+    exit 1
+  }
   write_style "$2"
   ;;
 toggle)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   [[ "$(read_style)" == "liquid" ]] && write_style classic || write_style liquid
   ;;
 *)

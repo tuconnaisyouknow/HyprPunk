@@ -624,7 +624,10 @@ command="${1:-}"
 case "$command" in
 # Makes sure a state file exists and is up to date
 ensure)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   migrate_state_file
   if [[ ! -f "$STATE_FILE" ]]; then
@@ -637,14 +640,20 @@ ensure)
   ;;
 # At login
 bootstrap)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   "$0" ensure
   "$0" sync
   ;;
 # A new screen gets a number, workspaces and its best refresh rate; known ones are left alone
 sync | optimize)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   load_monitors
   changed=false
@@ -729,7 +738,10 @@ status)
   ;;
 info)
   # Active outputs with their saved settings, as JSON for the quickshell panel.
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   load_monitors
   while IFS=$'\x1f' read -r output make model serial description; do
     set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
@@ -788,13 +800,19 @@ outputs)
   jq -r '.[] | select(.disabled != true) | .name' <<<"$MONITORS_JSON"
   ;;
 modes)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
   load_monitors
   jq -r --arg output "$2" \
     '.[] | select(.name == $output) | .availableModes[]' <<<"$MONITORS_JSON"
   ;;
 resolutions)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
   load_monitors
   jq -r --arg output "$2" '
       [
@@ -807,7 +825,10 @@ resolutions)
     ' <<<"$MONITORS_JSON"
   ;;
 frequencies)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
   load_monitors
   jq -r --arg output "$2" '
       .[] |
@@ -820,10 +841,19 @@ frequencies)
     ' <<<"$MONITORS_JSON" | awk '!seen[$0]++'
   ;;
 resolution)
-  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 3 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   [[ "$3" =~ ^[0-9]+x[0-9]+$ ]] ||
-    { echo "Invalid resolution: $3" >&2; exit 1; }
+    {
+      echo "Invalid resolution: $3" >&2
+      exit 1
+    }
   acquire_lock
   load_monitors
   resolve_monitor "$2"
@@ -865,16 +895,28 @@ resolution)
   fi
   ;;
 mode)
-  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 3 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   [[ "$3" =~ ^[0-9]+x[0-9]+(@[0-9.]+)?(Hz)?$ ]] ||
-    { echo "Invalid mode: $3" >&2; exit 1; }
+    {
+      echo "Invalid mode: $3" >&2
+      exit 1
+    }
   acquire_lock
   load_monitors
   resolve_monitor "$2"
   canonical_mode="$(supported_mode "$2" "$3" || true)"
   [[ -n "$canonical_mode" ]] ||
-    { echo "Unsupported mode for $2: $3" >&2; exit 1; }
+    {
+      echo "Unsupported mode for $2: $3" >&2
+      exit 1
+    }
   migrate_monitor_state "$2" "$MONITOR_ID" "$MONITOR_SELECTOR"
   write_value "mode.$MONITOR_ID" "$canonical_mode"
   reload_hyprland
@@ -883,10 +925,19 @@ mode)
   fi
   ;;
 refresh)
-  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 3 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   [[ "$3" =~ ^[0-9]+([.][0-9]+)?(Hz)?$ ]] ||
-    { echo "Invalid frequency: $3" >&2; exit 1; }
+    {
+      echo "Invalid frequency: $3" >&2
+      exit 1
+    }
   acquire_lock
   load_monitors
   resolution="$(
@@ -895,15 +946,27 @@ refresh)
         (.width | tostring) + "x" + (.height | tostring)
       ' <<<"$MONITORS_JSON"
   )"
-  [[ -n "$resolution" ]] || { echo "Unknown output: $2" >&2; exit 1; }
+  [[ -n "$resolution" ]] || {
+    echo "Unknown output: $2" >&2
+    exit 1
+  }
   frequency="${3%Hz}"
   "$0" mode "$2" "$resolution@$frequency"
   ;;
 scale)
-  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 3 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   [[ "$3" == "auto" || "$3" =~ ^(1|1[.]25|1[.]5|1[.]75|2)$ ]] ||
-    { echo "Invalid scale: $3" >&2; exit 1; }
+    {
+      echo "Invalid scale: $3" >&2
+      exit 1
+    }
   acquire_lock
   load_monitors
   resolve_monitor "$2"
@@ -915,16 +978,31 @@ scale)
   fi
   ;;
 slot-get)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   load_monitors
   resolve_monitor "$2"
   read_value "slot.$MONITOR_ID"
   ;;
 slot)
-  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
-  [[ "$3" =~ ^([1-9]|10)$ ]] || { echo "Output number must be between 1 and 10." >&2; exit 1; }
+  [[ $# -eq 3 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
+  [[ "$3" =~ ^([1-9]|10)$ ]] || {
+    echo "Output number must be between 1 and 10." >&2
+    exit 1
+  }
   acquire_lock
   load_monitors
   resolve_monitor "$2"
@@ -932,15 +1010,24 @@ slot)
   reload_hyprland
   ;;
 workspace-get)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   load_monitors
   resolve_monitor "$2"
   current_workspaces="$(read_value "workspaces.$MONITOR_ID" || true)"
   [[ "$current_workspaces" != "none" ]] && printf '%s\n' "$current_workspaces"
   ;;
 workspace-owners)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   load_monitors
   while IFS=$'\x1f' read -r output make model serial description; do
     set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
@@ -958,8 +1045,14 @@ workspace-owners)
   ) | sort -n
   ;;
 workspace-set)
-  [[ $# -eq 3 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 3 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   acquire_lock
   normalized_workspaces="$(normalize_workspace_list "$3")" || {
     echo "Invalid workspace list: $3" >&2
@@ -971,15 +1064,27 @@ workspace-set)
   reload_hyprland
   ;;
 position)
-  [[ $# -eq 4 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 4 ]] || {
+    usage >&2
+    exit 1
+  }
   output="$2"
   direction="$3"
   reference="$4"
   [[ "$output" =~ ^[A-Za-z0-9._-]+$ && "$reference" =~ ^[A-Za-z0-9._-]+$ ]] ||
-    { echo "Invalid output name." >&2; exit 1; }
-  [[ "$output" != "$reference" ]] || { echo "An output cannot reference itself." >&2; exit 1; }
+    {
+      echo "Invalid output name." >&2
+      exit 1
+    }
+  [[ "$output" != "$reference" ]] || {
+    echo "An output cannot reference itself." >&2
+    exit 1
+  }
   [[ "$direction" =~ ^(left|right|above|below)$ ]] ||
-    { echo "Invalid direction: $direction" >&2; exit 1; }
+    {
+      echo "Invalid direction: $direction" >&2
+      exit 1
+    }
   acquire_lock
   load_monitors
   resolve_monitor "$output"
@@ -989,7 +1094,10 @@ position)
   reference_id="$MONITOR_ID"
   reference_selector="$MONITOR_SELECTOR"
   [[ "$output_id" != "$reference_id" ]] ||
-    { echo "The selected outputs have the same monitor identity." >&2; exit 1; }
+    {
+      echo "The selected outputs have the same monitor identity." >&2
+      exit 1
+    }
   if would_create_layout_cycle "$output_id" "$reference_id"; then
     echo "Unable to position $output relative to $reference: this would create a layout cycle." >&2
     exit 1
@@ -997,9 +1105,9 @@ position)
 
   coordinates="$(
     jq -er \
-        --arg output "$output" \
-        --arg reference "$reference" \
-        --arg direction "$direction" '
+      --arg output "$output" \
+      --arg reference "$reference" \
+      --arg direction "$direction" '
         (.[] | select(.name == $output and .disabled != true)) as $moved |
         (.[] | select(.name == $reference and .disabled != true)) as $ref |
         ($moved.width / $moved.scale | floor) as $mw |
@@ -1016,7 +1124,10 @@ position)
           ($ref.x | tostring) + "x" + (($ref.y + $rh) | tostring)
         end
       ' <<<"$MONITORS_JSON"
-  )" || { echo "Unable to calculate output position." >&2; exit 2; }
+  )" || {
+    echo "Unable to calculate output position." >&2
+    exit 2
+  }
 
   # Preserve the reference at its current coordinates, then place the selected
   # output next to it. This makes the result stable after a reload.
@@ -1043,21 +1154,33 @@ position)
   fi
   ;;
 reflow)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   reflow_layout
   ;;
 # Forget the custom layout, Hyprland lines them up again
 auto-layout)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   write_value layout auto
   delete_matching_values '^(position|relative)[.]'
   reload_hyprland
   ;;
 auto)
-  [[ $# -eq 2 ]] || { usage >&2; exit 1; }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Invalid output: $2" >&2; exit 1; }
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 1
+  }
+  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "Invalid output: $2" >&2
+    exit 1
+  }
   acquire_lock
   load_monitors
   resolve_monitor "$2"
@@ -1070,7 +1193,10 @@ auto)
   ;;
 # Start over from scratch
 reset)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   "$0" init preferred
   if command -v hyprctl >/dev/null 2>&1 && hyprctl monitors all -j >/dev/null 2>&1; then
@@ -1081,10 +1207,16 @@ reset)
   ;;
 # A fresh state file, from install.sh
 init)
-  [[ $# -le 2 ]] || { usage >&2; exit 1; }
+  [[ $# -le 2 ]] || {
+    usage >&2
+    exit 1
+  }
   initial_mode="${2:-preferred}"
   [[ "$initial_mode" == "preferred" || "$initial_mode" =~ ^[0-9]+x[0-9]+$ ]] ||
-    { echo "Invalid initial mode: $initial_mode" >&2; exit 1; }
+    {
+      echo "Invalid initial mode: $initial_mode" >&2
+      exit 1
+    }
   acquire_lock
   state_dir="$(dirname "$STATE_FILE")"
   mkdir -p "$state_dir"

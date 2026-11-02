@@ -45,7 +45,9 @@ def cache_path(artist, title, album, seconds):
     base = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
     directory = os.path.join(base, "hyprpunk", "lyrics")
     os.makedirs(directory, exist_ok=True)
-    key = hashlib.sha1(f"{artist}\n{title}\n{album}\n{round(seconds)}".encode()).hexdigest()
+    key = hashlib.sha1(
+        f"{artist}\n{title}\n{album}\n{round(seconds)}".encode()
+    ).hexdigest()
     return os.path.join(directory, key + ".json")
 
 
@@ -69,7 +71,14 @@ def folded(text):
 
 
 def has_lyrics(record):
-    return bool(record and (record.get("syncedLyrics") or record.get("plainLyrics") or record.get("instrumental")))
+    return bool(
+        record
+        and (
+            record.get("syncedLyrics")
+            or record.get("plainLyrics")
+            or record.get("instrumental")
+        )
+    )
 
 
 def lookup(artist, title, album, seconds):
@@ -79,7 +88,11 @@ def lookup(artist, title, album, seconds):
     unreachable = False
 
     if artist and seconds > 0:
-        params = {"artist_name": artist, "track_name": title, "duration": round(seconds)}
+        params = {
+            "artist_name": artist,
+            "track_name": title,
+            "duration": round(seconds),
+        }
         if album:
             params["album_name"] = album
         try:
@@ -100,7 +113,9 @@ def lookup(artist, title, album, seconds):
         # A free search matches any word: the artist must be the one playing.
         singer = folded(record.get("artistName") or "")
         wanted = folded(first_artist)
-        return close_in_length(record) and (not wanted or wanted in singer or singer in folded(artist))
+        return close_in_length(record) and (
+            not wanted or wanted in singer or singer in folded(artist)
+        )
 
     def same_album(record):
         return bool(album) and folded(record.get("albumName") or "") == folded(album)
@@ -110,7 +125,9 @@ def lookup(artist, title, album, seconds):
         # the same song name, and the same album or nearly the same length.
         if folded(record.get("trackName") or "") != folded(song):
             return False
-        return close_in_length(record) and (same_album(record) or close_in_length(record, 2))
+        return close_in_length(record) and (
+            same_album(record) or close_in_length(record, 2)
+        )
 
     searches = [({"track_name": title, "artist_name": artist}, by_artist)]
     if song != title or first_artist != artist:
@@ -126,7 +143,11 @@ def lookup(artist, title, album, seconds):
             break
         params = {key: value for key, value in params.items() if value}
         try:
-            found += [record for record in ask("search", params) or [] if has_lyrics(record) and fits(record)]
+            found += [
+                record
+                for record in ask("search", params) or []
+                if has_lyrics(record) and fits(record)
+            ]
         except Unreachable:
             unreachable = True
             continue
@@ -142,7 +163,11 @@ def lookup(artist, title, album, seconds):
     # has covers by others that can sit nearer in length than the right record.
     def rank(record):
         trusted = by_artist(record) or same_album(record)
-        return (not record.get("syncedLyrics"), not trusted, abs((record.get("duration") or 0) - seconds))
+        return (
+            not record.get("syncedLyrics"),
+            not trusted,
+            abs((record.get("duration") or 0) - seconds),
+        )
 
     return min(found, key=rank), not unreachable
 
@@ -159,12 +184,21 @@ def parse(record):
             lines.append({"t": int(minutes) * 60 + float(seconds), "text": text})
     if lines:
         lines.sort(key=lambda line: line["t"])
-        return {"status": "found", "synced": True, "instrumental": False, "lines": lines}
+        return {
+            "status": "found",
+            "synced": True,
+            "instrumental": False,
+            "lines": lines,
+        }
 
     plain = [line.strip() for line in (record.get("plainLyrics") or "").splitlines()]
     if any(plain):
-        return {"status": "found", "synced": False, "instrumental": False,
-                "lines": [{"t": -1, "text": line} for line in plain]}
+        return {
+            "status": "found",
+            "synced": False,
+            "instrumental": False,
+            "lines": [{"t": -1, "text": line} for line in plain],
+        }
     return {"status": "missing"}
 
 

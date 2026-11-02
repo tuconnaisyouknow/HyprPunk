@@ -28,8 +28,8 @@ get_layout() {
     IFS= read -r layout <"$STATE_FILE" || true
   fi
   case "$layout" in
-    fr|us) printf '%s\n' "$layout" ;;
-    *) printf 'us\n' ;;
+  fr | us) printf '%s\n' "$layout" ;;
+  *) printf 'us\n' ;;
   esac
 }
 
@@ -157,8 +157,11 @@ apply_system_layout() {
 apply_layout() {
   local layout="$1"
   case "$layout" in
-    fr|us) ;;
-    *) echo "Unsupported keyboard layout: $layout" >&2; exit 2 ;;
+  fr | us) ;;
+  *)
+    echo "Unsupported keyboard layout: $layout" >&2
+    exit 2
+    ;;
   esac
 
   mkdir -p "$STATE_DIR" "$GENERATED_DIR"
@@ -171,25 +174,31 @@ apply_layout() {
 }
 
 case "${1:-}" in
-  get) get_layout ;;
-  list) printf 'us\nfr\n' ;;
-  set)
-    [[ $# -eq 2 ]] || { usage >&2; exit 2; }
-    apply_layout "$2"
-    apply_system_layout "$2"
-    ;;
-  toggle)
-    if [[ "$(get_layout)" == "fr" ]]; then
-      apply_layout us
-    else
-      apply_layout fr
-    fi
-    apply_system_layout "$(get_layout)"
-    ;;
-  init)
-    apply_layout "${2:-us}"
-    apply_system_layout "${2:-us}" sudo
-    ;;
-  ensure) apply_layout "$(get_layout)" ;;
-  *) usage >&2; exit 2 ;;
+get) get_layout ;;
+list) printf 'us\nfr\n' ;;
+set)
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 2
+  }
+  apply_layout "$2"
+  apply_system_layout "$2"
+  ;;
+toggle)
+  if [[ "$(get_layout)" == "fr" ]]; then
+    apply_layout us
+  else
+    apply_layout fr
+  fi
+  apply_system_layout "$(get_layout)"
+  ;;
+init)
+  apply_layout "${2:-us}"
+  apply_system_layout "${2:-us}" sudo
+  ;;
+ensure) apply_layout "$(get_layout)" ;;
+*)
+  usage >&2
+  exit 2
+  ;;
 esac

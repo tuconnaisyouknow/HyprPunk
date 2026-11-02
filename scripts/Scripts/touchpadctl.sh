@@ -149,12 +149,18 @@ set_enabled() {
 command="${1:-}"
 case "$command" in
 ensure)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   ;;
 sync)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   enabled="$(read_enabled)"
@@ -168,7 +174,10 @@ sync)
   fi
   ;;
 toggle)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   enabled="$(read_enabled)"
@@ -179,25 +188,37 @@ toggle)
   fi
   ;;
 enable)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   set_enabled true
   ;;
 disable)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   acquire_lock
   ensure_state
   set_enabled false
   ;;
 status)
-  [[ $# -eq 1 ]] || { usage >&2; exit 1; }
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
   enabled="$(read_enabled || true)"
   printf 'enabled=%s\n' "${enabled:-$DEFAULT_ENABLED}"
   [[ -f "$STATE_FILE" ]] && sed -n '/^device=/p' "$STATE_FILE"
   ;;
 init)
-  [[ $# -le 2 ]] || { usage >&2; exit 1; }
+  [[ $# -le 2 ]] || {
+    usage >&2
+    exit 1
+  }
   enabled="${2:-$DEFAULT_ENABLED}"
   [[ "$enabled" == "true" || "$enabled" == "false" ]] || {
     echo "Invalid touchpad state: $enabled" >&2
