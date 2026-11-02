@@ -129,7 +129,7 @@ SearchPanel {
                     width: parent.width
                     elide: Text.ElideRight
                     text: row.modelData.name
-                    color: row.selected ? Theme.mauve : Theme.text
+                    color: row.selected ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: row.selected ? Font.Bold : Font.Normal

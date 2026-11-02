@@ -146,7 +146,7 @@ SearchPanel {
                 maximumLineCount: 1
                 text: row.isImage ? clipboard.imageLabel(row.modelData.text) : row.modelData.text
                 textFormat: Text.PlainText
-                color: row.selected ? Theme.mauve : row.isImage ? Theme.lavender : Theme.text
+                color: row.selected ? Theme.mauve : Theme.lavender
                 font.family: Theme.font
                 font.pixelSize: 13
             }

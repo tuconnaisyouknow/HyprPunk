@@ -521,7 +521,7 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     text: place.modelData.icon
-                    color: Theme.mauve
+                    color: place.current ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 14
                 }
@@ -581,6 +581,7 @@ IslandPanel {
                 required property var modelData
                 required property int index
                 readonly property bool isMarked: picker.marked.indexOf(modelData.path) >= 0
+                readonly property bool selected: ListView.isCurrentItem
 
                 width: ListView.view.width
                 height: picker.rowHeight
@@ -593,7 +594,7 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 20
                     text: row.isMarked ? "󰄲" : picker.iconFor(row.modelData)
-                    color: row.isMarked || row.modelData.isDir ? Theme.mauve : Theme.lavender
+                    color: row.isMarked || row.selected ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 15
                 }
@@ -606,7 +607,7 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideMiddle
                     text: row.modelData.name
-                    color: row.isMarked ? Theme.mauve : Theme.text
+                    color: row.isMarked || row.selected ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 13
                 }
@@ -686,7 +687,7 @@ IslandPanel {
                     anchors.centerIn: parent
                     visible: !preview.showsImage
                     text: preview.entry ? picker.iconFor(preview.entry) : "󰉋"
-                    color: preview.entry && !preview.entry.isDir ? Theme.lavender : Theme.mauve
+                    color: Theme.mauve
                     font.family: Theme.font
                     font.pixelSize: 64
                 }
@@ -700,7 +701,7 @@ IslandPanel {
                 maximumLineCount: 3
                 elide: Text.ElideRight
                 text: preview.entry ? preview.entry.name : picker.folder === "/" ? "/" : picker.folder.substring(picker.folder.lastIndexOf("/") + 1)
-                color: Theme.text
+                color: Theme.mauve
                 font.family: Theme.font
                 font.pixelSize: 13
             }

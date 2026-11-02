@@ -70,7 +70,7 @@ Column {
         Text {
             anchors.centerIn: parent
             text: ring.charging ? "󱐋" : ring.battery !== null && ring.battery.label ? ring.battery.label : ""
-            color: ring.charging ? Theme.green : Theme.text
+            color: ring.charging ? Theme.green : Theme.lavender
             font.family: Theme.font
             font.pixelSize: ring.charging ? 17 : 13
             font.weight: Font.Bold
@@ -81,7 +81,7 @@ Column {
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
         text: ring.level === null ? "--" : ring.level + "%"
-        color: ring.low ? Theme.red : Theme.text
+        color: ring.low ? Theme.red : Theme.lavender
         font.family: Theme.font
         font.pixelSize: 17
         font.weight: Font.Medium

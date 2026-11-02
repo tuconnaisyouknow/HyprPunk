@@ -368,7 +368,7 @@ Item {
                         radius: width / 2
                         color: "transparent"
                         border.width: parent.chosen ? 2 : 0
-                        border.color: Theme.text
+                        border.color: Theme.mauve
 
                         Behavior on width {
                             NumberAnimation {
