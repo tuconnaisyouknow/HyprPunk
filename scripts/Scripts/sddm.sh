@@ -7,8 +7,11 @@
 #   sddm.sh <theme>   makes it the login screen (the shell's SDDM picker calls this)
 set -euo pipefail
 
-BASE_DIR="$HOME/.dotfiles/sddm/base"
-THEMES_DIR="$HOME/.dotfiles/sddm/themes"
+# The repository this script was linked from, wherever you cloned it
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+DOTFILES_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+BASE_DIR="$DOTFILES_DIR/sddm/base"
+THEMES_DIR="$DOTFILES_DIR/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
 SDDM_CONF_DIR="/etc/sddm.conf.d"
 SDDM_CONF="$SDDM_CONF_DIR/theme.conf"
