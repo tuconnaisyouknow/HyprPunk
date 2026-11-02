@@ -1,3 +1,6 @@
+# HyprPunk's aliases, loaded by .zshrc. Yours go in ~/.personalrc, read after this
+# file, so you can also redefine any of these there.
+
 # Packages, through yay without the questions
 alias i='yay -S --needed --noconfirm --removemake'       # Install
 alias u='yay -Syu --noconfirm --removemake'              # Update everything

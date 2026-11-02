@@ -2,9 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Talks to ~/Scripts/airpodsd.py, the AirPods companion: your paired AirPods with
-// their batteries, ear detection and settings, any AirPods nearby waiting to pair,
-// and when to pop their card up (case opened, connected, pairing mode).
+// Talks to ~/Scripts/airpodsd.py: your paired AirPods with their batteries and
+// settings, AirPods nearby waiting to pair, and when to pop their card up.
 Scope {
     id: airPods
 

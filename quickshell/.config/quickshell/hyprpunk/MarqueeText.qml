@@ -1,7 +1,6 @@
 import QtQuick
 
-// A line of text that scrolls round when it's too long, like an old MP3 player's
-// display. When it fits, it just sits there.
+// A line of text that scrolls around when it's too long, like an old MP3 player's display.
 Item {
     id: marquee
 

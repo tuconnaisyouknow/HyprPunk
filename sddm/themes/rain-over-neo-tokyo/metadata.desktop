@@ -1,3 +1,4 @@
+# How SDDM lists this theme. Everything but its name and video comes from sddm/base.
 [SddmGreeterTheme]
 Name=rain-over-neo-tokyo
 Description=Rain Over Neo Tokyo SDDM Theme

@@ -1,3 +1,5 @@
+# The prompt you see in every terminal, drawn by Starship once .zshrc has set it up.
+
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Give up on scanning a folder after 100 ms, so huge ones don't slow the prompt

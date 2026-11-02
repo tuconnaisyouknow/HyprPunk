@@ -34,8 +34,8 @@ hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct:qt6ct")
 
--- Spelled out even when it's the default, so kitty, which can't fall back on
--- ~/.local/state by itself, finds the keyboard files keyboard-layoutctl.sh writes there
+-- Set even when it's the default: kitty can't fall back on ~/.local/state by itself
+-- to find the keyboard files
 hl.env("XDG_STATE_HOME", os.getenv("XDG_STATE_HOME") or os.getenv("HOME") .. "/.local/state")
 
 -- Everyday tools

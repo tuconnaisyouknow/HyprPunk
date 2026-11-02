@@ -5,9 +5,8 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// The lock screen on one display: the blurred wallpaper, a slimmed-down bar (resources,
-// the island as a padlock, the status pill), the date and time with the player and its
-// lyrics in the middle, and a password prompt that only shows up while you type.
+// The lock screen on one display: a slimmed-down bar, the clock with the player, and a
+// password prompt that only shows while you type.
 //
 // Locking starts from the screen as it was: the bar's pills leave, move or stay, the
 // island grows from the clock into a padlock that clicks shut, and everything blurs into

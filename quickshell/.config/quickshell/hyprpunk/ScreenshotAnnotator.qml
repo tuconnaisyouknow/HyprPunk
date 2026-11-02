@@ -1,10 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// Drawing on a screenshot right where it was taken, over the frozen screen: pen,
-// highlighter, arrow, rectangle, ellipse (outlined or filled) and text, in the theme's
-// colors and three sizes, with a toolbar beside the region.
-// Enter (or ✓) saves it at full resolution, Escape cancels, Ctrl+Z undoes.
+// Drawing on a screenshot right where it was taken, with a toolbar beside the region.
+// Enter saves it at full resolution, Escape cancels, Ctrl+Z undoes.
 Item {
     id: annotator
 
