@@ -570,7 +570,7 @@ PanelWindow {
                     // For the functions up top, which can't see inside the Loader.
                     readonly property Item wifiDetail: wifiDetailPage
                     readonly property Item enterprise: enterprisePage
-                    readonly property Item password: passwordField
+                    readonly property Item password: wifiPage.password
                     // Starts hidden even when built with the panel already opening (Super+C),
                     // so the pages still fade in.
                     property bool built: false
@@ -861,7 +861,7 @@ PanelWindow {
                         }
                     }
 
-                    ColumnLayout {
+                    WifiPage {
                         id: wifiPage
 
                         width: parent.width
@@ -869,138 +869,12 @@ PanelWindow {
                         visible: controlCenter.pageVisible("wifi")
                         enabled: controlCenter.page === "wifi"
                         opacity: controlCenter.pageOpacity("wifi")
-                        spacing: 12
-
-                        PageHeader {
-                            Layout.fillWidth: true
-                            title: "Wi-Fi"
-                            checked: Networking.wifiEnabled
-                            onBackRequested: controlCenter.page = "main"
-                            onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-                        }
-
-                        IconText {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.topMargin: 8
-                            Layout.bottomMargin: 8
-                            visible: controlCenter.wifiNetworks.length === 0
-                            icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
-                            text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
-                            color: Theme.overlay1
-                            font.pixelSize: 14
-                            font.weight: Font.Normal
-
-
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: wifiList.height
-                            visible: controlCenter.wifiNetworks.length > 0
-
-                            ListView {
-                                id: wifiList
-
-                                // Wider than the page by a few pixels, so the hovered row's zoom and
-                                // bounce (up to 4.5px a side) aren't cut; the rows stay aligned.
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.leftMargin: -6
-                                anchors.rightMargin: -6
-                                height: Math.min(contentHeight, 340)
-                                clip: true
-                                spacing: 4
-                                // Keeps the rows that stay instead of rebuilding them all at each change,
-                                // which held up the animations.
-                                model: ScriptModel {
-                                    values: controlCenter.wifiNetworks
-                                }
-
-                                // The row inside: the list sets its delegates' x.
-                                delegate: Item {
-                                    required property var modelData
-
-                                    width: ListView.view.width
-                                    height: row.height
-
-                                    ListRow {
-                                        id: row
-
-                                        x: 6
-                                        width: parent.width - 12
-                                        icon: Icons.wifi(modelData.signalStrength, false)
-                                        title: modelData.name
-                                        subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
-                                        trailing: modelData.security === WifiSecurityType.Open ? "" : "󰌾"
-                                        highlighted: modelData.connected
-                                        detailsAvailable: modelData.known
-                                        onClicked: controlCenter.selectWifi(modelData)
-                                        onDetailsRequested: controlCenter.showWifiDetails(modelData)
-
-                                        Connections {
-                                            function onConnectionFailed(reason) {
-                                                if (reason === ConnectionFailReason.NoSecrets && controlCenter.opened && controlCenter.requestedWifi === modelData)
-                                                    controlCenter.askWifiSecrets(modelData);
-
-                                            }
-
-                                            target: modelData
-                                        }
-
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                        ControlBlock {
-                            Layout.fillWidth: true
-                            implicitHeight: passwordColumn.implicitHeight + 24
-                            visible: controlCenter.passwordNetwork !== null
-
-                            ColumnLayout {
-                                id: passwordColumn
-
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 8
-
-                                IconText {
-                                    Layout.fillWidth: true
-                                    elide: Text.ElideRight
-                                    icon: "󰌾"
-                                    text: (controlCenter.passwordNetwork !== null ? controlCenter.passwordNetwork.name : "")
-                                    color: Theme.mauve
-                                    font.pixelSize: 14
-                                    font.weight: Font.Bold
-                                }
-
-                                FormField {
-                                    id: passwordField
-
-                                    Layout.fillWidth: true
-                                    secret: true
-                                    escapable: true
-                                    placeholder: "Password, then Enter"
-                                    onEscaped: controlCenter.passwordNetwork = null
-                                    onAccepted: {
-                                        if (controlCenter.passwordNetwork !== null && text !== "") {
-                                            controlCenter.passwordNetwork.connectWithPsk(text);
-                                            controlCenter.passwordNetwork = null;
-                                            panel.forceActiveFocus();
-                                        }
-                                    }
-                                }
-
-                            }
-
-                        }
-
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "main"
+                        onPasswordSent: panel.forceActiveFocus()
                     }
 
-                    ColumnLayout {
+                    BluetoothPage {
                         id: bluetoothPage
 
                         width: parent.width
@@ -1008,94 +882,8 @@ PanelWindow {
                         visible: controlCenter.pageVisible("bluetooth")
                         enabled: controlCenter.page === "bluetooth"
                         opacity: controlCenter.pageOpacity("bluetooth")
-                        spacing: 12
-
-                        PageHeader {
-                            Layout.fillWidth: true
-                            title: "Bluetooth"
-                            checked: controlCenter.bluetoothEnabled
-                            onBackRequested: controlCenter.page = "main"
-                            onToggled: controlCenter.toggleBluetooth()
-                        }
-
-                        IconText {
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.topMargin: 8
-                            Layout.bottomMargin: 8
-                            visible: controlCenter.bluetoothDevices.length === 0
-                            icon: controlCenter.bluetoothEnabled ? "󰂰" : "󰂲"
-                            text: controlCenter.bluetoothEnabled ? "Searching for devices…" : "Bluetooth is off"
-                            color: Theme.overlay1
-                            font.pixelSize: 14
-                            font.weight: Font.Normal
-
-
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: bluetoothList.height
-                            visible: controlCenter.bluetoothDevices.length > 0
-
-                            ListView {
-                                id: bluetoothList
-
-                                // Wider than the page by a few pixels, so the hovered row's zoom and
-                                // bounce (up to 4.5px a side) aren't cut; the rows stay aligned.
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.leftMargin: -6
-                                anchors.rightMargin: -6
-                                height: Math.min(contentHeight, 340)
-                                clip: true
-                                spacing: 4
-                                // Keeps the rows that stay instead of rebuilding them all at each change,
-                                // which held up the animations.
-                                model: ScriptModel {
-                                    values: controlCenter.bluetoothDevices
-                                }
-
-                                // The row inside: the list sets its delegates' x.
-                                delegate: Item {
-                                    required property var modelData
-
-                                    width: ListView.view.width
-                                    height: row.height
-
-                                    ListRow {
-                                        id: row
-
-                                        x: 6
-                                        width: parent.width - 12
-                                        icon: controlCenter.bluetoothDeviceIcon(modelData.icon)
-                                        title: modelData.deviceName
-                                        subtitle: {
-                                            if (modelData.pairing)
-                                                return "Pairing…";
-
-                                            if (modelData.state === BluetoothDeviceState.Connecting)
-                                                return "Connecting…";
-
-                                            if (modelData.state === BluetoothDeviceState.Disconnecting)
-                                                return "Disconnecting…";
-
-                                            if (modelData.connected)
-                                                return modelData.batteryAvailable ? "Connected · " + Math.round(modelData.battery * 100) + "%" : "Connected";
-
-                                            return modelData.paired ? "Paired" : "";
-                                        }
-                                        highlighted: modelData.connected
-                                        detailsAvailable: modelData.paired
-                                        onClicked: controlCenter.selectBluetooth(modelData)
-                                        onDetailsRequested: controlCenter.showBluetoothDetails(modelData)
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "main"
                     }
 
 
@@ -1163,7 +951,7 @@ PanelWindow {
                         }
                     }
 
-                    ColumnLayout {
+                    CaffeinePage {
                         id: caffeinePage
 
                         width: parent.width
@@ -1171,48 +959,11 @@ PanelWindow {
                         visible: controlCenter.pageVisible("caffeine")
                         enabled: controlCenter.page === "caffeine"
                         opacity: controlCenter.pageOpacity("caffeine")
-                        spacing: 6
-
-                        PageHeader {
-                            Layout.fillWidth: true
-                            title: "Caffeine"
-                            checked: controlCenter.shellState.caffeine
-                            onToggled: controlCenter.toggleCaffeine()
-                            onBackRequested: controlCenter.page = "main"
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.bottomMargin: 6
-                            text: "Keeps the screen on: no dimming, locking or sleep."
-                            color: Theme.overlay1
-                            wrapMode: Text.Wrap
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-
-                        Repeater {
-                            model: controlCenter.caffeineDurations
-
-                            ListRow {
-                                required property var modelData
-                                readonly property bool chosen: controlCenter.shellState.caffeine && controlCenter.shellState.caffeineMinutes === modelData.minutes
-
-                                Layout.fillWidth: true
-                                icon: modelData.minutes === 0 ? "󰅶" : "󰔛"
-                                title: modelData.label
-                                // The chosen duration ends at: "Until 22:10".
-                                subtitle: chosen && controlCenter.shellState.caffeineUntil > 0 ? "Until " + Qt.formatTime(new Date(controlCenter.shellState.caffeineUntil), "HH:mm") : ""
-                                trailing: chosen ? "\uf00c" : ""
-                                highlighted: chosen
-                                onClicked: controlCenter.chooseCaffeine(modelData.minutes)
-                            }
-
-                        }
-
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "main"
                     }
 
-                    ColumnLayout {
+                    ChargeLimitPage {
                         id: chargeLimitPage
 
                         width: parent.width
@@ -1220,49 +971,11 @@ PanelWindow {
                         visible: controlCenter.pageVisible("chargeLimit")
                         enabled: controlCenter.page === "chargeLimit"
                         opacity: controlCenter.pageOpacity("chargeLimit")
-                        spacing: 6
-
-                        PageHeader {
-                            Layout.fillWidth: true
-                            title: "Charge limit"
-                            checked: controlCenter.chargeLimit < 100
-                            toggleVisible: controlCenter.chargeLimitWritable
-                            onToggled: controlCenter.toggleChargeLimit()
-                            onBackRequested: controlCenter.page = "main"
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.bottomMargin: 6
-                            text: !controlCenter.chargeLimitWritable ? "Read only: install battery-limit (battery/ in the dotfiles) to change it." : controlCenter.chargeLimitError !== "" ? controlCenter.chargeLimitError : "Stops charging at the limit, easier on the battery over the years. Kept after a restart."
-                            color: !controlCenter.chargeLimitWritable || controlCenter.chargeLimitError !== "" ? Theme.peach : Theme.overlay1
-                            wrapMode: Text.Wrap
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-
-                        Repeater {
-                            model: controlCenter.chargeLimits
-
-                            ListRow {
-                                required property int modelData
-                                readonly property bool chosen: controlCenter.chargeLimit === modelData
-
-                                Layout.fillWidth: true
-                                icon: controlCenter.chargeLimitIcon(modelData)
-                                title: modelData + " %"
-                                subtitle: modelData === 80 ? "Recommended" : ""
-                                trailing: chosen ? "\uf00c" : ""
-                                highlighted: chosen
-                                enabled: controlCenter.chargeLimitWritable
-                                onClicked: controlCenter.setChargeLimit(modelData)
-                            }
-
-                        }
-
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "main"
                     }
 
-                    ColumnLayout {
+                    LocalePage {
                         id: localePage
 
                         width: parent.width
@@ -1270,78 +983,8 @@ PanelWindow {
                         visible: controlCenter.pageVisible("locale")
                         enabled: controlCenter.page === "locale"
                         opacity: controlCenter.pageOpacity("locale")
-                        spacing: 6
-
-                        PageHeader {
-                            Layout.fillWidth: true
-                            Layout.bottomMargin: 6
-                            title: "Locale"
-                            toggleVisible: false
-                            onBackRequested: controlCenter.page = "main"
-                        }
-
-                        Text {
-                            Layout.topMargin: 0
-                            text: "Interface language"
-                            color: Theme.lavender
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                            font.weight: Font.Bold
-                        }
-
-                        Repeater {
-                            model: controlCenter.localeProfiles
-
-                            ListRow {
-                                required property var modelData
-
-                                Layout.fillWidth: true
-                                icon: modelData.id.toUpperCase()
-                                title: modelData.name
-                                subtitle: modelData.locale
-                                trailing: controlCenter.localeLanguage === modelData.id ? "\uf00c" : ""
-                                highlighted: controlCenter.localeLanguage === modelData.id
-                                onClicked: controlCenter.setLocale("language", modelData.id)
-                            }
-
-                        }
-
-                        Text {
-                            Layout.topMargin: 8
-                            text: "Regional formats"
-                            color: Theme.lavender
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                            font.weight: Font.Bold
-                        }
-
-                        Repeater {
-                            model: controlCenter.localeProfiles
-
-                            ListRow {
-                                required property var modelData
-
-                                Layout.fillWidth: true
-                                icon: modelData.id.toUpperCase()
-                                title: modelData.name
-                                subtitle: modelData.locale
-                                trailing: controlCenter.localeRegional === modelData.id ? "\uf00c" : ""
-                                highlighted: controlCenter.localeRegional === modelData.id
-                                onClicked: controlCenter.setLocale("regional", modelData.id)
-                            }
-
-                        }
-
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.topMargin: 6
-                            wrapMode: Text.WordWrap
-                            text: "New apps use it right away. Log out and back in to apply it to the apps already open."
-                            color: Theme.overlay1
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "main"
                     }
 
                 }
