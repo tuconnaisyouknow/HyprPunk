@@ -20,7 +20,8 @@ The default target is all.
 EOF
 }
 
-# Same settings for both, only the font line is spelled differently by each Qt
+# Same settings for both, only the font line is spelled differently by each Qt.
+# The file dialogs go through the portal, so they open in the shell's file picker.
 write_qt5_config() {
   local target="$1"
 
@@ -29,7 +30,7 @@ write_qt5_config() {
 color_scheme_path=$CONFIG_HOME/qt5ct/colors/catppuccin-mocha-mauve.conf
 custom_palette=true
 icon_theme=Papirus-Dark
-standard_dialogs=default
+standard_dialogs=xdgdesktopportal
 style=kvantum-dark
 
 [Fonts]
@@ -62,7 +63,7 @@ write_qt6_config() {
 color_scheme_path=$CONFIG_HOME/qt6ct/colors/catppuccin-mocha-mauve.conf
 custom_palette=true
 icon_theme=Papirus-Dark
-standard_dialogs=default
+standard_dialogs=xdgdesktopportal
 style=kvantum-dark
 
 [Fonts]
