@@ -52,9 +52,6 @@ local startup = {
 
   -- Keyring for the apps that store passwords and SSH keys
   { name = "keyring", command = "/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh" },
-
-  -- Polkit agent, so password prompts show up as a window
-  { name = "polkit", command = "systemctl --user start hyprpolkitagent" },
 }
 
 -- The list only runs once the whole config is read, so your additions and removals count
