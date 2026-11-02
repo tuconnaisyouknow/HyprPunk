@@ -324,7 +324,7 @@ IslandPanel {
 
             anchors.centerIn: parent
             text: chip.text
-            color: chip.selected ? Theme.base : chip.dimmed ? Theme.overlay0 : Theme.text
+            color: chip.selected ? Theme.base : chip.dimmed ? Theme.alpha(Theme.lavender, 0.5) : Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
             font.weight: chip.selected ? Font.Bold : Font.Normal
@@ -436,7 +436,7 @@ IslandPanel {
                 anchors.centerIn: parent
                 visible: monitors.outputs.length === 0
                 text: monitors.busy ? "Loading…" : "No output"
-                color: Theme.overlay1
+                color: Theme.lavender
                 font.family: Theme.font
                 font.pixelSize: 14
             }
@@ -517,7 +517,7 @@ IslandPanel {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: monitors.selected ? monitors.selected.description + " · " + monitors.selected.width + "x" + monitors.selected.height + " · " + monitors.rateLabel(monitors.selected.refresh_rate) : ""
-            color: Theme.overlay1
+            color: Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
         }

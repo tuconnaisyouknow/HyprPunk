@@ -180,7 +180,7 @@ ColumnLayout {
     }
 
     component EmptyText: Text {
-        color: Theme.overlay1
+        color: Theme.lavender
         font.family: Theme.font
         font.pixelSize: 12
     }
@@ -442,7 +442,7 @@ ColumnLayout {
                                     height: parent.height
                                     width: Math.max(parent.height, parent.width * level)
                                     radius: parent.radius
-                                    color: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.overlay1 : Theme.green
+                                    color: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.alpha(Theme.lavender, 0.5) : Theme.green
                                     opacity: level > 0.01 ? 1 : 0.4
                                     property real level: {
                                         const peak = page.sourceAudio !== null && page.sourceAudio.muted ? 0 : sourcePeak.peak;

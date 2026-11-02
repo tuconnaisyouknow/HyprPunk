@@ -78,7 +78,7 @@ ColumnLayout {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: parent.text === ""
                 text: field.placeholder
-                color: Theme.overlay0
+                color: Theme.alpha(Theme.lavender, 0.5)
                 font.family: parent.font.family
                 font.pixelSize: parent.font.pixelSize
             }

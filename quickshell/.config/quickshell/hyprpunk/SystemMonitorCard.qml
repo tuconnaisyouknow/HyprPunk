@@ -295,7 +295,7 @@ Item {
 
                 Detail {
                     text: SystemStats.swapTotal > 0 ? monitor.formatKiB(SystemStats.swapUsed) + " / " + monitor.formatKiB(SystemStats.swapTotal) : "off"
-                    color: SystemStats.swapTotal > 0 ? Theme.lavender : Theme.overlay1
+                    color: SystemStats.swapTotal > 0 ? Theme.lavender : Theme.alpha(Theme.lavender, 0.5)
                 }
 
             }

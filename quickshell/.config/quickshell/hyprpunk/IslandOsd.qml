@@ -46,7 +46,7 @@ RowLayout {
 
             anchors.centerIn: parent
             text: bar.statusOsdEnabled ? "On" : "Off"
-            color: bar.statusOsdEnabled ? Theme.base : Theme.overlay2
+            color: bar.statusOsdEnabled ? Theme.base : Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
             font.weight: Font.Bold

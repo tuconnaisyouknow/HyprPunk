@@ -19,7 +19,7 @@ Item {
     // Scrolled by hand: the view stops following until resumeFollow runs out.
     property bool handScrolled: false
     // The LRCLIB credit: dim on a card, brighter straight over a wallpaper.
-    property color creditColor: Theme.overlay0
+    property color creditColor: Theme.alpha(Theme.lavender, 0.5)
     // False until the player's position is known, so the view can start right on the
     // current line instead of scrolling down to it from the top.
     property bool ready: true

@@ -389,7 +389,7 @@ IslandPanel {
             width: Math.min(implicitWidth, parent.width / 2)
             elide: Text.ElideRight
             text: picker.request && picker.request.title !== "" ? picker.request.title : picker.saving ? "Save" : "Open"
-            color: Theme.text
+            color: Theme.mauve
             font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.DemiBold
@@ -404,7 +404,7 @@ IslandPanel {
             horizontalAlignment: Text.AlignRight
             elide: Text.ElideLeft
             text: picker.collapse(picker.folder)
-            color: Theme.overlay1
+            color: Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
         }
@@ -534,7 +534,7 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     text: place.modelData.name
-                    color: place.current ? Theme.text : Theme.subtext1
+                    color: place.current ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 13
                 }
@@ -593,7 +593,7 @@ IslandPanel {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 20
                     text: row.isMarked ? "󰄲" : picker.iconFor(row.modelData)
-                    color: row.isMarked || row.modelData.isDir ? Theme.mauve : Theme.overlay2
+                    color: row.isMarked || row.modelData.isDir ? Theme.mauve : Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 15
                 }
@@ -618,7 +618,7 @@ IslandPanel {
                     anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.modelData.isDir ? "" : picker.formatSize(row.modelData.size)
-                    color: Theme.overlay1
+                    color: Theme.lavender
                     font.family: Theme.font
                     font.pixelSize: 11
                 }
@@ -643,7 +643,7 @@ IslandPanel {
             anchors.centerIn: list
             visible: picker.entries.length === 0 && folderModel.status === FolderListModel.Ready
             text: picker.query !== "" ? "Nothing matches" : "Empty folder"
-            color: Theme.overlay1
+            color: Theme.lavender
             font.family: Theme.font
             font.pixelSize: 13
         }
@@ -686,7 +686,7 @@ IslandPanel {
                     anchors.centerIn: parent
                     visible: !preview.showsImage
                     text: preview.entry ? picker.iconFor(preview.entry) : "󰉋"
-                    color: preview.entry && !preview.entry.isDir ? Theme.overlay2 : Theme.mauve
+                    color: preview.entry && !preview.entry.isDir ? Theme.lavender : Theme.mauve
                     font.family: Theme.font
                     font.pixelSize: 64
                 }
@@ -710,7 +710,7 @@ IslandPanel {
                 horizontalAlignment: Text.AlignHCenter
                 visible: text !== ""
                 text: !preview.entry ? picker.entries.length + (picker.entries.length === 1 ? " item" : " items") : (preview.entry.isDir ? "Folder" : picker.formatSize(preview.entry.size)) + " · " + preview.entry.modified.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
-                color: Theme.overlay1
+                color: Theme.lavender
                 font.family: Theme.font
                 font.pixelSize: 11
             }
@@ -831,7 +831,7 @@ IslandPanel {
 
             anchors.centerIn: parent
             text: (chip.icon !== "" ? chip.icon + "  " : "") + chip.label
-            color: chip.accent ? Theme.base : chip.active ? Theme.text : Theme.subtext1
+            color: chip.accent ? Theme.base : chip.active ? Theme.mauve : Theme.lavender
             font.family: Theme.font
             font.pixelSize: 13
             font.weight: chip.accent ? Font.Bold : Font.Normal

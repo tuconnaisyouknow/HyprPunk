@@ -14,7 +14,7 @@ PanelWindow {
     required property var shellState
     required property var airPods
     property color base: Theme.base
-    property color overlay1: Theme.overlay1
+    property color lavender: Theme.lavender
     property color textColor: Theme.text
     property color mauve: Theme.mauve
     // BR/EDR address of the AirPods shown, and why: "lid", "connected", "pairing" or
@@ -305,7 +305,7 @@ PanelWindow {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: 10
                     text: "Not now"
-                    color: notNowArea.containsMouse ? popup.textColor : popup.overlay1
+                    color: notNowArea.containsMouse ? popup.textColor : popup.lavender
                     font.family: Theme.font
                     font.pixelSize: 12
 
@@ -351,7 +351,7 @@ PanelWindow {
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: closeArea.containsMouse ? popup.mauve : popup.overlay1
+                    color: closeArea.containsMouse ? popup.mauve : popup.lavender
                     font.family: Theme.font
                     font.pixelSize: 12
                 }

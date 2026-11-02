@@ -333,7 +333,7 @@ PanelWindow {
                             visible: center.entryIds.length === 0
                             icon: "󰂚"
                             text: "No notifications"
-                            color: Theme.overlay1
+                            color: Theme.lavender
                             font.pixelSize: 16
                             font.weight: Font.Normal
                         }

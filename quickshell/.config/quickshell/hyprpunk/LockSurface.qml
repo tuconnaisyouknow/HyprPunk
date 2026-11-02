@@ -755,7 +755,7 @@ WlSessionLockSurface {
                 lines: lockPlayer.lyricsFound ? Lyrics.lines : []
                 synced: Lyrics.synced
                 current: lockPlayer.lyricsLine
-                creditColor: Theme.subtext1
+                creditColor: Theme.lavender
                 onSeekRequested: (seconds) => {
                     if (lockPlayer.player !== null && lockPlayer.player.canSeek)
                         lockPlayer.seek(seconds);

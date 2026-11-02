@@ -299,7 +299,7 @@ IslandPanel {
         icon: launcher.actionsEntry ? "󰅂" : "󰍉"
         readOnly: launcher.actionsEntry !== null
         placeholder: launcher.actionsEntry ? launcher.actionsEntry.name : "Search apps, > command, ? web"
-        placeholderColor: launcher.actionsEntry ? Theme.text : Theme.overlay1
+        placeholderColor: launcher.actionsEntry ? Theme.text : Theme.alpha(Theme.lavender, 0.5)
         // What Enter will do in the current mode.
         hint: launcher.actionsEntry ? "Tab back" : launcher.mode === "command" ? "Run" : launcher.mode === "web" ? "Web" : launcher.special === "calc" ? "Calc" : ""
         onTextChanged: launcher.query = text
@@ -377,7 +377,7 @@ IslandPanel {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: launcher.special === "calc" ? "= " + launcher.calculation : launcher.modeArgument !== "" ? launcher.modeArgument : launcher.special === "command" ? "Type a command" : "Type a search"
-            color: launcher.modeArgument !== "" ? Theme.text : Theme.overlay1
+            color: launcher.modeArgument !== "" ? Theme.text : Theme.alpha(Theme.lavender, 0.5)
             font.family: Theme.font
             font.pixelSize: launcher.special === "calc" ? 18 : 15
             font.weight: launcher.special === "calc" ? Font.Bold : Font.Normal
@@ -390,7 +390,7 @@ IslandPanel {
             anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
             text: launcher.special === "calc" ? "Enter copies" : launcher.special === "command" ? "Shift+Enter in " + launcher.terminal : "Search the web"
-            color: Theme.overlay1
+            color: Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12
         }

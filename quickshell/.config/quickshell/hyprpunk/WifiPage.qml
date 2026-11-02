@@ -33,7 +33,7 @@ ColumnLayout {
         visible: page.center.wifiNetworks.length === 0
         icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
         text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
-        color: Theme.overlay1
+        color: Theme.lavender
         font.pixelSize: 14
         font.weight: Font.Normal
 

@@ -3,8 +3,9 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// The shell's colors and font, Catppuccin Mocha with mauve as the accent. Every file
-// takes them from here, so a color changes everywhere at once.
+// The shell's colors and font, Catppuccin Mocha with mauve as the accent and lavender
+// as the secondary one, in place of the greys. Every file takes them from here, so a
+// color changes everywhere at once.
 Singleton {
     readonly property string font: "JetBrainsMono Nerd Font"
 
@@ -12,10 +13,6 @@ Singleton {
     readonly property color base: "#1e1e2e"
     readonly property color surface0: "#313244"
     readonly property color surface1: "#45475a"
-    readonly property color overlay0: "#6c7086"
-    readonly property color overlay1: "#7f849c"
-    readonly property color overlay2: "#9399b2"
-    readonly property color subtext1: "#bac2de"
     readonly property color text: "#cdd6f4"
     readonly property color lavender: "#b4befe"
     readonly property color mauve: "#cba6f7"
