@@ -169,7 +169,7 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 
 - 🌐 **Brave**, with **uBlock Origin Lite** and the **Catppuccin Mocha** theme installed by its policy, and Rewards,
   Wallet and AI Chat turned off.
-- 🎵 **Spotify** (`spotify-launcher`), 📓 **Obsidian** and 💬 **Discord**.
+- 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
   music files, set as the default apps for those files.
 - 📁 **Dolphin** and **Ark** for files and archives, **Seahorse** for the keyring.
