@@ -2,7 +2,7 @@
 # Switches between the US and French layouts, and moves every app's Vim keys with it:
 # hjkl on QWERTY, jklm on AZERTY so they stay under the right hand.
 # Hyprland, Neovim and zsh read the layout themselves; tmux, kitty, less and yazi get
-# small generated files in ~/.local/state/hyprpunk/keyboard.
+# small generated files in $XDG_STATE_HOME/hyprpunk/keyboard (~/.local/state by default).
 #   keyboard-layoutctl.sh get | list
 #   keyboard-layoutctl.sh set <fr|us> | toggle   from the shell
 #   keyboard-layoutctl.sh init [fr|us]           from install.sh, through sudo
@@ -13,7 +13,7 @@ set -euo pipefail
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_DIR="$STATE_HOME/hyprpunk"
 STATE_FILE="$STATE_DIR/keyboard-layout"
-GENERATED_DIR="${HYPRPUNK_KEYBOARD_RUNTIME_DIR:-$HOME/.local/state/hyprpunk/keyboard}"
+GENERATED_DIR="$STATE_DIR/keyboard"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 DOTFILES_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
