@@ -9,7 +9,8 @@ Prints one JSON line:
   {"status": "missing"}   lrclib has nothing for it
   {"status": "network"}   lrclib could not be asked (offline, busy): ask again later
 
-Answers are cached in $XDG_STATE_HOME/hyprpunk/lyrics, a miss for a week.
+Answers are cached in $XDG_STATE_HOME/hyprpunk/lyrics, a miss for a week, unless
+lrclib left a search unanswered.
 """
 
 import hashlib
@@ -72,7 +73,9 @@ def has_lyrics(record):
 
 
 def lookup(artist, title, album, seconds):
-    """The exact record, else the best of a few searches: timed lyrics first, then the closest length."""
+    """The exact record, else the best of a few searches: timed lyrics first, then the
+    artist playing, then the closest length. Also says whether lrclib answered every
+    search, since only a complete answer is worth caching."""
     unreachable = False
 
     if artist and seconds > 0:
@@ -82,7 +85,7 @@ def lookup(artist, title, album, seconds):
         try:
             record = ask("get", params)
             if has_lyrics(record) and record.get("syncedLyrics"):
-                return record
+                return record, True
         except Unreachable:
             unreachable = True
 
@@ -99,13 +102,15 @@ def lookup(artist, title, album, seconds):
         wanted = folded(first_artist)
         return close_in_length(record) and (not wanted or wanted in singer or singer in folded(artist))
 
+    def same_album(record):
+        return bool(album) and folded(record.get("albumName") or "") == folded(album)
+
     def renamed(record):
         # The artist may go by another name there ("tha Supreme", now "thasup"):
         # the same song name, and the same album or nearly the same length.
         if folded(record.get("trackName") or "") != folded(song):
             return False
-        same_album = bool(album) and folded(record.get("albumName") or "") == folded(album)
-        return close_in_length(record) and (same_album or close_in_length(record, 2))
+        return close_in_length(record) and (same_album(record) or close_in_length(record, 2))
 
     searches = [({"track_name": title, "artist_name": artist}, by_artist)]
     if song != title or first_artist != artist:
@@ -115,6 +120,10 @@ def lookup(artist, title, album, seconds):
 
     found = []
     for params, fits in searches:
+        # Another artist's song of the same name is only worth a guess once lrclib said
+        # the one playing has nothing, not because it was too busy to answer.
+        if fits is renamed and unreachable:
+            break
         params = {key: value for key, value in params.items() if value}
         try:
             found += [record for record in ask("search", params) or [] if has_lyrics(record) and fits(record)]
@@ -127,8 +136,15 @@ def lookup(artist, title, album, seconds):
     if not found:
         if unreachable:
             raise Unreachable("no answer")
-        return None
-    return min(found, key=lambda record: (not record.get("syncedLyrics"), abs((record.get("duration") or 0) - seconds)))
+        return None, True
+
+    # The artist or album playing beats a closer length: a common title ("Tes parents")
+    # has covers by others that can sit nearer in length than the right record.
+    def rank(record):
+        trusted = by_artist(record) or same_album(record)
+        return (not record.get("syncedLyrics"), not trusted, abs((record.get("duration") or 0) - seconds))
+
+    return min(found, key=rank), not unreachable
 
 
 def parse(record):
@@ -167,12 +183,15 @@ def report(artist, title, album, seconds):
         pass
 
     try:
-        record = lookup(artist, title, album, seconds)
+        record, complete = lookup(artist, title, album, seconds)
     except Unreachable as error:
         sys.stderr.write(f"lyrics-lookup: {error}\n")
         return {"status": "network"}
 
     result = parse(record) if record else {"status": "missing"}
+    # Found while lrclib skipped a search: shown, but asked again next time.
+    if not complete:
+        return result
     staging = path + ".tmp"
     with open(staging, "w") as file:
         json.dump({**result, "at": time.time()}, file)
