@@ -48,7 +48,8 @@ hl.config({
       size = 1,
       passes = 4,
       contrast = 1.1,
-      brightness = 1.1,
+      -- Darkens a light page far more than the dark wallpaper, so the shell's glass stays readable over it
+      brightness = 0.9,
       vibrancy = 0.2,
       vibrancy_darkness = 0.2,
       noise = 0.03,
