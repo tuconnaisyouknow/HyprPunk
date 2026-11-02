@@ -14,13 +14,13 @@ end
 
 -- Every app has its home
 local homes = {
-  { class = "kitty", workspace = "1" },
-  { class = "brave-browser", workspace = "2" },
-  { class = "Spotify", workspace = "3" },
+  { class = "kitty",                workspace = "1" },
+  { class = "brave-browser",        workspace = "2" },
+  { class = "Spotify",              workspace = "3" },
   { class = "md.obsidian.Obsidian", workspace = "4" },
-  { class = "discord", workspace = "5" },
-  { class = "Element", workspace = "5" },
-  { class = "org.kde.dolphin", workspace = "6" },
+  { class = "discord",              workspace = "5" },
+  { class = "Element",              workspace = "5" },
+  { class = "org.kde.dolphin",      workspace = "6" },
 }
 
 -- Opens an app on its workspace. Also for personal/rules.lua: a second call for the
@@ -67,11 +67,11 @@ local glassLayers = {
   { namespace = "hyprpunk-notification-center" },
   { namespace = "hyprpunk-osd" },
   { namespace = "hyprpunk-control-center" },
-  { namespace = "hyprpunk-tray", blur_popups = true },
+  { namespace = "hyprpunk-tray",               blur_popups = true },
   -- The island's panels (session menu, wallpaper picker) bring their own animation
-  { namespace = "hyprpunk-island", no_anim = true },
+  { namespace = "hyprpunk-island",             no_anim = true },
   -- In the classic style the bar's pills are opaque, so the blur only shows behind the island and the player
-  { namespace = "hyprpunk-bar", blur_popups = true },
+  { namespace = "hyprpunk-bar",                blur_popups = true },
 }
 
 for _, layer in ipairs(glassLayers) do
