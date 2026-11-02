@@ -9,6 +9,7 @@ IslandPanel {
     id: picker
 
     readonly property string home: Quickshell.env("HOME")
+    readonly property string baseDir: home + "/.dotfiles/sddm/base"
     readonly property string themesDir: home + "/.dotfiles/sddm/themes"
     readonly property string previewDir: home + "/.dotfiles/sddm/previews"
     readonly property string sddmScript: home + "/Scripts/sddm.sh"
@@ -17,7 +18,7 @@ IslandPanel {
     property bool applying: false
     property string pendingTheme: ""
     property string pendingPassword: ""
-    // Font of the active theme (its font/ folder), used by the password field like on its login screen.
+    // The login screens' font, shared by every theme, so the password field looks like theirs.
     property string themeFont: ""
     readonly property string passwordFont: themeFontLoader.status === FontLoader.Ready ? themeFontLoader.name : Theme.font
 
@@ -97,7 +98,8 @@ IslandPanel {
     Process {
         id: fontProcess
 
-        command: ["sh", "-c", "find \"$0/$1/font\" -maxdepth 1 -type f \\( -iname '*.ttf' -o -iname '*.otf' \\) 2>/dev/null | sort | head -n 1", picker.themesDir, carousel.currentId]
+        command: ["sh", "-c", "find \"$0/font\" -maxdepth 1 -type f \\( -iname '*.ttf' -o -iname '*.otf' \\) 2>/dev/null | sort | head -n 1", picker.baseDir]
+        running: true
 
         stdout: StdioCollector {
             onStreamFinished: picker.themeFont = text.trim()
@@ -121,7 +123,6 @@ IslandPanel {
         onLoaded: {
             const match = text().match(/^Current=(.*)$/m);
             carousel.currentId = match ? match[1].trim() : "";
-            fontProcess.running = carousel.currentId !== "";
         }
     }
 

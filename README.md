@@ -286,7 +286,8 @@ from other people's nearby.
 ├── qt6/                 # Source palette for generated Qt6ct configuration
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, and captures
 ├── scripts/             # System, display, Qt, and lock-screen helpers
-├── sddm/themes/         # Cyberpunk video themes installed system-wide
+├── sddm/base/           # What every login screen shares: the layout, its settings and the font
+├── sddm/themes/         # Each theme's own video and name, assembled with the base system-wide
 ├── sddm/previews/       # Preview images of the SDDM themes
 ├── starship/            # Starship prompt configuration
 ├── tmux/                # Tmux configuration
