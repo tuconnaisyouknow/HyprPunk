@@ -24,8 +24,8 @@ ShellRoot {
         property bool controlCenterOpen: false
         // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
         // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings",
-        // "config", "monitor", "screenshot", "polkit" or "menu"; action is "toggle", "open"
-        // or "close"; screen is a screen's name, or empty for the focused one.
+        // "config", "monitor", "screenshot", "polkit", "filechooser" or "menu"; action is
+        // "toggle", "open" or "close"; screen is a screen's name, or empty for the focused one.
         property var panelRequest: ({
             "panel": "",
             "action": "",
@@ -228,6 +228,26 @@ ShellRoot {
             screen: modelData
             shellState: globalState
             agent: polkitAgent
+        }
+
+    }
+
+    // The apps' Open and Save dialogs, through the portal, on the focused screen too.
+    FileChooser {
+        id: fileChooser
+
+        onRequested: globalState.requestPanel("filechooser", "open")
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        FileChooserPanel {
+            required property var modelData
+
+            screen: modelData
+            shellState: globalState
+            chooser: fileChooser
         }
 
     }

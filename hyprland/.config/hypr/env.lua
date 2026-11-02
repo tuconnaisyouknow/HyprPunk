@@ -34,6 +34,11 @@ hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct:qt6ct")
 
+-- Open and Save dialogs through the portal, so they come up in the shell's file picker:
+-- GTK 3 apps (Firefox, Electron…) and GTK 4 ones only ask it on their own inside Flatpak
+hl.env("GTK_USE_PORTAL", "1")
+hl.env("GDK_DEBUG", "portals")
+
 -- Set even when it's the default: kitty can't fall back on ~/.local/state by itself
 -- to find the keyboard files
 hl.env("XDG_STATE_HOME", os.getenv("XDG_STATE_HOME") or os.getenv("HOME") .. "/.local/state")

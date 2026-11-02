@@ -417,7 +417,7 @@ clone_dotfiles() {
 # Link each module into your home. The others (sddm, grub, battery…) are installed
 # system-wide by their own steps.
 stow_dotfiles() {
-  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim quickshell scripts starship tmux wallpapers yazi zsh
+  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim portal quickshell scripts starship tmux wallpapers yazi zsh
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
   # ours, kept out of git, and the settings you already have stay
