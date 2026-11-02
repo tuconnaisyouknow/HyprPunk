@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Installs the login screen themes and picks the active one.
-# They're copied rather than linked: SDDM runs as its own user and can't read your home.
+# Each theme is the shared base (sddm/base) with its own video and name on top. They're
+# copied rather than linked: SDDM runs as its own user and can't read your home.
 #   sddm.sh install   copies the themes that aren't there yet
 #   sddm.sh update    copies them all again, after you edited one
 #   sddm.sh <theme>   makes it the login screen (the shell's SDDM picker calls this)
 set -euo pipefail
 
+BASE_DIR="$HOME/.dotfiles/sddm/base"
 THEMES_DIR="$HOME/.dotfiles/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
 SDDM_CONF_DIR="/etc/sddm.conf.d"
@@ -46,15 +48,25 @@ usage() {
   find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d -printf '  %f\n' | sort >&2
 }
 
-# A theme needs at least these three files for SDDM to load it
+# SDDM needs these three files to load a theme: the base brings two, the theme its name
 validate_theme_files() {
   local theme_name="$1"
   local theme_path="$THEMES_DIR/$theme_name"
 
-  if [ ! -f "$theme_path/Main.qml" ] || [ ! -f "$theme_path/metadata.desktop" ] || [ ! -f "$theme_path/theme.conf" ]; then
+  if [ ! -f "$BASE_DIR/Main.qml" ] || [ ! -f "$BASE_DIR/theme.conf" ] || [ ! -f "$theme_path/metadata.desktop" ]; then
     error "Theme '$theme_name' is missing required SDDM files"
     exit 1
   fi
+}
+
+# The base first, so a theme can replace any of its files with its own
+copy_theme() {
+  local theme_name="$1"
+  local target="$SYSTEM_THEMES_DIR/$theme_name"
+
+  sudo mkdir -p "$target"
+  sudo cp -r "$BASE_DIR/." "$target/"
+  sudo cp -r "$THEMES_DIR/$theme_name/." "$target/"
 }
 
 install_missing_themes() {
@@ -72,7 +84,7 @@ install_missing_themes() {
     fi
 
     substep "Installing: $theme_name"
-    sudo cp -r "$theme_path" "$SYSTEM_THEMES_DIR/$theme_name"
+    copy_theme "$theme_name"
     installed_count=$((installed_count + 1))
   done < <(find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 
@@ -88,8 +100,8 @@ update_installed_themes() {
     validate_theme_files "$theme_name"
 
     substep "Updating: $theme_name"
-    sudo rm -rf "$SYSTEM_THEMES_DIR/$theme_name"
-    sudo cp -r "$theme_path" "$SYSTEM_THEMES_DIR/$theme_name"
+    sudo rm -rf "${SYSTEM_THEMES_DIR:?}/$theme_name"
+    copy_theme "$theme_name"
   done < <(find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 
   success "Themes updated."
@@ -140,10 +152,12 @@ if ! command -v sddm >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -d "$THEMES_DIR" ]; then
-  error "Themes directory not found: $THEMES_DIR"
-  exit 1
-fi
+for dir in "$BASE_DIR" "$THEMES_DIR"; do
+  if [ ! -d "$dir" ]; then
+    error "Directory not found: $dir"
+    exit 1
+  fi
+done
 
 if [ "$#" -ne 1 ]; then
   usage
