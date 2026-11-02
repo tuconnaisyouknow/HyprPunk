@@ -18,8 +18,6 @@ local homes = {
   { class = "brave-browser",        workspace = "2" },
   { class = "Spotify",              workspace = "3" },
   { class = "md.obsidian.Obsidian", workspace = "4" },
-  { class = "discord",              workspace = "5" },
-  { class = "Element",              workspace = "5" },
   { class = "org.kde.dolphin",      workspace = "6" },
 }
 

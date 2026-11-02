@@ -376,7 +376,7 @@ install_packages() {
     dolphin ffmpegthumbs kdegraphics-thumbnailers ark loupe papers \
     ffmpeg mpv celluloid mate-media \
     libreoffice-fresh brave-bin \
-    spotify-launcher obsidian discord \
+    spotify-launcher obsidian \
     \
     qt6-multimedia \
     qt6-multimedia-ffmpeg
