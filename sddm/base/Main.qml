@@ -28,7 +28,6 @@ Rectangle {
     readonly property color catMantle: "#181825"
     readonly property color catSurface0: "#313244"
     readonly property color catRed: "#f38ba8"
-    readonly property color catBlue: "#89b4fa"
     readonly property color catShadow: "#80000000"
     readonly property color catTopOverlay: "#e011111b"
     readonly property color catBottomOverlay: "#f411111b"
@@ -283,7 +282,7 @@ Rectangle {
                 anchors.leftMargin: 10 * s
                 anchors.verticalCenter: parent.verticalCenter
                 text: "PASSWORD"
-                color: root.catText
+                color: root.catLavender
                 font.family: pf.name
                 font.pixelSize: 9 * s
                 font.letterSpacing: 1 * s
@@ -428,7 +427,7 @@ Rectangle {
                 Rectangle {
                     width: 3 * s
                     height: 48 * s
-                    color: root.catBlue
+                    color: root.catLavender
                     anchors.verticalCenter: parent.verticalCenter
                     radius: 2 * s
                 }
