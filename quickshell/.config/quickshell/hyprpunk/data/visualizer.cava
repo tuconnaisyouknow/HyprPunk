@@ -1,0 +1,28 @@
+# cava's settings for the music waves: the desktop's CavaLevels reads the levels from
+# stdout and streams them to the lock. Your own ~/.config/cava/config stays for cava in
+# the terminal.
+
+[general]
+framerate = 60
+bars = 24
+# Lets the levels fall to zero during a silence, so the wave settles flat
+sleep_timer = 0
+
+[input]
+method = pipewire
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+ascii_max_range = 1000
+# One frame per line, the levels separated by ';'
+bar_delimiter = 59
+frame_delimiter = 10
+channels = mono
+mono_option = average
+
+[smoothing]
+# Blends neighbouring levels together, so the wave is one smooth hill and not bars
+monstercat = 1
+noise_reduction = 80

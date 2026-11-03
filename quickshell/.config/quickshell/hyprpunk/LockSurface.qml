@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
@@ -35,6 +36,16 @@ WlSessionLockSurface {
     readonly property string islandMode: leaving || intro ? "clock" : lock.unlocking ? "unlocking" : lock.error !== "" ? "error" : locking ? "locking" : osdShown ? "osd" : ""
     // The island's states that show the padlock.
     readonly property bool padlockShown: islandMode !== "clock" && islandMode !== "osd"
+    // Where the desktop's music wave sits (VisualizerShell.qml), for the lock's to take over.
+    // From the screen: the surface has no size yet on its first frame, which must already
+    // cover the snapshot's frozen wave with the live one.
+    readonly property real screenWidth: screen ? screen.width : width
+    readonly property real screenHeight: screen ? screen.height : height
+    readonly property real waveWidth: Math.round(screenWidth * 0.5)
+    readonly property real waveHeight: 110
+    // The desktop's wave was in sight when locking: the lock's is shown all along instead
+    // of fading in and out with the wallpaper, so the music never stops moving.
+    property bool waveInSight: false
 
     // Progress of what comes in between from and to of the reveal.
     function stage(from, to) {
@@ -65,9 +76,31 @@ WlSessionLockSurface {
     }
 
     function freeze() {
-        if (from === null && bar !== null)
+        if (from === null && bar !== null) {
             from = bar.lockGeometry();
+            waveInSight = desktopWaveInSight();
+        }
+    }
 
+    // No window over it on this screen's workspace. Whether music plays doesn't matter:
+    // it may start or stop while locked, and the wave shows or hides by itself.
+    function desktopWaveInSight() {
+        if (!screen)
+            return false;
+
+        const monitor = Hyprland.monitorFor(screen);
+        if (monitor === null || monitor.activeWorkspace === null)
+            return true;
+
+        const left = monitor.x + (screenWidth - waveWidth) / 2;
+        const right = left + waveWidth;
+        const top = monitor.y + screenHeight - waveHeight;
+        return !monitor.activeWorkspace.toplevels.values.some((toplevel) => {
+            const ipc = toplevel.lastIpcObject || {};
+            const at = ipc.at || [0, 0];
+            const size = ipc.size || [0, 0];
+            return at[0] < right && at[0] + size[0] > left && at[1] < top + waveHeight && at[1] + size[1] > top;
+        });
     }
 
     color: Theme.crust
@@ -212,6 +245,19 @@ WlSessionLockSurface {
         visible: false
     }
 
+    // The same wallpaper, decoded on the spot for the patch over the music wave: Lock.qml
+    // has it in the cache at this size, and the patch must be there from the first frame,
+    // or the snapshot's frozen wave would flash under the live one.
+    Image {
+        id: waveCover
+
+        source: wallpaper.source
+        sourceSize.width: surface.screen ? surface.screen.width : 0
+        sourceSize.height: surface.screen ? surface.screen.height : 0
+        fillMode: Image.PreserveAspectCrop
+        visible: false
+    }
+
     // The screen as it was, with the bar painted over by the wallpaper: the lock draws
     // its own pills, so no ghost of them is left blurring in the background.
     Item {
@@ -234,6 +280,25 @@ WlSessionLockSurface {
                 width: surface.width
                 height: surface.height
                 sourceItem: wallpaper
+            }
+
+        }
+
+        // The same for the music wave, frozen in the snapshot: the lock draws it live.
+        Item {
+            x: (surface.screenWidth - surface.waveWidth) / 2
+            y: surface.screenHeight - surface.waveHeight
+            width: surface.waveWidth
+            height: surface.waveHeight
+            clip: true
+            visible: surface.waveInSight
+
+            ShaderEffectSource {
+                x: -parent.x
+                y: -parent.y
+                width: surface.screenWidth
+                height: surface.screenHeight
+                sourceItem: waveCover
             }
 
         }
@@ -263,6 +328,22 @@ WlSessionLockSurface {
         brightness: -0.12
         opacity: surface.smooth(surface.stage(0.25, 1))
         scale: 1.04 - 0.04 * surface.stage(0.25, 1)
+    }
+
+    // The desktop's music wave, which the lock covers. Out of sight under the windows,
+    // it comes and goes with the wallpaper.
+    Item {
+        x: (surface.screenWidth - surface.waveWidth) / 2
+        y: surface.screenHeight - surface.waveHeight
+        width: surface.waveWidth
+        height: surface.waveHeight
+        opacity: surface.waveInSight ? 1 : surface.smooth(surface.stage(0.25, 1))
+
+        VisualizerWave {
+            anchors.fill: parent
+            music: surface.lock.music
+        }
+
     }
 
     Item {
