@@ -41,6 +41,9 @@ PanelWindow {
     // Something typed in the Wi-Fi password: the panel then stays open with the pointer
     // outside, so a slip of the mouse doesn't throw it away.
     readonly property bool typingPassword: passwordNetwork !== null && pagesLoader.item !== null && pagesLoader.item.password.text !== ""
+    // Stays open when the pointer leaves while a Wi-Fi password or enterprise sign-in is
+    // being typed (picking a certificate opens a file chooser outside the panel).
+    readonly property bool held: typingPassword || page === "enterprise" || (page === "wifiDetail" && pagesLoader.item !== null && pagesLoader.item.wifiDetail.editing)
     // Enterprise network whose credentials are asked on the "enterprise" page.
     property var enterpriseNetwork: null
     // The network you just connected to from here: only its failures ask for credentials,
@@ -1017,9 +1020,7 @@ PanelWindow {
 
         interval: 380
         onTriggered: {
-            // Stay open while a Wi-Fi password or enterprise sign-in is being typed
-            // (picking a certificate opens a file chooser outside the panel).
-            if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.typingPassword && controlCenter.page !== "enterprise" && !(controlCenter.page === "wifiDetail" && pagesLoader.item.wifiDetail.editing))
+            if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.held)
                 controlCenter.opened = false;
 
         }
@@ -1189,6 +1190,13 @@ PanelWindow {
 
         // Re-read the real state, the daemon may refuse or hold the profile.
         onExited: powerProfileProcess.running = true
+    }
+
+    // Opened with the shortcut or held open, it closes with a click anywhere else.
+    OutsideClick {
+        screen: controlCenter.screen
+        active: controlCenter.opened && (controlCenter.openedByKeybind || controlCenter.held)
+        onDismissed: controlCenter.close()
     }
 
     mask: Region {
