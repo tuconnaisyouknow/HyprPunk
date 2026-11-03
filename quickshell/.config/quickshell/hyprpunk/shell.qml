@@ -30,8 +30,9 @@ ShellRoot {
         // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
         // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings",
         // "config", "monitor", "screenshot", "polkit", "filechooser", "screenshare" or
-        // "menu"; action is "toggle", "open" or "close"; screen is a screen's name, or
-        // empty for the focused one.
+        // "menu"; action is "toggle", "open", "close" or "pin" (a click on the control
+        // center's pill, which keeps it open); screen is a screen's name, or empty for
+        // the focused one.
         property var panelRequest: ({
             "panel": "",
             "action": "",

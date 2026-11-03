@@ -5,7 +5,9 @@ import Quickshell.Widgets
 // A card that grows out of one of the bar's pills while you hover it: the workspace
 // preview, the system monitor, the calendar and the player. Resting on the pill a
 // moment opens it, and leaving both the pill and the card folds it back.
-// Its content is laid out at full size and uncovered as the card grows.
+// Its content is laid out at full size and uncovered as the card grows. A click on the
+// pill, even once the card covers it, keeps it open until Escape, a click outside or
+// another click on the pill.
 PopupWindow {
     id: popup
 
@@ -64,6 +66,21 @@ PopupWindow {
     function hoverEnded() {
         openTimer.stop();
         closeTimer.restart();
+    }
+
+    // Kept open, or closed once kept (a click on the pill, a shortcut).
+    function togglePinned() {
+        if (pinned && expanded) {
+            close();
+            return ;
+        }
+        pinned = true;
+        closeTimer.stop();
+        hideTimer.stop();
+        if (mapped)
+            expanded = true;
+        else
+            open();
     }
 
     // Not opening after all, without closing what's open.
@@ -146,6 +163,15 @@ PopupWindow {
         target: popup.pill.parent
     }
 
+    // While it's kept open, a click anywhere else or Escape closes it. The card can't
+    // take the keyboard itself, being a popup of the bar.
+    OutsideClick {
+        screen: popup.pill.QsWindow.window ? popup.pill.QsWindow.window.screen : null
+        active: popup.pinned && popup.expanded
+        takesKeyboard: true
+        onDismissed: popup.close()
+    }
+
     Timer {
         id: openTimer
 
@@ -206,6 +232,45 @@ PopupWindow {
                     closeTimer.restart();
                 }
             }
+        }
+
+        // Over the content, only watching: the card covers the pill once open, so a click
+        // on the pill's spot still keeps it open, or closes it once kept. The content's
+        // own buttons still get their clicks, which leave the card as it is.
+        Item {
+            id: clickWatch
+
+            anchors.fill: parent
+            z: 1000
+
+            // Where the pill sits under the card.
+            Item {
+                id: pillSpot
+
+                x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
+                width: popup.pill.width
+                height: popup.pill.height
+
+                HoverHandler {
+                    cursorShape: Qt.PointingHandCursor
+                }
+
+            }
+
+            PointHandler {
+                acceptedButtons: Qt.LeftButton
+                onActiveChanged: {
+                    if (!active)
+                        return ;
+
+                    const at = point.pressPosition;
+                    const onPill = at.x >= pillSpot.x && at.x < pillSpot.x + pillSpot.width && at.y < pillSpot.height;
+                    if (onPill)
+                        popup.togglePinned();
+
+                }
+            }
+
         }
 
     }

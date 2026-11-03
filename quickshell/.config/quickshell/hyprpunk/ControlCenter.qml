@@ -16,7 +16,8 @@ PanelWindow {
     required property var shellState
     required property var airPods
     property bool opened: false
-    // Opened with the shortcut: it takes the keyboard so Escape closes it.
+    // Opened with the shortcut or a click on its pill: it stays open when the pointer
+    // leaves, and takes the keyboard so Escape closes it.
     property bool openedByKeybind: false
     // Whether the pointer is on the bar's right-most pill, which the panel grows out of.
     property bool pillHovered: false
@@ -462,7 +463,8 @@ PanelWindow {
             if (action === "")
                 return ;
 
-            const open = action === "open" || (action === "toggle" && !controlCenter.opened);
+            // "pin" (a click on the pill) keeps it open, or closes it once kept.
+            const open = action === "open" || (action === "toggle" && !controlCenter.opened) || (action === "pin" && !(controlCenter.opened && controlCenter.openedByKeybind));
             openDelay.stop();
             closeDelay.stop();
             if (open) {
@@ -502,6 +504,48 @@ PanelWindow {
                     closeDelay.restart();
                 }
             }
+        }
+
+        // Over the panel, only watching: it covers its pill once open, so a click on the
+        // pill's spot still keeps it open like the shortcut, or closes it once kept. The
+        // panel's own buttons still get their clicks, which leave it as it is.
+        Item {
+            anchors.fill: parent
+            z: 1000
+            visible: controlCenter.opened
+
+            // Where the pill sits under the panel.
+            Item {
+                id: pillSpot
+
+                anchors.right: parent.right
+                width: controlCenter.pill.width
+                height: controlCenter.pill.height
+
+                HoverHandler {
+                    cursorShape: Qt.PointingHandCursor
+                }
+
+            }
+
+            PointHandler {
+                acceptedButtons: Qt.LeftButton
+                onActiveChanged: {
+                    if (!active)
+                        return ;
+
+                    const at = point.pressPosition;
+                    const onPill = at.x >= pillSpot.x && at.y < pillSpot.height;
+                    if (!onPill)
+                        return ;
+
+                    if (controlCenter.openedByKeybind)
+                        controlCenter.close();
+                    else
+                        controlCenter.openedByKeybind = true;
+                }
+            }
+
         }
 
         // Grows out of the pill like the calendar and the player do.
@@ -1015,7 +1059,7 @@ PanelWindow {
 
         interval: 380
         onTriggered: {
-            if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.held)
+            if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.held && !controlCenter.openedByKeybind)
                 controlCenter.opened = false;
 
         }
@@ -1187,7 +1231,7 @@ PanelWindow {
         onExited: powerProfileProcess.running = true
     }
 
-    // Opened with the shortcut or held open, it closes with a click anywhere else.
+    // Kept or held open, it closes with a click anywhere else.
     OutsideClick {
         screen: controlCenter.screen
         active: controlCenter.opened && (controlCenter.openedByKeybind || controlCenter.held)
