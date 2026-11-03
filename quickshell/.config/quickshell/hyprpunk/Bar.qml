@@ -239,15 +239,7 @@ PanelWindow {
     // The calendar and notifications card, kept open until closed (Escape, a click
     // outside, the shortcut or the clock again).
     function toggleNotificationCard() {
-        if (calendarPopup.pinned && calendarPopup.expanded) {
-            calendarPopup.close();
-            return ;
-        }
-        calendarPopup.pinned = true;
-        if (calendarPopup.mapped)
-            calendarPopup.expanded = true;
-        else
-            calendarPopup.open();
+        calendarPopup.togglePinned();
     }
 
     // Plugging in or unplugging shows in the island, unless unplugging brings up a
@@ -462,6 +454,11 @@ PanelWindow {
                         monitorPopup.hoverEnded();
                 }
 
+                TapHandler {
+                    cursorShape: Qt.PointingHandCursor
+                    onTapped: monitorPopup.togglePinned()
+                }
+
                 IconText {
                     icon: ""
                     text: SystemStats.memoryText
@@ -500,20 +497,6 @@ PanelWindow {
 
             }
 
-        }
-
-        // While the calendar card is kept open, a click anywhere else or Escape closes it.
-        // The card can't take the keyboard itself, being a popup of the bar.
-        OutsideClick {
-            screen: bar.screen
-            active: calendarPopup.pinned && calendarPopup.expanded
-            takesKeyboard: true
-            keep: {
-                const pill = clockPill.mapToItem(null, 0, 0);
-                const card = calendarPopup.card;
-                return Qt.rect(Math.round(pill.x + clockPill.width / 2 - card.width / 2), pill.y, card.width, card.height);
-            }
-            onDismissed: calendarPopup.close()
         }
 
         // When the calendar covers the island, the privacy and recording dots move to its
@@ -1015,13 +998,6 @@ PanelWindow {
                         text: Qt.formatDateTime(clock.date, "HH:mm")
                     }
 
-                    // Opened by hovering, the card covers the clock: a click on its time
-                    // keeps it open, or closes it once kept.
-                    TapHandler {
-                        cursorShape: Qt.PointingHandCursor
-                        onTapped: bar.toggleNotificationCard()
-                    }
-
                 }
 
                 Rectangle {
@@ -1392,6 +1368,12 @@ PanelWindow {
                 onHoveredChanged: {
                     bar.shellState.controlPillScreen = bar.screen;
                     bar.shellState.controlPillHovered = hovered;
+                }
+
+                // Keeps the control center open, like its shortcut.
+                TapHandler {
+                    cursorShape: Qt.PointingHandCursor
+                    onTapped: bar.shellState.requestPanel("controlcenter", "pin", bar.screen.name)
                 }
 
                 ControlStatus {

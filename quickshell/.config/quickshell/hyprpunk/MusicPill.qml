@@ -425,6 +425,11 @@ Rectangle {
         onHoveredChanged: hovered ? musicPopup.hoverStarted() : musicPopup.hoverEnded()
     }
 
+    TapHandler {
+        cursorShape: Qt.PointingHandCursor
+        onTapped: musicPopup.togglePinned()
+    }
+
     // Opens like the calendar: the card grows out of the cover pill and
     // the cover glides to its place in the player.
     PillPopup {
