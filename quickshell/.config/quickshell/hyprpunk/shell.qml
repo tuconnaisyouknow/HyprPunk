@@ -16,6 +16,10 @@ import Quickshell.Services.Polkit
 // where, screenshots, caffeine…), answers the `qs -c hyprpunk ipc call …` commands
 // that the shortcuts and scripts send, and puts a bar, popups and panels on every screen.
 ShellRoot {
+    // The desktop's music wave runs as its own Quickshell, so the shell's stalls (building
+    // the lock screen) don't freeze it. -n: only one, whenever the shell starts or reloads.
+    Component.onCompleted: Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath("VisualizerShell.qml")])
+
     QtObject {
         id: globalState
 
