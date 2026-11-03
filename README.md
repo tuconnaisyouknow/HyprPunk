@@ -92,7 +92,7 @@ The applications themed and configured by these dotfiles.
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
-- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications, the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
+- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
 - 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
 - 🔒 **Hypridle** and **awww** for idle handling (locking, then suspending) and wallpapers with animated transitions.
 - 🎬 **SDDM** with cyberpunk video themes.
@@ -191,7 +191,7 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 | `Alt + Space` | Open the application launcher |
 | `Ctrl + Alt + Space` | Open the main menu |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery…) |
-| `Super + N` | Open the notification center |
+| `Super + N` | Open the calendar and notifications |
 | `Super + Q` | Close the focused window |
 | `Super + 1` … `Super + 0` | Switch to a workspace, add `Shift` to send the window there |
 | `Super + Escape` | Open the session menu (lock, log out, reboot, shut down) |

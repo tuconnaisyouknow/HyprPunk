@@ -11,11 +11,14 @@ import Quickshell.Wayland
 
 // The bar along the top of each screen, a row of pills: workspaces and resources on
 // the left, the dynamic island in the middle, updates, the Spotify record and the
-// control pill on the right. Most pills open a card on hover.
+// control pill on the right. Most pills open a card on hover. The island's card holds
+// the calendar and the notifications waiting, and Super+N or a click keeps it open.
 PanelWindow {
     id: bar
 
     required property var shellState
+    required property var notificationServer
+    readonly property int notificationCount: notificationServer.trackedNotifications.values.length
     readonly property var workspaceIcons: ["", "", "", "", "", "", "", "", "", "", ""]
     readonly property var battery: UPower.displayDevice
     readonly property bool hasBattery: battery.ready && battery.isLaptopBattery && battery.isPresent
@@ -231,6 +234,20 @@ PanelWindow {
         statusOsdHideDelay.interval = 3500;
         statusOsdVisible = true;
         statusOsdHideDelay.restart();
+    }
+
+    // The calendar and notifications card, kept open until closed (Escape, a click
+    // outside, the shortcut or the clock again).
+    function toggleNotificationCard() {
+        if (calendarPopup.pinned && calendarPopup.expanded) {
+            calendarPopup.close();
+            return ;
+        }
+        calendarPopup.pinned = true;
+        if (calendarPopup.mapped)
+            calendarPopup.expanded = true;
+        else
+            calendarPopup.open();
     }
 
     // Plugging in or unplugging shows in the island, unless unplugging brings up a
@@ -485,6 +502,20 @@ PanelWindow {
 
         }
 
+        // While the calendar card is kept open, a click anywhere else or Escape closes it.
+        // The card can't take the keyboard itself, being a popup of the bar.
+        OutsideClick {
+            screen: bar.screen
+            active: calendarPopup.pinned && calendarPopup.expanded
+            takesKeyboard: true
+            keep: {
+                const pill = clockPill.mapToItem(null, 0, 0);
+                const card = calendarPopup.card;
+                return Qt.rect(Math.round(pill.x + clockPill.width / 2 - card.width / 2), pill.y, card.width, card.height);
+            }
+            onDismissed: calendarPopup.close()
+        }
+
         // When the calendar covers the island, the privacy and recording dots move to its
         // right, following its edge as it grows.
         PrivacyDot {
@@ -542,7 +573,22 @@ PanelWindow {
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
+                // The whole pill opens the calendar card, like the other pills, unless an
+                // OSD has the island.
+                onHoveredChanged: {
+                    if (hovered && !bar.islandOsdShown)
+                        calendarPopup.hoverStarted();
+                    else
+                        calendarPopup.hoverEnded();
+                }
                 spacing: 8
+
+                // A click keeps the card open, or closes it once kept.
+                TapHandler {
+                    enabled: !bar.islandOsdShown
+                    cursorShape: Qt.PointingHandCursor
+                    onTapped: bar.toggleNotificationCard()
+                }
 
                 // The screenshot or recording just taken opens in its viewer.
                 TapHandler {
@@ -566,15 +612,6 @@ PanelWindow {
 
                     visible: !bar.islandOsdShown
                     text: Qt.formatDateTime(clock.date, "HH:mm")
-
-                    HoverHandler {
-                        onHoveredChanged: {
-                            if (hovered)
-                                calendarPopup.hoverStarted();
-                            else
-                                calendarPopup.hoverEnded();
-                        }
-                    }
 
                     // Ticks every second though it shows minutes: its timer stands still
                     // during sleep, so on waking it would keep the old time up to a minute.
@@ -760,6 +797,82 @@ PanelWindow {
 
                 }
 
+                // Notifications waiting: a bell and how many, after the time. Lavender at
+                // half opacity while Focus keeps them quiet.
+                Item {
+                    id: notificationBadge
+
+                    readonly property bool shown: !bar.islandOsdShown && bar.notificationCount > 0
+
+                    // Gone at once when an OSD takes the island, like the privacy dot.
+                    visible: !bar.islandOsdShown && Layout.preferredWidth > 0
+                    Layout.preferredWidth: shown ? notificationBadgeRow.implicitWidth + 14 : 0
+                    Layout.leftMargin: shown ? 0 : -clockPill.spacing
+                    implicitHeight: 24
+                    clip: true
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: height / 2
+                        color: Theme.alpha(bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve, 0.16)
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 140
+                            }
+
+                        }
+
+                    }
+
+                    Row {
+                        id: notificationBadgeRow
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: 7
+                        spacing: 4
+                        opacity: bar.shellState.doNotDisturb ? 0.5 : 1
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: bar.shellState.doNotDisturb ? "󰂛" : "󰂚"
+                            color: bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve
+                            font.family: Theme.font
+                            font.pixelSize: 13
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: bar.notificationCount
+                            color: bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                            font.weight: Font.Bold
+                            font.features: {
+                                "tnum": 1
+                            }
+                        }
+
+                    }
+
+                    Behavior on Layout.preferredWidth {
+                        NumberAnimation {
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                    Behavior on Layout.leftMargin {
+                        NumberAnimation {
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
+
+                }
+
                 IslandOsd {
                     bar: bar
                     visible: bar.islandOsdShown
@@ -831,8 +944,12 @@ PanelWindow {
                 readonly property int weekRows: Math.ceil((firstWeekday + daysInMonth) / 7)
                 // Card height for the displayed month, measured from the real layout, and
                 // eased when the next month has a week more or less.
-                readonly property real contentHeight: calendarBody.y + calendarBody.implicitHeight + 18
+                readonly property real contentHeight: calendarColumn.y + calendarBody.y + calendarBody.implicitHeight + 18
                 property real animatedHeight: contentHeight
+                readonly property int calendarWidth: 322
+                readonly property int notificationWidth: 400
+                // The notifications open beside the calendar while some are waiting.
+                property real animatedWidth: notificationList.count > 0 ? calendarWidth + notificationWidth : calendarWidth
                 property int pendingMonthDelta: 0
 
                 function changeMonth(delta) {
@@ -847,25 +964,36 @@ PanelWindow {
                 align: Qt.AlignHCenter
                 closeDelay: 180
                 cardHeight: animatedHeight
+                cardWidth: animatedWidth
                 anchor.edges: Edges.Top
                 anchor.gravity: Edges.Bottom
-                implicitWidth: 322
+                implicitWidth: calendarWidth + notificationWidth
                 // Sized for a six-week month so the card can animate without clipping. Not taken
                 // from weekRows: the layout updates a frame late, and the popup would resize twice
                 // (everything shakes).
-                implicitHeight: calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + 18
+                implicitHeight: calendarColumn.y + calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + 18
                 onOpening: monthOffset = 0
-
-                MouseArea {
-                    anchors.fill: parent
-                    acceptedButtons: Qt.NoButton
-                    onWheel: (wheel) => {
-                        if (wheel.angleDelta.y > 0)
-                            calendarPopup.changeMonth(-1);
-                        else if (wheel.angleDelta.y < 0)
-                            calendarPopup.changeMonth(1);
-                        wheel.accepted = true;
+                // While it's open, new notifications land in it instead of popping out of
+                // the island.
+                onExpandedChanged: {
+                    if (expanded) {
+                        bar.shellState.notificationScreen = bar.screen;
+                        bar.shellState.notificationCenterOpen = true;
+                    } else if (bar.shellState.notificationScreen === bar.screen) {
+                        bar.shellState.notificationCenterOpen = false;
                     }
+                }
+
+                Connections {
+                    function onPanelRequestsChanged() {
+                        const action = bar.shellState.requestedAction("notifications", bar.screen);
+                        const opened = calendarPopup.pinned && calendarPopup.expanded;
+                        if (action === "open" && !opened || action === "close" && opened || action === "toggle")
+                            bar.toggleNotificationCard();
+
+                    }
+
+                    target: bar.shellState
                 }
 
                 Item {
@@ -876,9 +1004,22 @@ PanelWindow {
                     width: clockPill.width
                     height: clockPill.height
 
+                    // Starts where the time sits in the island, pushed left by the badge or
+                    // the dots, and slides to the card's middle as it opens, then back.
                     Label {
-                        anchors.centerIn: parent
+                        readonly property real islandX: dateTimeLabel.parent.x + dateTimeLabel.x
+                        readonly property real centerX: (parent.width - width) / 2
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: Math.round(islandX + (centerX - islandX) * calendarPopup.progress)
                         text: Qt.formatDateTime(clock.date, "HH:mm")
+                    }
+
+                    // Opened by hovering, the card covers the clock: a click on its time
+                    // keeps it open, or closes it once kept.
+                    TapHandler {
+                        cursorShape: Qt.PointingHandCursor
+                        onTapped: bar.toggleNotificationCard()
                     }
 
                 }
@@ -905,22 +1046,159 @@ PanelWindow {
 
                 }
 
-                IconText {
-                    id: calendarDate
+                // The calendar on the right, the notifications on its left.
+                Item {
+                    id: calendarColumn
 
                     anchors.top: calendarSeparator.bottom
-                    anchors.topMargin: 10
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    icon: "󰃭"
-                    text: bar.regionalLocale.toString(clock.date, bar.regionalLocale.dateFormat(Locale.LongFormat))
-                    color: Theme.lavender
-                    font.pixelSize: 15
-                    opacity: calendarPopup.expanded ? 1 : 0
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    width: calendarPopup.calendarWidth
 
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
+                    // Scrolling over the calendar goes through the months.
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.NoButton
+                        onWheel: (wheel) => {
+                            if (wheel.angleDelta.y > 0)
+                                calendarPopup.changeMonth(-1);
+                            else if (wheel.angleDelta.y < 0)
+                                calendarPopup.changeMonth(1);
+                            wheel.accepted = true;
+                        }
+                    }
+
+                    IconText {
+                        id: calendarDate
+
+                        anchors.top: parent.top
+                        anchors.topMargin: 10
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        icon: "󰃭"
+                        text: bar.regionalLocale.toString(clock.date, bar.regionalLocale.dateFormat(Locale.LongFormat))
+                        color: Theme.lavender
+                        font.pixelSize: 15
+                        opacity: calendarPopup.expanded ? 1 : 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                                easing.type: Easing.OutCubic
+                            }
+
+                        }
+
+                    }
+
+                    Rectangle {
+                        id: dateSeparator
+
+                        anchors.top: calendarDate.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.topMargin: 10
+                        anchors.leftMargin: 18
+                        anchors.rightMargin: 18
+                        height: 1
+                        color: Theme.surface1
+                        opacity: calendarPopup.expanded ? 1 : 0
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 120
+                                easing.type: Easing.OutCubic
+                            }
+
+                        }
+
+                    }
+
+                    ColumnLayout {
+                        id: calendarBody
+
+                        property real monthSlideY: 0
+                        property real monthTransitionOpacity: 1
+
+                        anchors.top: dateSeparator.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.leftMargin: 18
+                        anchors.rightMargin: 18
+                        anchors.topMargin: 8
+                        spacing: 10
+                        opacity: (calendarPopup.expanded ? 1 : 0) * monthTransitionOpacity
+
+                        Label {
+                            id: calendarMonthLabel
+
+                            Layout.alignment: Qt.AlignHCenter
+                            text: bar.capitalized(bar.regionalLocale.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
+                            color: Theme.mauve
+                            font.pixelSize: 18
+                            font.weight: Font.Bold
+                        }
+
+                        GridLayout {
+                            id: calendarGrid
+
+                            // Weekday row (25) and six weeks (29), with their spacing.
+                            readonly property real sixWeekHeight: 25 + 6 * 29 + 6 * rowSpacing
+
+                            Layout.fillWidth: true
+                            columns: 7
+                            columnSpacing: 4
+                            rowSpacing: 4
+
+                            Repeater {
+                                // From the locale's first day, "Lun" rather than "lun.".
+                                model: [0, 1, 2, 3, 4, 5, 6].map((offset) => {
+                                    return bar.capitalized(bar.regionalLocale.dayName((bar.regionalLocale.firstDayOfWeek + offset) % 7, Locale.ShortFormat).replace(/\.$/, ""));
+                                })
+
+                                Label {
+                                    required property string modelData
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 25
+                                    text: modelData
+                                    color: Theme.mauve
+                                    font.pixelSize: 12
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                            }
+
+                            Repeater {
+                                model: calendarPopup.weekRows * 7
+
+                                Rectangle {
+                                    required property int index
+                                    readonly property int dayNumber: index - calendarPopup.firstWeekday + 1
+                                    readonly property bool validDay: dayNumber >= 1 && dayNumber <= calendarPopup.daysInMonth
+                                    readonly property bool isToday: validDay && dayNumber === calendarPopup.currentDay && calendarPopup.displayedMonthNumber === calendarPopup.currentMonth && calendarPopup.displayedYear === calendarPopup.currentYear
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 29
+                                    radius: 9
+                                    color: isToday ? Theme.mauve : "transparent"
+
+                                    Label {
+                                        anchors.centerIn: parent
+                                        text: parent.validDay ? parent.dayNumber : ""
+                                        color: parent.isToday ? Theme.base : Theme.mauve
+                                        font.pixelSize: 14
+                                        font.weight: parent.isToday ? Font.Bold : Font.Medium
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                        transform: Translate {
+                            y: calendarBody.monthSlideY
                         }
 
                     }
@@ -928,15 +1206,12 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    id: dateSeparator
-
-                    anchors.top: calendarDate.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.topMargin: 10
-                    anchors.leftMargin: 18
-                    anchors.rightMargin: 18
-                    height: 1
+                    anchors.top: calendarSeparator.bottom
+                    anchors.bottom: parent.bottom
+                    anchors.right: calendarColumn.left
+                    anchors.topMargin: 14
+                    anchors.bottomMargin: 18
+                    width: 1
                     color: Theme.surface1
                     opacity: calendarPopup.expanded ? 1 : 0
 
@@ -950,92 +1225,26 @@ PanelWindow {
 
                 }
 
-                ColumnLayout {
-                    id: calendarBody
+                NotificationList {
+                    id: notificationList
 
-                    property real monthSlideY: 0
-                    property real monthTransitionOpacity: 1
+                    anchors.top: calendarSeparator.bottom
+                    anchors.bottom: parent.bottom
+                    anchors.right: calendarColumn.left
+                    anchors.topMargin: 12
+                    anchors.bottomMargin: 18
+                    anchors.rightMargin: 16
+                    width: calendarPopup.notificationWidth - 32
+                    notificationServer: bar.notificationServer
+                    shown: calendarPopup.expanded
+                    opacity: calendarPopup.expanded ? 1 : 0
 
-                    anchors.top: dateSeparator.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: 18
-                    anchors.rightMargin: 18
-                    anchors.topMargin: 8
-                    spacing: 10
-                    opacity: (calendarPopup.expanded ? 1 : 0) * monthTransitionOpacity
-
-                    Label {
-                        id: calendarMonthLabel
-
-                        Layout.alignment: Qt.AlignHCenter
-                        text: bar.capitalized(bar.regionalLocale.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
-                        color: Theme.mauve
-                        font.pixelSize: 18
-                        font.weight: Font.Bold
-                    }
-
-                    GridLayout {
-                        id: calendarGrid
-
-                        // Weekday row (25) and six weeks (29), with their spacing.
-                        readonly property real sixWeekHeight: 25 + 6 * 29 + 6 * rowSpacing
-
-                        Layout.fillWidth: true
-                        columns: 7
-                        columnSpacing: 4
-                        rowSpacing: 4
-
-                        Repeater {
-                            // From the locale's first day, "Lun" rather than "lun.".
-                            model: [0, 1, 2, 3, 4, 5, 6].map((offset) => {
-                                return bar.capitalized(bar.regionalLocale.dayName((bar.regionalLocale.firstDayOfWeek + offset) % 7, Locale.ShortFormat).replace(/\.$/, ""));
-                            })
-
-                            Label {
-                                required property string modelData
-
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 25
-                                text: modelData
-                                color: Theme.mauve
-                                font.pixelSize: 12
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
                         }
 
-                        Repeater {
-                            model: calendarPopup.weekRows * 7
-
-                            Rectangle {
-                                required property int index
-                                readonly property int dayNumber: index - calendarPopup.firstWeekday + 1
-                                readonly property bool validDay: dayNumber >= 1 && dayNumber <= calendarPopup.daysInMonth
-                                readonly property bool isToday: validDay && dayNumber === calendarPopup.currentDay && calendarPopup.displayedMonthNumber === calendarPopup.currentMonth && calendarPopup.displayedYear === calendarPopup.currentYear
-
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 29
-                                radius: 9
-                                color: isToday ? Theme.mauve : "transparent"
-
-                                Label {
-                                    anchors.centerIn: parent
-                                    text: parent.validDay ? parent.dayNumber : ""
-                                    color: parent.isToday ? Theme.base : Theme.mauve
-                                    font.pixelSize: 14
-                                    font.weight: parent.isToday ? Font.Bold : Font.Medium
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    transform: Translate {
-                        y: calendarBody.monthSlideY
                     }
 
                 }
@@ -1091,6 +1300,14 @@ PanelWindow {
                 }
 
                 Behavior on animatedHeight {
+                    NumberAnimation {
+                        duration: 280
+                        easing.type: Easing.OutCubic
+                    }
+
+                }
+
+                Behavior on animatedWidth {
                     NumberAnimation {
                         duration: 280
                         easing.type: Easing.OutCubic

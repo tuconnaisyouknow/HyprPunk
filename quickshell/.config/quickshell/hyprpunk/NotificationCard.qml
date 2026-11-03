@@ -4,23 +4,16 @@ import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
 
-// One notification, in the popups and the notification center. Swipe it right to
-// dismiss it.
+// One notification, in the island's popups and next to its calendar.
 Rectangle {
     id: card
 
     required property var notification
     readonly property bool alive: notification !== null
-    // Transparent by default, the glass shows over the notification center's blur.
+    // Transparent by default, the glass shows over the card's blur behind.
     property color backgroundColor: "transparent"
-    // Horizontal offset while the card is dragged; the parent adds it to its x.
-    property real swipeOffset: 0
-
-    // Fired just before a swipe dismisses it, so the parent can take over swipeOffset
-    // and carry on the exit animation from where the card is.
-    signal swipedAway()
     // The last content seen: if the app closes the notification, the popup still
-    // needs its text to slide out with.
+    // needs its text to leave with.
     property bool critical: false
     property string summary: ""
     property string body: ""
@@ -90,7 +83,7 @@ Rectangle {
 
     // Lit wherever the pointer is on the card, the close cross and the buttons included.
     // A MouseArea would lose it to the ones on top, and it would never light up on cards
-    // you can't click, though you can still swipe them away.
+    // you can't click.
     HoverHandler {
         id: cardHover
 
@@ -180,39 +173,6 @@ Rectangle {
         restoreMode: Binding.RestoreNone
     }
 
-    // Swipe to the right to dismiss.
-    DragHandler {
-        id: swipeHandler
-
-        target: null
-        enabled: card.alive
-        yAxis.enabled: false
-        onTranslationChanged: {
-            // Resists when pulled to the left.
-            card.swipeOffset = translation.x > 0 ? translation.x : translation.x * 0.2;
-        }
-        onActiveChanged: {
-            if (active) {
-                swipeBack.stop();
-            } else if (card.swipeOffset > card.width * 0.35 || (card.swipeOffset > 20 && centroid.velocity.x > 600)) {
-                card.swipedAway();
-                card.notification.dismiss();
-            } else {
-                swipeBack.start();
-            }
-        }
-    }
-
-    NumberAnimation {
-        id: swipeBack
-
-        target: card
-        property: "swipeOffset"
-        to: 0
-        duration: 220
-        easing.type: Easing.OutCubic
-    }
-
     MouseArea {
         id: cardArea
 
@@ -281,7 +241,7 @@ Rectangle {
                         radius: 12
                         color: "transparent"
 
-                        // Mauve glass, like the clear button of the notification center.
+                        // Mauve glass, like the button that clears the notifications.
                         GlassSurface {
                             radius: parent.radius
                             hovered: actionArea.containsMouse

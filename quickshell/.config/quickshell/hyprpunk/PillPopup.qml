@@ -14,6 +14,9 @@ PopupWindow {
     // The open card's height, the window's by default. Animate it on your side if it
     // changes while open (a calendar month with one more week).
     property real cardHeight: height
+    // The open card's width, the window's by default. The window stays at its widest and
+    // the card eases inside it, since resizing the window as it animates shakes everything.
+    property real cardWidth: width
     // The side of the pill the card lines up with: Qt.AlignLeft, Qt.AlignRight or
     // Qt.AlignHCenter. Set the anchor's edges and gravity to match.
     property int align: Qt.AlignLeft
@@ -32,6 +35,9 @@ PopupWindow {
     property bool mapped: false
     // Set while the window maps: the card only grows once its first frame is on screen.
     property bool openPending: false
+    // Opened on purpose (a shortcut, a click) rather than by hovering: it stays open when
+    // the pointer leaves, until closed.
+    property bool pinned: false
     // 0 folded on the pill, 1 fully open.
     property real progress: expanded ? 1 : 0
     readonly property bool cardHovered: cardHover.hovered
@@ -74,6 +80,7 @@ PopupWindow {
     }
 
     function close() {
+        pinned = false;
         openPending = false;
         expanded = false;
         hideTimer.restart();
@@ -81,6 +88,7 @@ PopupWindow {
 
     // Gone at once without folding back, when the island needs the room for an OSD.
     function dismiss() {
+        pinned = false;
         openTimer.stop();
         closeTimer.stop();
         hideTimer.stop();
@@ -153,7 +161,11 @@ PopupWindow {
         id: closeTimer
 
         interval: popup.closeDelay
-        onTriggered: popup.close()
+        onTriggered: {
+            if (!popup.pinned)
+                popup.close();
+
+        }
     }
 
     Timer {
@@ -170,7 +182,7 @@ PopupWindow {
         // Centered on a whole pixel, as anchors do: half pixels while the width grows
         // make the card and everything in it shake.
         x: popup.align === Qt.AlignRight ? popup.width - width : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : 0
-        width: popup.lerp(popup.pill.width, popup.width)
+        width: popup.lerp(popup.pill.width, popup.cardWidth)
         height: popup.lerp(popup.pill.height, popup.cardHeight)
         // The pill's corners: rounder ones would let the pill's show under the card.
         radius: popup.pill.radius

@@ -89,6 +89,21 @@ PanelWindow {
         card.forceActiveFocus();
     }
 
+    // Tells the island's notifications to wait while the card is out.
+    onShownChanged: {
+        const key = panelName + "@" + screen.name;
+        const others = shellState.islandPanels.filter((item) => {
+            return item !== key;
+        });
+        shellState.islandPanels = shown ? others.concat([key]) : others;
+    }
+    Component.onDestruction: {
+        if (shown)
+            shellState.islandPanels = shellState.islandPanels.filter((item) => {
+            return item !== panelName + "@" + screen.name;
+        });
+
+    }
     visible: shown
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
