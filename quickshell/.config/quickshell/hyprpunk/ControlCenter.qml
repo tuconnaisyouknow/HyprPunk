@@ -520,11 +520,6 @@ PanelWindow {
             height: controlCenter.lerp(controlCenter.pill.height, fullHeight)
             // The pill's corners: rounder ones would let the pill's show under the panel.
             radius: controlCenter.pill.height / 2
-            // Lets the notification popups move below the panel instead of hiding behind it.
-            onHeightChanged: {
-                controlCenter.shellState.controlCenterBottomScreen = controlCenter.screen;
-                controlCenter.shellState.controlCenterBottom = controlCenter.progress > 0 ? controlCenter.pill.top + height : 0;
-            }
             color: "transparent"
             focus: true
             Keys.onEscapePressed: {

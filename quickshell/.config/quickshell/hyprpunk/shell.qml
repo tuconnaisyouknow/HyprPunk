@@ -23,6 +23,7 @@ ShellRoot {
     QtObject {
         id: globalState
 
+        // The island's calendar card is open, with the notifications waiting, and where.
         property bool notificationCenterOpen: false
         property var notificationScreen: null
         property bool controlCenterOpen: false
@@ -45,6 +46,9 @@ ShellRoot {
             "width": 70,
             "height": 38
         })
+        // The island panels shown right now, as "panel@screen", so the notifications wait
+        // instead of growing over them.
+        property var islandPanels: []
 
         // origin: the panel making the request (the main menu for its entries).
         function requestPanel(panel, action, screen, origin) {
@@ -64,9 +68,6 @@ ShellRoot {
             const target = request.screen || (Hyprland.focusedMonitor !== null ? Hyprland.focusedMonitor.name : "");
             return request.panel === panel && target === screen.name ? request.action : "";
         }
-        // Where the control center ends (screen y), so the popups can sit below it.
-        property real controlCenterBottom: 0
-        property var controlCenterBottomScreen: null
         // Where the bar's right-most pill is, for the control center to grow out of it.
         // right and top are distances from the screen's edges.
         property var controlPill: ({
@@ -289,6 +290,7 @@ ShellRoot {
 
             screen: modelData
             shellState: globalState
+            notificationServer: notificationService
         }
 
     }
@@ -441,7 +443,7 @@ ShellRoot {
 
     }
 
-    NotificationPopups {
+    IslandNotifications {
         shellState: globalState
         notificationServer: notificationService
     }
@@ -505,19 +507,6 @@ ShellRoot {
             screen: modelData
             shellState: globalState
             airPods: airPodsService
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        NotificationCenter {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-            notificationServer: notificationService
         }
 
     }

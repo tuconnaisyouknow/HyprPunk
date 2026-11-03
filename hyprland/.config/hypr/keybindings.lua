@@ -79,7 +79,7 @@ bind(mainMod .. " + semicolon", hl.dsp.exec_cmd(shell .. "emoji toggle"), "Open 
 bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), "Pick a color from the screen")
 
 -- Side panels
-bind(mainMod .. " + N", hl.dsp.exec_cmd(shell .. "notifications toggle"), "Toggle the notification center")
+bind(mainMod .. " + N", hl.dsp.exec_cmd(shell .. "notifications toggle"), "Toggle the calendar and notifications")
 bind(mainMod .. " + C", hl.dsp.exec_cmd(shell .. "controlcenter toggle"), "Toggle the control center")
 
 -- Making it yours
