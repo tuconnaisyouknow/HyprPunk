@@ -42,9 +42,9 @@ PanelWindow {
     property string previousPage: "main"
     property real pageProgress: 1
     property var passwordNetwork: null
-    // Something typed in the Wi-Fi password: the panel then stays open with the pointer
-    // outside, so a slip of the mouse doesn't throw it away.
-    readonly property bool typingPassword: passwordNetwork !== null && pagesLoader.item !== null && pagesLoader.item.password.text !== ""
+    // Something typed in a Wi-Fi or VPN password: the panel then stays open with the
+    // pointer outside, so a slip of the mouse doesn't throw it away.
+    readonly property bool typingPassword: pagesLoader.item !== null && pagesLoader.item.typingPassword
     // Stays open when the pointer leaves while a Wi-Fi password or enterprise sign-in is
     // being typed (picking a certificate opens a file chooser outside the panel).
     readonly property bool held: typingPassword || page === "enterprise" || (page === "wifiDetail" && pagesLoader.item !== null && pagesLoader.item.wifiDetail.editing)
@@ -56,6 +56,8 @@ PanelWindow {
     // Saved network and paired device of the detail pages.
     property var detailNetwork: null
     property var detailDevice: null
+    // The VPN of its detail page, by uuid.
+    property string detailVpn: ""
     // The background app whose menu is unfolded on its page.
     property var trayExpanded: null
     // Where the enterprise form goes back to: the list, or the network's details.
@@ -164,7 +166,7 @@ PanelWindow {
         if (name === "main")
             return 0;
 
-        if (name === "wifiDetail" || name === "bluetoothDetail")
+        if (name === "wifiDetail" || name === "vpnDetail" || name === "bluetoothDetail")
             return 2;
 
         return name === "enterprise" ? 3 : 1;
@@ -175,7 +177,7 @@ PanelWindow {
         if (name === "enterprise")
             return enterpriseReturnPage;
 
-        if (name === "wifiDetail")
+        if (name === "wifiDetail" || name === "vpnDetail")
             return "wifi";
 
         if (name === "bluetoothDetail")
@@ -188,6 +190,11 @@ PanelWindow {
         detailNetwork = network;
         pagesLoader.item.wifiDetail.reset();
         page = "wifiDetail";
+    }
+
+    function showVpnDetails(uuid) {
+        detailVpn = uuid;
+        page = "vpnDetail";
     }
 
     function showBluetoothDetails(device) {
@@ -421,6 +428,8 @@ PanelWindow {
             requestedWifi = null;
             detailNetwork = null;
             detailDevice = null;
+            detailVpn = "";
+            Vpn.passwordUuid = "";
             trayExpanded = null;
             // Set after the page reset, which would otherwise retain the old height.
             retainedHeight = 0;
@@ -432,11 +441,12 @@ PanelWindow {
         previousPage = shownPage;
         shownPage = page;
         pageAnimation.restart();
-        // Leaving the Wi-Fi list drops its password prompt, or the panel would think
+        // Leaving the network page drops its password prompts, or the panel would think
         // you're still typing one and never close.
-        if (page !== "wifi")
+        if (page !== "wifi") {
             passwordNetwork = null;
-
+            Vpn.passwordUuid = "";
+        }
     }
     onTypingPasswordChanged: {
         if (!typingPassword && !pillHovered && !panelHovered)
@@ -639,6 +649,7 @@ PanelWindow {
                     readonly property Item wifiDetail: wifiDetailPage
                     readonly property Item enterprise: enterprisePage
                     readonly property Item password: wifiPage.password
+                    readonly property bool typingPassword: wifiPage.typingPassword
                     // Starts hidden even when built with the panel already opening (Super+C),
                     // so the pages still fade in.
                     property bool built: false
@@ -653,7 +664,7 @@ PanelWindow {
 
                     }
 
-                    implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : controlCenter.page === "chargeLimit" ? chargeLimitPage.implicitHeight : controlCenter.page === "tray" ? trayPage.implicitHeight : mainPage.implicitHeight
+                    implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "vpnDetail" ? vpnDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : controlCenter.page === "chargeLimit" ? chargeLimitPage.implicitHeight : controlCenter.page === "tray" ? trayPage.implicitHeight : mainPage.implicitHeight
 
                     ColumnLayout {
                         id: mainPage
@@ -681,11 +692,12 @@ PanelWindow {
 
                                 ControlTile {
                                     Layout.fillWidth: true
-                                    icon: Networking.wifiEnabled ? (controlCenter.activeWifi !== null ? Icons.wifi(controlCenter.activeWifi.signalStrength, false) : "󰤯") : "󰤭"
+                                    icon: Networking.wifiEnabled ? (controlCenter.activeWifi !== null ? Icons.wifi(controlCenter.activeWifi.signalStrength, Vpn.connection !== null) : "󰤯") : "󰤭"
                                     title: "Wi-Fi"
                                     subtitle: controlCenter.wifiSubtitle()
                                     active: Networking.wifiEnabled
-                                    expandable: controlCenter.wifiDevice !== null
+                                    // Its page also holds the VPNs, Wi-Fi or not.
+                                    expandable: true
                                     onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
                                     onExpandRequested: controlCenter.page = "wifi"
                                 }
@@ -1038,6 +1050,22 @@ PanelWindow {
                         center: controlCenter
                         onBackRequested: controlCenter.page = "main"
                         onPasswordSent: panel.forceActiveFocus()
+                        onVpnDetailsRequested: (uuid) => {
+                            return controlCenter.showVpnDetails(uuid);
+                        }
+                    }
+
+                    VpnDetailPage {
+                        id: vpnDetailPage
+
+                        width: parent.width
+                        x: controlCenter.pageX("vpnDetail")
+                        visible: controlCenter.pageVisible("vpnDetail")
+                        enabled: controlCenter.page === "vpnDetail"
+                        opacity: controlCenter.pageOpacity("vpnDetail")
+                        uuid: controlCenter.detailVpn
+                        onBackRequested: controlCenter.page = "wifi"
+                        onDeleted: controlCenter.page = "wifi"
                     }
 
                     BluetoothPage {
