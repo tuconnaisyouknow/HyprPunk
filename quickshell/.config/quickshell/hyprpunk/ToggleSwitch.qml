@@ -11,7 +11,8 @@ Rectangle {
 
     implicitWidth: 46
     implicitHeight: 24
-    radius: 8
+    // Round like the bar's pills, the knob too.
+    radius: height / 2
     color: "transparent"
 
     GlassSurface {
@@ -33,7 +34,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: 18
         height: 18
-        radius: 6
+        radius: height / 2
         color: Theme.base
 
         Behavior on x {
