@@ -63,7 +63,6 @@ hl.window_rule({
 local glassLayers = {
   { namespace = "hyprpunk-osd" },
   { namespace = "hyprpunk-control-center" },
-  { namespace = "hyprpunk-tray",          blur_popups = true },
   -- The island's panels (session menu, wallpaper picker) and notifications bring their own animation
   { namespace = "hyprpunk-island",        no_anim = true },
   { namespace = "hyprpunk-notifications", no_anim = true },

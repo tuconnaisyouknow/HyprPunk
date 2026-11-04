@@ -53,6 +53,8 @@ PanelWindow {
     // Saved network and paired device of the detail pages.
     property var detailNetwork: null
     property var detailDevice: null
+    // The background app whose menu is unfolded on its page.
+    property var trayExpanded: null
     // Where the enterprise form goes back to: the list, or the network's details.
     property string enterpriseReturnPage: "wifi"
     // The Bluetooth page, or the sound page for an audio device opened from it.
@@ -189,6 +191,12 @@ PanelWindow {
         bluetoothDetailReturnPage = page === "sound" ? "sound" : "bluetooth";
         detailDevice = device;
         page = "bluetoothDetail";
+    }
+
+    // The background apps page, with this app's menu already unfolded (or none).
+    function showTray(item) {
+        trayExpanded = item;
+        page = "tray";
     }
 
     function pageX(name) {
@@ -409,6 +417,7 @@ PanelWindow {
             requestedWifi = null;
             detailNetwork = null;
             detailDevice = null;
+            trayExpanded = null;
             // Set after the page reset, which would otherwise retain the old height.
             retainedHeight = 0;
         }
@@ -626,7 +635,7 @@ PanelWindow {
 
                     }
 
-                    implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : controlCenter.page === "chargeLimit" ? chargeLimitPage.implicitHeight : mainPage.implicitHeight
+                    implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : controlCenter.page === "chargeLimit" ? chargeLimitPage.implicitHeight : controlCenter.page === "tray" ? trayPage.implicitHeight : mainPage.implicitHeight
 
                     ColumnLayout {
                         id: mainPage
@@ -900,6 +909,104 @@ PanelWindow {
                             }
 
                         }
+
+                        // Last, since it changes size with the apps running: an icon brings
+                        // its app back, the rest of the block opens their page.
+                        ControlBlock {
+                            id: trayBlock
+
+                            // Named in the header while hovered, in place of a tooltip.
+                            property var hoveredItem: null
+
+                            Layout.fillWidth: true
+                            visible: Tray.items.length > 0
+                            implicitHeight: trayColumn.implicitHeight + 24
+
+                            // Under the content: the icons keep their own clicks.
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    trayBlock.bounce();
+                                    controlCenter.showTray(null);
+                                }
+                            }
+
+                            ColumnLayout {
+                                id: trayColumn
+
+                                anchors.fill: parent
+                                anchors.margins: 12
+                                spacing: 6
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+
+                                    Text {
+                                        text: "Background apps"
+                                        color: Theme.mauve
+                                        font.family: Theme.font
+                                        font.pixelSize: 14
+                                        font.weight: Font.Bold
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        horizontalAlignment: Text.AlignRight
+                                        elide: Text.ElideRight
+                                        text: trayBlock.hoveredItem !== null ? Tray.name(trayBlock.hoveredItem) : Tray.items.length + (Tray.items.length === 1 ? " app" : " apps")
+                                        color: Theme.lavender
+                                        font.family: Theme.font
+                                        font.pixelSize: 12
+                                    }
+
+                                    Text {
+                                        text: "󰅂"
+                                        color: trayBlock.hovered ? Theme.mauve : Theme.lavender
+                                        font.family: Theme.font
+                                        font.pixelSize: 14
+
+                                        Behavior on color {
+                                            ColorAnimation {
+                                                duration: 160
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+
+                                // The icons' halo is wider than the icon: pulled left so the
+                                // first icon lines up with the title.
+                                Flow {
+                                    Layout.fillWidth: true
+                                    Layout.leftMargin: -6
+                                    spacing: 4
+
+                                    Repeater {
+                                        model: Tray.items
+
+                                        TrayItem {
+                                            required property var modelData
+
+                                            item: modelData
+                                            onHoveredChanged: {
+                                                if (hovered)
+                                                    trayBlock.hoveredItem = modelData;
+                                                else if (trayBlock.hoveredItem === modelData)
+                                                    trayBlock.hoveredItem = null;
+                                            }
+                                            onMenuRequested: controlCenter.showTray(modelData)
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
                     }
 
                     WifiPage {
@@ -1028,6 +1135,19 @@ PanelWindow {
                         onBackRequested: controlCenter.page = "main"
                     }
 
+                    TrayPage {
+                        id: trayPage
+
+                        width: parent.width
+                        x: controlCenter.pageX("tray")
+                        visible: controlCenter.pageVisible("tray")
+                        enabled: controlCenter.page === "tray"
+                        opacity: controlCenter.pageOpacity("tray")
+                        maxHeight: controlCenter.panelMaxHeight - 28
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "main"
+                    }
+
                 }
 
             }
@@ -1088,6 +1208,17 @@ PanelWindow {
         property: "scannerEnabled"
         value: true
         when: controlCenter.wifiDevice !== null && controlCenter.opened && controlCenter.page === "wifi"
+    }
+
+    // The last background app quit from its own menu: nothing left on its page.
+    Connections {
+        function onItemsChanged() {
+            if (controlCenter.page === "tray" && Tray.items.length === 0)
+                controlCenter.page = "main";
+
+        }
+
+        target: Tray
     }
 
     Binding {

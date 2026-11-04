@@ -3,16 +3,28 @@ import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell.Services.UPower
 
-// What the control pill shows: network (a spinner while it connects), caffeine,
-// volume and battery. The bar and the lock screen both use it.
+// What the control pill shows: a dot when a background app waits for you, network (a
+// spinner while it connects), caffeine, volume and battery. The bar and the lock screen
+// both use it.
 RowLayout {
     id: status
 
     required property var bar
     // Behind the Ethernet padlock badge: the pill's own color.
     property color badgeColor: Theme.panel
+    // On the bar only: the lock screen gives no way to reach the app.
+    property bool showsTrayAttention: false
 
     spacing: 10
+
+    // A background app waits for you: it's in the control center.
+    Rectangle {
+        visible: status.showsTrayAttention && Tray.needsAttention
+        Layout.preferredWidth: 7
+        Layout.preferredHeight: 7
+        radius: 3.5
+        color: Theme.mauve
+    }
 
     // Spinner in place of the icon while NetworkManager connects (VPN included).
     Item {

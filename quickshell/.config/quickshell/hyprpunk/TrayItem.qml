@@ -1,25 +1,27 @@
 import QtQuick
 import Quickshell
+import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 
-// One app in the tray: left click opens it, middle click does its second action,
-// right click shows its menu (apps that only have a menu open it on any click).
+// One background app in the control center: left click brings it back, middle click
+// does its second action, right click opens its menu (apps that only have a menu open
+// it on any click). A mauve dot says it's waiting for you.
 Item {
     id: root
 
     required property var item
-    property bool popupAbove: false
-    readonly property bool menuOpen: trayMenu.visible
+    readonly property alias hovered: trayMouse.containsMouse
 
-    implicitWidth: 28
-    implicitHeight: 28
+    signal menuRequested()
+
+    implicitWidth: 34
+    implicitHeight: 34
 
     // Glass halo on hover, like the player controls.
     GlassSurface {
-        anchors.margins: -3
-        radius: 17
-        hovered: true
-        opacity: trayMouse.containsMouse || root.menuOpen ? 1 : 0
+        radius: width / 2
+        hovered: trayMouse.pressed
+        opacity: trayMouse.containsMouse ? 1 : 0
 
         Behavior on opacity {
             NumberAnimation {
@@ -32,23 +34,27 @@ Item {
 
     IconImage {
         anchors.centerIn: parent
-        width: 24
-        height: 24
-        implicitSize: 24
+        width: 22
+        height: 22
+        implicitSize: 22
         source: root.item.icon
     }
 
-    ToolTipArea {
-        text: root.item.tooltipTitle || root.item.title
-        above: root.popupAbove
+    Rectangle {
+        visible: root.item.status === Status.NeedsAttention
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 3
+        width: 8
+        height: 8
+        radius: 4
+        color: Theme.mauve
     }
 
-    TrayMenu {
-        id: trayMenu
+    BounceAnimation {
+        id: bounce
 
-        handle: root.item.menu
-        anchorItem: root
-        onDismissed: close()
+        target: root
     }
 
     MouseArea {
@@ -59,16 +65,9 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
         cursorShape: Qt.PointingHandCursor
         onClicked: (mouse) => {
-            // Some items only have a menu, opened by any click.
+            bounce.restart();
             if (root.item.hasMenu && (mouse.button === Qt.RightButton || root.item.onlyMenu)) {
-                if (trayMenu.wanted) {
-                    trayMenu.close();
-                } else {
-                    // The tray's window ends at the screen's right edge.
-                    const window = root.QsWindow.window;
-                    trayMenu.anchorRight = window.screen.width - window.width + root.QsWindow.itemPosition(root).x + root.width;
-                    trayMenu.open();
-                }
+                root.menuRequested();
             } else if (mouse.button === Qt.MiddleButton) {
                 root.item.secondaryActivate();
             } else {

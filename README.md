@@ -190,7 +190,7 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 | `Super + T` | Open the terminal (Kitty) |
 | `Super + Space` | Open the application launcher |
 | `Super + Ctrl + Space` | Open the main menu |
-| `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery…) |
+| `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery, background apps…) |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
