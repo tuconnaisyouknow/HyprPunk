@@ -1395,6 +1395,18 @@ PanelWindow {
                     shellState: bar.shellState
                 }
 
+                // Its shortcut, which does nothing while Spotify isn't running: there
+                // would be no player to show.
+                Connections {
+                    function onPanelRequestsChanged() {
+                        if (bar.spotifyPlayer !== null)
+                            musicPill.request(bar.shellState.requestedAction("player", bar.screen));
+
+                    }
+
+                    target: bar.shellState
+                }
+
             }
 
             // Opens the control center, which grows out of it.

@@ -65,6 +65,8 @@ bind(mainMod .. " + E", launch("files"), "Open the file manager")
 bind(mainMod .. " + B", launch("browser"), "Open the web browser")
 bind(mainMod .. " + O", launch("notes"), "Open the notes")
 bind(mainMod .. " + P", launch("music"), "Open the music player")
+-- What's playing, in the bar's card rather than the app. Nothing while Spotify isn't running.
+bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd(shell .. "player toggle"), "Show the music player card")
 
 -----------
 -- SHELL --

@@ -43,6 +43,11 @@ Rectangle {
     property bool knownPositionPlaying: false
     property real trackChangeTime: 0
 
+    // From the player's shortcut: "toggle", "open" or "close".
+    function request(action) {
+        musicPopup.request(action);
+    }
+
     // A little pop on play, pause and track changes. Not while the player is
     // open though: the pill sits under the card and would poke out of it.
     function pulse() {
