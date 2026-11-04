@@ -1,10 +1,14 @@
 //@ pragma UseQApplication
 //@ pragma Env QT_QPA_PLATFORMTHEME = qt6ct
 //@ pragma Env QSG_DISTANCEFIELD_ANTIALIASING = gray
+//@ pragma Env QSG_USE_SIMPLE_ANIMATION_DRIVER = 1
 //@ pragma IconTheme Papirus-Dark
 
 // Gray antialiasing for the text: colored edges assume an opaque background and
 // glitch through the see-through glass, worst over a light page.
+// Animations follow the clock: by default Qt moves them one screen refresh per frame
+// drawn, so whenever drawing falls behind (the glass over several windows at once)
+// they play in slow motion, a 280 ms fold taking twice as long.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
