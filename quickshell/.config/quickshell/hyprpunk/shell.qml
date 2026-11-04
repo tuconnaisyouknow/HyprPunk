@@ -303,17 +303,6 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        TrayCorner {
-            required property var modelData
-
-            screen: modelData
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
         ControlCenter {
             required property var modelData
 

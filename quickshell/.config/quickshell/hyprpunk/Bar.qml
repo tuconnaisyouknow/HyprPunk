@@ -1379,6 +1379,7 @@ PanelWindow {
                 ControlStatus {
                     bar: bar
                     badgeColor: controlPill.baseColor
+                    showsTrayAttention: true
                 }
 
             }
