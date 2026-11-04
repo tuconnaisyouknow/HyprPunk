@@ -83,22 +83,34 @@ WlSessionLockSurface {
     }
 
     // No window over it on this screen's workspace. Whether music plays doesn't matter:
-    // it may start or stop while locked, and the wave shows or hides by itself.
+    // it may start or stop while locked, and the wave shows or hides by itself. When in
+    // doubt it says no: the wave then fades in with the wallpaper, where a wrong yes
+    // pastes a patch of wallpaper through the window over it.
     function desktopWaveInSight() {
         if (!screen)
             return false;
 
         const monitor = Hyprland.monitorFor(screen);
-        if (monitor === null || monitor.activeWorkspace === null)
-            return true;
+        if (monitor === null || monitor.activeWorkspace === null || monitor.width <= 0)
+            return false;
 
-        const left = monitor.x + (screenWidth - waveWidth) / 2;
-        const right = left + waveWidth;
-        const top = monitor.y + screenHeight - waveHeight;
+        // From the monitor, in the windows' own units: the surface's screen still has
+        // no size when the lock freezes the scene.
+        const monitorWidth = monitor.width / monitor.scale;
+        const monitorHeight = monitor.height / monitor.scale;
+        const width = Math.round(monitorWidth * 0.5);
+        const left = monitor.x + (monitorWidth - width) / 2;
+        const right = left + width;
+        const top = monitor.y + monitorHeight - waveHeight;
         return !monitor.activeWorkspace.toplevels.values.some((toplevel) => {
             const ipc = toplevel.lastIpcObject || {};
-            const at = ipc.at || [0, 0];
-            const size = ipc.size || [0, 0];
+            // Not told yet: taken as covering it, or the patch of wallpaper meant for an
+            // uncovered wave would show through the window.
+            if (!ipc.at || !ipc.size)
+                return true;
+
+            const at = ipc.at;
+            const size = ipc.size;
             return at[0] < right && at[0] + size[0] > left && at[1] < top + waveHeight && at[1] + size[1] > top;
         });
     }

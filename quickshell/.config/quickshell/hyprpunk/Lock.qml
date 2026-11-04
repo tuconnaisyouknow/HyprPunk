@@ -54,6 +54,9 @@ Scope {
         error = "";
         unlocking = false;
         setXray(false);
+        // Where the windows are, for the lock to tell whether the music wave was in
+        // sight: Hyprland only says when asked, and the snapshot gives it time to answer.
+        Hyprland.refreshToplevels();
         snapshot.command = ["sh", "-c", snapshot.script, "sh", snapshotDir].concat(Quickshell.screens.map((screen) => {
             return screen.name;
         }));
