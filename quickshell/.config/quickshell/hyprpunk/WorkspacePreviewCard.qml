@@ -18,6 +18,20 @@ ClippingRectangle {
 
     signal workspaceChosen(var workspace)
 
+    // The keyboard's way through, once the card is opened with its shortcut.
+    function step(delta) {
+        if (delta < 0)
+            list.decrementCurrentIndex();
+        else
+            list.incrementCurrentIndex();
+    }
+
+    function choose() {
+        if (currentWorkspace !== null)
+            workspaceChosen(currentWorkspace);
+
+    }
+
     radius: 18
     color: Theme.crust
 

@@ -22,6 +22,9 @@ PanelWindow {
     // Whether the pointer is on the bar's right-most pill, which the panel grows out of.
     property bool pillHovered: false
     property bool panelHovered: false
+    // Closed on purpose (the shortcut, Escape, a click) under the pointer: neither the
+    // panel folding past it nor the pill it lands on open it again, until it moves off.
+    property bool closedOnPurpose: false
     property real retainedHeight: 0
     property real progress: opened ? 1 : 0
     // The pages exist only from the moment the pointer reaches the pill until the panel
@@ -220,6 +223,7 @@ PanelWindow {
     }
 
     function close() {
+        closedOnPurpose = opened;
         opened = false;
     }
 
@@ -439,6 +443,12 @@ PanelWindow {
             closeDelay.restart();
 
     }
+    // Folded away with the pointer elsewhere: the pill opens it again as usual.
+    onProgressChanged: {
+        if (progress === 0 && !pillHovered)
+            closedOnPurpose = false;
+
+    }
     implicitWidth: panelWidth + pill.right
     implicitHeight: panelMaxHeight + pill.top
     color: "transparent"
@@ -459,9 +469,13 @@ PanelWindow {
 
             controlCenter.pillHovered = controlCenter.shellState.controlPillHovered;
             if (controlCenter.pillHovered) {
+                if (controlCenter.closedOnPurpose)
+                    return ;
+
                 closeDelay.stop();
                 openDelay.restart();
             } else {
+                controlCenter.closedOnPurpose = false;
                 openDelay.stop();
                 closeDelay.restart();
             }
@@ -477,6 +491,7 @@ PanelWindow {
             openDelay.stop();
             closeDelay.stop();
             if (open) {
+                controlCenter.closedOnPurpose = false;
                 controlCenter.openedByKeybind = true;
                 controlCenter.opened = true;
             } else {
@@ -504,6 +519,9 @@ PanelWindow {
         HoverHandler {
             onHoveredChanged: {
                 controlCenter.panelHovered = hovered;
+                if (hovered && controlCenter.closedOnPurpose)
+                    return ;
+
                 if (hovered) {
                     closeDelay.stop();
                     // Caught again while folding back onto the pill.

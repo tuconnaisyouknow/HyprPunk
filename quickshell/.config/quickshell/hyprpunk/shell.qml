@@ -180,7 +180,7 @@ ShellRoot {
 
     // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
     Variants {
-        model: ["controlcenter", "notifications", "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "monitor"]
+        model: ["controlcenter", "notifications", "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "monitor", "workspaces", "systemmonitor"]
 
         // Kept around the handler, so ipc show lists only the three functions.
         Scope {
