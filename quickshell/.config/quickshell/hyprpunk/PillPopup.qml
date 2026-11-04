@@ -151,6 +151,15 @@ PopupWindow {
     anchor.gravity: Edges.Bottom | Edges.Right
     anchor.adjustment: PopupAdjustment.SlideX
 
+    // The card's glass lets what's under it through: the pill hides while the card covers
+    // it, from the card's first frame on screen so the bar never shows neither.
+    Binding {
+        target: popup.pill
+        property: "opacity"
+        value: 0
+        when: popup.visible && !popup.openPending
+    }
+
     Connections {
         function onFrameSwapped() {
             if (popup.openPending) {
