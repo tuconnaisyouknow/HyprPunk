@@ -610,10 +610,12 @@ PanelWindow {
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
-                // The whole pill opens the calendar card, like the other pills, unless an
-                // OSD has the island.
-                onHoveredChanged: {
-                    if (hovered && !bar.islandOsdShown)
+                // The pill opens the calendar card, like the other pills, unless an OSD
+                // has the island. Not from the recording chip, which you hover to stop.
+                readonly property bool opensCalendar: hovered && !bar.islandOsdShown && !recordingHover.hovered
+
+                onOpensCalendarChanged: {
+                    if (opensCalendar)
                         calendarPopup.hoverStarted();
                     else
                         calendarPopup.hoverEnded();
