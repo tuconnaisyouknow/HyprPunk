@@ -188,17 +188,20 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 | Shortcut | What it does |
 |---|---|
 | `Super + T` | Open the terminal (Kitty) |
-| `Alt + Space` | Open the application launcher |
-| `Ctrl + Alt + Space` | Open the main menu |
+| `Super + Space` | Open the application launcher |
+| `Super + Ctrl + Space` | Open the main menu |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery…) |
 | `Super + N` | Open the calendar and notifications |
+| `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
+| `Super + F` | Maximize the focused window, add `Shift` to make it float instead |
 | `Super + 1` … `Super + 0` | Switch to a workspace, add `Shift` to send the window there |
+| `Super + Tab` | Switch back to the previous workspace |
 | `Super + Escape` | Open the session menu (lock, log out, reboot, shut down) |
 | `Super + Ctrl + K` | Show all the keybindings |
 
 `Super` is the Windows key. The arrows follow Vim, `h j k l` on QWERTY and `j k l m` on AZERTY: `Super` with one of
-them moves the focus, and adding `Shift` moves the window.
+them, or with a real arrow, moves the focus, and adding `Shift` moves the window.
 
 ### 🏝️ Shell panels
 
@@ -207,10 +210,10 @@ you'd bind to your own shortcuts.
 
 | Panel | Shortcut |
 |---|---|
-| `launcher` | `Alt + Space` |
-| `menu` | `Ctrl + Alt + Space` |
-| `clipboard` | `Ctrl + '` on QWERTY, `Ctrl + ù` on AZERTY |
-| `emoji` | `Super + ;` |
+| `launcher` | `Super + Space` |
+| `menu` | `Super + Ctrl + Space` |
+| `clipboard` | `Super + V` |
+| `emoji` | `Super + .` or `Super + ;` |
 | `keybindings` | `Super + Ctrl + K` |
 | `wallpaper` | `Super + Ctrl + W` |
 | `sddm` | `Super + Ctrl + G` |
@@ -338,8 +341,6 @@ The layout integration covers:
 - ⌨️ `kitty/.config/kitty/kitty.conf`
 - 🐚 `zsh/.bindingrc` and `zsh/.zshrc`
 - 🔑 The system keymap (SDDM and TTYs), set with `localectl set-x11-keymap`
-
-The clipboard history (`Ctrl + ù` in AZERTY) is bound to the same physical key in QWERTY: `Ctrl + '`.
 
 Hyprland reads the selected XKB layout dynamically instead of hard-coding:
 
