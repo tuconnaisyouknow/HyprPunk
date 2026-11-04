@@ -220,6 +220,8 @@ you'd bind to your own shortcuts.
 | `session` | `Super + Escape` |
 | `controlcenter` | `Super + C` |
 | `notifications` | `Super + N` |
+| `workspaces` (preview of the others) | `Super + W` |
+| `systemmonitor` | `Ctrl + Shift + Escape` |
 | `config`, `monitor`, `screenshot` | From the main menu |
 
 ### 📸 Screenshots and recordings

@@ -85,6 +85,8 @@ bind(mainMod .. " + CTRL + SPACE", hl.dsp.exec_cmd(shell .. "menu toggle"), "Ope
 bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd(shell .. "wallpaper toggle"), "Open the wallpaper selector")
 bind(mainMod .. " + CTRL + G", hl.dsp.exec_cmd(shell .. "sddm toggle"), "Open the SDDM theme selector")
 bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd(shell .. "keybindings toggle"), "Show all keybindings")
+-- The keys of Windows' Task Manager, which every hand already knows
+bind("CTRL + SHIFT + Escape", hl.dsp.exec_cmd(shell .. "systemmonitor toggle"), "Show the system monitor")
 
 -----------------------------
 -- SCREENSHOTS AND RECORDS --
@@ -153,6 +155,9 @@ end
 
 -- Back and forth between two tasks, like Alt+Tab between windows
 bind(mainMod .. " + Tab", hl.dsp.focus({ workspace = "previous" }), "Switch back to the previous workspace")
+-- A look before you go, on the one you were on last: the arrows or Tab go through the
+-- others, Enter takes you there. Nothing happens while they're all empty.
+bind(mainMod .. " + W", hl.dsp.exec_cmd(shell .. "workspaces toggle"), "Preview your other workspaces")
 
 -- Scroll through the workspaces in use
 bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), "Switch to the next workspace")

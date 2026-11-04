@@ -40,6 +40,10 @@ PopupWindow {
     // Opened on purpose (a shortcut, a click) rather than by hovering: it stays open when
     // the pointer leaves, until closed.
     property bool pinned: false
+    // Closed while kept open, until it has folded back: the pointer resting on the card
+    // or the pill doesn't open it again as if hovered (the click catcher going away
+    // makes the pointer come back to it).
+    property bool closedOnPurpose: false
     // 0 folded on the pill, 1 fully open.
     property real progress: expanded ? 1 : 0
     readonly property bool cardHovered: cardHover.hovered
@@ -48,6 +52,8 @@ PopupWindow {
 
     // Right before the window maps, to set the content up.
     signal opening()
+    // A key other than Escape while it's kept open, for a card that answers the keyboard.
+    signal keyPressed(int key)
 
     function lerp(from, to) {
         return from + (to - from) * progress;
@@ -55,6 +61,9 @@ PopupWindow {
 
     // The pointer is on the pill (or on what opens the card).
     function hoverStarted() {
+        if (closedOnPurpose)
+            return ;
+
         closeTimer.stop();
         hideTimer.stop();
         if (mapped)
@@ -68,13 +77,31 @@ PopupWindow {
         closeTimer.restart();
     }
 
-    // Kept open, or closed once kept (a click on the pill, a shortcut).
+    // What its shortcut asks ("toggle", "open" or "close"). Open, however it was opened
+    // (a click, the pointer, the shortcut), the shortcut closes it; closed, it opens it kept.
+    function request(action) {
+        if (action === "close" || action === "toggle" && expanded) {
+            if (!expanded)
+                return ;
+
+            close();
+            // Even opened by the pointer, which still rests on it.
+            closedOnPurpose = true;
+        } else if (action === "open" || action === "toggle") {
+            if (!(pinned && expanded))
+                togglePinned();
+
+        }
+    }
+
+    // Kept open, or closed once kept (a click on the pill).
     function togglePinned() {
         if (pinned && expanded) {
             close();
             return ;
         }
         pinned = true;
+        closedOnPurpose = false;
         closeTimer.stop();
         hideTimer.stop();
         if (mapped)
@@ -89,6 +116,7 @@ PopupWindow {
     }
 
     function open() {
+        closedOnPurpose = false;
         closeTimer.stop();
         hideTimer.stop();
         opening();
@@ -97,6 +125,7 @@ PopupWindow {
     }
 
     function close() {
+        closedOnPurpose = pinned;
         pinned = false;
         openPending = false;
         expanded = false;
@@ -170,6 +199,9 @@ PopupWindow {
         active: popup.pinned && popup.expanded
         takesKeyboard: true
         onDismissed: popup.close()
+        onKeyPressed: (key) => {
+            return popup.keyPressed(key);
+        }
     }
 
     Timer {
@@ -199,7 +231,10 @@ PopupWindow {
 
         // Lets the card fold back onto the pill first.
         interval: 320
-        onTriggered: popup.mapped = false
+        onTriggered: {
+            popup.mapped = false;
+            popup.closedOnPurpose = false;
+        }
     }
 
     ClippingRectangle {
@@ -224,6 +259,9 @@ PopupWindow {
             id: cardHover
 
             onHoveredChanged: {
+                if (popup.closedOnPurpose)
+                    return ;
+
                 if (hovered) {
                     closeTimer.stop();
                     hideTimer.stop();

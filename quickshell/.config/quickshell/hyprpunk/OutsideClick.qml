@@ -12,6 +12,8 @@ PanelWindow {
     property bool takesKeyboard: false
 
     signal dismissed()
+    // Any other key, while it has the keyboard, for the cards that answer some.
+    signal keyPressed(int key)
 
     visible: active
     color: "transparent"
@@ -46,7 +48,12 @@ PanelWindow {
         id: keys
 
         focus: true
-        Keys.onEscapePressed: outside.dismissed()
+        Keys.onPressed: (event) => {
+            if (event.key === Qt.Key_Escape)
+                outside.dismissed();
+            else
+                outside.keyPressed(event.key);
+        }
     }
 
     mask: Region {

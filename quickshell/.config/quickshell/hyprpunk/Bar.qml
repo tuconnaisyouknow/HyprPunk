@@ -29,6 +29,11 @@ PanelWindow {
     }).sort((a, b) => {
         return a.id - b.id;
     })
+    // The workspace you were on before this one, which the preview opens on when you
+    // ask for it with the keyboard: the one you most likely want back.
+    property var lastWorkspace: null
+    property var shownWorkspace: null
+    readonly property var activeWorkspace: workspaceSwitcher.hyprlandMonitor !== null ? workspaceSwitcher.hyprlandMonitor.activeWorkspace : null
     // A snapshot of the bar for the previews (keeping grabToImage's result keeps it alive).
     property var barSnapshot: null
     readonly property int workspacePreviewWidth: 400
@@ -322,6 +327,10 @@ PanelWindow {
     }
 
     // The island's new content fades in while the pill resizes around it.
+    onActiveWorkspaceChanged: {
+        lastWorkspace = shownWorkspace;
+        shownWorkspace = activeWorkspace;
+    }
     onStatusOsdVisibleChanged: islandContentFade.restart()
     onStatusOsdLabelChanged: islandContentFade.restart()
     onAudioVolumeChanged: showVolumeOsd()
@@ -403,11 +412,45 @@ PanelWindow {
                         barContent.grabToImage((result) => {
                             bar.barSnapshot = result;
                         });
-                        bar.previewWorkspace = workspaceSwitcher.hoveredWorkspace;
+                        if (workspaceSwitcher.hoveredWorkspace !== null)
+                            bar.previewWorkspace = workspaceSwitcher.hoveredWorkspace;
+                        else
+                            bar.previewWorkspace = bar.previewWorkspaces.includes(bar.lastWorkspace) ? bar.lastWorkspace : null;
+                    }
+                    // Opened with its shortcut: the arrows (Vim's too) or Tab go through
+                    // the workspaces, Enter takes you there.
+                    onKeyPressed: (key) => {
+                        const card = previewLoader.item;
+                        if (card === null)
+                            return ;
+
+                        const french = Session.keyboardLayout === "fr";
+                        if (key === Qt.Key_Left || key === Qt.Key_Backtab || key === (french ? Qt.Key_J : Qt.Key_H))
+                            card.step(-1);
+                        else if (key === Qt.Key_Right || key === Qt.Key_Tab || key === (french ? Qt.Key_M : Qt.Key_L))
+                            card.step(1);
+                        else if (key === Qt.Key_Return || key === Qt.Key_Enter || key === Qt.Key_Space)
+                            card.choose();
+                    }
+
+                    // Its shortcut, which does nothing while your other workspaces are
+                    // all empty: there would be nothing to preview.
+                    Connections {
+                        function onPanelRequestsChanged() {
+                            if (bar.previewWorkspaces.length === 0 && !workspacePopup.expanded)
+                                return ;
+
+                            workspacePopup.request(bar.shellState.requestedAction("workspaces", bar.screen));
+
+                        }
+
+                        target: bar.shellState
                     }
 
                     // Rebuilt on every opening, so the windows are captured fresh.
                     Loader {
+                        id: previewLoader
+
                         x: 14
                         y: 14
                         width: bar.workspacePreviewWidth
@@ -475,6 +518,17 @@ PanelWindow {
                     pill: monitorPill
                     implicitWidth: monitorContent.implicitWidth
                     implicitHeight: monitorContent.implicitHeight
+
+                    // Its shortcut, with nothing to open from on a bar too narrow for its pill.
+                    Connections {
+                        function onPanelRequestsChanged() {
+                            if (monitorPill.visible)
+                                monitorPopup.request(bar.shellState.requestedAction("systemmonitor", bar.screen));
+
+                        }
+
+                        target: bar.shellState
+                    }
 
                     SystemMonitorCard {
                         id: monitorContent
@@ -969,10 +1023,7 @@ PanelWindow {
 
                 Connections {
                     function onPanelRequestsChanged() {
-                        const action = bar.shellState.requestedAction("notifications", bar.screen);
-                        const opened = calendarPopup.pinned && calendarPopup.expanded;
-                        if (action === "open" && !opened || action === "close" && opened || action === "toggle")
-                            bar.toggleNotificationCard();
+                        calendarPopup.request(bar.shellState.requestedAction("notifications", bar.screen));
 
                     }
 
