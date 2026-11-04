@@ -46,9 +46,12 @@ ColumnLayout {
         const gone = entryIds.filter((id) => {
             return !trackedIds.includes(id) && !leavingIds.includes(id);
         });
-        if (gone.length > 0)
+        // Hidden, the card draws no frames and its animations stand still: they would
+        // all play at once the next time it opens. The ones closed meanwhile just go.
+        if (!shown)
+            for (const id of gone) drop(id)
+        else if (gone.length > 0)
             leavingIds = leavingIds.concat(gone);
-
     }
 
     function drop(id) {
@@ -64,6 +67,11 @@ ColumnLayout {
     }
 
     onTrackedValuesChanged: syncEntries()
+    // Closing the card: the ones still leaving go at once, for the same reason.
+    onShownChanged: {
+        if (!shown)
+            for (const id of leavingIds.slice()) drop(id)
+    }
     Component.onCompleted: syncEntries()
     spacing: 12
 
