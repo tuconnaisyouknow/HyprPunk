@@ -222,6 +222,7 @@ you'd bind to your own shortcuts.
 | `notifications` | `Super + N` |
 | `workspaces` (preview of the others) | `Super + W` |
 | `systemmonitor` | `Ctrl + Shift + Escape` |
+| `player` (the bar's player card, while Spotify runs) | `Super + Shift + P` |
 | `config`, `monitor`, `screenshot` | From the main menu |
 
 ### 📸 Screenshots and recordings
