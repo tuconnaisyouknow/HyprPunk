@@ -7,7 +7,8 @@ import Quickshell.Widgets
 
 // New notifications, in a card that grows out of the dynamic island on the focused
 // screen. They leave after a few seconds unless hovered or critical, Focus keeps all but
-// the critical ones away, and they wait while an island panel takes the island.
+// the critical ones away, they wait while an island panel takes the island, and they
+// fold back into it when the notification center opens.
 PanelWindow {
     id: popups
 
@@ -78,6 +79,13 @@ PanelWindow {
         leavingIds = leavingIds.concat([id]);
     }
 
+    // Every popup at once, critical ones too: they're all listed in the open center.
+    function hideAll() {
+        leavingIds = notifications.map((entry) => {
+            return entry.id;
+        });
+    }
+
     function drop(id) {
         notifications = notifications.filter((entry) => {
             return entry.id !== id;
@@ -137,6 +145,19 @@ PanelWindow {
         }
 
         target: popups.notificationServer
+    }
+
+    // The center opening takes the popups in: their card folds back into the island
+    // as the center grows out of it, where they're listed anyway, and nothing is left
+    // over it once the center closes.
+    Connections {
+        function onNotificationCenterOpenChanged() {
+            if (popups.shellState.notificationCenterOpen)
+                popups.hideAll();
+
+        }
+
+        target: popups.shellState
     }
 
     ClippingRectangle {
