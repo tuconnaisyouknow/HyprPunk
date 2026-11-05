@@ -442,7 +442,7 @@ WlSessionLockSurface {
                 visible: Layout.preferredWidth > 0
                 Layout.preferredWidth: surface.islandMode === "clock" ? implicitWidth : 0
                 clip: true
-                text: Qt.formatDateTime(clock.date, "HH:mm")
+                text: Session.clockText(clock.date)
 
                 Behavior on Layout.preferredWidth {
                     NumberAnimation {
@@ -750,7 +750,9 @@ WlSessionLockSurface {
                 y: dateText.height
 
                 Text {
-                    text: Qt.formatDateTime(clock.date, "HH")
+                    id: hours
+
+                    text: Session.hourText(clock.date)
                     color: Theme.mauve
                     font: minutes.font
                 }
@@ -765,6 +767,18 @@ WlSessionLockSurface {
                     font.features: {
                         "tnum": 1
                     }
+                }
+
+                // AM or PM in us, small on the digits' baseline.
+                Text {
+                    visible: text !== ""
+                    anchors.baseline: hours.baseline
+                    leftPadding: 14
+                    text: Session.meridiemText(clock.date)
+                    color: Theme.lavender
+                    font.family: Theme.font
+                    font.pixelSize: 40
+                    font.weight: Font.DemiBold
                 }
 
             }

@@ -41,7 +41,7 @@ ColumnLayout {
             icon: modelData.minutes === 0 ? "󰅶" : "󰔛"
             title: modelData.label
             // The chosen duration ends at: "Until 22:10".
-            subtitle: chosen && page.center.shellState.caffeineUntil > 0 ? "Until " + Qt.formatTime(new Date(page.center.shellState.caffeineUntil), "HH:mm") : ""
+            subtitle: chosen && page.center.shellState.caffeineUntil > 0 ? "Until " + Session.shortTime(new Date(page.center.shellState.caffeineUntil)) : ""
             trailing: chosen ? "\uf00c" : ""
             highlighted: chosen
             onClicked: page.center.chooseCaffeine(modelData.minutes)
