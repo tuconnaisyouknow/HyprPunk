@@ -28,6 +28,10 @@ SearchPanel {
         "name": "Mouse and touchpad",
         "path": "~/.config/hypr/personal/input.lua"
     }, {
+        "icon": "",
+        "name": "Environment variables",
+        "path": "~/.config/hypr/personal/env.lua"
+    }, {
         "icon": "󱓞",
         "name": "Autostart",
         "path": "~/.config/hypr/personal/autostart.lua"

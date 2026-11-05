@@ -432,6 +432,8 @@ touching your preferences:
   - 🪟 `rules.lua` to send your apps to a workspace with `hyprpunk.app("org.gnome.Geary", 6)`, float the dialogs of
     an app that lets them get tiled with `hyprpunk.float_dialogs(class, main window's title)`, plus any window rule.
   - 🖱️ `input.lua` for the mouse, touchpad and gestures. The keyboard layout comes from the shell's settings.
+  - 🌱 `env.lua` for environment variables, like a bigger cursor or your own scripts in `PATH`. The language comes
+    from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
   - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
     `hyprpunk.autostart.remove`.
 - 🐚 **Your shell tweaks** go in files of your own, each skipped when it doesn't exist:

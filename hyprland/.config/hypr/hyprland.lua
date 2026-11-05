@@ -16,7 +16,7 @@ require("env")         -- Environment variables
 require("autostart")   -- What starts with the session, and screen hotplug
 
 -- Your files come last, so whatever they set wins. Each one is skipped if it doesn't exist.
-for _, name in ipairs({ "input", "rules", "keybindings", "autostart" }) do
+for _, name in ipairs({ "input", "rules", "keybindings", "env", "autostart" }) do
   if package.searchpath("personal." .. name, package.path) then
     require("personal." .. name)
   end
