@@ -1415,6 +1415,8 @@ PanelWindow {
             Pill {
                 id: controlPill
 
+                // Hidden under the control center's glass, which lets it through.
+                opacity: bar.shellState.controlPillsCovered.indexOf(bar.screen.name) >= 0 ? 0 : 1
                 function publishGeometry() {
                     const origin = mapToItem(null, 0, 0);
                     bar.shellState.controlPill = {
@@ -1451,6 +1453,20 @@ PanelWindow {
 
         }
 
+    }
+
+    // The control pill is drawn again: the control center's panel, folded back on it, can go.
+    Connections {
+        function onFrameSwapped() {
+            const name = bar.screen.name;
+            if (controlPill.opacity === 1 && bar.shellState.controlPillsRevealing.indexOf(name) >= 0)
+                bar.shellState.controlPillsRevealing = bar.shellState.controlPillsRevealing.filter((item) => {
+                return item !== name;
+            });
+
+        }
+
+        target: controlPill.Window.window
     }
 
     // The time recorded, for the island.
