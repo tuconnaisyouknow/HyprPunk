@@ -24,6 +24,10 @@ IslandPanel {
     readonly property var filters: request && !pickingFolder ? request.filters : []
     property int filterIndex: 0
     property string folder: ""
+    // The folder the list shows, behind folder while the new one is being read.
+    property string shownFolder: ""
+    // Which way the list slides in: 1 into a folder, -1 back up, 0 elsewhere.
+    property int folderStep: 0
     property bool showHidden: false
     // The folder's entries, filtered: {name, path, isDir, size, modified}.
     property var entries: []
@@ -125,12 +129,24 @@ IslandPanel {
     }
 
     // Read again whenever the folder, the filter or what you type changes, keeping the
-    // selection on the same file when it's still there.
+    // selection on the same file when it's still there. A new folder's list only
+    // replaces the old one once it's read, so nothing empties or blinks meanwhile.
     function rebuild() {
+        if (folderModel.status !== FolderListModel.Ready || decodeURIComponent(String(folderModel.folder)) !== "file://" + folder)
+            return ;
+
+        const previous = shownFolder;
+        const fresh = previous !== folder;
+        const inside = (parent, path) => {
+            return path.startsWith(parent === "/" ? "/" : parent + "/");
+        };
+        // Back up a folder: the one you came out of is selected, unless Enter means
+        // here (saving, picking a folder).
+        const cameFrom = fresh && inside(folder, previous) && !saving && !pickingFolder ? join(folder, previous.substring(folder === "/" ? 1 : folder.length + 1).split("/")[0]) : "";
         const filter = filters.length > 0 ? filters[filterIndex] : null;
         const patterns = filter ? filter.globs.map(globRegex) : [];
         const search = query.toLowerCase();
-        const keep = selected ? selected.path : "";
+        const keep = fresh ? cameFrom : selected ? selected.path : "";
         const list = [];
         for (let index = 0; index < folderModel.count; index++) {
             const name = folderModel.get(index, "fileName");
@@ -159,6 +175,14 @@ IslandPanel {
         // here, not the first entry.
         selectedIndex = kept >= 0 ? kept : saving || pickingFolder || list.length === 0 ? -1 : 0;
         syncList();
+        if (fresh) {
+            shownFolder = folder;
+            // Not on opening: the card grows already.
+            if (previous !== "") {
+                folderStep = inside(previous, folder) ? 1 : inside(folder, previous) ? -1 : 0;
+                folderIn.restart();
+            }
+        }
     }
 
     // Set by hand: the list puts itself back on its first entry whenever it's refilled.
@@ -263,6 +287,13 @@ IslandPanel {
         replaceArmed = false;
         showHidden = false;
         filterIndex = request ? request.filter : 0;
+        // Last time's list goes: the new one comes with the card. A slide cut short by
+        // closing would stand still while hidden, so it ends here.
+        shownFolder = "";
+        entries = [];
+        folderIn.stop();
+        listShift.x = 0;
+        list.opacity = 1;
         folder = request ? request.folder : home;
         field.text = saving ? request.name : "";
         rebuild();
@@ -279,10 +310,10 @@ IslandPanel {
             chooser.cancel();
         }
     }
+    // The selection stays on the old list until the new one replaces it.
     onFolderChanged: {
         marked = [];
         replaceArmed = false;
-        selectedIndex = -1;
     }
     onQueryChanged: Qt.callLater(rebuild)
     onFilterIndexChanged: Qt.callLater(rebuild)
@@ -299,6 +330,31 @@ IslandPanel {
         }
 
         target: picker.chooser
+    }
+
+    // A new folder's list slides in from where you're going (the right going in, the
+    // left going back up) as it fades in, so changing folder feels like a move.
+    ParallelAnimation {
+        id: folderIn
+
+        NumberAnimation {
+            target: listShift
+            property: "x"
+            from: 16 * picker.folderStep
+            to: 0
+            duration: 220
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: list
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 180
+            easing.type: Easing.OutCubic
+        }
+
     }
 
     FolderListModel {
@@ -570,9 +626,15 @@ IslandPanel {
             highlightFollowsCurrentItem: true
             highlightMoveDuration: 0
             highlightResizeDuration: 0
+
+            transform: Translate {
+                id: listShift
+            }
+            // Inset like the hover's glass, so the two never touch on rows side by side.
             highlight: SelectionHighlight {
                 view: list
                 radius: 12
+                inset: 1
             }
 
             delegate: Item {
@@ -585,6 +647,28 @@ IslandPanel {
 
                 width: ListView.view.width
                 height: picker.rowHeight
+
+                // Fainter than the selection's glass: hovering a file doesn't pick it,
+                // since picking changes the preview and, when saving, the name.
+                GlassSurface {
+                    anchors.margins: 1
+                    radius: 12
+                    opacity: rowHover.hovered && !row.selected ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                        }
+
+                    }
+
+                }
+
+                HoverHandler {
+                    id: rowHover
+
+                    cursorShape: Qt.PointingHandCursor
+                }
 
                 Text {
                     id: rowIcon
@@ -642,7 +726,9 @@ IslandPanel {
 
         Text {
             anchors.centerIn: list
-            visible: picker.entries.length === 0 && folderModel.status === FolderListModel.Ready
+            // The folder shown, even while the next one is read: no flash in between.
+            visible: picker.entries.length === 0 && picker.shownFolder !== ""
+            opacity: list.opacity
             text: picker.query !== "" ? "Nothing matches" : "Empty folder"
             color: Theme.lavender
             font.family: Theme.font
