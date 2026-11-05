@@ -43,6 +43,14 @@ SearchPanel {
         "icon": "󰉹",
         "name": "Zsh completions",
         "path": "~/.completionrc"
+    }, {
+        "icon": "",
+        "name": "Tmux",
+        "path": "~/.config/tmux/personal.conf"
+    }, {
+        "icon": "󰄛",
+        "name": "Kitty",
+        "path": "~/.config/kitty/personal.conf"
     }]
     readonly property var results: {
         const words = query.toLowerCase().split(/\s+/).filter((word) => {
