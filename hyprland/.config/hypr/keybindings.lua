@@ -5,10 +5,12 @@
 -- PROGRAMS --
 --------------
 
--- The apps the shortcuts below open. Change one in personal/keybindings.lua
--- (hyprpunk.programs.music = "...") and its shortcut follows.
+-- The apps the shortcuts below open, and the terminal and editor everything else
+-- uses. Change one in personal/keybindings.lua (hyprpunk.programs.music = "...") and
+-- what opens it follows.
 hyprpunk.programs = {
   terminal = "kitty",
+  editor = "nvim",
   files = "dolphin",
   browser = "brave",
   notes = "obsidian",
@@ -176,7 +178,7 @@ bind(mainMod .. " + Escape", hl.dsp.exec_cmd(shell .. "session toggle"),
 -- Upkeep: restart what misbehaves, update everything. Alt keeps them out of a slip's reach.
 bind(mainMod .. " + ALT + Q", hl.dsp.exec_cmd("killall qs ; qs -c hyprpunk"), "Reload Quickshell")
 bind(mainMod .. " + ALT + I", hl.dsp.exec_cmd("killall hypridle ; hypridle"), "Reload Hypridle")
-bind(mainMod .. " + ALT + U", hl.dsp.exec_cmd("kitty -e yay -Syu --removemake"), "Update all packages")
+bind(mainMod .. " + ALT + U", hl.dsp.exec_cmd("$TERMINAL -e yay -Syu --removemake"), "Update all packages")
 
 -------------------
 -- HARDWARE KEYS --

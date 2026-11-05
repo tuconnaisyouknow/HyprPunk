@@ -82,6 +82,12 @@ Singleton {
         return "'" + String(argument).replace(/'/g, "'\\''") + "'";
     }
 
+    // In your terminal: Hyprland reads $TERMINAL when it starts it, so changing it in
+    // personal/keybindings.lua counts without restarting the shell.
+    function launchInTerminal(command, workingDirectory) {
+        launch(["sh", "-c", "exec ${TERMINAL:-kitty} -e \"$@\"", "sh"].concat(command), workingDirectory);
+    }
+
     // Starts an app through Hyprland (hl.dsp.exec_cmd, run by sh), in a directory.
     function launch(command, workingDirectory) {
         let line = command.map(quoted).join(" ");

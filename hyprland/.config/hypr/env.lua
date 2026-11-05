@@ -1,5 +1,6 @@
 -- The environment every app started from the session inherits: language, cursor,
--- Wayland hints for GTK and Qt, and your editor. Loaded by hyprland.lua.
+-- Wayland hints for GTK and Qt. Loaded by hyprland.lua, and your terminal and editor
+-- come last, from hyprland.lua.
 
 ---------------------------
 -- ENVIRONMENT VARIABLES --
@@ -42,6 +43,3 @@ hl.env("GDK_DEBUG", "portals")
 -- Set even when it's the default: kitty can't fall back on ~/.local/state by itself
 -- to find the keyboard files
 hl.env("XDG_STATE_HOME", os.getenv("XDG_STATE_HOME") or os.getenv("HOME") .. "/.local/state")
-
--- Everyday tools
-hl.env("EDITOR", "nvim")
