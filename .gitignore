@@ -11,3 +11,6 @@ btop/.config/btop/btop.conf
 # cava puts its stock shaders and themes back on every launch
 cava/.config/cava/shaders/
 cava/.config/cava/themes/
+
+# dolphin create .directory files to change some options
+**/.directory
