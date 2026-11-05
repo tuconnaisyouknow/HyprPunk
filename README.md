@@ -144,6 +144,26 @@ minutes with a soft rim. Switch between them live from the control center's Disp
   login screen videos, and the packages come on top.
 - GRUB is optional: its theme is skipped with any other bootloader.
 
+### 🖥️ Hardware
+
+> [!IMPORTANT]
+> HyprPunk doesn't install any graphics driver. Install the ones your GPU needs yourself, before or right after
+> HyprPunk, following the Arch Wiki for [Intel](https://wiki.archlinux.org/title/Intel_graphics),
+> [AMD](https://wiki.archlinux.org/title/AMDGPU) or [NVIDIA](https://wiki.archlinux.org/title/NVIDIA), and
+> Hyprland's own [NVIDIA page](https://wiki.hypr.land/Nvidia/) for NVIDIA cards.
+
+The rest adapts to the machine on its own:
+
+- 🔋 The battery pill, alerts and charge limit only show on a laptop with a battery, the charge limit only when its
+  driver has one.
+- 💡 Brightness follows the screen's backlight, and the keyboard light where there is one.
+- 🖱️ The touchpad toggle only matters when there's a touchpad.
+- 🖥️ Several monitors are handled by `displayctl.sh` (see Display Settings below).
+
+Some of the looks are heavy for a small machine or a virtual machine: the liquid glass (switch to **Classic** in the
+control center's Display block), the login screen's videos, and the 4-pass blur (`passes` in
+`~/.config/hypr/looknfeel.lua`).
+
 ### ▶️ Run it
 
 ```sh
