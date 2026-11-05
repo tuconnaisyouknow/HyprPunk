@@ -1,6 +1,6 @@
 -- The environment every app started from the session inherits: language, cursor,
--- Wayland hints for GTK and Qt. Loaded by hyprland.lua, and your terminal and editor
--- come last, from hyprland.lua.
+-- Wayland hints for GTK and Qt. Loaded by hyprland.lua, before your personal/env.lua.
+-- Your terminal and editor come last, from hyprland.lua.
 
 ---------------------------
 -- ENVIRONMENT VARIABLES --
