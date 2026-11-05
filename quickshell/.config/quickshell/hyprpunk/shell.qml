@@ -82,6 +82,11 @@ ShellRoot {
             "height": 38
         })
         property bool controlPillHovered: false
+        // The screens whose control pill hides under the open panel, like the other pills
+        // under their card, and those where the panel, folded back, waits for the bar to
+        // draw the pill again before it goes, so the bar never shows neither.
+        property var controlPillsCovered: []
+        property var controlPillsRevealing: []
         property var controlPillScreen: null
         property bool doNotDisturb: false
         // Screenshots. A request has a mode ("screen", "region", "annotate", "record",

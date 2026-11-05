@@ -26,10 +26,14 @@ PanelWindow {
     // panel folding past it nor the pill it lands on open it again, until it moves off.
     property bool closedOnPurpose: false
     property real retainedHeight: 0
-    property real progress: opened ? 1 : 0
-    // The pages exist only from the moment the pointer reaches the pill until the panel
-    // has folded back, so a closed control center costs next to nothing.
-    readonly property bool contentWanted: pillHovered || opened || progress > 0
+    // Set as it opens: the panel only grows once its first frame is on screen, so the
+    // animation never starts behind your back.
+    property bool openPending: false
+    property real progress: opened && !openPending ? 1 : 0
+    // The panel covers its pill, from its first frame on screen until it has folded back.
+    property bool pillCovered: false
+    // Folded back, the panel stays until the bar has drawn the pill again.
+    readonly property bool pillRevealing: shellState.controlPillsRevealing.indexOf(screen.name) >= 0
     readonly property int panelWidth: 452
     // The panel's tallest: a page taller than that scrolls.
     readonly property int panelMaxHeight: 680
@@ -413,6 +417,7 @@ PanelWindow {
 
     onOpenedChanged: {
         shellState.controlCenterOpen = opened;
+        openPending = opened && progress === 0;
         if (opened) {
             powerProfileProcess.running = true;
             chargeLimitError = "";
@@ -453,11 +458,26 @@ PanelWindow {
             closeDelay.restart();
 
     }
-    // Folded away with the pointer elsewhere: the pill opens it again as usual.
     onProgressChanged: {
+        // Folded away with the pointer elsewhere: the pill opens it again as usual.
         if (progress === 0 && !pillHovered)
             closedOnPurpose = false;
 
+        if (progress === 0 && pillCovered) {
+            pillCovered = false;
+            shellState.controlPillsRevealing = shellState.controlPillsRevealing.concat([screen.name]);
+        } else if (progress > 0 && pillRevealing) {
+            // Caught again while the pill shows back: the panel covers it again.
+            shellState.controlPillsRevealing = shellState.controlPillsRevealing.filter((name) => {
+                return name !== screen.name;
+            });
+        }
+    }
+    onPillCoveredChanged: {
+        const others = shellState.controlPillsCovered.filter((name) => {
+            return name !== screen.name;
+        });
+        shellState.controlPillsCovered = pillCovered ? others.concat([screen.name]) : others;
     }
     implicitWidth: panelWidth + pill.right
     implicitHeight: panelMaxHeight + pill.top
@@ -596,7 +616,7 @@ PanelWindow {
 
             anchors.top: parent.top
             anchors.right: parent.right
-            visible: controlCenter.progress > 0
+            visible: controlCenter.progress > 0 || controlCenter.openPending || controlCenter.pillRevealing
             width: controlCenter.lerp(controlCenter.pill.width, controlCenter.panelWidth)
             height: controlCenter.lerp(controlCenter.pill.height, fullHeight)
             // The pill's corners: rounder ones would let the pill's show under the panel.
@@ -626,8 +646,8 @@ PanelWindow {
                 }
             }
 
-            // Built bit by bit during the wait on the pill, so the bar never stutters,
-            // and finished at once when the panel opens (with Super+C, right away).
+            // Built bit by bit once the shell starts and kept, so the panel opens as fast
+            // as the bar's cards, with Super+C too. Finished at once if opened before.
             Loader {
                 id: pagesLoader
 
@@ -637,7 +657,6 @@ PanelWindow {
                 anchors.topMargin: 14
                 // The pages take this width, and give the Loader their height.
                 width: controlCenter.panelWidth - 28
-                active: controlCenter.contentWanted
                 asynchronous: !controlCenter.opened
                 onStatusChanged: panel.heightAnimated = status === Loader.Ready
 
@@ -1413,6 +1432,18 @@ PanelWindow {
         screen: controlCenter.screen
         active: controlCenter.opened && (controlCenter.openedByKeybind || controlCenter.held)
         onDismissed: controlCenter.close()
+    }
+
+    // The panel's first frame is on screen: it grows, and the pill hides under it.
+    Connections {
+        function onFrameSwapped() {
+            if ((controlCenter.openPending || controlCenter.progress > 0) && !controlCenter.pillCovered)
+                controlCenter.pillCovered = true;
+
+            controlCenter.openPending = false;
+        }
+
+        target: panel.Window.window
     }
 
     mask: Region {
