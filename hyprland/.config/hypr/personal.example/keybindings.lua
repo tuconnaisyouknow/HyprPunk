@@ -4,7 +4,7 @@
 -- Uncomment what you want, it all does nothing as it stands.
 
 -- Swap an app and the shortcut that opens it follows (terminal, files, browser, notes,
--- music and chat)
+-- music)
 -- hyprpunk.programs.music = "spicetify auto"
 
 -- A new shortcut
