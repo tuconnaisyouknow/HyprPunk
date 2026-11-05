@@ -19,6 +19,11 @@ SearchPanel {
     // Most recent first.
     property var recent: []
     readonly property var results: {
+        // Nothing while it's closed: sorting them all and filling the grid at startup
+        // held up the bar's first values.
+        if (!shown)
+            return [];
+
         const needle = query.trim().toLowerCase();
         // The skin tone variants only when asked for.
         const emojis = needle.includes("tone") ? picker.emojis : baseEmojis;

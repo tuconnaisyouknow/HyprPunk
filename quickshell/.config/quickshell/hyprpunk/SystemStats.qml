@@ -37,6 +37,11 @@ Singleton {
     }
 
     function parseStat(text) {
+        // The usage needs two samples: the second comes quickly instead of a second
+        // later, so the bar doesn't sit at 0% after startup.
+        if (previousTimes.length === 0)
+            secondSample.start();
+
         const times = [];
         const cores = [];
         let usage = 0;
@@ -146,6 +151,13 @@ Singleton {
             onStreamFinished: temperatureFile.path = text.trim()
         }
 
+    }
+
+    Timer {
+        id: secondSample
+
+        interval: 250
+        onTriggered: statFile.reload()
     }
 
     Timer {

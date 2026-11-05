@@ -40,7 +40,9 @@ IslandPanel {
     readonly property string mode: trimmedQuery.startsWith(">") ? "command" : trimmedQuery.startsWith("?") ? "web" : "apps"
     readonly property string modeArgument: mode === "apps" ? trimmedQuery : trimmedQuery.slice(1).trim()
     readonly property var calculation: mode === "apps" ? calculate(trimmedQuery) : null
-    readonly property var results: mode === "apps" ? search(trimmedQuery, DesktopEntries.applications.values, history) : []
+    // Only while it's on screen: the applications arrive one by one at startup, and
+    // sorting them and rebuilding the grid each time held up the bar's first values.
+    readonly property var results: shown && mode === "apps" ? search(trimmedQuery, DesktopEntries.applications.values, history) : []
     // calc, command, web or "" when there is no special row.
     readonly property string special: mode === "command" ? "command" : mode === "web" ? "web" : calculation !== null ? "calc" : trimmedQuery !== "" && results.length === 0 ? "web" : ""
     readonly property int gridRows: Math.min(maxRows, Math.ceil(results.length / columns))

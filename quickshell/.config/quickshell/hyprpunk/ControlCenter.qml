@@ -32,6 +32,9 @@ PanelWindow {
     property real progress: opened && !openPending ? 1 : 0
     // The panel covers its pill, from its first frame on screen until it has folded back.
     property bool pillCovered: false
+    // The pages are built once the bar has its first values, or right away if you open
+    // the panel before. Kept from then on.
+    property bool pagesWanted: false
     // Folded back, the panel stays until the bar has drawn the pill again.
     readonly property bool pillRevealing: shellState.controlPillsRevealing.indexOf(screen.name) >= 0
     readonly property int panelWidth: 452
@@ -419,6 +422,7 @@ PanelWindow {
         shellState.controlCenterOpen = opened;
         openPending = opened && progress === 0;
         if (opened) {
+            pagesWanted = true;
             powerProfileProcess.running = true;
             chargeLimitError = "";
             chargeLimitProcess.running = true;
@@ -646,11 +650,12 @@ PanelWindow {
                 }
             }
 
-            // Built bit by bit once the shell starts and kept, so the panel opens as fast
-            // as the bar's cards, with Super+C too. Finished at once if opened before.
+            // Built bit by bit soon after the shell starts and kept, so the panel opens as
+            // fast as the bar's cards, with Super+C too. Finished at once if opened before.
             Loader {
                 id: pagesLoader
 
+                active: controlCenter.pagesWanted
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.rightMargin: 14
@@ -1229,6 +1234,14 @@ PanelWindow {
 
         }
 
+    }
+
+    // Building them takes the shell's time bit by bit, which delayed the bar's values
+    // when it began at startup.
+    Timer {
+        interval: 1500
+        running: true
+        onTriggered: controlCenter.pagesWanted = true
     }
 
     Timer {
