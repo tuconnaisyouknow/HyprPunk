@@ -397,7 +397,7 @@ WlSessionLockSurface {
         Pill {
             readonly property var start: surface.from !== null ? surface.from.monitor : null
 
-            x: start !== null ? surface.between(start.x, 24) : 24
+            x: start !== null ? surface.between(start.x, Theme.barMargin) : Theme.barMargin
             y: start !== null ? start.y : 6
             visible: surface.bar !== null && surface.width >= 1200
             // Not in the bar (a narrow screen): it fades in instead.
@@ -679,7 +679,7 @@ WlSessionLockSurface {
         Pill {
             readonly property var start: surface.from !== null ? surface.from.control : null
 
-            x: start !== null ? surface.between(start.x, surface.width - 24 - width) : surface.width - 24 - width
+            x: start !== null ? surface.between(start.x, surface.width - Theme.barMargin - width) : surface.width - Theme.barMargin - width
             y: start !== null ? start.y : 6
             visible: surface.bar !== null
 
