@@ -425,7 +425,10 @@ touching your preferences:
   from `hyprland/.config/hypr/personal.example/`, one per subject, each loaded after HyprPunk's own file so
   whatever you set wins:
   - ⌨️ `keybindings.lua` to swap the apps the shortcuts open (`hyprpunk.programs.music = "spicetify auto"`), or
-    add, rebind and free shortcuts with `hyprpunk.bind`, `hyprpunk.rebind` and `hyprpunk.unbind`.
+    add, rebind and free shortcuts with `hyprpunk.bind`, `hyprpunk.rebind` and `hyprpunk.unbind`. Your terminal
+    and editor (`hyprpunk.programs.terminal` and `.editor`) are also what the shell opens your config files and
+    commands in. Only terminals that run a command given with `-e` are supported (Kitty, Alacritty, foot,
+    Ghostty…).
   - 🪟 `rules.lua` to send your apps to a workspace with `hyprpunk.app("org.gnome.Geary", 6)`, float the dialogs of
     an app that lets them get tiled with `hyprpunk.float_dialogs(class, main window's title)`, plus any window rule.
   - 🖱️ `input.lua` for the mouse, touchpad and gestures. The keyboard layout comes from the shell's settings.

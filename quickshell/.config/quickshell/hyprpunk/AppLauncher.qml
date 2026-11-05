@@ -12,7 +12,6 @@ import Quickshell.Widgets
 IslandPanel {
     id: launcher
 
-    readonly property string terminal: "kitty"
     readonly property string searchUrl: "https://www.startpage.com/sp/search?query="
     // Runs the command given as $1 in a terminal, which then waits for Enter to close.
     readonly property string holdScript: "eval \"$1\"; status=$?; printf '\\n\\033[2m[exit %s] Press Enter to close\\033[0m' \"$status\"; read -r _"
@@ -166,7 +165,11 @@ IslandPanel {
         close();
         // Through Hyprland, so the app gets the current locale (Session).
         const command = action ? action.command : entry.command;
-        Session.launch(entry.runInTerminal ? [terminal, "-e"].concat(command) : command, entry.workingDirectory || Quickshell.env("HOME"));
+        const directory = entry.workingDirectory || Quickshell.env("HOME");
+        if (entry.runInTerminal)
+            Session.launchInTerminal(command, directory);
+        else
+            Session.launch(command, directory);
     }
 
     function searchWeb(text) {
@@ -181,8 +184,12 @@ IslandPanel {
         if (command === "")
             return ;
 
-        // Not kitty --hold: it drops into a shell after, and fastfetch would bury the output.
-        Session.launch(inTerminal ? [terminal, "-e", "sh", "-c", holdScript, "sh", command] : ["sh", "-c", command]);
+        // Held by the script, not by kitty's --hold: that drops into a shell after, and
+        // fastfetch would bury the output.
+        if (inTerminal)
+            Session.launchInTerminal(["sh", "-c", holdScript, "sh", command]);
+        else
+            Session.launch(["sh", "-c", command]);
     }
 
     function activate(shift) {
@@ -391,7 +398,7 @@ IslandPanel {
             anchors.right: parent.right
             anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
-            text: launcher.special === "calc" ? "Enter copies" : launcher.special === "command" ? "Shift+Enter in " + launcher.terminal : "Search the web"
+            text: launcher.special === "calc" ? "Enter copies" : launcher.special === "command" ? "Shift+Enter in a terminal" : "Search the web"
             color: Theme.lavender
             font.family: Theme.font
             font.pixelSize: 12

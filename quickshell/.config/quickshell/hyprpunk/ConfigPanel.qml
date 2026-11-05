@@ -1,20 +1,20 @@
 import QtQuick
 import Quickshell
 
-// Quick access to your own config files, opened in Neovim. HyprPunk's own files stay
-// out, since editing them would clash with the next git pull.
+// Quick access to your own config files, opened in your editor. HyprPunk's own files
+// stay out, since editing them would clash with the next git pull.
 SearchPanel {
     id: config
 
     readonly property string home: Quickshell.env("HOME")
     readonly property int rowHeight: 48
     readonly property int rowSpacing: 4
-    // command, when set, is run in kitty instead of nvim on the path.
+    // $EDITOR on the path, in your terminal. A folder in Neovim opens its file picker.
+    readonly property string editScript: "if [ -d \"$1\" ] && [ \"${EDITOR:-nvim}\" = nvim ]; then exec nvim \"+lua Snacks.dashboard.pick('files', { cwd = '$1' })\"; fi; exec ${EDITOR:-nvim} \"$1\""
     readonly property var files: [{
         "icon": "",
         "name": "Hyprland",
-        "path": "~/.config/hypr/personal",
-        "command": ["nvim", "+lua Snacks.dashboard.pick(\"files\", { cwd = vim.fn.expand(\"~/.config/hypr/personal\") })"]
+        "path": "~/.config/hypr/personal"
     }, {
         "icon": "󰌌",
         "name": "Hyprland keybindings",
@@ -54,7 +54,7 @@ SearchPanel {
 
     function edit(file) {
         close();
-        Session.launch(["kitty"].concat(file.command || ["nvim", file.path.replace(/^~/, home)]));
+        Session.launchInTerminal(["sh", "-c", editScript, "sh", file.path.replace(/^~/, home)]);
     }
 
     panelName: "config"

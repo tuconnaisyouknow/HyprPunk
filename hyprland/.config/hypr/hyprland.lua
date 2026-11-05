@@ -21,3 +21,8 @@ for _, name in ipairs({ "input", "rules", "keybindings", "autostart" }) do
     require("personal." .. name)
   end
 end
+
+-- Your terminal and editor, for every app and the shell's commands. Set here, after
+-- your files, so a change you make there counts.
+hl.env("TERMINAL", hyprpunk.programs.terminal)
+hl.env("EDITOR", hyprpunk.programs.editor)
