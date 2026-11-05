@@ -436,6 +436,9 @@ touching your preferences:
     from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
   - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
     `hyprpunk.autostart.remove`.
+- 🖥️ **Your tmux and Kitty settings** go in `~/.config/tmux/personal.conf` and `~/.config/kitty/personal.conf`,
+  read last so they win, kept out of git and skipped when they don't exist. Plugins you add to tmux's get installed
+  by tpm too.
 - 🐚 **Your shell tweaks** go in files of your own, each skipped when it doesn't exist:
   - `~/.personalrc`, read at the very end of `.zshrc`, so your aliases, functions, options and variables win over
     HyprPunk's, fzf's and the prompt's.

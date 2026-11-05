@@ -4,6 +4,10 @@ wallpapers/Pictures/Wallpapers/.nextcloudsync.log
 wallpapers/Pictures/Wallpapers/.sync_*
 gtk3/.config/gtk-3.0/bookmarks
 
+# Your own tmux and kitty settings, read by their configs
+tmux/.config/tmux/personal.conf
+kitty/.config/kitty/personal.conf
+
 # btop rewrites its settings whenever you change one in its interface. The repo keeps
 # btop.default.conf instead, copied in at install
 btop/.config/btop/btop.conf
