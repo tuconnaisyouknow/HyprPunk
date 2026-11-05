@@ -227,6 +227,21 @@ IslandPanel {
             width: grid.cellWidth
             height: grid.cellHeight
 
+            // Fainter than the selection's glass, which a click moves here.
+            GlassSurface {
+                anchors.margins: picker.highlightInset
+                radius: picker.highlightRadius
+                opacity: tileHover.hovered && grid.currentIndex !== tile.index ? 1 : 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 120
+                    }
+
+                }
+
+            }
+
             // The room the preview has, under the selection's glass.
             Item {
                 id: area
@@ -296,6 +311,8 @@ IslandPanel {
             }
 
             HoverHandler {
+                id: tileHover
+
                 cursorShape: Qt.PointingHandCursor
             }
 
