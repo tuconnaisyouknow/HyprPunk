@@ -37,6 +37,9 @@ PopupWindow {
     property bool mapped: false
     // Set while the window maps: the card only grows once its first frame is on screen.
     property bool openPending: false
+    // Set once folded back: the pill shows again, and the card only goes once the bar has
+    // drawn it, or the bar shows neither for a frame.
+    property bool revealPending: false
     // Opened on purpose (a shortcut, a click) rather than by hovering: it stays open when
     // the pointer leaves, until closed.
     property bool pinned: false
@@ -120,6 +123,7 @@ PopupWindow {
         closeTimer.stop();
         hideTimer.stop();
         opening();
+        revealPending = false;
         openPending = true;
         mapped = true;
     }
@@ -139,6 +143,7 @@ PopupWindow {
         closeTimer.stop();
         hideTimer.stop();
         openPending = false;
+        revealPending = false;
         expanded = false;
         mapped = false;
     }
@@ -152,12 +157,13 @@ PopupWindow {
     anchor.adjustment: PopupAdjustment.SlideX
 
     // The card's glass lets what's under it through: the pill hides while the card covers
-    // it, from the card's first frame on screen so the bar never shows neither.
+    // it, from the card's first frame on screen to the bar's first frame with the pill
+    // back, so the bar never shows neither.
     Binding {
         target: popup.pill
         property: "opacity"
         value: 0
-        when: popup.visible && !popup.openPending
+        when: popup.visible && !popup.openPending && !popup.revealPending
     }
 
     Connections {
@@ -169,6 +175,25 @@ PopupWindow {
         }
 
         target: card.Window.window
+    }
+
+    Connections {
+        function onFrameSwapped() {
+            if (popup.revealPending) {
+                popup.revealPending = false;
+                popup.mapped = false;
+                popup.closedOnPurpose = false;
+            }
+        }
+
+        target: popup.pill.Window.window
+    }
+
+    // Opening again while the pill shows back: the card stays and covers it again.
+    onExpandedChanged: {
+        if (expanded)
+            revealPending = false;
+
     }
 
     // The anchor is only worked out on opening: follow the pill when it moves or
@@ -240,10 +265,7 @@ PopupWindow {
 
         // Lets the card fold back onto the pill first.
         interval: 320
-        onTriggered: {
-            popup.mapped = false;
-            popup.closedOnPurpose = false;
-        }
+        onTriggered: popup.revealPending = true
     }
 
     ClippingRectangle {
