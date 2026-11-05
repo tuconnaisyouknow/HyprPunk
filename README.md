@@ -366,7 +366,8 @@ They can be changed after installation from the command line:
 
 The profiles are stored in `$XDG_STATE_HOME/hyprpunk/locale-language` and `locale-regional`. Hyprland, D-Bus, and the
 systemd user environment are refreshed immediately for newly started applications; already running applications need
-to be restarted.
+to be restarted. The shell follows the regional formats on the spot: the clocks run on 12 hours with AM/PM with `us`
+and on 24 hours with `fr`, and the calendar starts the week on the right day.
 
 ---
 

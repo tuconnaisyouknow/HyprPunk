@@ -652,7 +652,7 @@ PanelWindow {
                     id: dateTimeLabel
 
                     visible: !bar.islandOsdShown
-                    text: Qt.formatDateTime(clock.date, "HH:mm")
+                    text: Session.clockText(clock.date)
 
                     // Ticks every second though it shows minutes: its timer stands still
                     // during sleep, so on waking it would keep the old time up to a minute.
@@ -1050,7 +1050,7 @@ PanelWindow {
 
                         anchors.verticalCenter: parent.verticalCenter
                         x: Math.round(islandX + (centerX - islandX) * calendarPopup.progress)
-                        text: Qt.formatDateTime(clock.date, "HH:mm")
+                        text: Session.clockText(clock.date)
                     }
 
                 }
