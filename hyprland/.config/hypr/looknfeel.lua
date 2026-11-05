@@ -41,13 +41,13 @@ hl.config({
     dim_inactive = true,
     dim_strength = 0.12,
 
-    -- A faint mauve glow around the window you're in, a plain shadow for the others
+    -- A faint mauve glow around the window you're in, nothing around the others
     shadow = {
       enabled = true,
       range = 14,
       render_power = 4,
       color = "rgba(" .. colors.mauveAlpha .. "26)",
-      color_inactive = "rgba(1a1a1a99)",
+      color_inactive = "rgba(00000000)",
     },
 
     blur = {
