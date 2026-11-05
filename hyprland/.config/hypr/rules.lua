@@ -31,9 +31,6 @@ for _, home in ipairs(homes) do
   hyprpunk.app(home.class, home.workspace)
 end
 
--- Bitwarden's little popup is its own Chromium app: float it so it doesn't cut Brave in half
-hl.window_rule({ match = { class = "brave-nngceckbapebfimnlniiiahkandclblb-Default" }, float = true })
-
 -- Floats every window of an app but its main one, picked by the title it opens with.
 -- For the apps whose dialogs don't say they belong to their main window, so they'd get
 -- tiled: cut off when they need more room than the tile, or drawn small in a tile
