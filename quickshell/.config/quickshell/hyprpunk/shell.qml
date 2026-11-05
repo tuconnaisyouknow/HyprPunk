@@ -228,6 +228,12 @@ ShellRoot {
         }
     }
 
+    NotificationHistory {
+        id: notificationArchive
+
+        notificationServer: notificationService
+    }
+
     // The shell answers the password prompts itself, on the focused screen.
     PolkitAgent {
         id: polkitAgent
@@ -301,6 +307,7 @@ ShellRoot {
             screen: modelData
             shellState: globalState
             notificationServer: notificationService
+            notificationHistory: notificationArchive
         }
 
     }

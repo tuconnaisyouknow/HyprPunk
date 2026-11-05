@@ -8,9 +8,11 @@ ColumnLayout {
     id: list
 
     required property var notificationServer
+    required property var notificationHistory
     // The card is open: the notifications come in one after another each time it opens.
     property bool shown: false
-    readonly property var trackedValues: notificationServer.trackedNotifications.values
+    // The ones from before a restart under the live ones, which come oldest first.
+    readonly property var trackedValues: notificationHistory.entries.concat(notificationServer.trackedNotifications.values)
     // The notifications listed. A closed one stays until its exit animation is over.
     property var entryIds: []
     property var notificationObjects: ({})
