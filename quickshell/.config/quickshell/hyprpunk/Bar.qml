@@ -18,7 +18,9 @@ PanelWindow {
 
     required property var shellState
     required property var notificationServer
-    readonly property int notificationCount: notificationServer.trackedNotifications.values.length
+    // The notifications from before Quickshell was restarted.
+    required property var notificationHistory
+    readonly property int notificationCount: notificationServer.trackedNotifications.values.length + notificationHistory.entries.length
     readonly property var workspaceIcons: ["", "", "", "", "", "", "", "", "", "", ""]
     readonly property var battery: UPower.displayDevice
     readonly property bool hasBattery: battery.ready && battery.isLaptopBattery && battery.isPresent
@@ -1265,6 +1267,7 @@ PanelWindow {
                     anchors.rightMargin: 16
                     width: calendarPopup.notificationWidth - 32
                     notificationServer: bar.notificationServer
+                    notificationHistory: bar.notificationHistory
                     shown: calendarPopup.expanded
                     opacity: calendarPopup.expanded ? 1 : 0
 
