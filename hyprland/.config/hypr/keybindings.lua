@@ -173,11 +173,10 @@ bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd(shell .. "lock lock"), "Lock the 
 bind(mainMod .. " + Escape", hl.dsp.exec_cmd(shell .. "session toggle"),
   "Open the session menu (lock, logout, reboot, shutdown)")
 
--- Upkeep: restart what misbehaves, update everything. Alt keeps them out of a slip's
--- reach, the update above all since it asks nothing.
+-- Upkeep: restart what misbehaves, update everything. Alt keeps them out of a slip's reach.
 bind(mainMod .. " + ALT + Q", hl.dsp.exec_cmd("killall qs ; qs -c hyprpunk"), "Reload Quickshell")
 bind(mainMod .. " + ALT + I", hl.dsp.exec_cmd("killall hypridle ; hypridle"), "Reload Hypridle")
-bind(mainMod .. " + ALT + U", hl.dsp.exec_cmd("kitty -e yay -Syu --noconfirm --removemake"), "Update all packages")
+bind(mainMod .. " + ALT + U", hl.dsp.exec_cmd("kitty -e yay -Syu --removemake"), "Update all packages")
 
 -------------------
 -- HARDWARE KEYS --

@@ -21,7 +21,7 @@ Singleton {
             countProcess.running = true;
     }
 
-    // In a terminal, then counted again.
+    // In a terminal, where yay asks before it changes anything, then counted again.
     function upgrade() {
         upgradeProcess.running = true;
     }
@@ -52,7 +52,7 @@ Singleton {
     Process {
         id: upgradeProcess
 
-        command: ["kitty", "-e", "yay", "-Syu", "--noconfirm", "--removemake"]
+        command: ["kitty", "-e", "yay", "-Syu", "--removemake"]
         // The current locale, not the one the shell was started with.
         environment: Session.localeEnvironment
         onExited: updates.check()
