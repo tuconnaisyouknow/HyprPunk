@@ -364,8 +364,8 @@ PanelWindow {
         id: barContent
 
         anchors.fill: parent
-        anchors.leftMargin: 24
-        anchors.rightMargin: 24
+        anchors.leftMargin: Theme.barMargin
+        anchors.rightMargin: Theme.barMargin
 
         RowLayout {
             id: leftGroup

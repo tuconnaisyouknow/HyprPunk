@@ -8,6 +8,9 @@ import Quickshell
 // color changes everywhere at once.
 Singleton {
     readonly property string font: "JetBrainsMono Nerd Font"
+    // How far the bar's pills sit from the screen's sides, in line with the windows'
+    // edges (Hyprland's gaps_out).
+    readonly property int barMargin: 10
 
     readonly property color crust: "#11111b"
     readonly property color base: "#1e1e2e"

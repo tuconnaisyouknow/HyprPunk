@@ -76,7 +76,7 @@ ShellRoot {
         // Where the bar's right-most pill is, for the control center to grow out of it.
         // right and top are distances from the screen's edges.
         property var controlPill: ({
-            "right": 24,
+            "right": Theme.barMargin,
             "top": 6,
             "width": 120,
             "height": 38
