@@ -405,6 +405,8 @@ install_oh_my_zsh() {
 
 # The dotfiles go straight to ~/.dotfiles, which the fresh system check found empty.
 # A clone that got through is kept, one cut short by an interruption starts over.
+# Only today's files are downloaded: the history comes without the old screenshots,
+# which git fetches if you ever go back to an older version.
 clone_dotfiles() {
   if [[ -d "$DOTFILES_DIR/.git" ]] && git -C "$DOTFILES_DIR" rev-parse --verify HEAD &>/dev/null; then
     echo "The dotfiles are already downloaded."
@@ -412,7 +414,7 @@ clone_dotfiles() {
   fi
 
   rm -rf -- "$DOTFILES_DIR"
-  git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+  git clone --filter=blob:none "$DOTFILES_REPO" "$DOTFILES_DIR"
 }
 
 # Link each module into your home. The others (sddm, grub, battery…) are installed
