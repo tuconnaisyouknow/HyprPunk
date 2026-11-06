@@ -29,7 +29,7 @@ The screen blurs into the lock, with the date and time over the player and its s
 
 #### 🏝️ Dynamic island
 
-The clock's island grows into every panel, the password prompts for admin rights, the apps' file pickers and the screen share picker included, and shows the volume, brightness, keyboard light, microphone and touchpad changes.
+The clock's island grows into every panel, the password prompts for admin rights, the apps' file pickers and the screen share picker included, and shows the volume, brightness, keyboard light, microphone and touchpad changes, with new notifications stacking out of it.
 
 ![osd](./assets/screenshots/osd.webp)
 
