@@ -5,7 +5,8 @@ import Quickshell.Services.Mpris
 
 // The music's loudness per pitch, for a music wave (VisualizerWave). The desktop's runs
 // cava while a player plays and streams each frame over a socket; the lock's follows that
-// stream, so both waves have the very same shape when one takes over from the other.
+// stream rather than running a second cava. The desktop's wave knows a lock is on its way
+// or up while it's followed, and tells it over the stream once it lies flat.
 Scope {
     id: cavaLevels
 
@@ -26,10 +27,26 @@ Scope {
     property var levels: []
     // The lock screens following the stream.
     property var followers: []
+    readonly property bool followed: followers.length > 0
     readonly property string streamPath: Quickshell.env("XDG_RUNTIME_DIR") + "/hyprpunk-music.sock"
+
+    // Told by the desktop's wave: it lies flat, so the lock can take its snapshot.
+    signal flat()
+
+    // To the lock screens following the stream.
+    function tell(line) {
+        for (const follower of followers) {
+            follower.write(line + "\n");
+            follower.flush();
+        }
+    }
 
     // cava's frame: the levels out of 1000, separated by ';'.
     function read(line) {
+        if (line === "flat") {
+            flat();
+            return ;
+        }
         const levels = line.split(";").filter((value) => {
             return value.trim() !== "";
         }).map((value) => {
@@ -54,10 +71,7 @@ Scope {
         stdout: SplitParser {
             onRead: (line) => {
                 cavaLevels.read(line);
-                for (const follower of cavaLevels.followers) {
-                    follower.write(line + "\n");
-                    follower.flush();
-                }
+                cavaLevels.tell(line);
             }
         }
 
@@ -71,9 +85,14 @@ Scope {
             id: follower
 
             Component.onCompleted: cavaLevels.followers = cavaLevels.followers.concat([follower])
-            Component.onDestruction: cavaLevels.followers = cavaLevels.followers.filter((other) => {
-                return other !== follower;
-            })
+            // The lock has gone: the connection stays around, closed.
+            onConnectedChanged: {
+                if (!connected)
+                    cavaLevels.followers = cavaLevels.followers.filter((other) => {
+                    return other !== follower;
+                });
+
+            }
         }
 
     }

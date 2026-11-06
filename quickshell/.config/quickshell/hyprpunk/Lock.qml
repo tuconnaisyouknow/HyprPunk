@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Pam
 import Quickshell.Wayland
@@ -27,8 +26,12 @@ Scope {
     // Snapshots of the screens just before locking, so the lock can blur out of them
     // and back. Uncompressed, since a PNG takes grim most of a second.
     readonly property string snapshotDir: Quickshell.env("XDG_RUNTIME_DIR")
-    // For the lock's music wave, which takes over from the desktop's (VisualizerShell.qml).
+    // For the lock screen's music wave.
     readonly property var music: cava
+    // On its way or up.
+    property bool covering: false
+    // Waiting for the desktop's wave to lie flat, so the snapshot doesn't keep it.
+    property bool waitingForWave: false
 
     // Each failed try, for the island to shake.
     signal failed()
@@ -42,35 +45,56 @@ Scope {
 
             return ;
         }
-        // The screens are being frozen: the lock comes right after, already shown.
-        if (snapshot.running) {
-            if (instant)
+        // On its way: the lock comes right after, already shown.
+        if (covering) {
+            if (instant) {
                 locker.instant = true;
+                if (waitingForWave)
+                    freeze();
 
+            }
             return ;
         }
+        covering = true;
         locker.instant = instant;
         password = "";
         error = "";
         unlocking = false;
-        setXray(false);
-        // Where the windows are, for the lock to tell whether the music wave was in
-        // sight: Hyprland only says when asked, and the snapshot gives it time to answer.
-        Hyprland.refreshToplevels();
+        deadline.restart();
+        // Not before sleep, which can't wait.
+        if (music.playing && !instant)
+            waitingForWave = true;
+        else
+            freeze();
+    }
+
+    // Snapshots the screens, then locks.
+    function freeze() {
+        waitingForWave = false;
         snapshot.command = ["sh", "-c", snapshot.script, "sh", snapshotDir].concat(Quickshell.screens.map((screen) => {
             return screen.name;
         }));
         snapshot.running = true;
-        // Locks anyway if grim takes too long.
-        snapshotTimeout.restart();
+    }
+
+    // Once the lock screens have played their way out. The first one is enough: they all
+    // play the same animation.
+    function unlockNow() {
+        if (!unlocking)
+            return ;
+
+        sessionLock.locked = false;
+        covering = false;
+        tellBars(false);
+        unlocking = false;
+        cleanup.running = true;
     }
 
     function lockNow() {
-        snapshotTimeout.stop();
+        deadline.stop();
+        waitingForWave = false;
         if (!sessionLock.locked) {
             tellBars(true);
-            setXray(true);
-            xrayOff.restart();
             sessionLock.locked = true;
         }
 
@@ -129,7 +153,7 @@ Scope {
             if (result === PamResult.Success) {
                 locker.password = "";
                 locker.unlocking = true;
-                unlockDelay.restart();
+                // The lock screens play their way out, then unlock (unlockNow).
             } else {
                 // pam_faillock tells why once the account is held.
                 locker.fail(messageIsError && message !== "" ? message : result === PamResult.MaxTries ? "Too many tries" : "Wrong password");
@@ -141,52 +165,17 @@ Scope {
         }
     }
 
-    // Hyprland drawing the desktop under the lock, so the desktop's music wave keeps
-    // moving: while the lock builds (Hyprland would freeze the screen until it shows), and
-    // just before unlocking (it would come back as it was when you locked). Not all along,
-    // it would make the blur drop frames.
-    function setXray(on) {
-        Hyprland.dispatch("function() hl.config({ misc = { session_lock_xray = " + on + " } }) end");
-    }
-
-    // The desktop's levels, followed from the snapshot until unlocked.
+    // The desktop's levels, followed while the lock covers the screen: the desktop's wave
+    // settles into the floor meanwhile (VisualizerShell.qml), and rises once unlocked.
     CavaLevels {
         id: cava
 
         shared: true
-        active: snapshot.running || sessionLock.locked
-    }
+        active: locker.covering
+        onFlat: {
+            if (locker.waitingForWave)
+                locker.freeze();
 
-    // Once the lock is shown, before it starts to blur.
-    Timer {
-        id: xrayOff
-
-        interval: 300
-        onTriggered: locker.setXray(false)
-    }
-
-    // The padlock opens and the screen fades out first.
-    Timer {
-        id: unlockDelay
-
-        interval: 950
-        onTriggered: {
-            locker.setXray(true);
-            unlockNow.restart();
-        }
-    }
-
-    // Long enough for the desktop's music wave to redraw under the lock.
-    Timer {
-        id: unlockNow
-
-        interval: 100
-        onTriggered: {
-            sessionLock.locked = false;
-            locker.setXray(false);
-            tellBars(false);
-            locker.unlocking = false;
-            cleanup.running = true;
         }
     }
 
@@ -202,10 +191,12 @@ wait'
         onExited: locker.lockNow()
     }
 
+    // Locks anyway when something's late: the desktop's wave lying flat (not running, or
+    // getting no frames) or grim. The lock then comes without the screen it blurs out of.
     Timer {
-        id: snapshotTimeout
+        id: deadline
 
-        interval: 1000
+        interval: 1500
         onTriggered: locker.lockNow()
     }
 

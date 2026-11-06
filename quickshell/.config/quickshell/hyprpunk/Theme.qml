@@ -18,6 +18,9 @@ Singleton {
     readonly property int cardOpenDelay: 350
     readonly property int cardCloseDelay: 220
     readonly property int cardFold: 280
+    // How long the music wave takes to settle into the floor or rise from it, around the
+    // lock screen.
+    readonly property int waveSettle: 450
 
     readonly property color crust: "#11111b"
     readonly property color base: "#1e1e2e"

@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 
@@ -27,6 +26,8 @@ WlSessionLockSurface {
     // Showing the time like the bar's island, before growing and after unlocking.
     property bool intro: !lock.instant
     property bool leaving: false
+    // The music wave stands: it rises as the lock comes in and settles as it goes.
+    property bool waveUp: lock.instant
     // The padlock closes once the island has grown, and stays shut until unlocked.
     property bool padlockClosed: lock.instant
     // The first moments, while the island tells it locked.
@@ -36,16 +37,6 @@ WlSessionLockSurface {
     readonly property string islandMode: leaving || intro ? "clock" : lock.unlocking ? "unlocking" : lock.error !== "" ? "error" : locking ? "locking" : osdShown ? "osd" : ""
     // The island's states that show the padlock.
     readonly property bool padlockShown: islandMode !== "clock" && islandMode !== "osd"
-    // Where the desktop's music wave sits (VisualizerShell.qml), for the lock's to take over.
-    // From the screen: the surface has no size yet on its first frame, which must already
-    // cover the snapshot's frozen wave with the live one.
-    readonly property real screenWidth: screen ? screen.width : width
-    readonly property real screenHeight: screen ? screen.height : height
-    readonly property real waveWidth: Math.round(screenWidth * 0.5)
-    readonly property real waveHeight: 110
-    // The desktop's wave was in sight when locking: the lock's is shown all along instead
-    // of fading in and out with the wallpaper, so the music never stops moving.
-    property bool waveInSight: false
 
     // Progress of what comes in between from and to of the reveal.
     function stage(from, to) {
@@ -73,46 +64,13 @@ WlSessionLockSurface {
         locking = false;
         reveal = 1;
         morph = 1;
+        waveUp = true;
     }
 
     function freeze() {
-        if (from === null && bar !== null) {
+        if (from === null && bar !== null)
             from = bar.lockGeometry();
-            waveInSight = desktopWaveInSight();
-        }
-    }
 
-    // No window over it on this screen's workspace. Whether music plays doesn't matter:
-    // it may start or stop while locked, and the wave shows or hides by itself. When in
-    // doubt it says no: the wave then fades in with the wallpaper, where a wrong yes
-    // pastes a patch of wallpaper through the window over it.
-    function desktopWaveInSight() {
-        if (!screen)
-            return false;
-
-        const monitor = Hyprland.monitorFor(screen);
-        if (monitor === null || monitor.activeWorkspace === null || monitor.width <= 0)
-            return false;
-
-        // From the monitor, in the windows' own units: the surface's screen still has
-        // no size when the lock freezes the scene.
-        const monitorWidth = monitor.width / monitor.scale;
-        const monitorHeight = monitor.height / monitor.scale;
-        const width = Math.round(monitorWidth * 0.5);
-        const left = monitor.x + (monitorWidth - width) / 2;
-        const right = left + width;
-        const top = monitor.y + monitorHeight - waveHeight;
-        return !monitor.activeWorkspace.toplevels.values.some((toplevel) => {
-            const ipc = toplevel.lastIpcObject || {};
-            // Not told yet: taken as covering it, or the patch of wallpaper meant for an
-            // uncovered wave would show through the window.
-            if (!ipc.at || !ipc.size)
-                return true;
-
-            const at = ipc.at;
-            const size = ipc.size;
-            return at[0] < right && at[0] + size[0] > left && at[1] < top + waveHeight && at[1] + size[1] > top;
-        });
     }
 
     color: Theme.crust
@@ -147,16 +105,16 @@ WlSessionLockSurface {
         easing.type: Easing.InOutCubic
     }
 
-    // The padlock opens first, then everything goes back to the screen as it was.
+    // Locking's own moves, the other way: the screen starts coming back as soon as the
+    // lock started coming in (the island's moment on the time), the same way, and the open
+    // padlock shows as long as the lock waited to shut it. The screen clears while the
+    // pills move: the blur's long, unseen tail would hold back the desktop and its wave,
+    // which only come back once the screens unlock.
     SequentialAnimation {
         id: revealOut
 
         PauseAnimation {
-            duration: 450
-        }
-
-        ScriptAction {
-            script: surface.leaving = true
+            duration: introDelay.interval
         }
 
         ParallelAnimation {
@@ -164,18 +122,33 @@ WlSessionLockSurface {
                 target: surface
                 property: "reveal"
                 to: 0
-                duration: 500
-                easing.type: Easing.InOutQuad
+                duration: morphIn.duration
+                easing.type: revealIn.easing.type
             }
 
             NumberAnimation {
                 target: surface
                 property: "morph"
                 to: 0
-                duration: 450
-                easing.type: Easing.InOutCubic
+                duration: morphIn.duration
+                easing.type: morphIn.easing.type
             }
 
+            SequentialAnimation {
+                PauseAnimation {
+                    duration: padlockDelay.interval - introDelay.interval
+                }
+
+                ScriptAction {
+                    script: surface.leaving = true
+                }
+
+            }
+
+        }
+
+        ScriptAction {
+            script: surface.lock.unlockNow()
         }
 
     }
@@ -186,6 +159,8 @@ WlSessionLockSurface {
                 revealIn.stop();
                 morphIn.stop();
                 revealOut.restart();
+                // Right away, as the desktop's settles as soon as you lock.
+                surface.waveUp = false;
                 // The lock already showed the OSD. Ended now, so the bar's island doesn't
                 // open for it once the lock is gone.
                 if (surface.bar !== null && surface.bar.statusOsdVisible)
@@ -215,6 +190,7 @@ WlSessionLockSurface {
             if (!surface.lock.unlocking) {
                 revealIn.start();
                 morphIn.start();
+                surface.waveUp = true;
             }
         }
     }
@@ -257,19 +233,6 @@ WlSessionLockSurface {
         visible: false
     }
 
-    // The same wallpaper, decoded on the spot for the patch over the music wave: Lock.qml
-    // has it in the cache at this size, and the patch must be there from the first frame,
-    // or the snapshot's frozen wave would flash under the live one.
-    Image {
-        id: waveCover
-
-        source: wallpaper.source
-        sourceSize.width: surface.screen ? surface.screen.width : 0
-        sourceSize.height: surface.screen ? surface.screen.height : 0
-        fillMode: Image.PreserveAspectCrop
-        visible: false
-    }
-
     // The screen as it was, with the bar painted over by the wallpaper: the lock draws
     // its own pills, so no ghost of them is left blurring in the background.
     Item {
@@ -292,25 +255,6 @@ WlSessionLockSurface {
                 width: surface.width
                 height: surface.height
                 sourceItem: wallpaper
-            }
-
-        }
-
-        // The same for the music wave, frozen in the snapshot: the lock draws it live.
-        Item {
-            x: (surface.screenWidth - surface.waveWidth) / 2
-            y: surface.screenHeight - surface.waveHeight
-            width: surface.waveWidth
-            height: surface.waveHeight
-            clip: true
-            visible: surface.waveInSight
-
-            ShaderEffectSource {
-                x: -parent.x
-                y: -parent.y
-                width: surface.screenWidth
-                height: surface.screenHeight
-                sourceItem: waveCover
             }
 
         }
@@ -342,18 +286,24 @@ WlSessionLockSurface {
         scale: 1.04 - 0.04 * surface.stage(0.25, 1)
     }
 
-    // The desktop's music wave, which the lock covers. Out of sight under the windows,
-    // it comes and goes with the wallpaper.
-    Item {
-        x: (surface.screenWidth - surface.waveWidth) / 2
-        y: surface.screenHeight - surface.waveHeight
-        width: surface.waveWidth
-        height: surface.waveHeight
-        opacity: surface.waveInSight ? 1 : surface.smooth(surface.stage(0.25, 1))
+    // The music wave, where the desktop's was (VisualizerShell.qml): that one settled into the
+    // floor before the screen froze, this one rises as the screen starts to blur, past the
+    // moments the shell stalls building the lock. Unlocking mirrors it: it settles as soon as
+    // the password is right, then the desktop's rises once unlocked. Both move the same way.
+    VisualizerWave {
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.round(parent.width * 0.5)
+        height: 110
+        music: surface.lock.music
+        presence: surface.waveUp ? 1 : 0
 
-        VisualizerWave {
-            anchors.fill: parent
-            music: surface.lock.music
+        Behavior on presence {
+            NumberAnimation {
+                duration: Theme.waveSettle
+                easing.type: Easing.InOutCubic
+            }
+
         }
 
     }
