@@ -8,10 +8,14 @@ Shape {
 
     // A CavaLevels.
     required property var music
+    // How much of the wave stands, from 0 (melted into the floor) to 1. It goes from the
+    // sides first and comes back from the middle out, so it settles and rises rather
+    // than only shrinking.
+    property real presence: 1
 
     // Low notes in the middle, mirrored towards the edges, so the wave stays symmetric.
     // The ends are pinned to the floor so it melts into the bottom of the screen.
-    function wavePath(levels, width, height) {
+    function wavePath(levels, width, height, presence) {
         if (levels.length === 0)
             return "M 0 " + height + " L " + width + " " + height + " Z";
 
@@ -24,9 +28,10 @@ Shape {
             const t = (i + 1) / (values.length + 1);
             // Softens the sides, otherwise the highs would stand up as walls at the edges
             const envelope = Math.pow(Math.sin(Math.PI * t), 0.6);
+            const standing = Math.max(0, Math.min(1, 2 * presence - Math.abs(2 * t - 1)));
             points.push({
                 "x": t * width,
-                "y": height - Math.max(0, Math.min(1, values[i])) * envelope * (height - 4)
+                "y": height - Math.max(0, Math.min(1, values[i])) * envelope * standing * standing * (3 - 2 * standing) * (height - 4)
             });
         }
         points.push({
@@ -70,7 +75,7 @@ Shape {
         }
 
         PathSvg {
-            path: wave.wavePath(wave.music.levels, wave.width, wave.height)
+            path: wave.wavePath(wave.music.levels, wave.width, wave.height, wave.presence)
         }
 
     }
