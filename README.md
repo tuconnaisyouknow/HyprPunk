@@ -140,7 +140,7 @@ minutes with a soft rim. Switch between them live from the control center's Disp
 
 - A fresh Arch Linux, installed with the minimal profile (for example `archinstall` with no desktop).
 - A user account in the `wheel` group with `sudo` working. Run the installer as that user, not as root.
-- An internet connection. The dotfiles alone weigh about 500 MB to download, mostly the screenshots, wallpapers and
+- An internet connection. The dotfiles alone weigh about 180 MB to download, mostly the screenshots, wallpapers and
   login screen videos, and the packages come on top.
 - GRUB is optional: its theme is skipped with any other bootloader.
 
