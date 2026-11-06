@@ -43,17 +43,28 @@ ShellRoot {
             "screen": ""
         })
         property int panelRequests: 0
-        // Where the dynamic island (the clock pill) is, for the panels growing out of it.
-        // Screen coordinates; centerOffset is how far it sits from the screen's middle.
-        property var islandPill: ({
-            "centerOffset": 0,
-            "top": 6,
-            "width": 70,
-            "height": 38
-        })
-        // The island panels shown right now, as "panel@screen", so the notifications wait
-        // instead of growing over them.
+        // The island panels open right now, as "panel@screen", so the notifications and
+        // the AirPods card wait their turn, then take the island's shape from them as they
+        // close (IslandFrame). The calendar card and the AirPods card count too.
         property var islandPanels: []
+        // The island panels that answer an app (a password, a file, a screen to share):
+        // the other panels can't take the island from them, and they take turns.
+        readonly property var promptPanels: ["polkit", "filechooser", "screenshare"]
+        // The screens showing a fullscreen window, which the shell's window is under: the
+        // panels you ask for don't open there, the prompts do (they show once it's gone).
+        property var fullscreenScreens: []
+
+        // Something takes the island on a screen (an island panel, the calendar): the
+        // others fold back.
+        signal islandClaimed(string screenName, string owner)
+
+        // A prompt holds the island on that screen, other than the one asking.
+        function promptShown(screenName, except) {
+            return islandPanels.some((key) => {
+                const [name, screen] = key.split("@");
+                return screen === screenName && name !== except && promptPanels.includes(name);
+            });
+        }
 
         // origin: the panel making the request (the main menu for its entries).
         function requestPanel(panel, action, screen, origin) {
@@ -67,27 +78,18 @@ ShellRoot {
         }
 
         // What the last request asks of this panel on this screen ("toggle", "open" or
-        // "close"), or "" when it's meant for another one.
+        // "close"), or "" when it's meant for another one, or can't open there.
         function requestedAction(panel, screen) {
             const request = panelRequest;
             const target = request.screen || (Hyprland.focusedMonitor !== null ? Hyprland.focusedMonitor.name : "");
-            return request.panel === panel && target === screen.name ? request.action : "";
+            if (request.panel !== panel || target !== screen.name)
+                return "";
+
+            if (request.action !== "close" && fullscreenScreens.includes(target) && !promptPanels.includes(panel))
+                return "";
+
+            return request.action;
         }
-        // Where the bar's right-most pill is, for the control center to grow out of it.
-        // right and top are distances from the screen's edges.
-        property var controlPill: ({
-            "right": Theme.barMargin,
-            "top": 6,
-            "width": 120,
-            "height": 38
-        })
-        property bool controlPillHovered: false
-        // The screens whose control pill hides under the open panel, like the other pills
-        // under their card, and those where the panel, folded back, waits for the bar to
-        // draw the pill again before it goes, so the bar never shows neither.
-        property var controlPillsCovered: []
-        property var controlPillsRevealing: []
-        property var controlPillScreen: null
         property bool doNotDisturb: false
         // Screenshots. A request has a mode ("screen", "region", "annotate", "record",
         // "record-region", "share-region" or "stop"), a screen (empty for the focused one) and a delay in ms.
@@ -236,222 +238,52 @@ ShellRoot {
 
     // The shell answers the password prompts itself, on the focused screen.
     PolkitAgent {
-        id: polkitAgent
+        id: polkitService
 
         onAuthenticationRequestStarted: globalState.requestPanel("polkit", "open")
     }
 
-    Variants {
-        model: Quickshell.screens
-
-        PolkitPrompt {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-            agent: polkitAgent
-        }
-
-    }
-
     // The apps' Open and Save dialogs, through the portal, on the focused screen too.
     FileChooser {
-        id: fileChooser
+        id: fileChooserService
 
         onRequested: globalState.requestPanel("filechooser", "open")
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        FileChooserPanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-            chooser: fileChooser
-        }
-
     }
 
     // What an app gets to see when it shares your screen, through
     // xdg-desktop-portal-hyprland, on the focused screen too.
     ScreenShare {
-        id: screenShare
+        id: screenShareService
 
         shellState: globalState
         onRequested: globalState.requestPanel("screenshare", "open")
     }
 
+    // The bar and its cards on every screen.
     Variants {
-        model: Quickshell.screens
-
-        ScreenSharePanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-            share: screenShare
-        }
-
-    }
-
-    Variants {
-        id: bars
+        id: screens
 
         model: Quickshell.screens
 
-        Bar {
+        ScreenShell {
             required property var modelData
 
             screen: modelData
             shellState: globalState
             notificationServer: notificationService
             notificationHistory: notificationArchive
-        }
-
-    }
-
-    Lock {
-        bars: bars.instances
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        ControlCenter {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
+            polkitAgent: polkitService
+            fileChooser: fileChooserService
+            screenShare: screenShareService
             airPods: airPodsService
         }
 
     }
 
-    Variants {
-        model: Quickshell.screens
-
-        SessionMenu {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        WallpaperPicker {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        SddmPicker {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        AppLauncher {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        ClipboardPanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        EmojiPanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        KeybindingsPanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        ConfigPanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        MainMenu {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        MonitorPanel {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    IslandNotifications {
-        shellState: globalState
-        notificationServer: notificationService
+    Lock {
+        bars: screens.instances.map((shell) => {
+            return shell.bar;
+        })
     }
 
     // Turns caffeine off once its time is up.
@@ -478,18 +310,6 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        ScreenshotMenu {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-        }
-
-    }
-
-    Variants {
-        model: Quickshell.screens
-
         ScreenshotSelector {
             required property var modelData
 
@@ -502,19 +322,6 @@ ShellRoot {
 
     AirPods {
         id: airPodsService
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        AirPodsPopup {
-            required property var modelData
-
-            screen: modelData
-            shellState: globalState
-            airPods: airPodsService
-        }
-
     }
 
 }

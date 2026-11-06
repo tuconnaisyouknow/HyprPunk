@@ -5,17 +5,18 @@ import Quickshell.Bluetooth
 import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
-import Quickshell.Wayland
 import Quickshell.Widgets
 
 // The control center, growing out of the bar's right-most pill. Hover the pill or
 // press Super+C.
-PanelWindow {
+Card {
     id: controlCenter
 
+    required property var screen
     required property var shellState
+    // Its screen's bar, whose control pill it grows out of.
+    required property var bar
     required property var airPods
-    property bool opened: false
     // Opened with the shortcut or a click on its pill: it stays open when the pointer
     // leaves, and takes the keyboard so Escape closes it.
     property bool openedByKeybind: false
@@ -26,22 +27,15 @@ PanelWindow {
     // panel folding past it nor the pill it lands on open it again, until it moves off.
     property bool closedOnPurpose: false
     property real retainedHeight: 0
-    // Set as it opens: the panel only grows once its first frame is on screen, so the
-    // animation never starts behind your back.
-    property bool openPending: false
-    property real progress: opened && !openPending ? 1 : 0
-    // The panel covers its pill, from its first frame on screen until it has folded back.
-    property bool pillCovered: false
+    property real progress: opened ? 1 : 0
     // The pages are built once the bar has its first values, or right away if you open
     // the panel before. Kept from then on.
     property bool pagesWanted: false
-    // Folded back, the panel stays until the bar has drawn the pill again.
-    readonly property bool pillRevealing: shellState.controlPillsRevealing.indexOf(screen.name) >= 0
     readonly property int panelWidth: 452
     // The panel's tallest: a page taller than that scrolls.
     readonly property int panelMaxHeight: 680
-    // Geometry of that pill (screen coordinates), published by the bar.
-    readonly property var pill: shellState.controlPill
+    // Where that pill is.
+    readonly property var pill: bar.controlPill
     property string page: "main"
     // Pages move like on iOS: a sub-page slides in from the right while the main page
     // backs off to the left, and the other way round going back.
@@ -420,7 +414,6 @@ PanelWindow {
 
     onOpenedChanged: {
         shellState.controlCenterOpen = opened;
-        openPending = opened && progress === 0;
         if (opened) {
             pagesWanted = true;
             powerProfileProcess.running = true;
@@ -467,41 +460,25 @@ PanelWindow {
         if (progress === 0 && !pillHovered)
             closedOnPurpose = false;
 
-        if (progress === 0 && pillCovered) {
-            pillCovered = false;
-            shellState.controlPillsRevealing = shellState.controlPillsRevealing.concat([screen.name]);
-        } else if (progress > 0 && pillRevealing) {
-            // Caught again while the pill shows back: the panel covers it again.
-            shellState.controlPillsRevealing = shellState.controlPillsRevealing.filter((name) => {
-                return name !== screen.name;
-            });
-        }
     }
-    onPillCoveredChanged: {
-        const others = shellState.controlPillsCovered.filter((name) => {
-            return name !== screen.name;
-        });
-        shellState.controlPillsCovered = pillCovered ? others.concat([screen.name]) : others;
-    }
-    implicitWidth: panelWidth + pill.right
-    implicitHeight: panelMaxHeight + pill.top
-    color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyprpunk-control-center"
-    WlrLayershell.keyboardFocus: !opened ? WlrKeyboardFocus.None : openedByKeybind ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
+    anchors.fill: parent
+    pillName: "control"
+    covering: progress > 0
+    cardRect: Qt.rect(hoverZone.x + panel.x, hoverZone.y + panel.y, panel.width, panel.height)
+    cardRadius: panel.radius
+    inputRect: progress > 0 ? Qt.rect(hoverZone.x, hoverZone.y, hoverZone.width, hoverZone.height) : Qt.rect(0, 0, 0, 0)
+    // Hovered open, it only gets the keyboard once you click in it (a password field).
+    takesKeyboard: opened
+    // Kept or held open, it closes with a click anywhere else.
+    dismissable: opened && (openedByKeybind || held)
 
-    anchors {
-        top: true
-        right: true
+    function clickedOutside() {
+        close();
     }
 
     Connections {
         function onControlPillHoveredChanged() {
-            if (controlCenter.shellState.controlPillScreen !== controlCenter.screen)
-                return ;
-
-            controlCenter.pillHovered = controlCenter.shellState.controlPillHovered;
+            controlCenter.pillHovered = controlCenter.bar.controlPillHovered;
             if (controlCenter.pillHovered) {
                 if (controlCenter.closedOnPurpose)
                     return ;
@@ -515,6 +492,10 @@ PanelWindow {
             }
         }
 
+        target: controlCenter.bar
+    }
+
+    Connections {
         function onPanelRequestsChanged() {
             const action = controlCenter.shellState.requestedAction("controlcenter", controlCenter.screen);
             if (action === "")
@@ -620,7 +601,7 @@ PanelWindow {
 
             anchors.top: parent.top
             anchors.right: parent.right
-            visible: controlCenter.progress > 0 || controlCenter.openPending || controlCenter.pillRevealing
+            visible: controlCenter.progress > 0
             width: controlCenter.lerp(controlCenter.pill.width, controlCenter.panelWidth)
             height: controlCenter.lerp(controlCenter.pill.height, fullHeight)
             // The pill's corners: rounder ones would let the pill's show under the panel.
@@ -1247,15 +1228,15 @@ PanelWindow {
     Timer {
         id: openDelay
 
-        // The same wait as the bar's other cards (PillPopup's openDelay).
-        interval: 350
+        // The same waits as every card grown out of a pill.
+        interval: Theme.cardOpenDelay
         onTriggered: controlCenter.opened = true
     }
 
     Timer {
         id: closeDelay
 
-        interval: 380
+        interval: Theme.cardCloseDelay
         onTriggered: {
             if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.held && !controlCenter.openedByKeybind)
                 controlCenter.opened = false;
@@ -1265,7 +1246,7 @@ PanelWindow {
 
     Behavior on progress {
         NumberAnimation {
-            duration: 280
+            duration: Theme.cardFold
             easing.type: Easing.OutCubic
         }
 
@@ -1438,29 +1419,6 @@ PanelWindow {
 
         // Re-read the real state, the daemon may refuse or hold the profile.
         onExited: powerProfileProcess.running = true
-    }
-
-    // Kept or held open, it closes with a click anywhere else.
-    OutsideClick {
-        screen: controlCenter.screen
-        active: controlCenter.opened && (controlCenter.openedByKeybind || controlCenter.held)
-        onDismissed: controlCenter.close()
-    }
-
-    // The panel's first frame is on screen: it grows, and the pill hides under it.
-    Connections {
-        function onFrameSwapped() {
-            if ((controlCenter.openPending || controlCenter.progress > 0) && !controlCenter.pillCovered)
-                controlCenter.pillCovered = true;
-
-            controlCenter.openPending = false;
-        }
-
-        target: panel.Window.window
-    }
-
-    mask: Region {
-        item: hoverZone
     }
 
 }

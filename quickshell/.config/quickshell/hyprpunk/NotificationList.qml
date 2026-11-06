@@ -20,6 +20,11 @@ ColumnLayout {
     property var clearQueue: []
     // Waiting, not counting the ones on their way out.
     readonly property int count: entryIds.length - leavingIds.length
+    // The ones already slid out of sight, their gap still closing.
+    property var slidOutIds: []
+    // Still in sight, those sliding out included: the card only narrows once the last one
+    // has slid out, or the calendar would come sliding in under it.
+    readonly property int shownCount: entryIds.length - slidOutIds.length
 
     // Dismisses the notifications one after another, from top to bottom.
     function clearAll() {
@@ -62,6 +67,9 @@ ColumnLayout {
         });
         leavingIds = leavingIds.filter((leavingId) => {
             return leavingId !== id;
+        });
+        slidOutIds = slidOutIds.filter((slidId) => {
+            return slidId !== id;
         });
         const objects = Object.assign({}, notificationObjects);
         delete objects[id];
@@ -231,6 +239,10 @@ ColumnLayout {
                     to: entry.width + 24
                     duration: 200
                     easing.type: Easing.InCubic
+                }
+
+                ScriptAction {
+                    script: list.slidOutIds = list.slidOutIds.concat([entry.notificationId])
                 }
 
                 NumberAnimation {

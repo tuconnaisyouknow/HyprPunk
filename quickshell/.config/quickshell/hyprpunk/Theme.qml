@@ -3,14 +3,21 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// The shell's colors and font, Catppuccin Mocha with mauve as the accent and lavender
-// as the secondary one, in place of the greys. Every file takes them from here, so a
-// color changes everywhere at once.
+// The shell's colors, font and card timings, Catppuccin Mocha with mauve as the accent
+// and lavender as the secondary one, in place of the greys. Every file takes them from
+// here, so a color changes everywhere at once.
 Singleton {
     readonly property string font: "JetBrainsMono Nerd Font"
     // How far the bar's pills sit from the screen's sides, in line with the windows'
     // edges (Hyprland's gaps_out).
     readonly property int barMargin: 10
+    // Every card grown out of a pill opens and folds the same way: how long the pointer
+    // rests on the pill before it opens (sweeping across the bar doesn't flash cards
+    // everywhere), how long it waits once the pointer has left, how long it takes to
+    // unfold or fold.
+    readonly property int cardOpenDelay: 350
+    readonly property int cardCloseDelay: 220
+    readonly property int cardFold: 280
 
     readonly property color crust: "#11111b"
     readonly property color base: "#1e1e2e"

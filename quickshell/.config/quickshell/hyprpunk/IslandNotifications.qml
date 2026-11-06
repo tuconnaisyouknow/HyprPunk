@@ -2,17 +2,22 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Notifications
-import Quickshell.Wayland
 import Quickshell.Widgets
 
-// New notifications, in a card that grows out of the dynamic island on the focused
-// screen. They leave after a few seconds unless hovered or critical, Focus keeps all but
-// the critical ones away, they wait while an island panel takes the island, and they
-// fold back into it when the notification center opens.
-PanelWindow {
+// New notifications, in a card that grows out of the dynamic island of the screen you're
+// on when they arrive. They leave after a few seconds unless hovered or critical, Focus
+// keeps all but the critical ones away, they wait while an island panel takes the
+// island, and they fold back into it when the notification center opens.
+Card {
     id: popups
 
+    required property var screen
     required property var shellState
+    // Its screen's bar, whose island it grows out of.
+    required property var bar
+    // The island's card shape, shared with its other cards.
+    required property Item islandFrame
+    readonly property rect contentRect: islandFrame.contentRect(popups)
     required property var notificationServer
     // Popups currently in the card, newest first, as {id, notification}. An entry stays
     // here until its exit animation is over, so several popups can leave at the same time.
@@ -21,7 +26,6 @@ PanelWindow {
     property var notifications: []
     // Ids of the popups playing their exit animation.
     property var leavingIds: []
-    readonly property int cardWidth: 400
     // Around the notifications: with their 18px corners, the card's 24px ones line up.
     readonly property int cardPadding: 6
     readonly property int maxVisible: 3
@@ -32,17 +36,12 @@ PanelWindow {
     readonly property bool islandTaken: shellState.islandPanels.some((key) => {
         return key.endsWith("@" + screen.name);
     })
-    readonly property bool opened: stayingCount > 0 && !islandTaken
     property real progress: opened ? 1 : 0
     // The card's full height, kept while it folds: shrinking with the last popup's gap,
     // it would flatten into a long empty pill before narrowing.
     property real openHeight: 0
-    // Geometry of the island (the clock pill), published by the bar.
-    readonly property var island: shellState.islandPill
-
-    function lerp(from, to) {
-        return from + (to - from) * progress;
-    }
+    // Where the island is.
+    readonly property var island: bar.islandPill
 
     function show(notification) {
         // Notifications carried over by a config reload are not new.
@@ -50,6 +49,11 @@ PanelWindow {
             return ;
 
         if (shellState.doNotDisturb && notification.urgency !== NotificationUrgency.Critical)
+            return ;
+
+        // Another screen's: each one shows those that arrive while you're on it.
+        const focused = Hyprland.focusedMonitor;
+        if (focused === null ? screen !== Quickshell.screens[0] : focused.name !== screen.name)
             return ;
 
         // The notification lands straight in the open center, no need for a popup.
@@ -95,34 +99,21 @@ PanelWindow {
         });
     }
 
-    screen: {
-        const monitor = Hyprland.focusedMonitor;
-        for (const screen of Quickshell.screens) {
-            if (monitor !== null && screen.name === monitor.name)
-                return screen;
-
-        }
-        return Quickshell.screens[0];
-    }
-    // Kept while the last popups fade and the card folds back onto the island. Gone while
-    // they wait, or the folded card would catch the island's clicks.
+    anchors.fill: parent
+    opened: stayingCount > 0 && !islandTaken
+    cardWidth: 400
+    cardHeight: openHeight
+    // With the notifications' 18px corners inside, the padding's width away.
+    openRadius: 18 + cardPadding
+    // Gone while they wait, or the folded card would catch the island's clicks.
     visible: opened || progress > 0
-    color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    // Above the bar, whose island the card covers. Never takes the keyboard.
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyprpunk-notifications"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
+    pillName: "island"
+    covering: visible
+    cardRect: Qt.rect(card.x, card.y, card.width, card.height)
+    cardRadius: card.radius
 
     // Folded with nothing left to show: drops whatever is still leaving, so no stray
-    // entry keeps the window, and its folded card, over the island.
+    // entry keeps its folded card over the island.
     onProgressChanged: {
         if (progress === 0 && stayingCount === 0) {
             notifications = [];
@@ -163,21 +154,13 @@ PanelWindow {
     ClippingRectangle {
         id: card
 
-        // On whole pixels, like the content below: half pixels while the card grows make
-        // everything in it shake.
-        x: Math.round(popups.width / 2 + popups.island.centerOffset - width / 2)
-        y: popups.island.top
-        width: popups.lerp(popups.island.width, popups.cardWidth)
-        height: popups.lerp(popups.island.height, popups.openHeight)
-        radius: popups.lerp(popups.island.height / 2, 18 + popups.cardPadding)
+        // Drawn in the island's shape (IslandFrame), shared with its other cards.
+        x: popups.contentRect.x
+        y: popups.contentRect.y
+        width: popups.contentRect.width
+        height: popups.contentRect.height
+        radius: popups.islandFrame.shape.radius
         color: "transparent"
-
-        // Same look as the island it grows from: base color at 0.9, blurred, with the glass rim.
-        GlassSurface {
-            radius: card.radius
-            tinted: false
-            backgroundColor: Theme.panel
-        }
 
         // Holds every popup while you read one of them.
         HoverHandler {
@@ -314,15 +297,10 @@ PanelWindow {
 
     Behavior on progress {
         NumberAnimation {
-            duration: 280
+            duration: Theme.cardFold
             easing.type: Easing.OutCubic
         }
 
-    }
-
-    // Only the card catches the pointer, the rest of the screen stays yours.
-    mask: Region {
-        item: card
     }
 
 }

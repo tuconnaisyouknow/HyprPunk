@@ -323,7 +323,7 @@ IslandPanel {
     // still mapping: an app that quits at once closes its dialog before the first frame.
     Connections {
         function onRequestChanged() {
-            if ((picker.opened || picker.openPending) && picker.request && (!picker.chooser.request || picker.chooser.request.id !== picker.request.id)) {
+            if (picker.opened && picker.request && (!picker.chooser.request || picker.chooser.request.id !== picker.request.id)) {
                 picker.answered = true;
                 picker.close();
             }

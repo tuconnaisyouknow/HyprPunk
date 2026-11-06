@@ -56,26 +56,14 @@ hl.window_rule({
 -- LAYER RULES --
 -----------------
 
--- The shell's see-through panels: blur only what is drawn, not the empty space around it
-local glassLayers = {
-  { namespace = "hyprpunk-osd" },
-  { namespace = "hyprpunk-control-center" },
-  -- The island's panels (session menu, wallpaper picker) and notifications bring their own animation
-  { namespace = "hyprpunk-island",        no_anim = true },
-  { namespace = "hyprpunk-notifications", no_anim = true },
-  -- In the classic style the bar's pills are opaque, so the blur only shows behind the island and the player
-  { namespace = "hyprpunk-bar",           blur_popups = true },
-}
-
-for _, layer in ipairs(glassLayers) do
-  hl.layer_rule({
-    match = { namespace = layer.namespace },
-    blur = true,
-    blur_popups = layer.blur_popups,
-    ignore_alpha = glass.ignore_alpha,
-    no_anim = layer.no_anim,
-  })
-end
+-- The shell's window, with the bar and every card: blur only what is drawn, not the
+-- empty space around it, and its tooltips too
+hl.layer_rule({
+  match = { namespace = "hyprpunk-shell" },
+  blur = true,
+  blur_popups = true,
+  ignore_alpha = glass.ignore_alpha,
+})
 
 -- Screenshot selection appears right away over the frozen screen, no fade
 hl.layer_rule({ match = { namespace = "hyprpunk-screenshot" }, no_anim = true })

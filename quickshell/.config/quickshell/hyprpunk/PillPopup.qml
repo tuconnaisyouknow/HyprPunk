@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell
 import Quickshell.Widgets
 
 // A card that grows out of one of the bar's pills while you hover it: the workspace
@@ -8,52 +7,54 @@ import Quickshell.Widgets
 // Its content is laid out at full size and uncovered as the card grows. A click on the
 // pill, even once the card covers it, keeps it open until Escape, a click outside or
 // another click on the pill.
-PopupWindow {
+Card {
     id: popup
 
+    required property var shellState
+    // Where the screen draws its cards (ScreenShell).
+    required property Item cardLayer
     // The pill it grows from, with the same corners so the pill itself seems to grow.
     required property Item pill
-    // The open card's height, the window's by default. Animate it on your side if it
-    // changes while open (a calendar month with one more week).
-    property real cardHeight: height
-    // The open card's width, the window's by default. The window stays at its widest and
-    // the card eases inside it, since resizing the window as it animates shakes everything.
-    property real cardWidth: width
+    // The shape it shares with the other cards of its pill (IslandFrame, for the
+    // calendar), drawn in instead of its own.
+    property Item frame: null
+    readonly property rect frameContent: frame !== null ? frame.contentRect(popup) : Qt.rect(0, 0, 0, 0)
     // The side of the pill the card lines up with: Qt.AlignLeft, Qt.AlignRight or
-    // Qt.AlignHCenter. Set the anchor's edges and gravity to match.
+    // Qt.AlignHCenter.
     property int align: Qt.AlignLeft
-    // How long the pointer rests on the pill before the card opens, so sweeping across
-    // the bar on the way to something else doesn't flash cards everywhere.
-    property int openDelay: 350
-    property int closeDelay: 220
+    // How long the pointer rests on the pill before the card opens, and how long the card
+    // waits once it has left, the same for every card (Theme).
+    property int openDelay: Theme.cardOpenDelay
+    property int closeDelay: Theme.cardCloseDelay
     // False hides it (no player anymore).
     property bool available: true
     // Checked when the delay is up: false and it doesn't open after all (the pointer
     // left the workspace it was resting on).
     property bool openable: true
+    // True and it doesn't open at all, however asked (a prompt holds the island).
+    property bool blocked: false
     // Unfolded, or unfolding.
     property bool expanded: false
-    // On screen, also while it folds back.
-    property bool mapped: false
-    // Set while the window maps: the card only grows once its first frame is on screen.
-    property bool openPending: false
-    // Set once folded back: the pill shows again, and the card only goes once the bar has
-    // drawn it, or the bar shows neither for a frame.
-    property bool revealPending: false
+    // Out, from the opening until folded back.
+    readonly property bool mapped: expanded || progress > 0
     // Opened on purpose (a shortcut, a click) rather than by hovering: it stays open when
     // the pointer leaves, until closed.
     property bool pinned: false
     // Closed while kept open, until it has folded back: the pointer resting on the card
-    // or the pill doesn't open it again as if hovered (the click catcher going away
-    // makes the pointer come back to it).
+    // or the pill doesn't open it again as if hovered.
     property bool closedOnPurpose: false
     // 0 folded on the pill, 1 fully open.
     property real progress: expanded ? 1 : 0
     readonly property bool cardHovered: cardHover.hovered
+    property bool pillHovered: false
+    // It stays while the pointer is on the pill or on the card. The card opens over the
+    // pill, so the pointer enters one as it leaves the other, in either order: only
+    // leaving both folds it back.
+    readonly property bool pointerInside: pillHovered || cardHovered
     readonly property alias card: card
     default property alias content: card.data
 
-    // Right before the window maps, to set the content up.
+    // Right before it opens, to set the content up.
     signal opening()
     // A key other than Escape while it's kept open, for a card that answers the keyboard.
     signal keyPressed(int key)
@@ -64,11 +65,10 @@ PopupWindow {
 
     // The pointer is on the pill (or on what opens the card).
     function hoverStarted() {
+        pillHovered = true;
         if (closedOnPurpose)
             return ;
 
-        closeTimer.stop();
-        hideTimer.stop();
         if (mapped)
             expanded = true;
         else
@@ -76,8 +76,7 @@ PopupWindow {
     }
 
     function hoverEnded() {
-        openTimer.stop();
-        closeTimer.restart();
+        pillHovered = false;
     }
 
     // What its shortcut asks ("toggle", "open" or "close"). Open, however it was opened
@@ -103,10 +102,12 @@ PopupWindow {
             close();
             return ;
         }
+        if (blocked)
+            return ;
+
         pinned = true;
         closedOnPurpose = false;
         closeTimer.stop();
-        hideTimer.stop();
         if (mapped)
             expanded = true;
         else
@@ -119,96 +120,98 @@ PopupWindow {
     }
 
     function open() {
+        if (blocked) {
+            pinned = false;
+            return ;
+        }
         closedOnPurpose = false;
         closeTimer.stop();
-        hideTimer.stop();
         opening();
-        revealPending = false;
-        openPending = true;
-        mapped = true;
+        followPill();
+        expanded = true;
     }
 
+    // Folds back onto the pill.
     function close() {
         closedOnPurpose = pinned;
         pinned = false;
-        openPending = false;
         expanded = false;
-        hideTimer.restart();
     }
 
-    // Gone at once without folding back, when the island needs the room for an OSD.
-    function dismiss() {
-        pinned = false;
-        openTimer.stop();
-        closeTimer.stop();
-        hideTimer.stop();
-        openPending = false;
-        revealPending = false;
-        expanded = false;
-        mapped = false;
+    function clickedOutside() {
+        close();
     }
 
+    // Hangs from the pill, kept on the screen.
+    function followPill() {
+        // Still being set up.
+        if (pill === null || cardLayer === null)
+            return ;
+
+        const origin = pill.mapToItem(cardLayer, 0, 0);
+        const left = align === Qt.AlignRight ? origin.x + pill.width - width : align === Qt.AlignHCenter ? origin.x + (pill.width - width) / 2 : origin.x;
+        x = Math.round(Math.max(0, Math.min(cardLayer.width - width, left)));
+        y = Math.round(origin.y);
+    }
+
+    parent: cardLayer
+    opened: expanded
+    // The open card's size, the full size by default. Animate it on your side if it
+    // changes while open (a calendar month with one more week). The room the card needs
+    // stays at its widest and the card eases inside it.
+    cardWidth: width
+    cardHeight: height
+    // The pill's corners: rounder ones would let the pill's show under the card.
+    openRadius: pill.radius
+    width: implicitWidth
+    height: implicitHeight
     visible: mapped && available
-    color: "transparent"
-    grabFocus: false
-    anchor.item: pill
-    anchor.edges: Edges.Top | Edges.Left
-    anchor.gravity: Edges.Bottom | Edges.Right
-    anchor.adjustment: PopupAdjustment.SlideX
+    covering: visible
+    cardRect: Qt.rect(x + card.x, y + card.y, card.width, card.height)
+    cardRadius: card.radius
+    takesKeyboard: pinned && visible
+    dismissable: pinned && visible
+    onMappedChanged: {
+        if (!mapped)
+            closedOnPurpose = false;
 
-    // The card's glass lets what's under it through: the pill hides while the card covers
-    // it, from the card's first frame on screen to the bar's first frame with the pill
-    // back, so the bar never shows neither.
-    Binding {
-        target: popup.pill
-        property: "opacity"
-        value: 0
-        when: popup.visible && !popup.openPending && !popup.revealPending
     }
+    onPointerInsideChanged: {
+        if (pointerInside) {
+            closeTimer.stop();
+        } else {
+            openTimer.stop();
+            closeTimer.restart();
+        }
+    }
+    // Kept open: Escape closes it, and the card's own keys reach it.
+    onPinnedChanged: {
+        if (pinned)
+            keys.forceActiveFocus();
+
+    }
+    onWidthChanged: followPill()
 
     Connections {
-        function onFrameSwapped() {
-            if (popup.openPending) {
-                popup.openPending = false;
-                popup.expanded = true;
-            }
+        function onWidthChanged() {
+            popup.followPill();
         }
 
-        target: card.Window.window
+        target: popup.cardLayer
     }
 
-    Connections {
-        function onFrameSwapped() {
-            if (popup.revealPending) {
-                popup.revealPending = false;
-                popup.mapped = false;
-                popup.closedOnPurpose = false;
-            }
-        }
-
-        target: popup.pill.Window.window
-    }
-
-    // Opening again while the pill shows back: the card stays and covers it again.
-    onExpandedChanged: {
-        if (expanded)
-            revealPending = false;
-
-    }
-
-    // The anchor is only worked out on opening: follow the pill when it moves or
-    // resizes, or when the pills before it change width.
+    // The pill moves, or the pills before it change width.
     Connections {
         function onXChanged() {
-            popup.anchor.updateAnchor();
+            popup.followPill();
         }
 
         function onYChanged() {
-            popup.anchor.updateAnchor();
+            popup.followPill();
         }
 
         function onWidthChanged() {
-            popup.anchor.updateAnchor();
+            popup.followPill();
         }
 
         target: popup.pill
@@ -216,26 +219,14 @@ PopupWindow {
 
     Connections {
         function onXChanged() {
-            popup.anchor.updateAnchor();
+            popup.followPill();
         }
 
         function onYChanged() {
-            popup.anchor.updateAnchor();
+            popup.followPill();
         }
 
         target: popup.pill.parent
-    }
-
-    // While it's kept open, a click anywhere else or Escape closes it. The card can't
-    // take the keyboard itself, being a popup of the bar.
-    OutsideClick {
-        screen: popup.pill.QsWindow.window ? popup.pill.QsWindow.window.screen : null
-        active: popup.pinned && popup.expanded
-        takesKeyboard: true
-        onDismissed: popup.close()
-        onKeyPressed: (key) => {
-            return popup.keyPressed(key);
-        }
     }
 
     Timer {
@@ -260,46 +251,47 @@ PopupWindow {
         }
     }
 
-    Timer {
-        id: hideTimer
-
-        // Lets the card fold back onto the pill first.
-        interval: 320
-        onTriggered: popup.revealPending = true
-    }
-
     ClippingRectangle {
         id: card
 
         // Centered on a whole pixel, as anchors do: half pixels while the width grows
         // make the card and everything in it shake.
-        x: popup.align === Qt.AlignRight ? popup.width - width : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : 0
-        width: popup.lerp(popup.pill.width, popup.cardWidth)
-        height: popup.lerp(popup.pill.height, popup.cardHeight)
-        // The pill's corners: rounder ones would let the pill's show under the card.
-        radius: popup.pill.radius
+        x: popup.frame !== null ? popup.frameContent.x - popup.x : popup.align === Qt.AlignRight ? popup.width - width : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : 0
+        y: popup.frame !== null ? popup.frameContent.y - popup.y : 0
+        width: popup.frame !== null ? popup.frameContent.width : popup.lerp(popup.pill.width, popup.cardWidth)
+        height: popup.frame !== null ? popup.frameContent.height : popup.lerp(popup.pill.height, popup.cardHeight)
+        radius: popup.frame !== null ? popup.frame.shape.radius : popup.openRadius
         color: "transparent"
+        visible: popup.covering
 
+        // The shared shape draws its own.
         GlassSurface {
+            visible: popup.frame === null
             radius: card.radius
             tinted: false
             backgroundColor: Theme.panel
         }
 
+        // Has the keyboard while it's kept open.
+        Item {
+            id: keys
+
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Escape)
+                    popup.close();
+                else
+                    popup.keyPressed(event.key);
+            }
+        }
+
         HoverHandler {
             id: cardHover
 
+            // Caught again while folding back onto the pill.
             onHoveredChanged: {
-                if (popup.closedOnPurpose)
-                    return ;
-
-                if (hovered) {
-                    closeTimer.stop();
-                    hideTimer.stop();
+                if (hovered && !popup.closedOnPurpose)
                     popup.expanded = true;
-                } else {
-                    closeTimer.restart();
-                }
+
             }
         }
 
@@ -346,14 +338,10 @@ PopupWindow {
 
     Behavior on progress {
         NumberAnimation {
-            duration: 280
+            duration: Theme.cardFold
             easing.type: Easing.OutCubic
         }
 
-    }
-
-    mask: Region {
-        item: card
     }
 
 }
