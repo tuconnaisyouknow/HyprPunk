@@ -2,16 +2,23 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Wayland
 import Quickshell.Widgets
 
 // The AirPods card that grows out of the island when you open the case or they
 // connect, like on an iPhone. AirPods waiting to pair get a Connect button instead.
 // It never takes the keyboard and folds away by itself, or once both pods are in.
-PanelWindow {
+// It waits while an island panel or the calendar has the island, and the notifications
+// wait while it's out.
+Card {
     id: popup
 
+    required property var screen
     required property var shellState
+    // Its screen's bar, whose island it grows out of.
+    required property var bar
+    // The island's card shape, shared with its other cards.
+    required property Item islandFrame
+    readonly property rect contentRect: islandFrame.contentRect(popup)
     required property var airPods
     property color base: Theme.base
     property color lavender: Theme.lavender
@@ -35,36 +42,38 @@ PanelWindow {
     readonly property bool worn: inEars(device)
     // No timeout while the case is open; both pods worn still fold it back (onWornChanged).
     readonly property bool held: (reason === "lid" || reason === "connected") && device !== null && device.lidOpen
-    property real cardWidth: 420
-    property real cardHeight: layout.implicitHeight + 28 + 26
-    property bool shown: false
-    property bool opened: false
-    // Set while the window is mapping: the card only grows once its first frame is on screen.
-    property bool openPending: false
     property real progress: opened ? 1 : 0
-    readonly property var island: shellState.islandPill
-
-    function lerp(from, to) {
-        return from + (to - from) * progress;
-    }
+    // Out, from open() until folded back onto the island.
+    readonly property bool shown: opened || progress > 0
+    // Where the island is.
+    readonly property var island: bar.islandPill
+    // Asked for while the island was taken: {address, reason, at (ms)}, shown once it's
+    // free if it still matters.
+    property var pending: null
+    readonly property string islandKey: "airpods@" + screen.name
+    readonly property bool islandTaken: shellState.islandPanels.some((key) => {
+        return key !== islandKey && key.endsWith("@" + screen.name);
+    })
 
     function inEars(airPods) {
         return airPods !== null && airPods.kind === "buds" && airPods.left.inEar && airPods.right.inEar;
     }
 
     function open(address, reason) {
+        if (islandTaken) {
+            pending = {
+                "address": address,
+                "reason": reason,
+                "at": Date.now()
+            };
+            return ;
+        }
+        pending = null;
         popup.address = address;
         popup.reason = reason;
-        hideDelay.stop();
         dismissDelay.interval = reason === "pairing" ? 45000 : 8000;
         restartDismiss();
-
-        if (shown) {
-            opened = true;
-        } else {
-            openPending = true;
-            shown = true;
-        }
+        opened = true;
     }
 
     // Folds back on its own after a while, unless held or under the pointer.
@@ -75,11 +84,10 @@ PanelWindow {
             dismissDelay.restart();
     }
 
+    // Folds back onto the island.
     function close() {
         dismissDelay.stop();
-        openPending = false;
         opened = false;
-        hideDelay.restart();
     }
 
     // The cross and "Not now": AirPods in pairing mode stay quiet for a while.
@@ -97,12 +105,44 @@ PanelWindow {
         return candidate.state === "failed" ? "Try again" : "Connect";
     }
 
+    anchors.fill: parent
+    cardWidth: 420
+    cardHeight: layout.implicitHeight + 28 + 26
+    // The island's corners: rounder ones would let the island's show under the card.
+    openRadius: island.height / 2
     visible: shown
-    color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyprpunk-island"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    pillName: "island"
+    covering: shown
+    cardRect: Qt.rect(card.x, card.y, card.width, card.height)
+    cardRadius: card.radius
+    // Free again: what was asked meanwhile, unless it no longer matters (the case shut,
+    // the pairing over, or a connection from a while ago).
+    onIslandTakenChanged: {
+        if (islandTaken || pending === null)
+            return ;
+
+        const asked = pending;
+        pending = null;
+        const device = airPods.device(asked.address);
+        const stillThere = asked.reason === "pairing" ? airPods.pairing !== null && airPods.pairing.address === asked.address : asked.reason === "lid" ? device !== null && device.lidOpen : Date.now() - asked.at < 8000;
+        if (stillThere)
+            open(asked.address, asked.reason);
+
+    }
+    // The notifications wait while it's open.
+    onOpenedChanged: {
+        const others = shellState.islandPanels.filter((item) => {
+            return item !== islandKey;
+        });
+        shellState.islandPanels = opened ? others.concat([islandKey]) : others;
+    }
+    Component.onDestruction: {
+        if (opened)
+            shellState.islandPanels = shellState.islandPanels.filter((item) => {
+            return item !== islandKey;
+        });
+
+    }
     onHeldChanged: {
         if (opened)
             restartDismiss();
@@ -135,12 +175,6 @@ PanelWindow {
             close();
     }
 
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
 
     Connections {
         function onPopupRequested(address, reason) {
@@ -156,6 +190,9 @@ PanelWindow {
         }
 
         function onLidClosed(address) {
+            if (popup.pending !== null && popup.pending.address === address)
+                popup.pending = null;
+
             if (popup.opened && popup.address === address && (popup.reason === "lid" || popup.reason === "connected"))
                 popup.close();
 
@@ -164,34 +201,16 @@ PanelWindow {
         target: popup.airPods
     }
 
-    Connections {
-        function onFrameSwapped() {
-            if (popup.openPending) {
-                popup.opened = true;
-                popup.openPending = false;
-            }
-        }
-
-        target: card.Window.window
-    }
-
     ClippingRectangle {
         id: card
 
-        x: popup.width / 2 + popup.island.centerOffset - width / 2
-        y: popup.island.top
-        width: popup.lerp(popup.island.width, popup.cardWidth)
-        height: popup.lerp(popup.island.height, popup.cardHeight)
-        // The island's corners: rounder ones would let the island's show under the card.
-        radius: popup.island.height / 2
+        // Drawn in the island's shape (IslandFrame), shared with its other cards.
+        x: popup.contentRect.x
+        y: popup.contentRect.y
+        width: popup.contentRect.width
+        height: popup.contentRect.height
+        radius: popup.islandFrame.shape.radius
         color: "transparent"
-
-        // Same look as the island panels and the pills: base color at 0.9, blurred, with the glass rim.
-        GlassSurface {
-            radius: card.radius
-            tinted: false
-            backgroundColor: Theme.panel
-        }
 
         HoverHandler {
             id: cardHover
@@ -384,21 +403,10 @@ PanelWindow {
         onTriggered: popup.close()
     }
 
-    Timer {
-        id: hideDelay
-
-        // Lets the card fold back onto the island first.
-        interval: 320
-        onTriggered: popup.shown = false
-    }
-
-    mask: Region {
-        item: card
-    }
 
     Behavior on progress {
         NumberAnimation {
-            duration: 280
+            duration: Theme.cardFold
             easing.type: Easing.OutCubic
         }
 

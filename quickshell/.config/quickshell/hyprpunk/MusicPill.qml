@@ -13,6 +13,9 @@ Rectangle {
     // Spotify's player, null while it isn't running.
     required property var player
     required property var shellState
+    // Where the screen draws its cards (ScreenShell), the player among them.
+    required property Item cardLayer
+    readonly property alias popup: musicPopup
 
     // Angle of the front disc: 0 = upright, where every track starts.
     property real spin: 0
@@ -446,15 +449,16 @@ Rectangle {
         // as the player opens, then turns back to it when folding away.
         readonly property real discAngle: ((musicPill.frontAngle % 360) + 540) % 360 - 180
 
+        shellState: musicPill.shellState
+        cardLayer: musicPill.cardLayer
         pill: musicPill
+        pillName: "player"
         align: Qt.AlignRight
         available: musicPill.player !== null
         implicitWidth: 380
         // Tall enough for the lyrics: the card grows and shrinks inside it.
         implicitHeight: musicPlayerCard.fullHeight
         cardHeight: musicPlayerCard.height
-        anchor.edges: Edges.Top | Edges.Right
-        anchor.gravity: Edges.Bottom | Edges.Left
 
         MediaPlayerCard {
             id: musicPlayerCard

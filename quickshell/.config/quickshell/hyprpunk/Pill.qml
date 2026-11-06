@@ -8,10 +8,13 @@ ClippingRectangle {
 
     default property alias content: contentRow.data
     property alias contentOpacity: contentRow.opacity
+    // Its glass alone, for content that goes into another pill's shape (the island's
+    // OSD, beside a card).
+    property alias glassOpacity: glass.opacity
     readonly property alias hovered: pillHover.hovered
     property int spacing: 10
     property int horizontalPadding: 20
-    // The panels' card: base at 0.9, blurred by the bar's layer rule. Drawn by the glass
+    // The panels' card: base at 0.9, blurred by the shell's layer rule. Drawn by the glass
     // rather than the pill, so the liquid style can make it see-through.
     readonly property color baseColor: Theme.panel
 
@@ -21,6 +24,8 @@ ClippingRectangle {
     color: "transparent"
 
     GlassSurface {
+        id: glass
+
         radius: pill.radius
         tinted: false
         backgroundColor: pill.baseColor

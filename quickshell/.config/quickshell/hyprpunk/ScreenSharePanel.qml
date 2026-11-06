@@ -103,7 +103,7 @@ IslandPanel {
     // The app asked again (or another one did): the card shows the new request.
     Connections {
         function onRequestChanged() {
-            if (!picker.opened && !picker.openPending)
+            if (!picker.opened)
                 return ;
 
             if (picker.share.request === null) {

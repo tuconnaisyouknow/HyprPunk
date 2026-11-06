@@ -39,9 +39,12 @@ IslandPanel {
     readonly property string mode: trimmedQuery.startsWith(">") ? "command" : trimmedQuery.startsWith("?") ? "web" : "apps"
     readonly property string modeArgument: mode === "apps" ? trimmedQuery : trimmedQuery.slice(1).trim()
     readonly property var calculation: mode === "apps" ? calculate(trimmedQuery) : null
-    // Only while it's on screen: the applications arrive one by one at startup, and
-    // sorting them and rebuilding the grid each time held up the bar's first values.
-    readonly property var results: shown && mode === "apps" ? search(trimmedQuery, DesktopEntries.applications.values, history) : []
+    // Built once the shell has settled after startup, then kept: built at the first
+    // opening, the grid and its icons froze the card for ~300 ms. Not right away either:
+    // the applications arrive one by one at startup, and sorting them and rebuilding the
+    // grid each time held up the bar's first values.
+    property bool listWanted: false
+    readonly property var results: listWanted && mode === "apps" ? search(trimmedQuery, DesktopEntries.applications.values, history) : []
     // calc, command, web or "" when there is no special row.
     readonly property string special: mode === "command" ? "command" : mode === "web" ? "web" : calculation !== null ? "calc" : trimmedQuery !== "" && results.length === 0 ? "web" : ""
     readonly property int gridRows: Math.min(maxRows, Math.ceil(results.length / columns))
@@ -423,6 +426,13 @@ IslandPanel {
     }
 
     // Applications.
+    // Like the control center's pages, once the bar has its values.
+    Timer {
+        interval: 1500
+        running: true
+        onTriggered: launcher.listWanted = true
+    }
+
     GridView {
         id: grid
 

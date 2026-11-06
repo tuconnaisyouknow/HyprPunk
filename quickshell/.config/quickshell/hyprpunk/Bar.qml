@@ -13,10 +13,18 @@ import Quickshell.Wayland
 // the left, the dynamic island in the middle, updates, the Spotify record and the
 // control pill on the right. Most pills open a card on hover. The island's card holds
 // the calendar and the notifications waiting, and Super+N or a click keeps it open.
-PanelWindow {
+// Drawn in its screen's window (ScreenShell), with the cards.
+Item {
     id: bar
 
+    required property var screen
     required property var shellState
+    // Where the screen draws its cards: the bar's own ones go there (PillPopup).
+    required property Item cardLayer
+    // The shape the island's cards share (IslandFrame).
+    required property Item islandFrame
+    // Every card on this screen (Card), whichever pill they grow out of.
+    property var cards: []
     required property var notificationServer
     // The notifications from before Quickshell was restarted.
     required property var notificationHistory
@@ -58,7 +66,27 @@ PanelWindow {
     // stays still. It isn't drawn under the lock, so it would only catch up on its
     // animations once the lock is gone.
     property bool sessionLocked: false
-    readonly property bool islandOsdShown: statusOsdVisible && !sessionLocked
+    // A card is drawn over the island (the calendar, an island panel, the notifications,
+    // the AirPods), opening or folding back.
+    readonly property bool islandCovered: pillHidden("island")
+    // The island shows the OSD unless a card is open on it, where it shows beside the card
+    // instead (sideOsd). As soon as the card closes the island takes it back, hidden, so
+    // the card folds straight into the OSD's shape.
+    readonly property bool islandOsdShown: statusOsdVisible && !sessionLocked && islandFrame.owner === null
+    // The OSD is going into the island under a card folding back onto it. Its time running
+    // out then waits for the card to land, so it gets all the way in and shows there
+    // before it goes, rather than flying off halfway.
+    readonly property bool statusOsdLanding: islandOsdShown && islandCovered
+    property bool statusOsdEndHeld: false
+    // The island resizes at once while hidden under a card: animating it there made the
+    // bar and the blur behind the card redraw every frame for nothing, and the card's own
+    // animations drop frames (the calendar while a notification slides out of it).
+    readonly property bool islandAnimated: !pillHidden("island")
+    // The time the OSD's delay is up, and the one it interrupted, shown again for the rest
+    // of its time afterwards (a volume change over a screenshot's thumbnail):
+    // {show: function, remaining in ms}, or null.
+    property real statusOsdEndsAt: 0
+    property var statusOsdResume: null
     property string statusOsdIcon: ""
     property string statusOsdLabel: ""
     property bool statusOsdEnabled: false
@@ -177,7 +205,7 @@ PanelWindow {
 
     // With maxLevel > 0, a gauge of level / maxLevel replaces the On/Off badge.
     function showStatusOsd(icon, label, enabled, level, maxLevel) {
-        calendarPopup.dismiss();
+        keepInterruptedOsd("");
         statusOsdKind = "";
         statusOsdHideDelay.interval = 1500;
         statusOsdIcon = icon;
@@ -186,11 +214,51 @@ PanelWindow {
         statusOsdLevel = level !== undefined ? level : 0;
         statusOsdMaxLevel = maxLevel !== undefined ? maxLevel : 0;
         statusOsdVisible = true;
+        restartStatusOsdDelay();
+    }
+
+    // Before another OSD replaces the one showing: a screenshot, battery or AirPods OSD
+    // with time left comes back afterwards. A level or a switch just goes, and so does an
+    // OSD replaced by a newer one of its kind.
+    function keepInterruptedOsd(kind) {
+        if (!statusOsdVisible || statusOsdKind === "" || kind === statusOsdKind || batteryCritical)
+            return ;
+
+        const remaining = statusOsdEndsAt - Date.now();
+        if (remaining < 800)
+            return ;
+
+        const shownKind = statusOsdKind;
+        const saved = {
+            "label": statusOsdLabel,
+            "image": statusOsdImage,
+            "file": statusOsdFile,
+            "title": statusOsdTitle,
+            "ringLevel": statusOsdRingLevel,
+            "ringCharging": statusOsdRingCharging
+        };
+        statusOsdResume = {
+            "remaining": Math.max(1500, remaining),
+            "show": () => {
+                bar.statusOsdKind = shownKind;
+                bar.statusOsdImage = saved.image;
+                bar.statusOsdFile = saved.file;
+                bar.statusOsdTitle = saved.title;
+                bar.statusOsdRingLevel = saved.ringLevel;
+                bar.statusOsdRingCharging = saved.ringCharging;
+                bar.statusOsdLabel = saved.label;
+            }
+        };
+    }
+
+    function restartStatusOsdDelay() {
+        statusOsdEndHeld = false;
+        statusOsdEndsAt = Date.now() + statusOsdHideDelay.interval;
         statusOsdHideDelay.restart();
     }
 
     function showAirPodsOsd(osd) {
-        calendarPopup.dismiss();
+        keepInterruptedOsd("airpods");
         statusOsdKind = "airpods";
         statusOsdImage = osd.image;
         statusOsdRingLevel = osd.level;
@@ -199,7 +267,7 @@ PanelWindow {
         statusOsdLabel = "AirPods";
         statusOsdHideDelay.interval = 3000;
         statusOsdVisible = true;
-        statusOsdHideDelay.restart();
+        restartStatusOsdDelay();
     }
 
     function updateBatteryAlert() {
@@ -232,7 +300,7 @@ PanelWindow {
     }
 
     function showScreenshotOsd(taken) {
-        calendarPopup.dismiss();
+        keepInterruptedOsd("screenshot");
         statusOsdKind = "screenshot";
         statusOsdImage = taken.file;
         statusOsdFile = taken.video || taken.file;
@@ -240,7 +308,7 @@ PanelWindow {
         statusOsdLabel = taken.video ? formatDuration(taken.duration) + " · Saved" : taken.annotated ? "Annotated · Saved" : "Copied · Saved";
         statusOsdHideDelay.interval = 3500;
         statusOsdVisible = true;
-        statusOsdHideDelay.restart();
+        restartStatusOsdDelay();
     }
 
     // The calendar and notifications card, kept open until closed (Escape, a click
@@ -263,7 +331,7 @@ PanelWindow {
     }
 
     function showBatteryOsd(title) {
-        calendarPopup.dismiss();
+        keepInterruptedOsd("battery");
         statusOsdKind = "battery";
         statusOsdLabel = title;
         batteryDrawEstimate = 0;
@@ -274,17 +342,26 @@ PanelWindow {
         if (batteryCritical)
             statusOsdHideDelay.stop();
         else
-            statusOsdHideDelay.restart();
+            restartStatusOsdDelay();
     }
 
     // Ends the OSD now, as its delay would. Another OSD over the critical battery alert
-    // goes back to the alert, which stays until the computer is plugged in.
+    // goes back to the alert, which stays until the computer is plugged in, and one over a
+    // screenshot, battery or AirPods OSD goes back to it for the rest of its time.
     function endStatusOsd() {
         statusOsdHideDelay.stop();
-        if (batteryCritical)
+        statusOsdEndHeld = false;
+        if (batteryCritical) {
             showBatteryOsd("Battery critical");
-        else
+        } else if (statusOsdResume !== null) {
+            const resume = statusOsdResume;
+            statusOsdResume = null;
+            resume.show();
+            statusOsdHideDelay.interval = resume.remaining;
+            restartStatusOsdDelay();
+        } else {
             statusOsdVisible = false;
+        }
     }
 
     // Green while charging, mauve on battery, red for the alerts.
@@ -328,13 +405,24 @@ PanelWindow {
         volumeInitDelay.restart();
     }
 
-    // The island's new content fades in while the pill resizes around it.
     onActiveWorkspaceChanged: {
         lastWorkspace = shownWorkspace;
         shownWorkspace = activeWorkspace;
     }
-    onStatusOsdVisibleChanged: islandContentFade.restart()
+    // The island's new content fades in while the pill resizes around it.
+    onStatusOsdVisibleChanged: {
+        islandContentFade.restart();
+        sideOsd.follow();
+        if (!statusOsdVisible)
+            statusOsdResume = null;
+
+    }
     onStatusOsdLabelChanged: islandContentFade.restart()
+    onStatusOsdLandingChanged: {
+        if (!statusOsdLanding && statusOsdEndHeld)
+            endStatusOsd();
+
+    }
     onAudioVolumeChanged: showVolumeOsd()
     onAudioMutedChanged: showVolumeOsd()
     onAudioSinkChanged: resetVolumeOsd()
@@ -348,17 +436,26 @@ PanelWindow {
             showStatusOsd(micMuted ? "󰍭" : "󰍬", "Microphone", !micMuted);
 
     }
-    implicitHeight: 56
-    color: "transparent"
-    exclusiveZone: 50
-    // Named so Hyprland's layer rule can blur the player popup too.
-    WlrLayershell.namespace: "hyprpunk-bar"
+    // Where its island and control pill are, for the cards growing out of them:
+    // centerOffset is how far the island sits from the middle, right and top are the
+    // control pill's distances from the screen's edges.
+    property var islandPill: ({
+        "centerOffset": 0,
+        "top": 6,
+        "width": 70,
+        "height": 38
+    })
+    property var controlPill: ({
+        "right": Theme.barMargin,
+        "top": 6,
+        "width": 120,
+        "height": 38
+    })
+    property bool controlPillHovered: false
+    // The bar's own cards, for the screen to watch.
+    readonly property var ownCards: [workspacePopup, monitorPopup, calendarPopup, musicPill.popup]
 
-    anchors {
-        top: true
-        left: true
-        right: true
-    }
+    implicitHeight: 56
 
     Item {
         id: barContent
@@ -378,6 +475,8 @@ PanelWindow {
             // Previews a workspace on hover, in a card that grows out of it.
             Pill {
                 id: workspacePill
+
+                opacity: bar.pillHidden("workspaces") ? 0 : 1
 
                 onHoveredChanged: {
                     if (!hovered)
@@ -402,7 +501,10 @@ PanelWindow {
                 PillPopup {
                     id: workspacePopup
 
+                    shellState: bar.shellState
+                    cardLayer: bar.cardLayer
                     pill: workspacePill
+                    pillName: "workspaces"
                     openable: workspaceSwitcher.hoveredWorkspace !== null
                     // The preview inside the control center's padding.
                     implicitWidth: bar.workspacePreviewWidth + 28
@@ -492,6 +594,8 @@ PanelWindow {
                 id: monitorPill
 
                 visible: bar.width >= 1200
+                opacity: bar.pillHidden("monitor") ? 0 : 1
+
                 onHoveredChanged: {
                     if (hovered)
                         monitorPopup.hoverStarted();
@@ -517,7 +621,10 @@ PanelWindow {
                 PillPopup {
                     id: monitorPopup
 
+                    shellState: bar.shellState
+                    cardLayer: bar.cardLayer
                     pill: monitorPill
+                    pillName: "monitor"
                     implicitWidth: monitorContent.implicitWidth
                     implicitHeight: monitorContent.implicitHeight
 
@@ -586,6 +693,193 @@ PanelWindow {
 
         }
 
+        // While a card is open on the island, its OSD shows here instead, on the card's
+        // left (the privacy dots take its right). An OSD that starts then drops in, and
+        // flies back up once over, like the bar's pills that come and go (DropInSlot). The
+        // one the island was showing comes out of it as a card opens, and goes back into it
+        // as the card folds onto it, so there's only ever one: drawn over the cards, its
+        // glass fades as it enters and its content lands where the island shows the same.
+        Item {
+            id: sideOsd
+
+            parent: bar.cardLayer
+
+            readonly property Item frame: bar.islandFrame
+            // Off screen above the bar, 0 in place.
+            property real lift: 60
+            // Beside the card, or in the middle of the island's shape (IslandFrame.islandShare).
+            // Only while it shows: over, it has nothing to bring into the island.
+            readonly property real besideX: frame.shape.x - 10 - width
+            readonly property real insideX: frame.shape.x + (frame.shape.width - width) / 2
+
+            // The OSD starts or ends: it drops in beside a card or flies away from it. In the
+            // island, it's in place for a card that opens over it.
+            function follow() {
+                sideOsdEnter.stop();
+                sideOsdLeave.stop();
+                sideOsdSettle.stop();
+                if (bar.statusOsdVisible) {
+                    if (frame.owner !== null)
+                        sideOsdEnter.restart();
+                    else
+                        lift = 0;
+                } else {
+                    if (visible)
+                        sideOsdLeave.restart();
+                    else
+                        lift = 60;
+                }
+            }
+
+            // The card starts folding back. Still showing, the OSD goes into the island with
+            // it: it settles in line with the island in the first half, before it reaches
+            // the card's content, and lands where the island shows it. Already over and
+            // flying off, it stops and fades where it is.
+            function fold() {
+                sideOsdEnter.stop();
+                sideOsdLeave.stop();
+                if (bar.statusOsdVisible)
+                    sideOsdSettle.restart();
+
+            }
+
+            x: Math.round(besideX + (insideX - besideX) * (bar.statusOsdVisible ? frame.islandShare : 0))
+            y: Math.round(frame.islandMiddle - height / 2 - lift)
+            width: sideOsdPill.width
+            height: sideOsdPill.height
+            // Only over a card: in the island, the island shows it.
+            visible: (bar.statusOsdVisible || lift < 60) && bar.islandCovered && !bar.sessionLocked
+            // Over, it fades beside the card in the first half of its folding back (fold),
+            // never crossing what the card still shows.
+            opacity: bar.statusOsdVisible ? 1 : Math.max(0, 1 - 2 * frame.islandShare)
+            // Gone into the island or flown off: ready to come out of the island, or to
+            // drop in from above for the next OSD.
+            onVisibleChanged: {
+                if (visible)
+                    return ;
+
+                sideOsdEnter.stop();
+                sideOsdLeave.stop();
+                sideOsdSettle.stop();
+                lift = bar.statusOsdVisible ? 0 : 60;
+            }
+
+            Binding {
+                target: sideOsdState
+                property: "batteryDetailText"
+                value: bar.batteryDetail()
+                when: bar.statusOsdVisible
+                restoreMode: Binding.RestoreNone
+            }
+
+            Binding {
+                target: sideOsdState
+                property: "batteryColor"
+                value: bar.batteryOsdColor()
+                when: bar.statusOsdVisible
+                restoreMode: Binding.RestoreNone
+            }
+
+            // What it shows, kept as it was while it flies away: the OSD is already over.
+            // Starts out following the bar, then each Binding below takes over.
+            QtObject {
+                id: sideOsdState
+
+                property var battery: bar.battery
+                property var batteryCritical: bar.batteryCritical
+                property var batteryDetailText: bar.batteryDetail()
+                property var batteryColor: bar.batteryOsdColor()
+                property var statusOsdEnabled: bar.statusOsdEnabled
+                property var statusOsdIcon: bar.statusOsdIcon
+                property var statusOsdImage: bar.statusOsdImage
+                property var statusOsdKind: bar.statusOsdKind
+                property var statusOsdLabel: bar.statusOsdLabel
+                property var statusOsdLevel: bar.statusOsdLevel
+                property var statusOsdMaxLevel: bar.statusOsdMaxLevel
+                property var statusOsdRingCharging: bar.statusOsdRingCharging
+                property var statusOsdRingLevel: bar.statusOsdRingLevel
+                property var statusOsdTitle: bar.statusOsdTitle
+                property var statusOsdVisible: bar.statusOsdVisible
+
+                function batteryDetail() {
+                    return batteryDetailText;
+                }
+
+                function batteryOsdColor() {
+                    return batteryColor;
+                }
+
+            }
+
+            Instantiator {
+                model: ["battery", "batteryCritical", "statusOsdEnabled", "statusOsdIcon", "statusOsdImage", "statusOsdKind", "statusOsdLabel", "statusOsdLevel", "statusOsdMaxLevel", "statusOsdRingCharging", "statusOsdRingLevel", "statusOsdTitle", "statusOsdVisible"]
+
+                delegate: Binding {
+                    required property string modelData
+
+                    target: sideOsdState
+                    property: modelData
+                    value: bar[modelData]
+                    when: bar.statusOsdVisible
+                    restoreMode: Binding.RestoreNone
+                }
+
+            }
+
+            Pill {
+                id: sideOsdPill
+
+                horizontalPadding: 28
+                glassOpacity: 1 - sideOsd.frame.islandShare
+
+                IslandOsd {
+                    bar: sideOsdState
+                }
+
+            }
+
+            NumberAnimation {
+                id: sideOsdEnter
+
+                target: sideOsd
+                property: "lift"
+                to: 0
+                duration: 700
+                easing.type: Easing.OutBounce
+            }
+
+            Connections {
+                function onOwnerChanged() {
+                    if (sideOsd.frame.owner === null)
+                        sideOsd.fold();
+
+                }
+
+                target: sideOsd.frame
+            }
+
+            NumberAnimation {
+                id: sideOsdSettle
+
+                target: sideOsd
+                property: "lift"
+                to: 0
+                duration: Theme.cardFold / 2
+                easing.type: Easing.OutCubic
+            }
+
+            NumberAnimation {
+                id: sideOsdLeave
+
+                target: sideOsd
+                property: "lift"
+                to: 60
+                duration: 300
+                easing.type: Easing.InBack
+            }
+
+        }
+
         RowLayout {
             id: centerGroup
 
@@ -599,9 +893,11 @@ PanelWindow {
             Pill {
                 id: clockPill
 
+                opacity: bar.pillHidden("island") ? 0 : 1
+
                 function publishGeometry() {
                     const origin = mapToItem(null, 0, 0);
-                    bar.shellState.islandPill = {
+                    bar.islandPill = {
                         "centerOffset": origin.x + width / 2 - bar.width / 2,
                         "top": origin.y,
                         "width": width,
@@ -633,7 +929,7 @@ PanelWindow {
 
                 // The screenshot or recording just taken opens in its viewer.
                 TapHandler {
-                    enabled: bar.statusOsdVisible && bar.statusOsdKind === "screenshot"
+                    enabled: bar.islandOsdShown && bar.statusOsdKind === "screenshot"
                     cursorShape: Qt.PointingHandCursor
                     onTapped: {
                         Quickshell.execDetached(["xdg-open", bar.statusOsdFile]);
@@ -702,6 +998,8 @@ PanelWindow {
                     }
 
                     Behavior on Layout.preferredWidth {
+                        enabled: bar.islandAnimated
+
                         NumberAnimation {
                             duration: 220
                             easing.type: Easing.OutCubic
@@ -710,6 +1008,8 @@ PanelWindow {
                     }
 
                     Behavior on Layout.leftMargin {
+                        enabled: bar.islandAnimated
+
                         NumberAnimation {
                             duration: 220
                             easing.type: Easing.OutCubic
@@ -821,6 +1121,8 @@ PanelWindow {
                     }
 
                     Behavior on Layout.preferredWidth {
+                        enabled: bar.islandAnimated
+
                         NumberAnimation {
                             duration: 220
                             easing.type: Easing.OutCubic
@@ -829,6 +1131,8 @@ PanelWindow {
                     }
 
                     Behavior on Layout.leftMargin {
+                        enabled: bar.islandAnimated
+
                         NumberAnimation {
                             duration: 220
                             easing.type: Easing.OutCubic
@@ -897,6 +1201,8 @@ PanelWindow {
                     }
 
                     Behavior on Layout.preferredWidth {
+                        enabled: bar.islandAnimated
+
                         NumberAnimation {
                             duration: 220
                             easing.type: Easing.OutCubic
@@ -905,6 +1211,8 @@ PanelWindow {
                     }
 
                     Behavior on Layout.leftMargin {
+                        enabled: bar.islandAnimated
+
                         NumberAnimation {
                             duration: 220
                             easing.type: Easing.OutCubic
@@ -920,6 +1228,8 @@ PanelWindow {
                 }
 
                 Behavior on implicitWidth {
+                    enabled: bar.islandAnimated
+
                     NumberAnimation {
                         duration: 220
                         easing.type: Easing.OutCubic
@@ -928,6 +1238,8 @@ PanelWindow {
                 }
 
                 Behavior on implicitHeight {
+                    enabled: bar.islandAnimated
+
                     NumberAnimation {
                         duration: 220
                         easing.type: Easing.OutCubic
@@ -965,7 +1277,12 @@ PanelWindow {
                 id: statusOsdHideDelay
 
                 interval: 1500
-                onTriggered: bar.endStatusOsd()
+                onTriggered: {
+                    if (bar.statusOsdLanding)
+                        bar.statusOsdEndHeld = true;
+                    else
+                        bar.endStatusOsd();
+                }
             }
 
             PillPopup {
@@ -990,7 +1307,7 @@ PanelWindow {
                 readonly property int calendarWidth: 322
                 readonly property int notificationWidth: 400
                 // The notifications open beside the calendar while some are waiting.
-                property real animatedWidth: notificationList.count > 0 ? calendarWidth + notificationWidth : calendarWidth
+                property real animatedWidth: notificationList.shownCount > 0 ? calendarWidth + notificationWidth : calendarWidth
                 property int pendingMonthDelta: 0
 
                 function changeMonth(delta) {
@@ -1001,21 +1318,28 @@ PanelWindow {
                     monthTransition.start();
                 }
 
+                shellState: bar.shellState
+                cardLayer: bar.cardLayer
                 pill: clockPill
+                pillName: "island"
+                frame: bar.islandFrame
+                // A password, a file or a screen to share is being asked for on the island.
+                blocked: bar.shellState.promptShown(bar.screen.name, "")
                 align: Qt.AlignHCenter
-                closeDelay: 180
                 cardHeight: animatedHeight
                 cardWidth: animatedWidth
-                anchor.edges: Edges.Top
-                anchor.gravity: Edges.Bottom
                 implicitWidth: calendarWidth + notificationWidth
                 // Sized for a six-week month so the card can animate without clipping. Not taken
                 // from weekRows: the layout updates a frame late, and the popup would resize twice
                 // (everything shakes).
                 implicitHeight: calendarColumn.y + calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + 18
-                onOpening: monthOffset = 0
+                // It takes the island: an island panel open there folds back.
+                onOpening: {
+                    monthOffset = 0;
+                    bar.shellState.islandClaimed(bar.screen.name, "calendar");
+                }
                 // While it's open, new notifications land in it instead of popping out of
-                // the island.
+                // the island, and the AirPods card waits.
                 onExpandedChanged: {
                     if (expanded) {
                         bar.shellState.notificationScreen = bar.screen;
@@ -1023,6 +1347,22 @@ PanelWindow {
                     } else if (bar.shellState.notificationScreen === bar.screen) {
                         bar.shellState.notificationCenterOpen = false;
                     }
+                    const key = "calendar@" + bar.screen.name;
+                    const others = bar.shellState.islandPanels.filter((item) => {
+                        return item !== key;
+                    });
+                    bar.shellState.islandPanels = expanded ? others.concat([key]) : others;
+                }
+
+                // An island panel takes the island: the calendar folds back.
+                Connections {
+                    function onIslandClaimed(screenName, owner) {
+                        if (screenName === bar.screen.name && owner !== "calendar" && calendarPopup.mapped)
+                            calendarPopup.close();
+
+                    }
+
+                    target: bar.shellState
                 }
 
                 Connections {
@@ -1041,6 +1381,19 @@ PanelWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: clockPill.width
                     height: clockPill.height
+                    // The island's own time, so it stays while the card folds back onto
+                    // the island showing the time. Another card taking the island's shape
+                    // over, or the island taking an OSD, has no time to meet: it fades
+                    // with the rest of the content.
+                    opacity: bar.islandFrame.owner === calendarPopup || bar.islandFrame.owner === null && !bar.islandOsdShown ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+
+                    }
 
                     // Starts where the time sits in the island, pushed left by the badge or
                     // the dots, and slides to the card's middle as it opens, then back.
@@ -1333,7 +1686,7 @@ PanelWindow {
 
                 Behavior on animatedHeight {
                     NumberAnimation {
-                        duration: 280
+                        duration: Theme.cardFold
                         easing.type: Easing.OutCubic
                     }
 
@@ -1341,7 +1694,7 @@ PanelWindow {
 
                 Behavior on animatedWidth {
                     NumberAnimation {
-                        duration: 280
+                        duration: Theme.cardFold
                         easing.type: Easing.OutCubic
                     }
 
@@ -1396,8 +1749,11 @@ PanelWindow {
                 MusicPill {
                     id: musicPill
 
+                    opacity: bar.pillHidden("player") ? 0 : 1
+
                     player: bar.spotifyPlayer
                     shellState: bar.shellState
+                    cardLayer: bar.cardLayer
                 }
 
                 // Its shortcut, which does nothing while Spotify isn't running: there
@@ -1419,10 +1775,11 @@ PanelWindow {
                 id: controlPill
 
                 // Hidden under the control center's glass, which lets it through.
-                opacity: bar.shellState.controlPillsCovered.indexOf(bar.screen.name) >= 0 ? 0 : 1
+                opacity: bar.pillHidden("control") ? 0 : 1
+
                 function publishGeometry() {
                     const origin = mapToItem(null, 0, 0);
-                    bar.shellState.controlPill = {
+                    bar.controlPill = {
                         "right": bar.width - origin.x - width,
                         "top": origin.y,
                         "width": width,
@@ -1435,10 +1792,7 @@ PanelWindow {
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
-                onHoveredChanged: {
-                    bar.shellState.controlPillScreen = bar.screen;
-                    bar.shellState.controlPillHovered = hovered;
-                }
+                onHoveredChanged: bar.controlPillHovered = hovered
 
                 // Keeps the control center open, like its shortcut.
                 TapHandler {
@@ -1458,18 +1812,11 @@ PanelWindow {
 
     }
 
-    // The control pill is drawn again: the control center's panel, folded back on it, can go.
-    Connections {
-        function onFrameSwapped() {
-            const name = bar.screen.name;
-            if (controlPill.opacity === 1 && bar.shellState.controlPillsRevealing.indexOf(name) >= 0)
-                bar.shellState.controlPillsRevealing = bar.shellState.controlPillsRevealing.filter((item) => {
-                return item !== name;
-            });
-
-        }
-
-        target: controlPill.Window.window
+    // Hidden under a card grown out of it: the card's glass would let it through.
+    function pillHidden(name) {
+        return cards.some((card) => {
+            return card.pillName === name && card.covering;
+        });
     }
 
     // The time recorded, for the island.
@@ -1542,6 +1889,8 @@ PanelWindow {
     }
 
     Behavior on clockCenterOffset {
+        enabled: bar.islandAnimated
+
         NumberAnimation {
             duration: 220
             easing.type: Easing.OutCubic
@@ -1571,7 +1920,7 @@ PanelWindow {
         function onBatteryEstimatingChanged() {
             if (!bar.batteryEstimating && bar.statusOsdVisible && bar.statusOsdLabel === "On battery") {
                 statusOsdHideDelay.interval = 2500;
-                statusOsdHideDelay.restart();
+                bar.restartStatusOsdDelay();
             }
         }
 
