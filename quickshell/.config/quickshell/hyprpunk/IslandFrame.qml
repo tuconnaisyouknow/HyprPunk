@@ -102,10 +102,10 @@ Card {
             backgroundColor: Theme.panel
         }
 
-        // Keeps the clicks on the shape from reaching the bar under it, where it's wider
+        // A click on the shape stays in it, away from the bar under it, where it's wider
         // than the card shown in it.
-        MouseArea {
-            anchors.fill: parent
+        TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
         }
 
     }

@@ -548,30 +548,6 @@ Card {
             }
         }
 
-        // Where the pill sits under the panel: a click there still keeps it open like the
-        // shortcut, or closes it once kept. Under the panel, so it only gets the clicks no
-        // control keeps (their TapHandlers take the click on press, ReleaseWithinBounds).
-        Item {
-            anchors.right: parent.right
-            width: controlCenter.pill.width
-            height: controlCenter.pill.height
-            visible: controlCenter.opened
-
-            HoverHandler {
-                cursorShape: Qt.PointingHandCursor
-            }
-
-            TapHandler {
-                onTapped: {
-                    if (controlCenter.openedByKeybind)
-                        controlCenter.close();
-                    else
-                        controlCenter.openedByKeybind = true;
-                }
-            }
-
-        }
-
         // Grows out of the pill like the calendar and the player do.
         ClippingRectangle {
             id: panel
@@ -595,6 +571,35 @@ Card {
                     controlCenter.page = controlCenter.parentPage(controlCenter.page);
                 else
                     controlCenter.close();
+            }
+
+            // A click on the panel stays in it, away from the bar and the pill under it.
+            TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
+            }
+
+            // Where the pill sits under the panel: a click there still keeps it open like
+            // the shortcut, or closes it once kept. Under the pages, so it only gets the
+            // clicks no control keeps (their TapHandlers take the click on press).
+            Item {
+                anchors.right: parent.right
+                width: controlCenter.pill.width
+                height: controlCenter.pill.height
+                visible: controlCenter.opened
+
+                HoverHandler {
+                    cursorShape: Qt.PointingHandCursor
+                }
+
+                TapHandler {
+                    onTapped: {
+                        if (controlCenter.openedByKeybind)
+                            controlCenter.close();
+                        else
+                            controlCenter.openedByKeybind = true;
+                    }
+                }
+
             }
 
             // Same look as the pill it grows from, so it feels like the pill itself is growing.
