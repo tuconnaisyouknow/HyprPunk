@@ -125,6 +125,7 @@ ControlBlock {
     }
 
     TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: {
             row.bounce();
             row.clicked();

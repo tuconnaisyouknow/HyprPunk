@@ -215,6 +215,7 @@ ColumnLayout {
 
                             // The row unfolds the menu, or brings back an app that has none.
                             TapHandler {
+                                gesturePolicy: TapHandler.ReleaseWithinBounds
                                 onTapped: {
                                     row.bounce();
                                     if (app.modelData.hasMenu) {

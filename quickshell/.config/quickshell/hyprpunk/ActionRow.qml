@@ -62,6 +62,7 @@ ControlBlock {
     }
 
     TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: {
             action.bounce();
             if (action.destructive && !action.armed) {

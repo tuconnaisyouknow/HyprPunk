@@ -77,6 +77,7 @@ Item {
     }
 
     TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: {
             checkBounce.restart();
             check.checked = !check.checked;

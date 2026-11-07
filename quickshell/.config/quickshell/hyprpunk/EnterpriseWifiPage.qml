@@ -584,6 +584,7 @@ ColumnLayout {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 enabled: connectButton.available
                 onTapped: {
                     connectBounce.restart();

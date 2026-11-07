@@ -189,6 +189,7 @@ Item {
         TapHandler {
             id: iconTap
 
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             enabled: control.iconButton
             onTapped: {
                 iconBounce.restart();

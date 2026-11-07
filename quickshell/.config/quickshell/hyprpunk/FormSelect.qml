@@ -76,6 +76,7 @@ ColumnLayout {
         }
 
         TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             onTapped: {
                 boxBounce.restart();
                 select.expanded = !select.expanded;
@@ -159,6 +160,7 @@ ColumnLayout {
                     }
 
                     TapHandler {
+                        gesturePolicy: TapHandler.ReleaseWithinBounds
                         onTapped: {
                             select.currentIndex = option.index;
                             select.expanded = false;

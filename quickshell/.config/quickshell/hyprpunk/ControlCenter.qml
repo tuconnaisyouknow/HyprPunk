@@ -548,39 +548,21 @@ Card {
             }
         }
 
-        // Over the panel, only watching: it covers its pill once open, so a click on the
-        // pill's spot still keeps it open like the shortcut, or closes it once kept. The
-        // panel's own buttons still get their clicks, which leave it as it is.
+        // Where the pill sits under the panel: a click there still keeps it open like the
+        // shortcut, or closes it once kept. Under the panel, so it only gets the clicks no
+        // control keeps (their TapHandlers take the click on press, ReleaseWithinBounds).
         Item {
-            anchors.fill: parent
-            z: 1000
+            anchors.right: parent.right
+            width: controlCenter.pill.width
+            height: controlCenter.pill.height
             visible: controlCenter.opened
 
-            // Where the pill sits under the panel.
-            Item {
-                id: pillSpot
-
-                anchors.right: parent.right
-                width: controlCenter.pill.width
-                height: controlCenter.pill.height
-
-                HoverHandler {
-                    cursorShape: Qt.PointingHandCursor
-                }
-
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
             }
 
-            PointHandler {
-                acceptedButtons: Qt.LeftButton
-                onActiveChanged: {
-                    if (!active)
-                        return ;
-
-                    const at = point.pressPosition;
-                    const onPill = at.x >= pillSpot.x && at.y < pillSpot.height;
-                    if (!onPill)
-                        return ;
-
+            TapHandler {
+                onTapped: {
                     if (controlCenter.openedByKeybind)
                         controlCenter.close();
                     else

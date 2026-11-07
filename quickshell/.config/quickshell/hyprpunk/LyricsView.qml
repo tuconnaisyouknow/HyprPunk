@@ -327,6 +327,7 @@ Item {
         }
 
         TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             enabled: view.shownSynced && line.modelData.t >= 0
             onTapped: view.seekRequested(line.modelData.t)
         }

@@ -64,6 +64,7 @@ ControlBlock {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: tile.toggle()
             }
 
@@ -138,6 +139,7 @@ ControlBlock {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: tile.expandable ? tile.expandRequested() : tile.toggle()
             }
 
@@ -151,6 +153,7 @@ ControlBlock {
             font.pixelSize: 16
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: tile.expandRequested()
             }
 
