@@ -9,7 +9,7 @@ ColumnLayout {
 
     required property var notificationServer
     required property var notificationHistory
-    // The card is open: the notifications come in one after another each time it opens.
+    // The card is open: only then do closed notifications animate out.
     property bool shown: false
     // The ones from before a restart under the live ones, which come oldest first.
     readonly property var trackedValues: notificationHistory.entries.concat(notificationServer.trackedNotifications.values)
@@ -157,10 +157,8 @@ ColumnLayout {
             // Card offset from its resting place, and share of its slot in the list.
             property real slide: 0
             property real slot: 1
-            property real intro: 1
 
             width: ListView.view.width
-            opacity: intro
             height: (card.implicitHeight + 10) * slot
             Component.onCompleted: {
                 if (leaving)
@@ -189,44 +187,6 @@ ColumnLayout {
                 width: parent.width
                 // Looked up once: the object is destroyed while the card leaves.
                 notification: list.notificationObjects[entry.notificationId] ?? null
-            }
-
-            transform: Translate {
-                y: (1 - entry.intro) * -16
-            }
-
-            Connections {
-                function onShownChanged() {
-                    if (list.shown)
-                        entryIntro.restart();
-
-                }
-
-                target: list
-            }
-
-            // Cards come in one after another, once the card has opened.
-            SequentialAnimation {
-                id: entryIntro
-
-                PropertyAction {
-                    target: entry
-                    property: "intro"
-                    value: 0
-                }
-
-                PauseAnimation {
-                    duration: 140 + Math.min(entry.index, 6) * 45
-                }
-
-                NumberAnimation {
-                    target: entry
-                    property: "intro"
-                    to: 1
-                    duration: 320
-                    easing.type: Easing.OutCubic
-                }
-
             }
 
             // Slides out to the right, then closes the gap.
