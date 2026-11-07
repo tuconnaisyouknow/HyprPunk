@@ -921,10 +921,10 @@ Item {
                 // The chips bring their own gap after the time.
                 spacing: 0
 
-                // A click keeps the card open, or closes it once kept. Not on the recording
-                // chip either: its click stops the recording, and both would get it.
+                // A click keeps the card open, or closes it once kept. The recording chip
+                // keeps its own click, which stops the recording.
                 TapHandler {
-                    enabled: !bar.islandOsdShown && !islandChips.stopHovered
+                    enabled: !bar.islandOsdShown
                     cursorShape: Qt.PointingHandCursor
                     onTapped: bar.toggleNotificationCard()
                 }

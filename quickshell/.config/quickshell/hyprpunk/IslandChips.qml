@@ -173,7 +173,9 @@ RowLayout {
             cursorShape: Qt.PointingHandCursor
         }
 
+        // Taken on press, so the island under it doesn't open the calendar too.
         TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             enabled: chips.interactive
             onTapped: chips.bar.shellState.requestScreenshot("stop", "", 0)
         }
