@@ -175,9 +175,10 @@ Card {
         Keys.forwardTo: panel.keyTargets
         Keys.onEscapePressed: panel.back()
 
-        // Keeps the clicks on the card from reaching the bar under it.
-        MouseArea {
-            anchors.fill: parent
+        // A click on the card stays in it, away from the bar under it. Taken on press: a
+        // MouseArea misses the clicks a control's TapHandler already watches.
+        TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
         }
 
         // Laid out at full size, only uncovered while the card grows. It stays put on

@@ -128,6 +128,7 @@ ColumnLayout {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: list.clearAll()
             }
 

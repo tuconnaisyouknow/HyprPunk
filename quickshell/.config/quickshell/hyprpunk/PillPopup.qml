@@ -295,9 +295,14 @@ Card {
             }
         }
 
+        // A click on the card stays in it, away from the bar and the pill under it.
+        TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
+        }
+
         // Where the pill sits under the card: a click there still keeps it open, or closes
         // it once kept. Under the content, so it only gets the clicks no control keeps
-        // (their TapHandlers take the click on press, ReleaseWithinBounds).
+        // (their TapHandlers take the click on press).
         Item {
             x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
             width: popup.pill.width
