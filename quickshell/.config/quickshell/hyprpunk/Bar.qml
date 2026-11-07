@@ -918,7 +918,8 @@ Item {
                     else
                         calendarPopup.hoverEnded();
                 }
-                spacing: 8
+                // The chips bring their own gap after the time.
+                spacing: 0
 
                 // A click keeps the card open, or closes it once kept. Not on the recording
                 // chip either: its click stops the recording, and both would get it.
@@ -962,7 +963,7 @@ Item {
                 }
 
                 // Gone at once when an OSD takes the island, or their closing would pull
-                // the OSD sideways while it grows. Their own gaps replace the pill's.
+                // the OSD sideways while it grows.
                 IslandChips {
                     id: islandChips
 
@@ -970,7 +971,6 @@ Item {
                     visible: !bar.islandOsdShown
                     shown: !bar.islandOsdShown
                     animated: bar.islandAnimated
-                    Layout.leftMargin: -clockPill.spacing
                 }
 
                 IslandOsd {

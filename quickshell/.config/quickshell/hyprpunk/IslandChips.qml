@@ -17,6 +17,8 @@ RowLayout {
 
     // Each chip brings its own gap before it, so a closed one leaves none.
     spacing: 0
+    // The gap after the time, never wider than the chips: it closes with the last one.
+    Layout.leftMargin: Math.min(8, implicitWidth)
 
     // Privacy: a dot while something is listening or watching, green for the camera,
     // orange for the microphone alone.
