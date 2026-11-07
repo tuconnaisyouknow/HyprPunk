@@ -404,6 +404,19 @@ WlSessionLockSurface {
 
             }
 
+            // The bar's chips after the time, so the island starts as it was: they close
+            // while it grows into the padlock, and open again as it goes back to the time.
+            Loader {
+                active: surface.bar !== null
+
+                sourceComponent: IslandChips {
+                    bar: surface.bar
+                    shown: surface.islandMode === "clock"
+                    interactive: false
+                }
+
+            }
+
             // Hidden straight away when going back to the time: the open shackle would
             // hang over the digits while the width closes.
             LockIcon {

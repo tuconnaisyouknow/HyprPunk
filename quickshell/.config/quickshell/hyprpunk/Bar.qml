@@ -910,7 +910,7 @@ Item {
                 Component.onCompleted: publishGeometry()
                 // The pill opens the calendar card, like the other pills, unless an OSD
                 // has the island. Not from the recording chip, which you hover to stop.
-                readonly property bool opensCalendar: hovered && !bar.islandOsdShown && !recordingHover.hovered
+                readonly property bool opensCalendar: hovered && !bar.islandOsdShown && !islandChips.stopHovered
 
                 onOpensCalendarChanged: {
                     if (opensCalendar)
@@ -923,7 +923,7 @@ Item {
                 // A click keeps the card open, or closes it once kept. Not on the recording
                 // chip either: its click stops the recording, and both would get it.
                 TapHandler {
-                    enabled: !bar.islandOsdShown && !recordingHover.hovered
+                    enabled: !bar.islandOsdShown && !islandChips.stopHovered
                     cursorShape: Qt.PointingHandCursor
                     onTapped: bar.toggleNotificationCard()
                 }
@@ -961,266 +961,16 @@ Item {
 
                 }
 
-                // Privacy: a dot after the time while something is listening or watching,
-                // green for the camera, orange for the microphone alone.
-                Item {
-                    readonly property bool shown: !bar.islandOsdShown && (bar.shellState.cameraInUse || bar.shellState.microphoneInUse)
-
-                    // Gone at once when an OSD takes the island, or its shrinking would pull
-                    // the OSD sideways while it grows.
-                    visible: !bar.islandOsdShown && Layout.preferredWidth > 0
-                    Layout.preferredWidth: shown ? 8 : 0
-                    Layout.leftMargin: shown ? -2 : -clockPill.spacing
-                    implicitHeight: 8
-
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 8
-                        height: 8
-                        radius: 4
-                        scale: parent.shown ? 1 : 0
-                        color: bar.shellState.cameraInUse ? Theme.green : Theme.peach
-
-                        Behavior on scale {
-                            NumberAnimation {
-                                duration: 260
-                                easing.type: Easing.OutBack
-                            }
-
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 200
-                            }
-
-                        }
-
-                    }
-
-                    Behavior on Layout.preferredWidth {
-                        enabled: bar.islandAnimated
-
-                        NumberAnimation {
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                    Behavior on Layout.leftMargin {
-                        enabled: bar.islandAnimated
-
-                        NumberAnimation {
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                }
-
-                // Recording: a pulsing red dot and how long it's been going, after the time.
-                // Click to stop.
-                Item {
-                    id: recordingChip
-
-                    readonly property bool shown: !bar.islandOsdShown && bar.shellState.recording
-
-                    // Gone at once when an OSD takes the island, like the privacy dot.
-                    visible: !bar.islandOsdShown && Layout.preferredWidth > 0
-                    Layout.preferredWidth: shown ? recordingRow.implicitWidth + 16 : 0
-                    Layout.leftMargin: shown ? 0 : -clockPill.spacing
-                    implicitHeight: 24
-                    clip: true
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: height / 2
-                        color: recordingHover.hovered ? Theme.alpha(Theme.red, 0.28) : Theme.alpha(Theme.red, 0.16)
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 140
-                            }
-
-                        }
-
-                    }
-
-                    Row {
-                        id: recordingRow
-
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 8
-                        spacing: 6
-
-                        // The stop square on hover, the dot otherwise.
-                        Rectangle {
-                            id: recordingDot
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 8
-                            height: 8
-                            radius: recordingHover.hovered ? 2 : 4
-                            color: Theme.red
-
-                            SequentialAnimation on opacity {
-                                running: recordingChip.shown && !recordingHover.hovered
-                                loops: Animation.Infinite
-                                onRunningChanged: {
-                                    if (!running)
-                                        recordingDot.opacity = 1;
-
-                                }
-
-                                NumberAnimation {
-                                    to: 0.3
-                                    duration: 700
-                                    easing.type: Easing.InOutSine
-                                }
-
-                                NumberAnimation {
-                                    to: 1
-                                    duration: 700
-                                    easing.type: Easing.InOutSine
-                                }
-
-                            }
-
-                            Behavior on radius {
-                                NumberAnimation {
-                                    duration: 140
-                                }
-
-                            }
-
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: bar.formatDuration(bar.recordingElapsed)
-                            color: Theme.red
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                            font.weight: Font.Bold
-                            font.features: {
-                                "tnum": 1
-                            }
-                        }
-
-                    }
-
-                    HoverHandler {
-                        id: recordingHover
-
-                        cursorShape: Qt.PointingHandCursor
-                    }
-
-                    TapHandler {
-                        onTapped: bar.shellState.requestScreenshot("stop", "", 0)
-                    }
-
-                    Behavior on Layout.preferredWidth {
-                        enabled: bar.islandAnimated
-
-                        NumberAnimation {
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                    Behavior on Layout.leftMargin {
-                        enabled: bar.islandAnimated
-
-                        NumberAnimation {
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                }
-
-                // Notifications waiting: a bell and how many, after the time. Lavender at
-                // half opacity while Focus keeps them quiet.
-                Item {
-                    id: notificationBadge
-
-                    readonly property bool shown: !bar.islandOsdShown && bar.notificationCount > 0
-
-                    // Gone at once when an OSD takes the island, like the privacy dot.
-                    visible: !bar.islandOsdShown && Layout.preferredWidth > 0
-                    Layout.preferredWidth: shown ? notificationBadgeRow.implicitWidth + 14 : 0
-                    Layout.leftMargin: shown ? 0 : -clockPill.spacing
-                    implicitHeight: 24
-                    clip: true
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: height / 2
-                        color: Theme.alpha(bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve, 0.16)
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 140
-                            }
-
-                        }
-
-                    }
-
-                    Row {
-                        id: notificationBadgeRow
-
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 7
-                        spacing: 4
-                        opacity: bar.shellState.doNotDisturb ? 0.5 : 1
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: bar.shellState.doNotDisturb ? "󰂛" : "󰂚"
-                            color: bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve
-                            font.family: Theme.font
-                            font.pixelSize: 13
-                        }
-
-                        Text {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: bar.notificationCount
-                            color: bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                            font.weight: Font.Bold
-                            font.features: {
-                                "tnum": 1
-                            }
-                        }
-
-                    }
-
-                    Behavior on Layout.preferredWidth {
-                        enabled: bar.islandAnimated
-
-                        NumberAnimation {
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                    Behavior on Layout.leftMargin {
-                        enabled: bar.islandAnimated
-
-                        NumberAnimation {
-                            duration: 220
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
+                // Gone at once when an OSD takes the island, or their closing would pull
+                // the OSD sideways while it grows. Their own gaps replace the pill's.
+                IslandChips {
+                    id: islandChips
+
+                    bar: bar
+                    visible: !bar.islandOsdShown
+                    shown: !bar.islandOsdShown
+                    animated: bar.islandAnimated
+                    Layout.leftMargin: -clockPill.spacing
                 }
 
                 IslandOsd {
