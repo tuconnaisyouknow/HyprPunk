@@ -70,6 +70,7 @@ ClippingRectangle {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: card.workspaceChosen(modelData)
             }
 

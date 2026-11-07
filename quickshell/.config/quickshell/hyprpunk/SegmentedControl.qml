@@ -126,6 +126,7 @@ Item {
                 }
 
                 TapHandler {
+                    gesturePolicy: TapHandler.ReleaseWithinBounds
                     onTapped: {
                         segmentBounce.restart();
                         if (segment.chosen)

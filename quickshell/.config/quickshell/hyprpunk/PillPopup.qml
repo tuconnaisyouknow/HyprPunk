@@ -295,41 +295,20 @@ Card {
             }
         }
 
-        // Over the content, only watching: the card covers the pill once open, so a click
-        // on the pill's spot still keeps it open, or closes it once kept. The content's
-        // own buttons still get their clicks, which leave the card as it is.
+        // Where the pill sits under the card: a click there still keeps it open, or closes
+        // it once kept. Under the content, so it only gets the clicks no control keeps
+        // (their TapHandlers take the click on press, ReleaseWithinBounds).
         Item {
-            id: clickWatch
+            x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
+            width: popup.pill.width
+            height: popup.pill.height
 
-            anchors.fill: parent
-            z: 1000
-
-            // Where the pill sits under the card.
-            Item {
-                id: pillSpot
-
-                x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
-                width: popup.pill.width
-                height: popup.pill.height
-
-                HoverHandler {
-                    cursorShape: Qt.PointingHandCursor
-                }
-
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
             }
 
-            PointHandler {
-                acceptedButtons: Qt.LeftButton
-                onActiveChanged: {
-                    if (!active)
-                        return ;
-
-                    const at = point.pressPosition;
-                    const onPill = at.x >= pillSpot.x && at.x < pillSpot.x + pillSpot.width && at.y < pillSpot.height;
-                    if (onPill)
-                        popup.togglePinned();
-
-                }
+            TapHandler {
+                onTapped: popup.togglePinned()
             }
 
         }

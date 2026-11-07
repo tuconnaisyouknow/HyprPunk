@@ -43,6 +43,7 @@ RowLayout {
         }
 
         TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             onTapped: {
                 backBounce.restart();
                 header.backRequested();

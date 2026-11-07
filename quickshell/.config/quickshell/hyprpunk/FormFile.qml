@@ -66,6 +66,7 @@ ColumnLayout {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: file.path = ""
             }
 
@@ -90,6 +91,7 @@ ColumnLayout {
         }
 
         TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             onTapped: {
                 boxBounce.restart();
                 if (!chooser.running)

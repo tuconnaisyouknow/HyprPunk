@@ -395,6 +395,7 @@ Rectangle {
             }
 
             TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: (eventPoint) => {
                     card.seek(Math.max(0, Math.min(1, eventPoint.position.x / progress.width)) * card.length);
                 }
@@ -608,6 +609,7 @@ Rectangle {
         TapHandler {
             id: controlTap
 
+            gesturePolicy: TapHandler.ReleaseWithinBounds
             enabled: control.available
             onTapped: control.triggered()
         }

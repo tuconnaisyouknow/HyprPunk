@@ -359,6 +359,7 @@ Item {
                         }
 
                         TapHandler {
+                            gesturePolicy: TapHandler.ReleaseWithinBounds
                             onTapped: monitor.processSort = sortChip.modelData.key
                         }
 
