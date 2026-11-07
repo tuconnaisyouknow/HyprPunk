@@ -35,7 +35,15 @@ Rectangle {
         width: 18
         height: 18
         radius: height / 2
-        color: Theme.base
+        // Dark on the mauve, off-lavender on the plain glass, where dark would vanish.
+        color: toggleSwitch.checked ? Theme.base : Theme.alpha(Theme.lavender, 0.5)
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 160
+            }
+
+        }
 
         Behavior on x {
             NumberAnimation {
@@ -54,6 +62,7 @@ Rectangle {
     }
 
     TapHandler {
+        gesturePolicy: TapHandler.ReleaseWithinBounds
         onTapped: {
             switchBounce.restart();
             toggleSwitch.toggled();
