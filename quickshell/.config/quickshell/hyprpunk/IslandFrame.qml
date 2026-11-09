@@ -21,9 +21,11 @@ Card {
     // been noted, so that nothing heading to the new card moves before.
     property Item owner: null
     readonly property var island: bar.islandPill
-    readonly property real targetWidth: owner !== null ? owner.cardWidth : island.width
-    readonly property real targetHeight: owner !== null ? owner.cardHeight : island.height
-    readonly property real targetRadius: owner !== null ? owner.openRadius : island.height / 2
+    // Folded, it's the island as you see it, zoomed past its place under the pointer.
+    readonly property real targetWidth: owner !== null ? owner.cardWidth : island.width + 2 * island.spreadX
+    readonly property real targetHeight: owner !== null ? owner.cardHeight : island.height + 2 * island.spreadY
+    readonly property real targetRadius: owner !== null ? owner.openRadius : island.height / 2 + island.spreadY
+    readonly property real targetTop: owner !== null ? island.top : island.top - island.spreadY
     // The shape it was in when the open card last changed, and how far it has eased from
     // there. It eases from wherever it is, so a card taking over mid-animation never jumps,
     // and then follows the open card's size as that changes (a month with one more week).
@@ -38,7 +40,7 @@ Card {
     // How far its middle is from the screen's, where its top is, and the height of the
     // island's middle, for what sits beside it.
     readonly property real shapeCenter: lerp(fromCenter, island.centerOffset, travel)
-    readonly property real shapeTop: lerp(fromTop, island.top, travel)
+    readonly property real shapeTop: lerp(fromTop, targetTop, travel)
     readonly property real islandMiddle: lerp(fromMiddle, island.top + island.height / 2, travel)
     // How much the shape is the island's own: 1 folded on it, 0 a card's. The OSD beside
     // a card goes into the island with it as it folds back, and comes out as a card opens.
@@ -54,11 +56,13 @@ Card {
     // Where a card shows its content: in the shape, but never past the card's own size.
     // Coming from a wider card, the shape is wider than the card for a moment, and what
     // the card lays out beyond its edge (the calendar's notification side, empty) must
-    // stay hidden.
+    // stay hidden. Never above the island's top either, where the shape starts from the
+    // zoomed island: the content stays still while the shape heads to its place.
     function contentRect(card) {
+        const top = Math.max(shape.y, Math.round(island.top));
         const width = Math.min(shape.width, card.cardWidth);
-        const height = Math.min(shape.height, card.cardHeight);
-        return Qt.rect(Math.round(shape.x + (shape.width - width) / 2), shape.y, width, height);
+        const height = Math.min(shape.y + shape.height - top, card.cardHeight);
+        return Qt.rect(Math.round(shape.x + (shape.width - width) / 2), top, width, height);
     }
 
     onOpenCardChanged: {
@@ -69,9 +73,15 @@ Card {
         fromTop = shapeTop;
         fromMiddle = islandMiddle;
         fromIslandShare = islandShare;
+        // A card opening bounces, and one taking the island from a smaller one, along the
+        // sides it grows; a smaller one doesn't.
+        if (openCard !== null)
+            settle.play(openCard.cardWidth > fromWidth, openCard.cardHeight > fromHeight);
+
         owner = openCard;
         travel = 0;
         travelAnimation.restart();
+
     }
     anchors.fill: parent
     // Under the cards' content.
@@ -91,8 +101,8 @@ Card {
         // everything in it shake.
         x: Math.round(frame.width / 2 + frame.shapeCenter - width / 2)
         y: Math.round(frame.shapeTop)
-        width: frame.lerp(frame.fromWidth, frame.targetWidth, frame.travel)
-        height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travel)
+        width: frame.lerp(frame.fromWidth, frame.targetWidth, frame.travel) + settle.width
+        height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travel) + settle.height
 
         // Same look as the island it grows from: base color at 0.9, blurred, with the
         // glass rim.
@@ -108,6 +118,10 @@ Card {
             gesturePolicy: TapHandler.ReleaseWithinBounds
         }
 
+    }
+
+    CardSettle {
+        id: settle
     }
 
     NumberAnimation {

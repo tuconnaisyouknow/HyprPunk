@@ -14,11 +14,17 @@ Rectangle {
     // OSD, beside a card).
     property alias glassOpacity: glass.opacity
     readonly property alias hovered: pillHover.hovered
-    // Opens something on a click: it answers the pointer like the control center's
-    // blocks, unless its card covers it, so the card grows from and folds back to its
-    // resting size.
+    // Opens something on a click (clicked()): it answers the pointer like the control
+    // center's blocks (PillZoom).
     property bool clickable: false
-    readonly property bool lit: clickable && hovered && opacity > 0
+    // The pointer is on the pill's spot in the card that covers it, which takes the
+    // pointer from the pill: it stays lit, so the card folds back onto the pill as
+    // you'll see it.
+    property bool spotHovered: false
+    readonly property bool lit: clickable && (hovered || spotHovered)
+    // How far its zoom draws it past its place in the row (PillZoom).
+    readonly property real spreadX: pillZoom.spreadX
+    readonly property real spreadY: pillZoom.spreadY
     property int spacing: 10
     property int horizontalPadding: 20
     // The panels' card: base at 0.9, blurred by the shell's layer rule. Drawn by the glass
@@ -30,9 +36,14 @@ Rectangle {
     radius: height / 2
     color: "transparent"
     clip: true
-    transform: PillHoverScale {
+    signal clicked()
+
+    transform: PillZoom {
+        id: pillZoom
+
         pill: pill
         active: pill.lit
+        pressed: pillTap.pressed
     }
 
     GlassSurface {
@@ -46,6 +57,16 @@ Rectangle {
 
     HoverHandler {
         id: pillHover
+    }
+
+    TapHandler {
+        id: pillTap
+
+        enabled: pill.clickable
+        cursorShape: Qt.PointingHandCursor
+        // Pressed as long as you like: it squeezes, and opens on release.
+        longPressThreshold: 0
+        onTapped: pill.clicked()
     }
 
     RowLayout {

@@ -439,19 +439,27 @@ Item {
     }
     // Where its island and control pill are, for the cards growing out of them:
     // centerOffset is how far the island sits from the middle, right and top are the
-    // control pill's distances from the screen's edges.
+    // control pill's distances from the screen's edges. spreadX and spreadY are how far
+    // its zoom draws the pill past its place, where a card starts and ends.
     property var islandPill: ({
         "centerOffset": 0,
         "top": 6,
         "width": 70,
-        "height": 38
+        "height": 38,
+        "spreadX": 0,
+        "spreadY": 0
     })
     property var controlPill: ({
         "right": Theme.barMargin,
         "top": 6,
         "width": 120,
-        "height": 38
+        "height": 38,
+        "spreadX": 0,
+        "spreadY": 0
     })
+    // The pointer is on the control pill's spot in the control center, which keeps the
+    // pill lit (Pill.spotHovered).
+    property bool controlSpotHovered: false
     // The bar's own cards, for the screen to watch.
     readonly property var ownCards: [workspacePopup, monitorPopup, calendarPopup, musicPill.popup]
 
@@ -597,11 +605,7 @@ Item {
                 visible: bar.width >= 1200
                 opacity: bar.pillHidden("monitor") ? 0 : 1
                 clickable: true
-
-                TapHandler {
-                    cursorShape: Qt.PointingHandCursor
-                    onTapped: monitorPopup.togglePinned()
-                }
+                onClicked: monitorPopup.togglePinned()
 
                 IconText {
                     icon: ""
@@ -894,36 +898,34 @@ Item {
                 // Not under the recording chip, which answers the pointer itself.
                 clickable: (!bar.islandOsdShown || bar.statusOsdKind === "screenshot") && !islandChips.stopHovered
 
-                // Where it rests in its row: its zoom under the pointer is only drawn.
+                // Where it rests in its row, and its zoom apart.
                 function publishGeometry() {
                     const origin = parent.mapToItem(null, x, y);
                     bar.islandPill = {
                         "centerOffset": origin.x + width / 2 - bar.width / 2,
                         "top": origin.y,
                         "width": width,
-                        "height": height
+                        "height": height,
+                        "spreadX": spreadX,
+                        "spreadY": spreadY
                     };
                 }
 
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
+                onSpreadXChanged: publishGeometry()
+                onSpreadYChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
                 // Each chip brings its own gap after the time.
                 spacing: 0
 
                 // A click opens the calendar card, or closes it, unless an OSD has the
-                // island. The recording chip keeps its own click, which stops the recording.
-                TapHandler {
-                    enabled: !bar.islandOsdShown
-                    cursorShape: Qt.PointingHandCursor
-                    onTapped: bar.toggleNotificationCard()
-                }
-
-                // The screenshot or recording just taken opens in its viewer.
-                TapHandler {
-                    enabled: bar.islandOsdShown && bar.statusOsdKind === "screenshot"
-                    cursorShape: Qt.PointingHandCursor
-                    onTapped: {
+                // island: the screenshot or recording just taken then opens in its viewer.
+                // The recording chip keeps its own click, which stops the recording.
+                onClicked: {
+                    if (!bar.islandOsdShown) {
+                        bar.toggleNotificationCard();
+                    } else {
                         Quickshell.execDetached(["xdg-open", bar.statusOsdFile]);
                         bar.statusOsdVisible = false;
                     }
@@ -1462,15 +1464,10 @@ Item {
 
                 Pill {
                     clickable: true
+                    onClicked: Updates.upgrade()
 
                     IconText {
                         icon: ""
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: Updates.upgrade()
-                        }
 
                         // Keeps the last count while the pill flies away.
                         Binding on text {
@@ -1520,28 +1517,29 @@ Item {
                 // Hidden under the control center's glass, which lets it through.
                 opacity: bar.pillHidden("control") ? 0 : 1
                 clickable: true
+                spotHovered: bar.controlSpotHovered
 
-                // Where it rests in its row: its zoom under the pointer is only drawn.
+                // Where it rests in its row, and its zoom apart.
                 function publishGeometry() {
                     const origin = parent.mapToItem(null, x, y);
                     bar.controlPill = {
                         "right": bar.width - origin.x - width,
                         "top": origin.y,
                         "width": width,
-                        "height": height
+                        "height": height,
+                        "spreadX": spreadX,
+                        "spreadY": spreadY
                     };
                 }
 
+                onSpreadXChanged: publishGeometry()
+                onSpreadYChanged: publishGeometry()
                 onXChanged: publishGeometry()
                 onYChanged: publishGeometry()
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
-
-                TapHandler {
-                    cursorShape: Qt.PointingHandCursor
-                    onTapped: bar.shellState.requestPanel("controlcenter", "toggle", bar.screen.name)
-                }
+                onClicked: bar.shellState.requestPanel("controlcenter", "toggle", bar.screen.name)
 
                 ControlStatus {
                     bar: bar
