@@ -5,8 +5,8 @@ import Quickshell.Io
 import Quickshell.Widgets
 
 // The Spotify track's cover as a spinning record, on the right of the bar. It spins
-// while the music plays and rolls out for the next track. Hovering it grows the player
-// out of it, the cover gliding to its place in the card.
+// while the music plays and rolls out for the next track. A click grows the player out
+// of it, the cover gliding to its place in the card.
 Rectangle {
     id: musicPill
 
@@ -16,6 +16,8 @@ Rectangle {
     // Where the screen draws its cards (ScreenShell), the player among them.
     required property Item cardLayer
     readonly property alias popup: musicPopup
+    // Under the pointer, unless the player covers it (like Pill).
+    readonly property bool lit: pillHover.hovered && opacity > 0
 
     // Angle of the front disc: 0 = upright, where every track starts.
     property real spin: 0
@@ -196,6 +198,10 @@ Rectangle {
     implicitWidth: 38
     implicitHeight: 38
     radius: 19
+    transform: PillHoverScale {
+        pill: musicPill
+        active: musicPill.lit
+    }
     // The pill's background is painted by the hole and the ring below; a fill here
     // would show twice under the ring.
     color: "transparent"
@@ -291,6 +297,7 @@ Rectangle {
         z: 1
         radius: 19
         tinted: false
+        hovered: musicPill.lit
     }
 
     // Spins while playing, keeps its angle while paused.
@@ -429,8 +436,9 @@ Rectangle {
         target: musicPill.player
     }
 
+    // Answers the pointer like the other pills you can click.
     HoverHandler {
-        onHoveredChanged: hovered ? musicPopup.hoverStarted() : musicPopup.hoverEnded()
+        id: pillHover
     }
 
     TapHandler {

@@ -72,9 +72,12 @@ Item {
 
     }
 
+    // The frost. A panel's glass has none, except under the pointer on a pill you can
+    // click.
     Rectangle {
         anchors.fill: parent
-        visible: glass.tinted
+        opacity: glass.tinted || glass.hovered ? 1 : 0
+        visible: opacity > 0
         radius: glass.radius
 
         gradient: Gradient {
@@ -86,6 +89,13 @@ Item {
             GradientStop {
                 position: 1
                 color: Theme.alpha(Theme.text, glass.hovered ? 0.09 : 0.04)
+            }
+
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 150
             }
 
         }

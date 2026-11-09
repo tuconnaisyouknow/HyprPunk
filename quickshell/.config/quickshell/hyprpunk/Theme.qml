@@ -11,10 +11,9 @@ Singleton {
     // How far the bar's pills sit from the screen's sides, in line with the windows'
     // edges (Hyprland's gaps_out).
     readonly property int barMargin: 10
-    // Every card grown out of a pill opens and folds the same way: how long the pointer
-    // rests on the pill before it opens (sweeping across the bar doesn't flash cards
-    // everywhere), how long it waits once the pointer has left, how long it takes to
-    // unfold or fold.
+    // How long the pointer rests on the workspaces before their preview opens (sweeping
+    // across the bar doesn't flash it), how long it waits once the pointer has left, and
+    // how long every card grown out of a pill takes to unfold or fold.
     readonly property int cardOpenDelay: 350
     readonly property int cardCloseDelay: 220
     readonly property int cardFold: 280

@@ -13,8 +13,6 @@ ColumnLayout {
     required property var center
     // The password prompt, which the control center focuses when a network asks for one.
     readonly property Item password: passwordField
-    // Something typed in a Wi-Fi or VPN password: the panel then stays open.
-    readonly property bool typingPassword: (page.center.passwordNetwork !== null && passwordField.text !== "") || (Vpn.passwordUuid !== "" && vpnPasswordField.text !== "")
     property string tab: "wifi"
     readonly property var tabs: [{
         "value": "wifi",

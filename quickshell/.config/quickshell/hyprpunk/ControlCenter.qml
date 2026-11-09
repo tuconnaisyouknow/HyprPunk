@@ -7,8 +7,8 @@ import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 
-// The control center, growing out of the bar's right-most pill. Hover the pill or
-// press Super+C.
+// The control center, growing out of the bar's right-most pill. Click the pill or
+// press Super+C; Escape, a click outside or the pill again closes it.
 Card {
     id: controlCenter
 
@@ -17,16 +17,6 @@ Card {
     // Its screen's bar, whose control pill it grows out of.
     required property var bar
     required property var airPods
-    // Opened with the shortcut or a click on its pill: it stays open when the pointer
-    // leaves, and takes the keyboard so Escape closes it.
-    property bool openedByKeybind: false
-    // Whether the pointer is on the bar's right-most pill, which the panel grows out of.
-    property bool pillHovered: false
-    property bool panelHovered: false
-    // Closed on purpose (the shortcut, Escape, a click) under the pointer: neither the
-    // panel folding past it nor the pill it lands on open it again, until it moves off.
-    property bool closedOnPurpose: false
-    property real retainedHeight: 0
     property real progress: opened ? 1 : 0
     // The pages are built once the bar has its first values, or right away if you open
     // the panel before. Kept from then on.
@@ -43,12 +33,6 @@ Card {
     property string previousPage: "main"
     property real pageProgress: 1
     property var passwordNetwork: null
-    // Something typed in a Wi-Fi or VPN password: the panel then stays open with the
-    // pointer outside, so a slip of the mouse doesn't throw it away.
-    readonly property bool typingPassword: pagesLoader.item !== null && pagesLoader.item.typingPassword
-    // Stays open when the pointer leaves while a Wi-Fi password or enterprise sign-in is
-    // being typed (picking a certificate opens a file chooser outside the panel).
-    readonly property bool held: typingPassword || page === "enterprise" || (page === "wifiDetail" && pagesLoader.item !== null && pagesLoader.item.wifiDetail.editing)
     // Enterprise network whose credentials are asked on the "enterprise" page.
     property var enterpriseNetwork: null
     // The network you just connected to from here: only its failures ask for credentials,
@@ -231,7 +215,6 @@ Card {
     }
 
     function close() {
-        closedOnPurpose = opened;
         opened = false;
     }
 
@@ -421,7 +404,6 @@ Card {
             chargeLimitProcess.running = true;
             panel.forceActiveFocus();
         } else {
-            openedByKeybind = false;
             page = "main";
             // Folds back without the page transition.
             pageAnimation.complete();
@@ -433,66 +415,29 @@ Card {
             detailVpn = "";
             Vpn.passwordUuid = "";
             trayExpanded = null;
-            // Set after the page reset, which would otherwise retain the old height.
-            retainedHeight = 0;
         }
     }
     onPageChanged: {
-        // panel.height still holds the previous page's height at this point.
-        retainedHeight = Math.max(retainedHeight, panel.height);
         previousPage = shownPage;
         shownPage = page;
         pageAnimation.restart();
-        // Leaving the network page drops its password prompts, or the panel would think
-        // you're still typing one and never close.
+        // Leaving the network page drops its password prompts: coming back shows the
+        // networks, not a password half typed.
         if (page !== "wifi") {
             passwordNetwork = null;
             Vpn.passwordUuid = "";
         }
     }
-    onTypingPasswordChanged: {
-        if (!typingPassword && !pillHovered && !panelHovered)
-            closeDelay.restart();
-
-    }
-    onProgressChanged: {
-        // Folded away with the pointer elsewhere: the pill opens it again as usual.
-        if (progress === 0 && !pillHovered)
-            closedOnPurpose = false;
-
-    }
     anchors.fill: parent
     pillName: "control"
     covering: progress > 0
-    cardRect: Qt.rect(hoverZone.x + panel.x, hoverZone.y + panel.y, panel.width, panel.height)
+    cardRect: Qt.rect(panelSpot.x + panel.x, panelSpot.y + panel.y, panel.width, panel.height)
     cardRadius: panel.radius
-    inputRect: progress > 0 ? Qt.rect(hoverZone.x, hoverZone.y, hoverZone.width, hoverZone.height) : Qt.rect(0, 0, 0, 0)
-    // Hovered open, it only gets the keyboard once you click in it (a password field).
     takesKeyboard: opened
-    // Kept or held open, it closes with a click anywhere else.
-    dismissable: opened && (openedByKeybind || held)
+    dismissable: opened
 
     function clickedOutside() {
         close();
-    }
-
-    Connections {
-        function onControlPillHoveredChanged() {
-            controlCenter.pillHovered = controlCenter.bar.controlPillHovered;
-            if (controlCenter.pillHovered) {
-                if (controlCenter.closedOnPurpose)
-                    return ;
-
-                closeDelay.stop();
-                openDelay.restart();
-            } else {
-                controlCenter.closedOnPurpose = false;
-                openDelay.stop();
-                closeDelay.restart();
-            }
-        }
-
-        target: controlCenter.bar
     }
 
     Connections {
@@ -501,52 +446,25 @@ Card {
             if (action === "")
                 return ;
 
-            // "pin" (a click on the pill) keeps it open, or closes it once kept.
-            const open = action === "open" || (action === "toggle" && !controlCenter.opened) || (action === "pin" && !(controlCenter.opened && controlCenter.openedByKeybind));
-            openDelay.stop();
-            closeDelay.stop();
-            if (open) {
-                controlCenter.closedOnPurpose = false;
-                controlCenter.openedByKeybind = true;
+            if (action === "open" || action === "toggle" && !controlCenter.opened)
                 controlCenter.opened = true;
-            } else {
+            else
                 controlCenter.close();
-            }
         }
 
         target: controlCenter.shellState
     }
 
-    // The hover area around the panel. After switching to a shorter page it keeps the
-    // old height for a moment, so the pointer isn't suddenly outside and the panel
-    // doesn't close under it.
+    // Pinned to the pill's top right corner, where the panel grows from.
     Item {
-        id: hoverZone
+        id: panelSpot
 
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.topMargin: controlCenter.pill.top
         anchors.rightMargin: controlCenter.pill.right
-        // Nothing while closed, so the pill below gets the pointer.
-        width: controlCenter.progress > 0 ? panel.width : 0
-        height: Math.max(panel.height, controlCenter.retainedHeight)
-
-        HoverHandler {
-            onHoveredChanged: {
-                controlCenter.panelHovered = hovered;
-                if (hovered && controlCenter.closedOnPurpose)
-                    return ;
-
-                if (hovered) {
-                    closeDelay.stop();
-                    // Caught again while folding back onto the pill.
-                    controlCenter.opened = true;
-                } else {
-                    controlCenter.retainedHeight = 0;
-                    closeDelay.restart();
-                }
-            }
-        }
+        width: panel.width
+        height: panel.height
 
         // Grows out of the pill like the calendar and the player do.
         ClippingRectangle {
@@ -578,9 +496,9 @@ Card {
                 gesturePolicy: TapHandler.ReleaseWithinBounds
             }
 
-            // Where the pill sits under the panel: a click there still keeps it open like
-            // the shortcut, or closes it once kept. Under the pages, so it only gets the
-            // clicks no control keeps (their TapHandlers take the click on press).
+            // Where the pill sits under the panel: a click there closes it, like on the
+            // pill. Under the pages, so it only gets the clicks no control keeps (their
+            // TapHandlers take the click on press).
             Item {
                 anchors.right: parent.right
                 width: controlCenter.pill.width
@@ -592,12 +510,7 @@ Card {
                 }
 
                 TapHandler {
-                    onTapped: {
-                        if (controlCenter.openedByKeybind)
-                            controlCenter.close();
-                        else
-                            controlCenter.openedByKeybind = true;
-                    }
+                    onTapped: controlCenter.close()
                 }
 
             }
@@ -607,15 +520,6 @@ Card {
                 radius: panel.radius
                 tinted: false
                 backgroundColor: Theme.panel
-            }
-
-            HoverHandler {
-                onHoveredChanged: {
-                    // Back inside the real panel: the retained zone is no longer needed.
-                    if (hovered)
-                        controlCenter.retainedHeight = 0;
-
-                }
             }
 
             // Built bit by bit soon after the shell starts and kept, so the panel opens as
@@ -641,7 +545,6 @@ Card {
                     readonly property Item wifiDetail: wifiDetailPage
                     readonly property Item enterprise: enterprisePage
                     readonly property Item password: wifiPage.password
-                    readonly property bool typingPassword: wifiPage.typingPassword
                     // Starts hidden even when built with the panel already opening (Super+C),
                     // so the pages still fade in.
                     property bool built: false
@@ -1210,25 +1113,6 @@ Card {
         interval: 1500
         running: true
         onTriggered: controlCenter.pagesWanted = true
-    }
-
-    Timer {
-        id: openDelay
-
-        // The same waits as every card grown out of a pill.
-        interval: Theme.cardOpenDelay
-        onTriggered: controlCenter.opened = true
-    }
-
-    Timer {
-        id: closeDelay
-
-        interval: Theme.cardCloseDelay
-        onTriggered: {
-            if (!controlCenter.pillHovered && !controlCenter.panelHovered && !controlCenter.held && !controlCenter.openedByKeybind)
-                controlCenter.opened = false;
-
-        }
     }
 
     Behavior on progress {

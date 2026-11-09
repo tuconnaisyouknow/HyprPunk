@@ -11,8 +11,8 @@ import Quickshell.Wayland
 
 // The bar along the top of each screen, a row of pills: workspaces and resources on
 // the left, the dynamic island in the middle, updates, the Spotify record and the
-// control pill on the right. Most pills open a card on hover. The island's card holds
-// the calendar and the notifications waiting, and Super+N or a click keeps it open.
+// control pill on the right. A click on a pill opens its card, the workspaces also
+// preview on hover. The island's card holds the calendar and the notifications waiting.
 // Drawn in its screen's window (ScreenShell), with the cards.
 Item {
     id: bar
@@ -148,10 +148,11 @@ Item {
     readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && Vpn.connection !== null
 
     // Where each pill sits on screen, so the lock screen can start from there: the ones it
-    // keeps (resources, island, control pill) and the ones it lets go.
+    // keeps (resources, island, control pill) and the ones it lets go. Where they rest,
+    // like publishGeometry().
     function lockGeometry() {
         const rect = (item) => {
-            const origin = item.mapToItem(null, 0, 0);
+            const origin = item.parent.mapToItem(null, item.x, item.y);
             return {
                 "x": origin.x,
                 "y": origin.y,
@@ -451,7 +452,6 @@ Item {
         "width": 120,
         "height": 38
     })
-    property bool controlPillHovered: false
     // The bar's own cards, for the screen to watch.
     readonly property var ownCards: [workspacePopup, monitorPopup, calendarPopup, musicPill.popup]
 
@@ -505,6 +505,7 @@ Item {
                     cardLayer: bar.cardLayer
                     pill: workspacePill
                     pillName: "workspaces"
+                    opensOnHover: true
                     openable: workspaceSwitcher.hoveredWorkspace !== null
                     // The preview inside the control center's padding.
                     implicitWidth: bar.workspacePreviewWidth + 28
@@ -589,19 +590,13 @@ Item {
 
             }
 
-            // Opens the system monitor on hover, which grows out of it like the player.
+            // Opens the system monitor, which grows out of it like the player.
             Pill {
                 id: monitorPill
 
                 visible: bar.width >= 1200
                 opacity: bar.pillHidden("monitor") ? 0 : 1
-
-                onHoveredChanged: {
-                    if (hovered)
-                        monitorPopup.hoverStarted();
-                    else
-                        monitorPopup.hoverEnded();
-                }
+                clickable: true
 
                 TapHandler {
                     cursorShape: Qt.PointingHandCursor
@@ -896,9 +891,12 @@ Item {
                 id: clockPill
 
                 opacity: bar.pillHidden("island") ? 0 : 1
+                // Not under the recording chip, which answers the pointer itself.
+                clickable: (!bar.islandOsdShown || bar.statusOsdKind === "screenshot") && !islandChips.stopHovered
 
+                // Where it rests in its row: its zoom under the pointer is only drawn.
                 function publishGeometry() {
-                    const origin = mapToItem(null, 0, 0);
+                    const origin = parent.mapToItem(null, x, y);
                     bar.islandPill = {
                         "centerOffset": origin.x + width / 2 - bar.width / 2,
                         "top": origin.y,
@@ -910,21 +908,11 @@ Item {
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
-                // The pill opens the calendar card, like the other pills, unless an OSD
-                // has the island. Not from the recording chip, which you hover to stop.
-                readonly property bool opensCalendar: hovered && !bar.islandOsdShown && !islandChips.stopHovered
-
-                onOpensCalendarChanged: {
-                    if (opensCalendar)
-                        calendarPopup.hoverStarted();
-                    else
-                        calendarPopup.hoverEnded();
-                }
                 // Each chip brings its own gap after the time.
                 spacing: 0
 
-                // A click keeps the card open, or closes it once kept. The recording chip
-                // keeps its own click, which stops the recording.
+                // A click opens the calendar card, or closes it, unless an OSD has the
+                // island. The recording chip keeps its own click, which stops the recording.
                 TapHandler {
                     enabled: !bar.islandOsdShown
                     cursorShape: Qt.PointingHandCursor
@@ -1473,6 +1461,8 @@ Item {
                 shown: Updates.count > 0
 
                 Pill {
+                    clickable: true
+
                     IconText {
                         icon: ""
 
@@ -1495,7 +1485,7 @@ Item {
 
             }
 
-            // The Spotify track's cover as a spinning record. Hover it to open the player.
+            // The Spotify track's cover as a spinning record. Click it to open the player.
             DropInSlot {
                 shown: bar.spotifyPlayer !== null
 
@@ -1529,9 +1519,11 @@ Item {
 
                 // Hidden under the control center's glass, which lets it through.
                 opacity: bar.pillHidden("control") ? 0 : 1
+                clickable: true
 
+                // Where it rests in its row: its zoom under the pointer is only drawn.
                 function publishGeometry() {
-                    const origin = mapToItem(null, 0, 0);
+                    const origin = parent.mapToItem(null, x, y);
                     bar.controlPill = {
                         "right": bar.width - origin.x - width,
                         "top": origin.y,
@@ -1545,12 +1537,10 @@ Item {
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
-                onHoveredChanged: bar.controlPillHovered = hovered
 
-                // Keeps the control center open, like its shortcut.
                 TapHandler {
                     cursorShape: Qt.PointingHandCursor
-                    onTapped: bar.shellState.requestPanel("controlcenter", "pin", bar.screen.name)
+                    onTapped: bar.shellState.requestPanel("controlcenter", "toggle", bar.screen.name)
                 }
 
                 ControlStatus {
