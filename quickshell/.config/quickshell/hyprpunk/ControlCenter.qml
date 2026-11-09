@@ -398,6 +398,7 @@ Card {
     onOpenedChanged: {
         shellState.controlCenterOpen = opened;
         if (opened) {
+            settle.play(true, true);
             pagesWanted = true;
             powerProfileProcess.running = true;
             chargeLimitError = "";
@@ -475,11 +476,21 @@ Card {
             // of growing from an empty one.
             property bool heightAnimated: false
 
+            // It grows from the pill as you see it, zoomed past its place, to its own place:
+            // how far its shape still starts past that place. The pages and the pill's spot
+            // stay on that place, still while the shape heads to it.
+            readonly property int startX: Math.round(controlCenter.lerp(controlCenter.pill.spreadX, 0))
+            readonly property int startY: Math.round(controlCenter.lerp(controlCenter.pill.spreadY, 0))
+
             anchors.top: parent.top
             anchors.right: parent.right
+            // On whole pixels, its size too, or the pages would shake as it grows and bounces
+            // (they're drawn as a picture of its size).
+            anchors.topMargin: -startY
+            anchors.rightMargin: -startX
             visible: controlCenter.progress > 0
-            width: controlCenter.lerp(controlCenter.pill.width, controlCenter.panelWidth)
-            height: controlCenter.lerp(controlCenter.pill.height, fullHeight)
+            width: Math.round(controlCenter.lerp(controlCenter.pill.width + 2 * controlCenter.pill.spreadX, controlCenter.panelWidth) + settle.width)
+            height: Math.round(controlCenter.lerp(controlCenter.pill.height + 2 * controlCenter.pill.spreadY, fullHeight) + settle.height)
             // The pill's corners: rounder ones would let the pill's show under the panel.
             radius: controlCenter.pill.height / 2
             color: "transparent"
@@ -497,16 +508,26 @@ Card {
             }
 
             // Where the pill sits under the panel: a click there closes it, like on the
-            // pill. Under the pages, so it only gets the clicks no control keeps (their
-            // TapHandlers take the click on press).
+            // pill, and the pointer there keeps the pill lit, folding back too. Under the
+            // pages, so it only gets the clicks no control keeps (their TapHandlers take the
+            // click on press).
             Item {
                 anchors.right: parent.right
+                anchors.rightMargin: panel.startX
+                y: panel.startY
                 width: controlCenter.pill.width
                 height: controlCenter.pill.height
-                visible: controlCenter.opened
 
                 HoverHandler {
+                    id: spotHover
+
                     cursorShape: Qt.PointingHandCursor
+                }
+
+                Binding {
+                    target: controlCenter.bar
+                    property: "controlSpotHovered"
+                    value: spotHover.hovered
                 }
 
                 TapHandler {
@@ -530,8 +551,8 @@ Card {
                 active: controlCenter.pagesWanted
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.rightMargin: 14
-                anchors.topMargin: 14
+                anchors.rightMargin: 14 + panel.startX
+                anchors.topMargin: 14 + panel.startY
                 // The pages take this width, and give the Loader their height.
                 width: controlCenter.panelWidth - 28
                 asynchronous: !controlCenter.opened
@@ -1113,6 +1134,10 @@ Card {
         interval: 1500
         running: true
         onTriggered: controlCenter.pagesWanted = true
+    }
+
+    CardSettle {
+        id: settle
     }
 
     Behavior on progress {

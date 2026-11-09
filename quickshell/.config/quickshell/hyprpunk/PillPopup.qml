@@ -55,7 +55,11 @@ Card {
     // leaving both folds it back.
     readonly property bool pointerInside: pillHovered || cardHovered
     readonly property alias card: card
-    default property alias content: card.data
+    // The card grows from the pill as you see it, zoomed past its place, to its own place:
+    // how far its shape still starts past that place, on whole pixels.
+    readonly property int startX: frame !== null ? 0 : Math.round(lerp(pill.spreadX, 0))
+    readonly property int startY: frame !== null ? 0 : Math.round(lerp(pill.spreadY, 0))
+    default property alias content: room.data
 
     // Right before it opens, to set the content up.
     signal opening()
@@ -195,6 +199,11 @@ Card {
 
     }
     onWidthChanged: followPill()
+    onExpandedChanged: {
+        if (expanded)
+            settle.play(true, true);
+
+    }
 
     Connections {
         function onWidthChanged() {
@@ -258,12 +267,12 @@ Card {
     ClippingRectangle {
         id: card
 
-        // Centered on a whole pixel, as anchors do: half pixels while the width grows
-        // make the card and everything in it shake.
-        x: popup.frame !== null ? popup.frameContent.x - popup.x : popup.align === Qt.AlignRight ? popup.width - width : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : 0
-        y: popup.frame !== null ? popup.frameContent.y - popup.y : 0
-        width: popup.frame !== null ? popup.frameContent.width : popup.lerp(popup.pill.width, popup.cardWidth)
-        height: popup.frame !== null ? popup.frameContent.height : popup.lerp(popup.pill.height, popup.cardHeight)
+        // On whole pixels, its size too: half pixels while the card grows or bounces make it
+        // and everything in it shake (the content is drawn as a picture of its size).
+        x: popup.frame !== null ? popup.frameContent.x - popup.x : popup.align === Qt.AlignRight ? popup.width - width + popup.startX : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : -popup.startX
+        y: popup.frame !== null ? popup.frameContent.y - popup.y : -popup.startY
+        width: popup.frame !== null ? popup.frameContent.width : Math.round(popup.lerp(popup.pill.width + 2 * popup.pill.spreadX, popup.cardWidth) + settle.width)
+        height: popup.frame !== null ? popup.frameContent.height : Math.round(popup.lerp(popup.pill.height + 2 * popup.pill.spreadY, popup.cardHeight) + settle.height)
         radius: popup.frame !== null ? popup.frame.shape.radius : popup.openRadius
         color: "transparent"
         visible: popup.covering
@@ -305,24 +314,50 @@ Card {
             gesturePolicy: TapHandler.ReleaseWithinBounds
         }
 
-        // Where the pill sits under the card: a click there still keeps a preview open, or
-        // closes the card once kept. Under the content, so it only gets the clicks no control keeps
-        // (their TapHandlers take the click on press).
+        // The card's own place, inside the pixels its shape starts with from the zoomed
+        // pill: the content sits there, so it stays still while the shape heads to it.
         Item {
-            x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
-            width: popup.pill.width
-            height: popup.pill.height
+            id: room
 
-            HoverHandler {
-                cursorShape: Qt.PointingHandCursor
-            }
+            x: popup.align === Qt.AlignRight ? 0 : popup.startX
+            y: popup.startY
+            width: parent.width - (popup.align === Qt.AlignHCenter ? 2 : 1) * popup.startX
+            height: parent.height - popup.startY
 
-            TapHandler {
-                onTapped: popup.togglePinned()
+            // Where the pill sits under the card: a click there still keeps a preview
+            // open, or closes the card once kept, and the pointer there keeps the pill lit.
+            // Under the content, so it only gets the clicks no control keeps (their
+            // TapHandlers take the click on press).
+            Item {
+                x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
+                width: popup.pill.width
+                height: popup.pill.height
+
+                HoverHandler {
+                    id: spotHover
+
+                    cursorShape: Qt.PointingHandCursor
+                }
+
+                Binding {
+                    target: popup.pill
+                    property: "spotHovered"
+                    value: spotHover.hovered
+                }
+
+                TapHandler {
+                    onTapped: popup.togglePinned()
+                }
+
             }
 
         }
 
+    }
+
+    // Its own shape's bounce; the island's shared shape has its own (IslandFrame).
+    CardSettle {
+        id: settle
     }
 
     Behavior on progress {

@@ -16,8 +16,12 @@ Rectangle {
     // Where the screen draws its cards (ScreenShell), the player among them.
     required property Item cardLayer
     readonly property alias popup: musicPopup
-    // Under the pointer, unless the player covers it (like Pill).
-    readonly property bool lit: pillHover.hovered && opacity > 0
+    // Under the pointer, or its spot in the player, and how far that draws it past its
+    // place (like Pill).
+    property bool spotHovered: false
+    readonly property bool lit: pillHover.hovered || spotHovered
+    readonly property real spreadX: pillZoom.spreadX
+    readonly property real spreadY: pillZoom.spreadY
 
     // Angle of the front disc: 0 = upright, where every track starts.
     property real spin: 0
@@ -198,9 +202,12 @@ Rectangle {
     implicitWidth: 38
     implicitHeight: 38
     radius: 19
-    transform: PillHoverScale {
+    transform: PillZoom {
+        id: pillZoom
+
         pill: musicPill
         active: musicPill.lit
+        pressed: pillTap.pressed
     }
     // The pill's background is painted by the hole and the ring below; a fill here
     // would show twice under the ring.
@@ -442,7 +449,11 @@ Rectangle {
     }
 
     TapHandler {
+        id: pillTap
+
         cursorShape: Qt.PointingHandCursor
+        // Pressed as long as you like, like the other pills.
+        longPressThreshold: 0
         onTapped: musicPopup.togglePinned()
     }
 
@@ -490,14 +501,15 @@ Rectangle {
         // From the pill's little round cover to the player's artwork. Nothing spins: the disc
         // grows at its frozen angle and the square cover fades in over it (and back out).
         Item {
-            readonly property real size: musicPopup.lerp(32, musicPlayerCard.artSize)
+            readonly property real size: musicPopup.lerp(32 * pillZoom.yScale, musicPlayerCard.artSize)
             readonly property real squareOpacity: Math.min(1, Math.max(0, (musicPopup.coverProgress - 0.4) / 0.5))
 
             anchors.top: parent.top
             anchors.left: parent.left
-            anchors.topMargin: musicPopup.lerp(3, musicPlayerCard.artMargin)
+            // From the zoomed pill's cover, which sits a little above the card's own place.
+            anchors.topMargin: musicPopup.lerp(3 * pillZoom.yScale - musicPill.spreadY, musicPlayerCard.artMargin)
             // Slides from the right edge to the left one of the growing card, so it is never cut.
-            anchors.leftMargin: (1 - musicPopup.coverProgress) * (musicPopup.card.width - 3 - size) + musicPopup.coverProgress * musicPlayerCard.artMargin
+            anchors.leftMargin: (1 - musicPopup.coverProgress) * (musicPopup.card.width - 3 * pillZoom.xScale - size) + musicPopup.coverProgress * musicPlayerCard.artMargin
             width: size
             height: size
 
