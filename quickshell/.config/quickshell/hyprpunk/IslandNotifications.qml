@@ -26,7 +26,7 @@ Card {
     property var notifications: []
     // Ids of the popups playing their exit animation.
     property var leavingIds: []
-    // Around the notifications: with their 18px corners, the card's 24px ones line up.
+    // The card's margin around the notifications.
     readonly property int cardPadding: 6
     readonly property int maxVisible: 3
     readonly property int stayingCount: notifications.filter((entry) => {
@@ -103,8 +103,7 @@ Card {
     opened: stayingCount > 0 && !islandTaken
     cardWidth: 400
     cardHeight: openHeight
-    // With the notifications' 18px corners inside, the padding's width away.
-    openRadius: 18 + cardPadding
+    openRadius: Theme.cardRadius
     // Gone while they wait, or the folded card would catch the island's clicks.
     visible: opened || progress > 0
     pillName: "island"

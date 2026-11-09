@@ -110,6 +110,7 @@ Item {
         implicitHeight: sectionColumn.implicitHeight + 24
 
         GlassSurface {
+            radius: Theme.cardRadius
         }
 
         ColumnLayout {

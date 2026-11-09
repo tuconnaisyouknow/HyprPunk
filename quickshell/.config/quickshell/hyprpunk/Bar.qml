@@ -445,7 +445,7 @@ Item {
         "centerOffset": 0,
         "top": 6,
         "width": 70,
-        "height": 38,
+        "height": Theme.pillHeight,
         "spreadX": 0,
         "spreadY": 0
     })
@@ -453,7 +453,7 @@ Item {
         "right": Theme.barMargin,
         "top": 6,
         "width": 120,
-        "height": 38,
+        "height": Theme.pillHeight,
         "spreadX": 0,
         "spreadY": 0
     })
@@ -931,7 +931,7 @@ Item {
                     }
                 }
                 horizontalPadding: bar.islandOsdShown ? 36 : 20
-                implicitHeight: bar.islandOsdShown ? 50 : 38
+                implicitHeight: bar.islandOsdShown ? 50 : Theme.pillHeight
                 // Grows two pixels at a time, so centring it on the bar and its content in it
                 // never lands on a half pixel and the content stops shaking as it resizes.
                 Layout.preferredWidth: 2 * Math.round(implicitWidth / 2)
