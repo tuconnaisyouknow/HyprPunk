@@ -30,7 +30,8 @@ hl.config({
 
 hl.config({
   decoration = {
-    rounding = 18,
+    -- The shell's cards' corners, so windows and cards match (Theme.cardRadius)
+    rounding = 19,
     rounding_power = 2,
 
     -- Slightly see-through, so the wallpaper shows behind the blur
