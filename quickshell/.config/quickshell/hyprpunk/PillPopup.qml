@@ -1,12 +1,12 @@
 import QtQuick
 import Quickshell.Widgets
 
-// A card that grows out of one of the bar's pills while you hover it: the workspace
-// preview, the system monitor, the calendar and the player. Resting on the pill a
-// moment opens it, and leaving both the pill and the card folds it back.
-// Its content is laid out at full size and uncovered as the card grows. A click on the
-// pill, even once the card covers it, keeps it open until Escape, a click outside or
-// another click on the pill.
+// A card that grows out of one of the bar's pills: the workspace preview, the system
+// monitor, the calendar and the player. A click on the pill or its shortcut opens it,
+// and it stays until Escape, a click outside, the shortcut or the pill again.
+// The workspace preview also opens on hover, for a glance: resting on the pill a moment
+// opens it, and leaving both the pill and the card folds it back.
+// Its content is laid out at full size and uncovered as the card grows.
 Card {
     id: popup
 
@@ -22,8 +22,10 @@ Card {
     // The side of the pill the card lines up with: Qt.AlignLeft, Qt.AlignRight or
     // Qt.AlignHCenter.
     property int align: Qt.AlignLeft
-    // How long the pointer rests on the pill before the card opens, and how long the card
-    // waits once it has left, the same for every card (Theme).
+    // Opens while the pointer rests on the pill, as a preview (the workspaces).
+    property bool opensOnHover: false
+    // How long the pointer rests on the pill before a preview opens, and how long it
+    // waits once the pointer has left (Theme).
     property int openDelay: Theme.cardOpenDelay
     property int closeDelay: Theme.cardCloseDelay
     // False hides it (no player anymore).
@@ -37,11 +39,12 @@ Card {
     property bool expanded: false
     // Out, from the opening until folded back.
     readonly property bool mapped: expanded || progress > 0
-    // Opened on purpose (a shortcut, a click) rather than by hovering: it stays open when
-    // the pointer leaves, until closed.
+    // Opened on purpose (a shortcut, a click) rather than as a preview: it stays open
+    // when the pointer leaves, until closed. Always the case for a card that doesn't
+    // open on hover.
     property bool pinned: false
-    // Closed while kept open, until it has folded back: the pointer resting on the card
-    // or the pill doesn't open it again as if hovered.
+    // Closed while kept open, until it has folded back: the pointer resting on the
+    // preview's card or pill doesn't open it again.
     property bool closedOnPurpose: false
     // 0 folded on the pill, 1 fully open.
     property real progress: expanded ? 1 : 0
@@ -63,7 +66,7 @@ Card {
         return from + (to - from) * progress;
     }
 
-    // The pointer is on the pill (or on what opens the card).
+    // The pointer is on the pill of a preview (or on what opens it).
     function hoverStarted() {
         pillHovered = true;
         if (closedOnPurpose)
@@ -80,7 +83,7 @@ Card {
     }
 
     // What its shortcut asks ("toggle", "open" or "close"). Open, however it was opened
-    // (a click, the pointer, the shortcut), the shortcut closes it; closed, it opens it kept.
+    // (a click, a preview, the shortcut), the shortcut closes it; closed, it opens it kept.
     function request(action) {
         if (action === "close" || action === "toggle" && expanded) {
             if (!expanded)
@@ -142,13 +145,14 @@ Card {
         close();
     }
 
-    // Hangs from the pill, kept on the screen.
+    // Hangs from the pill, kept on the screen. From where the pill rests in its row: its
+    // zoom under the pointer is only drawn, and would leave the card off once it settles.
     function followPill() {
         // Still being set up.
         if (pill === null || cardLayer === null)
             return ;
 
-        const origin = pill.mapToItem(cardLayer, 0, 0);
+        const origin = pill.parent.mapToItem(cardLayer, pill.x, pill.y);
         const left = align === Qt.AlignRight ? origin.x + pill.width - width : align === Qt.AlignHCenter ? origin.x + (pill.width - width) / 2 : origin.x;
         x = Math.round(Math.max(0, Math.min(cardLayer.width - width, left)));
         y = Math.round(origin.y);
@@ -287,7 +291,8 @@ Card {
         HoverHandler {
             id: cardHover
 
-            // Caught again while folding back onto the pill.
+            enabled: popup.opensOnHover
+            // A preview caught again while folding back onto the pill.
             onHoveredChanged: {
                 if (hovered && !popup.closedOnPurpose)
                     popup.expanded = true;
@@ -300,8 +305,8 @@ Card {
             gesturePolicy: TapHandler.ReleaseWithinBounds
         }
 
-        // Where the pill sits under the card: a click there still keeps it open, or closes
-        // it once kept. Under the content, so it only gets the clicks no control keeps
+        // Where the pill sits under the card: a click there still keeps a preview open, or
+        // closes the card once kept. Under the content, so it only gets the clicks no control keeps
         // (their TapHandlers take the click on press).
         Item {
             x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
