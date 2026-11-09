@@ -199,9 +199,9 @@ Rectangle {
     Component.onCompleted: Qt.callLater(resetDiscs)
     // Deferred: while the bar is being built, the animations don't exist yet.
     onPlayerChanged: Qt.callLater(resetDiscs)
-    implicitWidth: 38
-    implicitHeight: 38
-    radius: 19
+    implicitWidth: Theme.pillHeight
+    implicitHeight: Theme.pillHeight
+    radius: height / 2
     transform: PillZoom {
         id: pillZoom
 
@@ -302,7 +302,7 @@ Rectangle {
     // Over the ring, like the other pills' rim.
     GlassSurface {
         z: 1
-        radius: 19
+        radius: musicPill.radius
         tinted: false
         hovered: musicPill.lit
     }

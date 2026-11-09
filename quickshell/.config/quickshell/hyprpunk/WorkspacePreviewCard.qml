@@ -32,7 +32,7 @@ ClippingRectangle {
 
     }
 
-    radius: 18
+    radius: Theme.cardRadius
     color: Theme.crust
 
     ListView {

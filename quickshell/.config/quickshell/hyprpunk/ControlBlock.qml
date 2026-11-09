@@ -5,7 +5,7 @@ import QtQuick
 Item {
     id: block
 
-    property real radius: 18
+    property real radius: Theme.cardRadius
     readonly property alias hovered: blockHover.hovered
     // The same few pixels for every block, whatever its size.
     property real zoom: hovered ? 1 + 6 / Math.max(width, 1) : 1

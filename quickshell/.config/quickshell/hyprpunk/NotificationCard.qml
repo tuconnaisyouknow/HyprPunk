@@ -72,7 +72,7 @@ Rectangle {
     }
 
     implicitHeight: content.implicitHeight + 24
-    radius: 18
+    radius: Theme.cardRadius
     color: "transparent"
 
     GlassSurface {

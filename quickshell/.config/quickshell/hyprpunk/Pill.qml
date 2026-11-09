@@ -32,7 +32,7 @@ Rectangle {
     readonly property color baseColor: Theme.panel
 
     implicitWidth: contentRow.implicitWidth + horizontalPadding
-    implicitHeight: 38
+    implicitHeight: Theme.pillHeight
     radius: height / 2
     color: "transparent"
     clip: true
