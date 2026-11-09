@@ -15,10 +15,9 @@ RowLayout {
     property bool interactive: true
     readonly property bool stopHovered: recordingHover.hovered
 
-    // Each chip brings its own gap before it, so a closed one leaves none.
+    // Each chip brings its own gap before it, the first one's after the time, so a closed
+    // one leaves none and the time stays centred once the last one closes.
     spacing: 0
-    // The gap after the time, never wider than the chips: it closes with the last one.
-    Layout.leftMargin: Math.min(8, implicitWidth)
 
     // Privacy: a dot while something is listening or watching, green for the camera,
     // orange for the microphone alone.

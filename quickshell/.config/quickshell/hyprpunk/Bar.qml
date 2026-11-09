@@ -663,10 +663,12 @@ Item {
         }
 
         // When the calendar covers the island, the privacy and recording dots move to its
-        // right, following its edge as it grows.
+        // right, following its edge as it grows: the edge it's drawn with, or the gap
+        // between them would wobble as the card's left side snaps to whole pixels.
         PrivacyDot {
-            x: Math.round(centerGroup.x + clockPill.x + clockPill.width / 2 + calendarPopup.card.width / 2 + 8)
-            y: Math.round(centerGroup.y + clockPill.y + clockPill.height / 2 - height / 2)
+            parent: bar.cardLayer
+            x: Math.round(calendarPopup.cardRect.x + calendarPopup.cardRect.width + 8)
+            y: Math.round(bar.islandPill.top + bar.islandPill.height / 2 - height / 2)
             camera: bar.shellState.cameraInUse
             microphone: bar.shellState.microphoneInUse
             recording: bar.shellState.recording
@@ -918,7 +920,7 @@ Item {
                     else
                         calendarPopup.hoverEnded();
                 }
-                // The chips bring their own gap after the time.
+                // Each chip brings its own gap after the time.
                 spacing: 0
 
                 // A click keeps the card open, or closes it once kept. The recording chip
