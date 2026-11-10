@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Installs the login screen themes and picks the active one.
-# Each theme is the shared base (sddm/base) with its own video and name on top. They're
-# copied rather than linked: SDDM runs as its own user and can't read your home.
+# Installs the login screen themes, one per subtheme, and what lets your wallpaper pick
+# among them. Each theme is the shared base (sddm/base) with its own video and name on
+# top. They're copied rather than linked: SDDM runs as its own user and can't read your home.
 #   sddm.sh install   copies the themes that aren't there yet
 #   sddm.sh update    copies them all again, after you edited one
-#   sddm.sh <theme>   makes it the login screen (the shell's SDDM picker calls this)
 set -euo pipefail
 
 # The repository this script was linked from, wherever you cloned it
@@ -13,8 +12,6 @@ DOTFILES_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
 BASE_DIR="$DOTFILES_DIR/sddm/base"
 THEMES_DIR="$DOTFILES_DIR/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
-SDDM_CONF_DIR="/etc/sddm.conf.d"
-SDDM_CONF="$SDDM_CONF_DIR/theme.conf"
 
 # Catppuccin colors for the output
 C_ACCENT='\033[38;2;203;166;247m'
@@ -46,9 +43,6 @@ usage() {
   printf "Usage:\n" >&2
   printf "  %s install\n" "$(basename "$0")" >&2
   printf "  %s update\n" "$(basename "$0")" >&2
-  printf "  %s <theme-name>\n" "$(basename "$0")" >&2
-  printf "Available themes:\n" >&2
-  find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d -printf '  %f\n' | sort >&2
 }
 
 # SDDM needs these three files to load a theme: the base brings two, the theme its name
@@ -110,44 +104,13 @@ update_installed_themes() {
   success "Themes updated."
 }
 
-set_current_theme() {
-  local selected_theme="$1"
-  local theme_path="$THEMES_DIR/$selected_theme"
-
-  # Just a name, nothing that could point outside the themes folder
-  if [[ "$selected_theme" == *"/"* ]] || [[ "$selected_theme" == "."* ]]; then
-    error "Invalid theme name: $selected_theme"
-    exit 1
-  fi
-
-  if [ ! -d "$theme_path" ]; then
-    error "Unknown theme: $selected_theme"
-    usage
-    exit 1
-  fi
-
-  validate_theme_files "$selected_theme"
-
-  if [ ! -e "$SYSTEM_THEMES_DIR/$selected_theme" ]; then
-    error "Theme '$selected_theme' is not installed in $SYSTEM_THEMES_DIR"
-    printf "Run '%s install' first.\n" "$(basename "$0")" >&2
-    exit 1
-  fi
-
-  # Set Current= in our own drop-in, whatever state it's in
-  sudo mkdir -p "$SDDM_CONF_DIR"
-
-  if [ ! -f "$SDDM_CONF" ]; then
-    printf "[Theme]\nCurrent=%s\n" "$selected_theme" | sudo tee "$SDDM_CONF" >/dev/null
-  elif grep -q "^Current=" "$SDDM_CONF"; then
-    sudo sed -i "s|^Current=.*|Current=$selected_theme|" "$SDDM_CONF"
-  elif grep -q "^\[Theme\]" "$SDDM_CONF"; then
-    sudo sed -i "/^\[Theme\]/a Current=$selected_theme" "$SDDM_CONF"
-  else
-    printf "\n[Theme]\nCurrent=%s\n" "$selected_theme" | sudo tee -a "$SDDM_CONF" >/dev/null
-  fi
-
-  success "Theme '$selected_theme' is now active."
+# wallpaperctl.sh picks the login screen through this tool and its polkit rule. Copied
+# and owned by root: a link into your home would let anything you run act as root.
+install_login_screen_access() {
+  sudo install -Dm755 "$DOTFILES_DIR/sddm/hyprpunk-login-screen" /usr/local/bin/hyprpunk-login-screen
+  sudo install -Dm644 "$DOTFILES_DIR/sddm/polkit/50-hyprpunk-login-screen.rules" \
+    /etc/polkit-1/rules.d/50-hyprpunk-login-screen.rules
+  substep "Installed the login screen access for your wallpaper"
 }
 
 if ! command -v sddm >/dev/null 2>&1; then
@@ -171,13 +134,15 @@ case "$1" in
 install)
   info "Installing missing themes"
   install_missing_themes
+  install_login_screen_access
   ;;
 update)
   info "Updating installed themes"
   update_installed_themes
+  install_login_screen_access
   ;;
 *)
-  info "Selecting theme '$1'"
-  set_current_theme "$1"
+  usage
+  exit 1
   ;;
 esac

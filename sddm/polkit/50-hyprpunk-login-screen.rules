@@ -1,0 +1,9 @@
+// Every wallpaper picks its subtheme's login screen. This lets wallpaperctl.sh do so
+// without a password, for whoever is sitting at the machine. Only this tool, which
+// takes nothing but the name of an installed login screen.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        action.lookup("program") == "/usr/local/bin/hyprpunk-login-screen" &&
+        subject.local && subject.active)
+        return polkit.Result.YES;
+});

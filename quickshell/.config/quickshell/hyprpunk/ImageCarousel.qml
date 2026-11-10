@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell.Widgets
 
-// A looping carousel of pictures, for the wallpapers and the SDDM themes.
+// A looping carousel of pictures, for the wallpapers.
 // The middle one is bigger with a mauve ring, the one in use gets a check mark.
 // Scroll to turn it, click a neighbour to bring it to the middle, click the middle
 // one to pick it (activated()).

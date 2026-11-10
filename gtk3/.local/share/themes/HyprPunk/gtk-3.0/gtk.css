@@ -1,0 +1,6 @@
+/* HyprPunk for GTK 3: adw-gtk3's dark look with the colors matugen writes next to this
+ * file. Being a theme rather than ~/.config/gtk-3.0/gtk.css, open apps read it again
+ * whenever the theme is set, which matugen does after every new palette. */
+
+@import url("file:///usr/share/themes/adw-gtk3-dark/gtk-3.0/gtk.css");
+@import url("colors.css");

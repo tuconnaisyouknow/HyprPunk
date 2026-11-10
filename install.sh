@@ -334,6 +334,17 @@ update_system() {
   sudo pacman -Syyu --noconfirm
 }
 
+# Arch's gtk4 with one patch, built daily by saneaspect, that makes open GTK 4 apps
+# reload ~/.config/gtk-4.0/gtk.css: they follow the wallpaper's colors without a
+# restart. It replaces gtk4, so pacman is told to accept the conflict (--ask=4).
+install_gtk4_live_css() {
+  if ! grep -q '^\[saneaspect\]' /etc/pacman.conf; then
+    printf '\n[saneaspect]\nSigLevel = Optional TrustAll\nServer = https://github.com/saneaspect/gtk4-live-css/releases/download/repo\n' |
+      sudo tee -a /etc/pacman.conf >/dev/null
+  fi
+  sudo pacman -Syu --needed --noconfirm --ask=4 gtk4-live-css
+}
+
 install_packages() {
   yay -S --needed --noconfirm --removemake \
     zsh kitty starship zoxide \
@@ -457,6 +468,8 @@ configure_monitors() {
   "$HOME/Scripts/displayctl.sh" init preferred
 }
 
+# The default wallpaper's look: the GTK and Qt colors and its login screen, so it comes
+# after the login screens are installed
 configure_wallpaper() {
   "$HOME/Scripts/wallpaperctl.sh" init
 }
@@ -538,17 +551,14 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# The GTK and Qt colors, Mocha with mauve accents, Papirus, dark mode, and bat's theme
-# matching Neovim
+# Papirus, dark mode, and bat's theme matching Neovim. The colors and the GTK theme
+# come with the wallpaper.
 apply_themes() {
-  matugen json "$HOME/.config/matugen/mauve.json"
-
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
 
   # bat only sees the themes in its folder once they're built into its cache
   bat cache --build >/dev/null
 
-  gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
@@ -566,12 +576,9 @@ install_locale() {
   sudo locale-gen
 }
 
-# The login screens, one per subtheme, starting on the default wallpaper's (city)
+# The login screens, one per subtheme. The wallpaper picks among them.
 install_sddm_theme() {
-  local sddm_script="$DOTFILES_DIR/scripts/Scripts/sddm.sh"
-
-  "$sddm_script" install
-  "$sddm_script" city
+  "$DOTFILES_DIR/scripts/Scripts/sddm.sh" install
 }
 
 # The boot menu theme, when GRUB is the bootloader
@@ -683,6 +690,7 @@ main() {
   keep_sudo_alive
 
   run_step "update_system" "Updating the system" update_system
+  run_step "install_gtk4_live_css" "Installing GTK 4 with live colors" install_gtk4_live_css
   run_step "install_yay" "Installing yay" install_yay
   run_step "install_packages" "Installing packages" install_packages
   run_step "install_oh_my_zsh" "Installing Oh My Zsh" install_oh_my_zsh
@@ -692,13 +700,13 @@ main() {
   run_step "configure_keyboard" "Configuring the keyboard" configure_keyboard
   run_step "configure_locale_profiles" "Configuring locale profiles" configure_locale_profiles
   run_step "configure_monitors" "Configuring monitors" configure_monitors
-  run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
   run_step "configure_touchpad" "Configuring the touchpad" configure_touchpad
   run_step "set_default_apps" "Setting default applications" set_default_apps
   run_step "install_tmux_plugins" "Installing tmux plugins" install_tmux_plugins
   run_step "apply_themes" "Applying themes" apply_themes
   run_step "install_locale" "Installing the locale" install_locale
   run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
+  run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
   run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
   run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
   run_step "install_battery_limit" "Installing the battery charge limit" install_battery_limit

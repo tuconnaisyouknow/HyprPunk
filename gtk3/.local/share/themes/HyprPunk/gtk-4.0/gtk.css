@@ -1,0 +1,4 @@
+/* HyprPunk for the GTK 4 apps without libadwaita, which follow the theme's name too:
+ * adw-gtk3's dark look, with the colors from ~/.config/gtk-4.0/gtk.css on top. */
+
+@import url("file:///usr/share/themes/adw-gtk3-dark/gtk-4.0/gtk.css");

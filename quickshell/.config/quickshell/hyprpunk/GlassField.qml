@@ -1,8 +1,8 @@
 import QtQuick
 
 // The island panels' text field: a glass pill with an icon, what you type, and a hint
-// at the right. The search panels, the launcher and the SDDM picker's sudo prompt use
-// it. Secret ones hide the letters as little squares, like the login screen.
+// at the right. The search panels, the launcher and the polkit prompt use it. Secret
+// ones hide the letters as little squares, like the login screen.
 Rectangle {
     id: field
 

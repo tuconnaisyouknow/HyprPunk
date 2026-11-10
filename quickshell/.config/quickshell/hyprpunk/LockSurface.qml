@@ -855,7 +855,7 @@ WlSessionLockSurface {
 
         }
 
-        // The password field, same as the SDDM picker's, only shown while typing.
+        // The password field, only shown while typing.
         Rectangle {
             id: prompt
 
@@ -900,7 +900,7 @@ WlSessionLockSurface {
                 // The surface gets the keyboard once it is shown: the input takes it then.
                 Component.onCompleted: forceActiveFocus()
                 readOnly: surface.lock.authenticating || surface.lock.unlocking
-                // Spaced filled squares and a blinking block cursor, like the SDDM picker.
+                // Spaced filled squares and a blinking block cursor, like the login screen.
                 echoMode: TextInput.Password
                 passwordCharacter: "■"
                 color: Theme.mauve

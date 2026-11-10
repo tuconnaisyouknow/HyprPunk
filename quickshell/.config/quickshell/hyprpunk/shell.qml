@@ -32,8 +32,8 @@ ShellRoot {
         property var notificationScreen: null
         property bool controlCenterOpen: false
         // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
-        // "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings",
-        // "config", "monitor", "workspaces", "systemmonitor", "player", "screenshot",
+        // "session", "wallpaper", "launcher", "clipboard", "emoji", "keybindings", "config",
+        // "monitor", "workspaces", "systemmonitor", "player", "screenshot",
         // "polkit", "filechooser", "screenshare" or "menu"; action is "toggle", "open" or
         // "close"; screen is a screen's name, or empty for the focused one.
         property var panelRequest: ({
@@ -186,7 +186,7 @@ ShellRoot {
 
     // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
     Variants {
-        model: ["controlcenter", "notifications", "session", "wallpaper", "sddm", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "monitor", "workspaces", "systemmonitor", "player"]
+        model: ["controlcenter", "notifications", "session", "wallpaper", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "monitor", "workspaces", "systemmonitor", "player"]
 
         // Kept around the handler, so ipc show lists only the three functions.
         Scope {
