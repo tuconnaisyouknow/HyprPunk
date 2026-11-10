@@ -32,10 +32,6 @@ IconMenu {
         "name": "Wallpaper",
         "panel": "wallpaper"
     }, {
-        "icon": "󰔎",
-        "name": "SDDM theme",
-        "panel": "sddm"
-    }, {
         "icon": "",
         "name": "Configuration",
         "panel": "config"

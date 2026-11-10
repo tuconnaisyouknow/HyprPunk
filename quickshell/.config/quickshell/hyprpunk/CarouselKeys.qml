@@ -1,6 +1,6 @@
 import QtQuick
 
-// The keys of the carousel panels (wallpaper, SDDM theme): arrows, Tab or the Vim
+// The keys of the carousel panels (the wallpapers): arrows, Tab or the Vim
 // keys turn the carousel, Enter picks the one in the middle. Give it to the panel's
 // keyTargets.
 Item {

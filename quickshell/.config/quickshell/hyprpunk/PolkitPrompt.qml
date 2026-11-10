@@ -194,7 +194,7 @@ IslandPanel {
 
     }
 
-    // Wrong password: the field shakes, like the SDDM picker's.
+    // Wrong password: the field shakes
     SequentialAnimation {
         id: shake
 

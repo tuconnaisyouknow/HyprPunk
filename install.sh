@@ -457,6 +457,8 @@ configure_monitors() {
   "$HOME/Scripts/displayctl.sh" init preferred
 }
 
+# The default wallpaper's look: the GTK and Qt colors and its login screen, so it comes
+# after the login screens are installed
 configure_wallpaper() {
   "$HOME/Scripts/wallpaperctl.sh" init
 }
@@ -538,11 +540,8 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# The GTK and Qt colors, Mocha with mauve accents, Papirus, dark mode, and bat's theme
-# matching Neovim
+# Papirus, dark mode, and bat's theme matching Neovim. The colors come with the wallpaper.
 apply_themes() {
-  matugen json "$HOME/.config/matugen/mauve.json"
-
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
 
   # bat only sees the themes in its folder once they're built into its cache
@@ -566,12 +565,9 @@ install_locale() {
   sudo locale-gen
 }
 
-# The login screens, one per subtheme, starting on the default wallpaper's (city)
+# The login screens, one per subtheme. The wallpaper picks among them.
 install_sddm_theme() {
-  local sddm_script="$DOTFILES_DIR/scripts/Scripts/sddm.sh"
-
-  "$sddm_script" install
-  "$sddm_script" city
+  "$DOTFILES_DIR/scripts/Scripts/sddm.sh" install
 }
 
 # The boot menu theme, when GRUB is the bootloader
@@ -692,13 +688,13 @@ main() {
   run_step "configure_keyboard" "Configuring the keyboard" configure_keyboard
   run_step "configure_locale_profiles" "Configuring locale profiles" configure_locale_profiles
   run_step "configure_monitors" "Configuring monitors" configure_monitors
-  run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
   run_step "configure_touchpad" "Configuring the touchpad" configure_touchpad
   run_step "set_default_apps" "Setting default applications" set_default_apps
   run_step "install_tmux_plugins" "Installing tmux plugins" install_tmux_plugins
   run_step "apply_themes" "Applying themes" apply_themes
   run_step "install_locale" "Installing the locale" install_locale
   run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
+  run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
   run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
   run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
   run_step "install_battery_limit" "Installing the battery charge limit" install_battery_limit
