@@ -2,12 +2,12 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The wallpaper picker: a looping carousel that opens on your current one.
+// The wallpaper picker: a looping carousel of the current theme's wallpapers, in
+// wallpaperctl.sh's order, that opens on your current one.
 // Arrows, Tab or the wheel to browse, Enter or a click on the middle one to apply.
 IslandPanel {
     id: picker
 
-    readonly property string wallpaperDir: Quickshell.env("HOME") + "/Pictures/Wallpapers"
     readonly property string wallpaperctl: Quickshell.env("HOME") + "/Scripts/wallpaperctl.sh"
     readonly property int cardPadding: 14
 
@@ -35,7 +35,7 @@ IslandPanel {
     Process {
         id: listProcess
 
-        command: ["sh", "-c", "find -L \"$0\" -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) | sort", picker.wallpaperDir]
+        command: [picker.wallpaperctl, "list"]
         running: true
 
         stdout: StdioCollector {

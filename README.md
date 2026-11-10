@@ -314,11 +314,10 @@ from other people's nearby.
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # System, display, Qt, and lock-screen helpers
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
-├── sddm/themes/         # Each theme's own video and name, assembled with the base system-wide
-├── sddm/previews/       # Preview images of the SDDM themes
+├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
 ├── starship/            # Starship prompt configuration
 ├── tmux/                # Tmux configuration
-├── wallpapers/          # Cyberpunk wallpapers
+├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
 ├── yazi/                # Yazi file manager configuration and theme
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```

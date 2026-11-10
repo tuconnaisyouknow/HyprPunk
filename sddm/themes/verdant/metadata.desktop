@@ -1,0 +1,9 @@
+# How SDDM lists this theme. Everything but its name and video comes from sddm/base.
+[SddmGreeterTheme]
+Name=verdant
+Description=The last train through the overgrown city
+Author=tuconnais
+Type=sddm-theme
+MainScript=Main.qml
+ConfigFile=theme.conf
+QtVersion=6
