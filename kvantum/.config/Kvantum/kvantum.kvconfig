@@ -1,2 +1,4 @@
+# Kvantum draws every Qt app with HyprPunk, the theme matugen writes next to this file
+# from ~/.config/matugen.
 [General]
-theme=catppuccin-mocha-mauve
+theme=HyprPunk

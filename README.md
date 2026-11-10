@@ -98,7 +98,8 @@ The applications themed and configured by these dotfiles.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
-- 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** themed around Catppuccin Mocha.
+- 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** sharing one libadwaita look, on a Catppuccin Mocha base, with accents
+  written by **matugen**, ready to follow the wallpaper.
 - 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
@@ -300,17 +301,16 @@ from other people's nearby.
 ├── fontconfig/          # JetBrainsMono Nerd Font preference
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 theme settings
-├── gtk4/                # GTK 4 theme settings
+├── gtk4/                # GTK 4 theme settings, and libadwaita's colors taken from GTK 3's
 ├── hypridle/            # Idle and suspend behavior
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
-├── kvantum/             # Kvantum Catppuccin Mocha Mauve theme
+├── kvantum/             # Kvantum's theme choice
+├── matugen/             # The Mocha base, the accents, and the GTK, Kvantum and Qt templates matugen fills
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
-├── qt5/                 # Source palette for generated Qt5ct configuration
-├── qt6/                 # Source palette for generated Qt6ct configuration
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # System, display, Qt, and lock-screen helpers
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
@@ -323,7 +323,7 @@ from other people's nearby.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The `qt5/` and `qt6/` directories only store the versioned Catppuccin palettes: the installer generates complete local Qtct configurations so graphical changes do not modify the repository.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen writes them from `matugen/`'s palettes and templates, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
@@ -473,6 +473,7 @@ can't be done from these files, open an issue rather than patching HyprPunk itse
 
 ## 🙏 Credits
 
+- 🎨 The Kvantum theme is [GabePoel/KvLibadwaita](https://github.com/GabePoel/KvLibadwaita) by Gabriel Perko-Engel, under the GPL-3.0, with its colors swapped for the palette's. GTK 3 apps get libadwaita's look from [adw-gtk3](https://github.com/lassekongo83/adw-gtk3).
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
 - 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
 - 🔒 The lock screen is inspired by the one in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
@@ -494,6 +495,8 @@ Looking for my Windows configuration?
 ## 📜 License
 
 The code and configuration are under the MIT license. Feel free to explore, fork, and adapt.
+
+The Kvantum theme's templates (`matugen/.config/matugen/templates/kvantum.*`) stay under KvLibadwaita's GPL-3.0.
 
 The MIT license doesn't cover the artwork. The wallpapers, the Fastfetch logo, the login screen videos and the
 CyberEXS GRUB theme belong to their respective authors and are shared here for personal use only, without any

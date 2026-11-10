@@ -4,6 +4,10 @@ wallpapers/Pictures/Wallpapers/.nextcloudsync.log
 wallpapers/Pictures/Wallpapers/.sync_*
 gtk3/.config/gtk-3.0/bookmarks
 
+# matugen writes these from the palette (see matugen/.config/matugen/config.toml)
+gtk3/.config/gtk-3.0/gtk.css
+kvantum/.config/Kvantum/HyprPunk/
+
 # Your own tmux and kitty settings, read by their configs
 tmux/.config/tmux/personal.conf
 kitty/.config/kitty/personal.conf
