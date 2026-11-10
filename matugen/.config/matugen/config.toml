@@ -1,17 +1,23 @@
-# The GTK and Qt themes, written by matugen so both toolkits share the same colors.
-# The dark base is always Catppuccin Mocha, only the accents change. Mauve and lavender:
-#   matugen json ~/.config/matugen/mauve.json
-# Or the accents drawn from a wallpaper, in the same Material 3 roles:
-#   matugen image <wallpaper> -m dark
+# The GTK and Qt colors, written by matugen so both toolkits share them. The dark base
+# is always Catppuccin Mocha, only the accents change. wallpaperctl.sh renders them for
+# every new wallpaper: mauve and lavender (mauve.json) in neon, drawn from the wallpaper
+# in daydream, in the same Material 3 roles.
 
 [config]
 # Read last, over the accents' source, so a wallpaper never changes the base
 import_json_files = ["./mocha-base.json"]
 
-# GTK 3 reads this file directly, GTK 4 imports it from its own gtk.css
-[templates.gtk]
-input_path = "./templates/gtk.css.template"
-output_path = "~/.config/gtk-3.0/gtk.css"
+# The HyprPunk theme imports it. Setting the theme again, through an empty name, makes
+# open GTK 3 apps read it anew, and sets it in the first place.
+[templates.gtk3]
+input_path = "./templates/gtk3.css.template"
+output_path = "~/.local/share/themes/HyprPunk/gtk-3.0/colors.css"
+post_hook = "gsettings set org.gnome.desktop.interface gtk-theme '' && gsettings set org.gnome.desktop.interface gtk-theme HyprPunk"
+
+# Open GTK 4 apps watch this file themselves, through gtk4-live-css
+[templates.gtk4]
+input_path = "./templates/gtk4.css.template"
+output_path = "~/.config/gtk-4.0/gtk.css"
 
 [templates.kvantum-svg]
 input_path = "./templates/kvantum.svg.template"

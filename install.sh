@@ -334,6 +334,17 @@ update_system() {
   sudo pacman -Syyu --noconfirm
 }
 
+# Arch's gtk4 with one patch, built daily by saneaspect, that makes open GTK 4 apps
+# reload ~/.config/gtk-4.0/gtk.css: they follow the wallpaper's colors without a
+# restart. It replaces gtk4, so pacman is told to accept the conflict (--ask=4).
+install_gtk4_live_css() {
+  if ! grep -q '^\[saneaspect\]' /etc/pacman.conf; then
+    printf '\n[saneaspect]\nSigLevel = Optional TrustAll\nServer = https://github.com/saneaspect/gtk4-live-css/releases/download/repo\n' |
+      sudo tee -a /etc/pacman.conf >/dev/null
+  fi
+  sudo pacman -Syu --needed --noconfirm --ask=4 gtk4-live-css
+}
+
 install_packages() {
   yay -S --needed --noconfirm --removemake \
     zsh kitty starship zoxide \
@@ -540,14 +551,14 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Papirus, dark mode, and bat's theme matching Neovim. The colors come with the wallpaper.
+# Papirus, dark mode, and bat's theme matching Neovim. The colors and the GTK theme
+# come with the wallpaper.
 apply_themes() {
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
 
   # bat only sees the themes in its folder once they're built into its cache
   bat cache --build >/dev/null
 
-  gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
@@ -679,6 +690,7 @@ main() {
   keep_sudo_alive
 
   run_step "update_system" "Updating the system" update_system
+  run_step "install_gtk4_live_css" "Installing GTK 4 with live colors" install_gtk4_live_css
   run_step "install_yay" "Installing yay" install_yay
   run_step "install_packages" "Installing packages" install_packages
   run_step "install_oh_my_zsh" "Installing Oh My Zsh" install_oh_my_zsh

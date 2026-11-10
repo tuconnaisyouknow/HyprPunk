@@ -1,7 +1,9 @@
-/* The colors of adw-gtk3 (GTK 3) and libadwaita (GTK 4). matugen writes them from
- * ~/.config/matugen/templates/gtk.css.template, so change them there: each Adwaita
- * tone gets the base's tone at the same depth, the accent is the primary and text
- * is the secondary. */
+/* The colors of GTK 4 and libadwaita. matugen writes them from
+ * ~/.config/matugen/templates/gtk4.css.template, with the same roles as
+ * gtk3.css.template. The patched gtk4 (gtk4-live-css) watches this one file, so open
+ * apps take a new palette at once. Apps' own CSS still reads the named colors,
+ * libadwaita reads the variables, so each named color is handed over under its
+ * variable's name. */
 
 @define-color accent_bg_color {{colors.primary.default.hex}};
 @define-color accent_fg_color {{colors.on_primary.default.hex}};
@@ -59,3 +61,61 @@
 
 @define-color shade_color {{colors.shadow.default.rgba | set_alpha: 0.25}};
 @define-color scrollbar_outline_color {{colors.shadow.default.rgba | set_alpha: 0.95}};
+
+:root {
+  --accent-bg-color: @accent_bg_color;
+  --accent-fg-color: @accent_fg_color;
+  --accent-color: @accent_color;
+
+  --destructive-bg-color: @destructive_bg_color;
+  --destructive-fg-color: @destructive_fg_color;
+  --destructive-color: @destructive_color;
+
+  --success-bg-color: @success_bg_color;
+  --success-fg-color: @success_fg_color;
+  --success-color: @success_color;
+
+  --warning-bg-color: @warning_bg_color;
+  --warning-fg-color: @warning_fg_color;
+  --warning-color: @warning_color;
+
+  --error-bg-color: @error_bg_color;
+  --error-fg-color: @error_fg_color;
+  --error-color: @error_color;
+
+  --view-bg-color: @view_bg_color;
+  --view-fg-color: @view_fg_color;
+
+  --window-bg-color: @window_bg_color;
+  --window-fg-color: @window_fg_color;
+
+  --headerbar-bg-color: @headerbar_bg_color;
+  --headerbar-fg-color: @headerbar_fg_color;
+  --headerbar-border-color: @headerbar_border_color;
+  --headerbar-backdrop-color: @headerbar_backdrop_color;
+  --headerbar-shade-color: @headerbar_shade_color;
+  --headerbar-darker-shade-color: @headerbar_darker_shade_color;
+
+  --sidebar-bg-color: @sidebar_bg_color;
+  --sidebar-fg-color: @sidebar_fg_color;
+  --sidebar-backdrop-color: @sidebar_backdrop_color;
+  --sidebar-shade-color: @sidebar_shade_color;
+  --sidebar-border-color: @sidebar_border_color;
+
+  --card-bg-color: @card_bg_color;
+  --card-fg-color: @card_fg_color;
+  --card-shade-color: @card_shade_color;
+
+  --dialog-bg-color: @dialog_bg_color;
+  --dialog-fg-color: @dialog_fg_color;
+
+  --popover-bg-color: @popover_bg_color;
+  --popover-fg-color: @popover_fg_color;
+  --popover-shade-color: @popover_shade_color;
+
+  --thumbnail-bg-color: @thumbnail_bg_color;
+  --thumbnail-fg-color: @thumbnail_fg_color;
+
+  --shade-color: @shade_color;
+  --scrollbar-outline-color: @scrollbar_outline_color;
+}
