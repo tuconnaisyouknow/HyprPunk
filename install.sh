@@ -566,12 +566,12 @@ install_locale() {
   sudo locale-gen
 }
 
-# The login screen, with welcome-to-the-metro to begin with
+# The login screens, one per subtheme, starting on the default wallpaper's (city)
 install_sddm_theme() {
   local sddm_script="$DOTFILES_DIR/scripts/Scripts/sddm.sh"
 
   "$sddm_script" install
-  "$sddm_script" welcome-to-the-metro
+  "$sddm_script" city
 }
 
 # The boot menu theme, when GRUB is the bootloader
