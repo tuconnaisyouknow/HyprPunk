@@ -35,6 +35,7 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/kitty"
   ".config/kdeglobals"
   ".config/Kvantum"
+  ".config/matugen"
   ".config/nvim"
   ".config/qt5ct"
   ".config/qt6ct"
@@ -362,10 +363,9 @@ install_packages() {
     xdg-desktop-portal-gtk \
     xwayland-satellite \
     \
-    catppuccin-gtk-theme-mocha \
+    adw-gtk-theme matugen \
     papirus-icon-theme \
     papirus-folders-catppuccin-git \
-    kvantum-theme-catppuccin-git \
     rose-pine-cursor \
     rose-pine-hyprcursor nwg-look \
     \
@@ -420,7 +420,7 @@ clone_dotfiles() {
 # Link each module into your home. The others (sddm, grub, battery…) are installed
 # system-wide by their own steps.
 stow_dotfiles() {
-  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum nvim portal quickshell scripts starship tmux wallpapers yazi zsh
+  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum matugen nvim portal quickshell scripts starship tmux wallpapers yazi zsh
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
   # ours, kept out of git, and the settings you already have stay
@@ -538,14 +538,17 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Catppuccin and Papirus for GTK apps, in dark mode, and bat's theme matching Neovim
+# The GTK and Qt colors, Mocha with mauve accents, Papirus, dark mode, and bat's theme
+# matching Neovim
 apply_themes() {
+  matugen json "$HOME/.config/matugen/mauve.json"
+
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
 
   # bat only sees the themes in its folder once they're built into its cache
   bat cache --build >/dev/null
 
-  gsettings set org.gnome.desktop.interface gtk-theme 'catppuccin-mocha-mauve-standard+default'
+  gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'

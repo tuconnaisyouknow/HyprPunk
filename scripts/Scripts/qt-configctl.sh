@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# Writes the qt5ct and qt6ct settings: Kvantum, Catppuccin, Papirus and JetBrains Mono.
-# They're written rather than linked because qt5ct and qt6ct rewrite their file
-# whenever you touch a setting, which would scribble over the dotfiles.
+# Writes the qt5ct and qt6ct settings: Kvantum, the HyprPunk colors matugen writes,
+# Papirus and JetBrains Mono. They're written rather than linked because qt5ct and qt6ct
+# rewrite their file whenever you touch a setting, which would scribble over the dotfiles.
 
 set -euo pipefail
 
-SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-DOTFILES_DIR="${DOTFILES_DIR:-$(realpath "$SCRIPT_DIR/../..")}"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 
 usage() {
   cat <<EOF
@@ -27,11 +26,11 @@ write_qt5_config() {
 
   cat >"$target" <<EOF
 [Appearance]
-color_scheme_path=$CONFIG_HOME/qt5ct/colors/catppuccin-mocha-mauve.conf
+color_scheme_path=$DATA_HOME/color-schemes/HyprPunk.colors
 custom_palette=true
 icon_theme=Papirus-Dark
 standard_dialogs=xdgdesktopportal
-style=kvantum-dark
+style=kvantum
 
 [Fonts]
 fixed="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
@@ -60,11 +59,11 @@ write_qt6_config() {
 
   cat >"$target" <<EOF
 [Appearance]
-color_scheme_path=$CONFIG_HOME/qt6ct/colors/catppuccin-mocha-mauve.conf
+color_scheme_path=$DATA_HOME/color-schemes/HyprPunk.colors
 custom_palette=true
 icon_theme=Papirus-Dark
 standard_dialogs=xdgdesktopportal
-style=kvantum-dark
+style=kvantum
 
 [Fonts]
 fixed="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
@@ -93,17 +92,9 @@ configure_version() {
   local mode="$2"
   local config_dir="$CONFIG_HOME/${version}ct"
   local config_file="$config_dir/${version}ct.conf"
-  local palette_source="$DOTFILES_DIR/$version/.config/${version}ct/colors/catppuccin-mocha-mauve.conf"
-  local palette_target="$config_dir/colors/catppuccin-mocha-mauve.conf"
   local tmp
 
-  if [[ ! -f "$palette_source" ]]; then
-    echo "Palette not found: $palette_source" >&2
-    return 1
-  fi
-
-  # The palette is always refreshed, the settings only when asked to
-  install -Dm644 "$palette_source" "$palette_target"
+  mkdir -p "$config_dir"
 
   if [[ "$mode" == "generate" && -e "$config_file" ]]; then
     echo "Keeping existing configuration: $config_file"

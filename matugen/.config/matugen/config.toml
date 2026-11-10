@@ -1,0 +1,27 @@
+# The GTK and Qt themes, written by matugen so both toolkits share the same colors.
+# The dark base is always Catppuccin Mocha, only the accents change. Mauve and lavender:
+#   matugen json ~/.config/matugen/mauve.json
+# Or the accents drawn from a wallpaper, in the same Material 3 roles:
+#   matugen image <wallpaper> -m dark
+
+[config]
+# Read last, over the accents' source, so a wallpaper never changes the base
+import_json_files = ["./mocha-base.json"]
+
+# GTK 3 reads this file directly, GTK 4 imports it from its own gtk.css
+[templates.gtk]
+input_path = "./templates/gtk.css.template"
+output_path = "~/.config/gtk-3.0/gtk.css"
+
+[templates.kvantum-svg]
+input_path = "./templates/kvantum.svg.template"
+output_path = "~/.config/Kvantum/HyprPunk/HyprPunk.svg"
+
+[templates.kvantum-config]
+input_path = "./templates/kvantum.kvconfig.template"
+output_path = "~/.config/Kvantum/HyprPunk/HyprPunk.kvconfig"
+
+# The palette of every Qt app, set by qt5ct and qt6ct, and of KDE apps' own colors
+[templates.qt]
+input_path = "./templates/qt.colors.template"
+output_path = "~/.local/share/color-schemes/HyprPunk.colors"
