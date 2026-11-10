@@ -1016,11 +1016,23 @@ class Daemon:
         proxy.Connect(
             dbus_interface=DEVICE,
             reply_handler=lambda: None,
-            error_handler=lambda error: log(
-                "connect", address, error.get_dbus_message()
-            ),
+            error_handler=lambda error: self.connect_failed(address, error),
             timeout=30,
         )
+
+    def connect_failed(self, address, error):
+        log("connect", address, error.get_dbus_message())
+        if error.get_dbus_name() in (
+            "org.bluez.Error.InProgress",
+            "org.bluez.Error.AlreadyConnected",
+        ):
+            return
+        # Refused while they leave another device, the link itself can stay up (our
+        # AAP session holds it): connected with no sound or microphone. Drop it, and
+        # the next advertisement in an ear tries again.
+        if address in self.seen:
+            self.seen[address]["inEar"] = False
+        self.disconnect(address)
 
     def disconnect(self, address):
         path = self.paths.get(address)
