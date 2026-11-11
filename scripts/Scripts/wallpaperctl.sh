@@ -274,18 +274,19 @@ set_login_screen() {
 
 # A new wallpaper and its look. A wallpaper without a palette stops here, before
 # anything changes. Then the transition starts as soon as you pick it, since awww doesn't
-# wait for it to end, and the colors, which take matugen a moment, land during it. The
-# login screen comes last, since you only see it at the next login. Without awww
-# arguments the wallpaper isn't shown (install.sh).
+# wait for it to end, and the colors, which take matugen a moment, land during it. It's
+# saved only once both are in place, so a failure leaves the old one to come back at
+# login. The login screen comes last, since you only see it at the next login. Without
+# awww arguments the wallpaper isn't shown (install.sh).
 switch_to() {
   local wallpaper="$1"
   shift
   palette_of "$wallpaper" >/dev/null
-  write_state "$wallpaper"
   if (($#)); then
     show_wallpaper "$wallpaper" "$@"
   fi
   render_colors "$wallpaper"
+  write_state "$wallpaper"
   set_brave_color "$wallpaper"
   set_login_screen "$wallpaper"
 }
