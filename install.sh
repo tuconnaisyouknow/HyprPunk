@@ -375,7 +375,7 @@ install_packages() {
     \
     adw-gtk-theme matugen imagemagick \
     papirus-icon-theme \
-    papirus-folders-catppuccin-git \
+    papirus-folders \
     rose-pine-cursor \
     rose-pine-hyprcursor nwg-look \
     \
@@ -550,11 +550,12 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# The HyprPunk icons and dark mode. The colors, the GTK theme, bat's theme and the
-# HyprPunk icon theme itself, Papirus-Dark with folders in the accent, come with the
-# wallpaper.
+# Papirus-Dark with grey folders, which go with every wallpaper's palette, and dark mode.
+# The colors, the GTK theme and bat's theme come with the wallpaper.
 apply_themes() {
-  gsettings set org.gnome.desktop.interface icon-theme 'HyprPunk'
+  papirus-folders -C grey --theme Papirus-Dark
+
+  gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 }

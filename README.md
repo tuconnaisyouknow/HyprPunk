@@ -96,8 +96,8 @@ The applications themed and configured by these dotfiles.
 - 🎬 **SDDM** with a video login screen for each subtheme, in the wallpaper's colors.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
-- 🎨 **GTK 3/4**, **Qt5/Qt6** and **Kvantum** with one libadwaita look, the shell, the terminal tools and **Papirus**'s
-  folders, all in the wallpaper's own palette, written by **matugen** (see [Visual Identity](#-visual-identity)).
+- 🎨 **GTK 3/4**, **Qt5/Qt6** and **Kvantum** with one libadwaita look, the shell and the terminal tools, all in the
+  wallpaper's own palette, written by **matugen** (see [Visual Identity](#-visual-identity)).
 - 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
@@ -119,8 +119,8 @@ the whole look:
   the microphone.
 
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, and
-the terminal and its tools, which keep Catppuccin Mocha tinted with the palette. Papirus's folders take its color
-nearest to the accent. The shell, open GTK apps, terminals, the prompt, tmux, Neovim and btop change at once, Qt apps and yazi the
+the terminal and its tools, which keep Catppuccin Mocha tinted with the palette. Papirus's folders stay grey, which
+goes with every palette. The shell, open GTK apps, terminals, the prompt, tmux, Neovim and btop change at once, Qt apps and yazi the
 next time they start.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
@@ -411,7 +411,7 @@ The installer enables or configures:
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
-- 📁 Papirus Dark icons, with folders in the color nearest to the wallpaper's accent
+- 📁 Papirus Dark icons, with grey folders
 - 🕹️ CyberEXS GRUB theme when GRUB is present
 
 ---

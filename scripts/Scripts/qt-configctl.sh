@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Writes the qt5ct and qt6ct settings: Kvantum, the HyprPunk colors matugen writes,
-# the HyprPunk icons and JetBrains Mono. They're written rather than linked because qt5ct and qt6ct
+# Papirus and JetBrains Mono. They're written rather than linked because qt5ct and qt6ct
 # rewrite their file whenever you touch a setting, which would scribble over the dotfiles.
 
 set -euo pipefail
@@ -28,7 +28,7 @@ write_qt5_config() {
 [Appearance]
 color_scheme_path=$DATA_HOME/color-schemes/HyprPunk.colors
 custom_palette=true
-icon_theme=HyprPunk
+icon_theme=Papirus-Dark
 standard_dialogs=xdgdesktopportal
 style=kvantum
 
@@ -61,7 +61,7 @@ write_qt6_config() {
 [Appearance]
 color_scheme_path=$DATA_HOME/color-schemes/HyprPunk.colors
 custom_palette=true
-icon_theme=HyprPunk
+icon_theme=Papirus-Dark
 standard_dialogs=xdgdesktopportal
 style=kvantum
 

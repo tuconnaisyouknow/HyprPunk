@@ -1,7 +1,7 @@
 # KDE apps like Dolphin take their icons and widget style from here rather than from
 # qt6ct, so this points them at the same ones as the other Qt apps.
 [Icons]
-Theme=HyprPunk
+Theme=Papirus-Dark
 
 [KDE]
 widgetStyle=qt6ct-style

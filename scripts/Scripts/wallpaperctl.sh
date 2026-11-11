@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Remembers the wallpaper and hands it to awww, which forgets it on every restart.
 # Wallpapers live in ~/Pictures/Wallpapers/<theme>/<subtheme>/, and the one you pick
-# decides the whole look: the theme, the colors, the folders and the login screen. Each
-# theme remembers its last wallpaper.
+# decides the whole look: the theme, the colors and the login screen. Each theme
+# remembers its last wallpaper.
 #   wallpaperctl.sh apply          puts the saved one back, at once (login, new screen)
 #   wallpaperctl.sh set <image>    saves it and shows it with a transition (the shell's selector)
 #   wallpaperctl.sh theme <theme>  switches to the theme's last wallpaper, or its first one
@@ -25,11 +25,6 @@ PALETTES="$MATUGEN_DIR/palettes.conf"
 THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
 LOGIN_COLORS="$STATE_DIR/login-colors.conf"
-DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-ICON_THEMES="$DATA_HOME/icons"
-PAPIRUS="/usr/share/icons/Papirus-Dark"
-# The sizes Papirus colors its folders in
-FOLDER_SIZES=(22 24 32 48 64)
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
@@ -267,88 +262,6 @@ set_login_screen() {
   pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")" <"$LOGIN_COLORS"
 }
 
-# Papirus's folder color nearest to the palette's accent, by the front of each folder,
-# the last of its three fills. In OKLab, so the nearest is the one that looks nearest.
-folder_color_of() {
-  local accent color face
-  accent="$(jq -r .colors.primary.default.color "$(palette_of "$1")")"
-  papirus-folders -l --theme Papirus-Dark | tr -d ' >' | while IFS= read -r color; do
-    face="$(grep -o 'fill:#[0-9a-fA-F]\{6\}' "$PAPIRUS/48x48/places/folder-$color.svg" | sed -n 3p)"
-    if [[ -n "$face" ]]; then
-      printf '%s %s\n' "$color" "${face#fill:}"
-    fi
-  done | awk -v accent="$accent" '
-    function digit(h, i) { return index("0123456789abcdef", substr(tolower(h), i, 1)) - 1 }
-    function linear(i, h, c) { c = (digit(h, i) * 16 + digit(h, i + 1)) / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ^ 2.4 }
-    function cbrt(x) { return x ^ (1 / 3) }
-    function oklab(h, lab, r, g, b, l, m, s) {
-      r = linear(2, h); g = linear(4, h); b = linear(6, h)
-      l = cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
-      m = cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
-      s = cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
-      lab[1] = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s
-      lab[2] = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s
-      lab[3] = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
-    }
-    BEGIN { oklab(accent, target); best = -1 }
-    {
-      oklab($2, lab)
-      d = (lab[1] - target[1]) ^ 2 + (lab[2] - target[2]) ^ 2 + (lab[3] - target[3]) ^ 2
-      if (best < 0 || d < best) { best = d; nearest = $1 }
-    }
-    END { print nearest }'
-}
-
-# The HyprPunk icon theme, which every app uses: Papirus-Dark with its folders in one
-# color, without touching Papirus. Each color is a small hidden theme of its own,
-# HyprPunk-<color>, made the first time it's needed: links from the folders' usual names
-# to that color's icons. HyprPunk is a link to one of them, so a new color is a new
-# link, at once.
-make_folder_theme() {
-  local color="$1" theme size icon name target aliases added dirs="" scaled="" sections=""
-  theme="$(mktemp -d --tmpdir="$ICON_THEMES" ".HyprPunk-$color.XXXXXX")"
-  chmod 755 "$theme"
-  for size in "${FOLDER_SIZES[@]}"; do
-    mkdir "$theme/${size}x$size"
-    for icon in "$PAPIRUS/${size}x$size/places/"{folder,user}-"$color"{-*,}.svg; do
-      [[ -e "$icon" ]] || continue
-      name="${icon##*/}"
-      ln -s "$icon" "$theme/${size}x$size/${name/-"$color"/}"
-    done
-    # Papirus's other names for them (folder-publicshare for folder-image-people…) point
-    # inside Papirus, so they come along too, pointing here. Again until none is left, for
-    # the names of names.
-    aliases="$(find "$PAPIRUS/${size}x$size/places" -maxdepth 1 -type l -name '*.svg' -printf '%f\t%l\n')"
-    added=true
-    while $added; do
-      added=false
-      while IFS=$'\t' read -r name target; do
-        [[ ! -e "$theme/${size}x$size/$name" && "$target" != */* && -e "$theme/${size}x$size/$target" ]] || continue
-        ln -s "$target" "$theme/${size}x$size/$name"
-        added=true
-      done <<<"$aliases"
-    done
-    # Twice as sharp, from the same drawings, like Papirus
-    ln -s "${size}x$size" "$theme/${size}x$size@2x"
-    dirs+="${size}x$size,"
-    scaled+="${size}x$size@2x,"
-    sections+="$(printf '\n[%sx%s]\nContext=Places\nSize=%s\nType=Fixed\n' "$size" "$size" "$size")"
-    sections+="$(printf '\n\n[%sx%s@2x]\nContext=Places\nSize=%s\nScale=2\nType=Fixed\n' "$size" "$size" "$size")"
-  done
-  printf '[Icon Theme]\nName=HyprPunk\nComment=Papirus-Dark, with its folders in the wallpaper'"'"'s accent\nInherits=Papirus-Dark\nHidden=true\nDirectories=%s\nScaledDirectories=%s\n%s\n' \
-    "${dirs%,}" "${scaled%,}" "$sections" >"$theme/index.theme"
-  mv -T "$theme" "$ICON_THEMES/HyprPunk-$color"
-}
-
-set_folder_color() {
-  local color
-  color="$(folder_color_of "$1")"
-  mkdir -p "$ICON_THEMES"
-  [[ -d "$ICON_THEMES/HyprPunk-$color" ]] || make_folder_theme "$color"
-  # Open GTK windows take the new folders when they next redraw
-  ln -sfnT "HyprPunk-$color" "$ICON_THEMES/HyprPunk"
-}
-
 # A new wallpaper and its look. The colors come first: a wallpaper without a palette
 # stops here, before anything changes. The login screen comes last, since you only
 # see it at the next login. Without awww arguments the wallpaper isn't shown (install.sh).
@@ -360,7 +273,6 @@ switch_to() {
   if (($#)); then
     show_wallpaper "$wallpaper" "$@"
   fi
-  set_folder_color "$wallpaper"
   set_login_screen "$wallpaper"
 }
 
