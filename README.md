@@ -59,8 +59,6 @@ The clock's island grows into every panel, the password prompts for admin rights
 | ![capture](./assets/screenshots/capture.png) | ![monitors](./assets/screenshots/monitors.png) |
 | Keybindings | Configuration Files |
 | ![keybindings](./assets/screenshots/keybindings.png) | ![config-files](./assets/screenshots/config-files.png) |
-| SDDM Theme Selector | |
-| ![sddm-theme-selector](./assets/screenshots/sddm-theme-selector.png) | |
 
 </details>
 
@@ -92,14 +90,15 @@ The applications themed and configured by these dotfiles.
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
-- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
+- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
 - 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
 - 🔒 **Hypridle** and **awww** for idle handling (locking, then suspending) and wallpapers with animated transitions.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
-- 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** sharing one libadwaita look, in each wallpaper's own palette: its
-  hues at Catppuccin Mocha's lightness, written by **matugen** and taken at once by open GTK apps.
+- 🎨 **GTK 3/4**, **Qt5/Qt6**, **Kvantum**, and the shell in each wallpaper's own palette, picked by hand: its hues at
+  Catppuccin Mocha's lightness, with one libadwaita look for GTK and Qt. **matugen**, used only to fill templates, writes
+  every app's colors, and open GTK apps and the shell take them at once.
 - 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
@@ -237,7 +236,6 @@ you'd bind to your own shortcuts.
 | `emoji` | `Super + .` or `Super + ;` |
 | `keybindings` | `Super + Ctrl + K` |
 | `wallpaper` | `Super + Ctrl + W` |
-| `sddm` | `Super + Ctrl + G` |
 | `session` | `Super + Escape` |
 | `controlcenter` | `Super + C` |
 | `notifications` | `Super + N` |
@@ -308,7 +306,7 @@ from other people's nearby.
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum's theme choice
-├── matugen/             # Each wallpaper's palette, and the GTK, Kvantum and Qt templates matugen fills
+├── matugen/             # Each wallpaper's palette, and the GTK, Kvantum, Qt and shell templates matugen fills
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
@@ -322,7 +320,7 @@ from other people's nearby.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen writes them from `matugen/`'s palettes and templates, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
