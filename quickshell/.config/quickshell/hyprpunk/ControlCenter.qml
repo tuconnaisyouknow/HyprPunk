@@ -733,7 +733,7 @@ Card {
 
                                 Text {
                                     text: "Display"
-                                    color: Theme.mauve
+                                    color: Theme.primary
                                     font.family: Theme.font
                                     font.pixelSize: 14
                                     font.weight: Font.Bold
@@ -799,7 +799,7 @@ Card {
 
                                     Text {
                                         text: "Sound"
-                                        color: Theme.mauve
+                                        color: Theme.primary
                                         font.family: Theme.font
                                         font.pixelSize: 14
                                         font.weight: Font.Bold
@@ -810,14 +810,14 @@ Card {
                                         horizontalAlignment: Text.AlignRight
                                         elide: Text.ElideRight
                                         text: controlCenter.audioSink !== null ? (controlCenter.audioSink.description || controlCenter.audioSink.name) : "No output"
-                                        color: Theme.lavender
+                                        color: Theme.secondary
                                         font.family: Theme.font
                                         font.pixelSize: 12
                                     }
 
                                     Text {
                                         text: "󰅂"
-                                        color: soundBlock.hovered ? Theme.mauve : Theme.lavender
+                                        color: soundBlock.hovered ? Theme.primary : Theme.secondary
                                         font.family: Theme.font
                                         font.pixelSize: 14
 
@@ -834,9 +834,9 @@ Card {
 
                                 HorizontalSlider {
                                     Layout.fillWidth: true
-                                    // Muted, the fill keeps its level and turns lavender.
+                                    // Muted, the fill keeps its level and turns to the secondary color.
                                     value: controlCenter.volume / 100
-                                    accent: controlCenter.muted ? Theme.lavender : Theme.mauve
+                                    accent: controlCenter.muted ? Theme.secondary : Theme.primary
                                     iconButton: true
                                     icon: Icons.volume(controlCenter.volume, controlCenter.muted)
                                     onValueRequested: (value) => {
@@ -890,7 +890,7 @@ Card {
 
                                     Text {
                                         text: "Background apps"
-                                        color: Theme.mauve
+                                        color: Theme.primary
                                         font.family: Theme.font
                                         font.pixelSize: 14
                                         font.weight: Font.Bold
@@ -901,14 +901,14 @@ Card {
                                         horizontalAlignment: Text.AlignRight
                                         elide: Text.ElideRight
                                         text: trayBlock.hoveredItem !== null ? Tray.name(trayBlock.hoveredItem) : Tray.items.length + (Tray.items.length === 1 ? " app" : " apps")
-                                        color: Theme.lavender
+                                        color: Theme.secondary
                                         font.family: Theme.font
                                         font.pixelSize: 12
                                     }
 
                                     Text {
                                         text: "󰅂"
-                                        color: trayBlock.hovered ? Theme.mauve : Theme.lavender
+                                        color: trayBlock.hovered ? Theme.primary : Theme.secondary
                                         font.family: Theme.font
                                         font.pixelSize: 14
 

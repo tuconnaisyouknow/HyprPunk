@@ -40,7 +40,7 @@ ControlBlock {
 
         Text {
             text: action.icon
-            color: action.armed ? Theme.base : action.destructive ? Theme.red : Theme.mauve
+            color: action.armed ? Theme.base : action.destructive ? Theme.red : Theme.primary
             font.family: Theme.font
             font.pixelSize: 17
         }
@@ -49,7 +49,7 @@ ControlBlock {
             Layout.fillWidth: true
             elide: Text.ElideRight
             text: action.armed ? action.confirmLabel : action.label
-            color: action.armed ? Theme.base : action.destructive ? Theme.red : Theme.mauve
+            color: action.armed ? Theme.base : action.destructive ? Theme.red : Theme.primary
             font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.Bold

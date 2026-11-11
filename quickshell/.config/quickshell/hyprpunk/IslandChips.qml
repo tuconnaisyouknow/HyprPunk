@@ -201,7 +201,7 @@ RowLayout {
 
     }
 
-    // Notifications waiting: a bell and how many. Lavender at half opacity while Focus
+    // Notifications waiting: a bell and how many. The secondary color at half opacity while Focus
     // keeps them quiet.
     Item {
         readonly property bool shown: chips.shown && chips.bar.notificationCount > 0
@@ -215,7 +215,7 @@ RowLayout {
         Rectangle {
             anchors.fill: parent
             radius: height / 2
-            color: Theme.alpha(chips.bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve, 0.16)
+            color: Theme.alpha(chips.bar.shellState.doNotDisturb ? Theme.secondary : Theme.primary, 0.16)
 
             Behavior on color {
                 ColorAnimation {
@@ -237,7 +237,7 @@ RowLayout {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: chips.bar.shellState.doNotDisturb ? "󰂛" : "󰂚"
-                color: chips.bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve
+                color: chips.bar.shellState.doNotDisturb ? Theme.secondary : Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 13
             }
@@ -245,7 +245,7 @@ RowLayout {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: chips.bar.notificationCount
-                color: chips.bar.shellState.doNotDisturb ? Theme.lavender : Theme.mauve
+                color: chips.bar.shellState.doNotDisturb ? Theme.secondary : Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 12
                 font.weight: Font.Bold

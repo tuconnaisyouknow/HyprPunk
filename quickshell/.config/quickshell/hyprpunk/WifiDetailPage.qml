@@ -146,7 +146,7 @@ ColumnLayout {
                 Text {
                     visible: page.saving
                     text: "Connecting…"
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 12
                 }

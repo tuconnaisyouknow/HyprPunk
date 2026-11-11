@@ -180,7 +180,7 @@ ColumnLayout {
     }
 
     component EmptyText: Text {
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
     }
@@ -283,7 +283,7 @@ ColumnLayout {
                     anchors.centerIn: parent
                     visible: !appIcon.visible
                     text: "󰎆"
-                    color: Theme.mauve
+                    color: Theme.primary
                     font.family: Theme.font
                     font.pixelSize: 18
                 }
@@ -294,7 +294,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 label: page.appName(app.modelData)
                 value: app.audio !== null ? app.audio.volume : 0
-                accent: app.audio !== null && app.audio.muted ? Theme.lavender : Theme.mauve
+                accent: app.audio !== null && app.audio.muted ? Theme.secondary : Theme.primary
                 iconButton: true
                 icon: app.audio !== null ? page.volumeIcon(app.audio.volume, app.audio.muted) : "󰖁"
                 onValueRequested: (value) => {
@@ -412,7 +412,7 @@ ColumnLayout {
                                 Layout.fillWidth: true
                                 label: page.source !== null ? page.outputLabel(page.source) : "No microphone"
                                 value: page.sourceAudio !== null ? page.sourceAudio.volume : 0
-                                accent: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.lavender : Theme.mauve
+                                accent: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.secondary : Theme.primary
                                 iconButton: true
                                 icon: page.sourceAudio === null || page.sourceAudio.muted ? "󰍭" : "󰍬"
                                 onValueRequested: (value) => {
@@ -442,7 +442,7 @@ ColumnLayout {
                                     height: parent.height
                                     width: Math.max(parent.height, parent.width * level)
                                     radius: parent.radius
-                                    color: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.alpha(Theme.lavender, 0.5) : Theme.green
+                                    color: page.sourceAudio !== null && page.sourceAudio.muted ? Theme.alpha(Theme.secondary, 0.5) : Theme.green
                                     opacity: level > 0.01 ? 1 : 0.4
                                     property real level: {
                                         const peak = page.sourceAudio !== null && page.sourceAudio.muted ? 0 : sourcePeak.peak;

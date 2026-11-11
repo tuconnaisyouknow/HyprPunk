@@ -25,7 +25,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.bottomMargin: 6
         text: !page.center.chargeLimitWritable ? "Read only: install battery-limit (battery/ in the dotfiles) to change it." : page.center.chargeLimitError !== "" ? page.center.chargeLimitError : "Stops charging at the limit, easier on the battery over the years. Kept after a restart."
-        color: !page.center.chargeLimitWritable || page.center.chargeLimitError !== "" ? Theme.peach : Theme.lavender
+        color: !page.center.chargeLimitWritable || page.center.chargeLimitError !== "" ? Theme.peach : Theme.secondary
         wrapMode: Text.Wrap
         font.family: Theme.font
         font.pixelSize: 12

@@ -43,7 +43,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.bottomMargin: 6
         text: "What keeps running once its window is closed."
-        color: Theme.lavender
+        color: Theme.secondary
         wrapMode: Text.Wrap
         font.family: Theme.font
         font.pixelSize: 12
@@ -118,7 +118,7 @@ ColumnLayout {
                                     Text {
                                         width: parent.width
                                         text: Tray.name(app.modelData)
-                                        color: Theme.mauve
+                                        color: Theme.primary
                                         elide: Text.ElideRight
                                         font.family: Theme.font
                                         font.pixelSize: 14
@@ -129,7 +129,7 @@ ColumnLayout {
                                         width: parent.width
                                         visible: text !== ""
                                         text: Tray.detail(app.modelData)
-                                        color: Theme.lavender
+                                        color: Theme.secondary
                                         elide: Text.ElideRight
                                         font.family: Theme.font
                                         font.pixelSize: 12
@@ -143,7 +143,7 @@ ColumnLayout {
                                     Layout.preferredWidth: 8
                                     Layout.preferredHeight: 8
                                     radius: 4
-                                    color: Theme.mauve
+                                    color: Theme.primary
                                 }
 
                                 // Brings the app back, for apps that do more than show a menu.
@@ -171,7 +171,7 @@ ColumnLayout {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "󰏌"
-                                        color: openArea.containsMouse ? Theme.mauve : Theme.lavender
+                                        color: openArea.containsMouse ? Theme.primary : Theme.secondary
                                         font.family: Theme.font
                                         font.pixelSize: 16
                                     }
@@ -193,7 +193,7 @@ ColumnLayout {
                                     visible: app.modelData.hasMenu
                                     text: "󰅂"
                                     rotation: app.expanded ? 90 : 0
-                                    color: row.hovered || app.expanded ? Theme.mauve : Theme.lavender
+                                    color: row.hovered || app.expanded ? Theme.primary : Theme.secondary
                                     font.family: Theme.font
                                     font.pixelSize: 14
 

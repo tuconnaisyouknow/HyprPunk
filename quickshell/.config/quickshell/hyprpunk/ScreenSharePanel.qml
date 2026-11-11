@@ -157,14 +157,14 @@ IslandPanel {
 
             Text {
                 text: "󰹑"
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 14
             }
 
             Text {
                 text: "Share your screen"
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 14
                 font.weight: Font.DemiBold
@@ -263,7 +263,7 @@ IslandPanel {
                     radius: picker.highlightRadius - (picker.previewInset - picker.highlightInset)
                     color: Theme.alpha(Theme.crust, 0.6)
                     border.width: 1
-                    border.color: grid.currentIndex === tile.index ? Theme.mauve : Theme.alpha(Theme.lavender, 0.25)
+                    border.color: grid.currentIndex === tile.index ? Theme.primary : Theme.alpha(Theme.secondary, 0.25)
 
                     // Before the first frame, or for a window that can't be captured.
                     IconImage {
@@ -305,7 +305,7 @@ IslandPanel {
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 text: tile.isScreen ? tile.modelData.name : tile.modelData.title || tile.modelData.class
-                color: grid.currentIndex === tile.index ? Theme.mauve : Theme.lavender
+                color: grid.currentIndex === tile.index ? Theme.primary : Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 12
             }
@@ -332,7 +332,7 @@ IslandPanel {
         anchors.centerIn: grid
         visible: picker.entries.length === 0
         text: "No window to share"
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 13
     }
@@ -365,7 +365,7 @@ IslandPanel {
                 GlassSurface {
                     radius: parent.radius
                     hovered: rememberHover.hovered
-                    backgroundColor: picker.remember ? Theme.alpha(Theme.mauve, 0.14) : "transparent"
+                    backgroundColor: picker.remember ? Theme.alpha(Theme.primary, 0.14) : "transparent"
 
                     Behavior on backgroundColor {
                         ColorAnimation {
@@ -386,7 +386,7 @@ IslandPanel {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "󰁯  Remember"
-                        color: picker.remember ? Theme.mauve : Theme.lavender
+                        color: picker.remember ? Theme.primary : Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: 13
 
@@ -457,7 +457,7 @@ IslandPanel {
 
     }
 
-    // The footer's pill buttons: glass with lavender words, or mauve for Share.
+    // The footer's pill buttons: glass with words in the secondary color, or the accent for Share.
     component Chip: Rectangle {
         id: chip
 
@@ -475,7 +475,7 @@ IslandPanel {
         GlassSurface {
             radius: parent.radius
             hovered: chipHover.hovered
-            backgroundColor: chip.accent ? Theme.alpha(Theme.mauve, chipHover.hovered ? 0.95 : 0.8) : "transparent"
+            backgroundColor: chip.accent ? Theme.alpha(Theme.primary, chipHover.hovered ? 0.95 : 0.8) : "transparent"
         }
 
         Text {
@@ -483,7 +483,7 @@ IslandPanel {
 
             anchors.centerIn: parent
             text: (chip.icon !== "" ? chip.icon + "  " : "") + chip.label
-            color: chip.accent ? Theme.base : Theme.lavender
+            color: chip.accent ? Theme.base : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 13
             font.weight: chip.accent ? Font.Bold : Font.Normal

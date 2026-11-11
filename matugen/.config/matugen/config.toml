@@ -4,7 +4,8 @@
 # wallpaperctl.sh renders the wallpaper's palette whenever it changes.
 
 [config]
-# Read last, over the palette: red, green and yellow mean something, they never change
+# Read last, over the palette: red, green, yellow, peach and blue mean something, they
+# never change
 import_json_files = ["./meanings.json"]
 
 # The HyprPunk theme imports it. Setting the theme again, through an empty name, makes
@@ -31,3 +32,8 @@ output_path = "~/.config/Kvantum/HyprPunk/HyprPunk.kvconfig"
 [templates.qt]
 input_path = "./templates/qt.colors.template"
 output_path = "~/.local/share/color-schemes/HyprPunk.colors"
+
+# The shell's colors, which Quickshell watches and takes at once
+[templates.quickshell]
+input_path = "./templates/quickshell.json.template"
+output_path = "~/.local/state/hyprpunk/colors.json"

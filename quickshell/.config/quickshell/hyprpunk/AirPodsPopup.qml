@@ -21,8 +21,8 @@ Card {
     readonly property rect contentRect: islandFrame.contentRect(popup)
     required property var airPods
     property color base: Theme.base
-    property color lavender: Theme.lavender
-    property color mauve: Theme.mauve
+    property color secondary: Theme.secondary
+    property color primary: Theme.primary
     // BR/EDR address of the AirPods shown, and why: "lid", "connected", "pairing" or
     // "manual" (ipc).
     property string address: ""
@@ -250,7 +250,7 @@ Card {
                     elide: Text.ElideRight
                     lineHeight: 0.95
                     text: popup.shownAirPods !== null ? popup.shownAirPods.name : ""
-                    color: popup.mauve
+                    color: popup.primary
                     font.family: Theme.font
                     font.pixelSize: 24
                     font.weight: Font.Bold
@@ -323,7 +323,7 @@ Card {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: 10
                     text: "Not now"
-                    color: notNowArea.containsMouse ? popup.mauve : popup.lavender
+                    color: notNowArea.containsMouse ? popup.primary : popup.secondary
                     font.family: Theme.font
                     font.pixelSize: 12
 
@@ -369,7 +369,7 @@ Card {
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: closeArea.containsMouse ? popup.mauve : popup.lavender
+                    color: closeArea.containsMouse ? popup.primary : popup.secondary
                     font.family: Theme.font
                     font.pixelSize: 12
                 }
@@ -420,7 +420,7 @@ Card {
 
     }
 
-    // Mauve glass button, like the notification actions.
+    // Accent glass button, like the notification actions.
     component CardButton: Rectangle {
         id: button
 
@@ -438,7 +438,7 @@ Card {
         GlassSurface {
             radius: button.radius
             hovered: buttonArea.containsMouse
-            backgroundColor: Theme.alpha(Theme.mauve, buttonArea.containsMouse ? 0.95 : 0.8)
+            backgroundColor: Theme.alpha(Theme.primary, buttonArea.containsMouse ? 0.95 : 0.8)
         }
 
         Text {

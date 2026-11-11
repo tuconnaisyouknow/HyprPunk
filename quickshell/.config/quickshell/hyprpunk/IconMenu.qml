@@ -90,11 +90,11 @@ IslandPanel {
                         color: "transparent"
                         scale: entryTap.pressed ? 0.92 : 1
 
-                        // Plain glass, mauve when selected, red once armed.
+                        // Plain glass, accent when selected, red once armed.
                         GlassSurface {
                             radius: parent.radius
                             hovered: entryCard.selected
-                            backgroundColor: entryCard.armed ? Theme.alpha(Theme.red, 0.9) : entryCard.selected ? Theme.alpha(Theme.mauve, 0.9) : "transparent"
+                            backgroundColor: entryCard.armed ? Theme.alpha(Theme.red, 0.9) : entryCard.selected ? Theme.alpha(Theme.primary, 0.9) : "transparent"
 
                             Behavior on backgroundColor {
                                 ColorAnimation {
@@ -110,7 +110,7 @@ IslandPanel {
 
                             anchors.centerIn: parent
                             text: entryCard.modelData.icon
-                            color: entryCard.armed || entryCard.selected ? Theme.base : Theme.mauve
+                            color: entryCard.armed || entryCard.selected ? Theme.base : Theme.primary
                             font.family: Theme.font
                             font.pixelSize: 24
                             font.weight: Font.Bold
@@ -132,7 +132,7 @@ IslandPanel {
                             text: entryCard.modelData.badge || ""
                             color: entryIcon.color
                             style: Text.Outline
-                            styleColor: entryCard.selected ? Theme.mauve : "#2a2a3d"
+                            styleColor: entryCard.selected ? Theme.primary : Qt.tint(Theme.base, Theme.alpha(Theme.surface0, 0.6))
                             font.family: Theme.font
                             font.pixelSize: 13
                             font.weight: Font.Bold
@@ -175,7 +175,7 @@ IslandPanel {
                 visible: menu.labelShown && menu.selectedIndex >= 0
                 verticalAlignment: Text.AlignBottom
                 text: menu.selectedIndex >= 0 ? menu.entries[menu.selectedIndex].name || "" : ""
-                color: Theme.lavender
+                color: Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 13
                 font.weight: Font.Bold

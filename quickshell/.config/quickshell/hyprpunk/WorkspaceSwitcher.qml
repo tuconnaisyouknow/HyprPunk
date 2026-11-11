@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Hyprland
 
 // The bar's workspace buttons: this screen's workspaces from 1 to 10, empty ones
-// hidden unless you're on them. The mauve highlight slides to the active one, and the
+// hidden unless you're on them. The accent highlight slides to the active one, and the
 // one under the pointer is passed on to the preview card.
 Item {
     id: workspaceSwitcher
@@ -82,7 +82,7 @@ Item {
         width: 44
         height: 31
         radius: height / 2
-        color: Theme.mauve
+        color: Theme.primary
         visible: workspaceSwitcher.activeButtonIndex >= 0
 
         Behavior on x {

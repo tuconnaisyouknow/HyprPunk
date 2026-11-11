@@ -28,7 +28,7 @@ ControlBlock {
 
         Text {
             text: row.icon
-            color: row.highlighted ? Theme.mauve : Theme.lavender
+            color: row.highlighted ? Theme.primary : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 18
         }
@@ -40,7 +40,7 @@ ControlBlock {
             Text {
                 width: parent.width
                 text: row.title
-                color: Theme.mauve
+                color: Theme.primary
                 elide: Text.ElideRight
                 font.family: Theme.font
                 font.pixelSize: 14
@@ -51,7 +51,7 @@ ControlBlock {
                 width: parent.width
                 visible: text !== ""
                 text: row.subtitle
-                color: Theme.lavender
+                color: Theme.secondary
                 elide: Text.ElideRight
                 font.family: Theme.font
                 font.pixelSize: 12
@@ -62,7 +62,7 @@ ControlBlock {
         Text {
             visible: text !== ""
             text: row.trailing
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 14
         }
@@ -92,7 +92,7 @@ ControlBlock {
             Text {
                 anchors.centerIn: parent
                 text: "󰋽"
-                color: detailsArea.containsMouse ? Theme.mauve : Theme.lavender
+                color: detailsArea.containsMouse ? Theme.primary : Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 17
             }

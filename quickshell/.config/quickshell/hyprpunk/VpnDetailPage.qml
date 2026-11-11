@@ -77,7 +77,7 @@ ColumnLayout {
 
             Text {
                 text: "󰁪"
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 17
             }
@@ -86,7 +86,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 text: "Connect Automatically"
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 14
                 font.weight: Font.Bold

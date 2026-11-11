@@ -64,12 +64,12 @@ Shape {
 
             GradientStop {
                 position: 0
-                color: Theme.alpha(Theme.mauve, 0.85)
+                color: Theme.alpha(Theme.primary, 0.85)
             }
 
             GradientStop {
                 position: 1
-                color: Theme.alpha(Theme.lavender, 0.15)
+                color: Theme.alpha(Theme.secondary, 0.15)
             }
 
         }

@@ -17,7 +17,7 @@ RowLayout {
     Text {
         visible: bar.statusOsdVisible && bar.statusOsdKind === ""
         text: bar.statusOsdIcon
-        color: Theme.mauve
+        color: Theme.primary
         font.family: Theme.font
         font.pixelSize: 20
     }
@@ -28,7 +28,7 @@ RowLayout {
         Layout.leftMargin: 4
         Layout.rightMargin: 4
         text: bar.statusOsdLabel
-        color: Theme.mauve
+        color: Theme.primary
         font.family: Theme.font
         font.pixelSize: 15
         font.weight: Font.Bold
@@ -39,14 +39,14 @@ RowLayout {
         implicitWidth: statusOsdStateText.implicitWidth + 16
         implicitHeight: 24
         radius: 12
-        color: bar.statusOsdEnabled ? Theme.mauve : Theme.surface1
+        color: bar.statusOsdEnabled ? Theme.primary : Theme.surface1
 
         Text {
             id: statusOsdStateText
 
             anchors.centerIn: parent
             text: bar.statusOsdEnabled ? "On" : "Off"
-            color: bar.statusOsdEnabled ? Theme.base : Theme.lavender
+            color: bar.statusOsdEnabled ? Theme.base : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
             font.weight: Font.Bold
@@ -70,7 +70,7 @@ RowLayout {
                 width: 18
                 height: 8
                 radius: 4
-                color: index < parent.filled ? Theme.mauve : Theme.surface1
+                color: index < parent.filled ? Theme.primary : Theme.surface1
 
                 Behavior on color {
                     ColorAnimation {
@@ -110,7 +110,7 @@ RowLayout {
             anchors.centerIn: parent
             visible: bar.statusOsdTitle === "Recording"
             text: "󰐊"
-            color: Theme.mauve
+            color: Theme.primary
             style: Text.Outline
             styleColor: Theme.alpha(Theme.crust, 0.6)
             font.family: Theme.font
@@ -126,7 +126,7 @@ RowLayout {
 
         Text {
             text: bar.statusOsdTitle
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 14
             font.weight: Font.Bold
@@ -134,14 +134,14 @@ RowLayout {
 
         Text {
             text: bar.statusOsdLabel
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 11
         }
 
     }
 
-    // Battery: green when plugged in, mauve when unplugged, red when low (pulsing when
+    // Battery: green when plugged in, the accent when unplugged, red when low (pulsing when
     // it's critical), with the time left or until full.
     Text {
         id: batteryOsdIcon
@@ -192,7 +192,7 @@ RowLayout {
 
         Text {
             text: bar.batteryDetail()
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 11
         }
@@ -222,7 +222,7 @@ RowLayout {
             visible: airPodsOsdImage.status !== Image.Ready
             anchors.centerIn: parent
             text: "󱡏"
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 22
         }
@@ -292,8 +292,8 @@ RowLayout {
             width: parent.width * Math.min(1, bar.statusOsdLevel / Math.max(1, bar.statusOsdMaxLevel))
             height: parent.height
             radius: parent.radius
-            // Lavender when muted, the bar still shows the level it'll come back to.
-            color: bar.statusOsdEnabled ? Theme.mauve : Theme.lavender
+            // The secondary color when muted, the bar still shows the level it'll come back to.
+            color: bar.statusOsdEnabled ? Theme.primary : Theme.secondary
 
             Behavior on color {
                 ColorAnimation {

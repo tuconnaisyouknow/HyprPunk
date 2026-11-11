@@ -30,14 +30,14 @@ Rectangle {
     implicitWidth: active ? 44 : 31
     implicitHeight: 31
     radius: height / 2
-    color: active && drawActiveBackground ? Theme.mauve : mouse.containsMouse && !active ? Theme.surface1 : Theme.alpha(Theme.surface1, 0)
+    color: active && drawActiveBackground ? Theme.primary : mouse.containsMouse && !active ? Theme.surface1 : Theme.alpha(Theme.surface1, 0)
     opacity: occupied || active ? 1 : 0.55
     scale: active ? 1 : 0.94
 
     Text {
         anchors.centerIn: parent
         text: button.icon
-        color: button.activeForeground ? Theme.base : Theme.mauve
+        color: button.activeForeground ? Theme.base : Theme.primary
         font.family: button.iconFont
         font.weight: Font.Normal
         font.pixelSize: 16

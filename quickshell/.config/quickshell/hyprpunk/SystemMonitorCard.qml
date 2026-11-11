@@ -74,7 +74,7 @@ Item {
     }
 
     component SectionTitle: Text {
-        color: Theme.mauve
+        color: Theme.primary
         font.family: Theme.font
         font.pixelSize: 14
         font.weight: Font.Bold
@@ -86,7 +86,7 @@ Item {
     }
 
     component IconDetail: IconText {
-        color: Theme.lavender
+        color: Theme.secondary
         font.pixelSize: 12
         font.weight: Font.Normal
         font.features: {
@@ -95,7 +95,7 @@ Item {
     }
 
     component Detail: Text {
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
         font.features: {
@@ -148,14 +148,14 @@ Item {
                 ctx.lineTo(startX + i * step, yOf(values[i]));
             ctx.lineWidth = 1.5;
             ctx.lineJoin = "round";
-            ctx.strokeStyle = Theme.mauve;
+            ctx.strokeStyle = Theme.primary;
             ctx.stroke();
             ctx.lineTo(width, height);
             ctx.lineTo(startX, height);
             ctx.closePath();
             const fill = ctx.createLinearGradient(0, 0, 0, height);
-            fill.addColorStop(0, Theme.alpha(Theme.mauve, 0.28));
-            fill.addColorStop(1, Theme.alpha(Theme.mauve, 0));
+            fill.addColorStop(0, Theme.alpha(Theme.primary, 0.28));
+            fill.addColorStop(1, Theme.alpha(Theme.primary, 0));
             ctx.fillStyle = fill;
             ctx.fill();
         }
@@ -221,7 +221,7 @@ Item {
                             anchors.bottom: parent.bottom
                             height: Math.max(radius * 2, parent.height * (SystemStats.coreUsage[parent.index] || 0))
                             radius: parent.radius
-                            color: Theme.mauve
+                            color: Theme.primary
                             opacity: 0.35 + 0.65 * (SystemStats.coreUsage[parent.index] || 0)
 
                             Behavior on height {
@@ -296,7 +296,7 @@ Item {
 
                 Detail {
                     text: SystemStats.swapTotal > 0 ? monitor.formatKiB(SystemStats.swapUsed) + " / " + monitor.formatKiB(SystemStats.swapTotal) : "off"
-                    color: SystemStats.swapTotal > 0 ? Theme.lavender : Theme.alpha(Theme.lavender, 0.5)
+                    color: SystemStats.swapTotal > 0 ? Theme.secondary : Theme.alpha(Theme.secondary, 0.5)
                 }
 
             }
@@ -334,12 +334,12 @@ Item {
                         radius: height / 2
                         color: "transparent"
 
-                        // Mauve glass when selected, plain glass on hover otherwise.
+                        // Accent glass when selected, plain glass on hover otherwise.
                         GlassSurface {
                             radius: parent.radius
                             hovered: chipHover.hovered
                             opacity: sortChip.selected || chipHover.hovered ? 1 : 0
-                            backgroundColor: sortChip.selected ? Theme.alpha(Theme.mauve, chipHover.hovered ? 0.95 : 0.8) : "transparent"
+                            backgroundColor: sortChip.selected ? Theme.alpha(Theme.primary, chipHover.hovered ? 0.95 : 0.8) : "transparent"
                         }
 
                         Text {
@@ -347,7 +347,7 @@ Item {
 
                             anchors.centerIn: parent
                             text: sortChip.modelData.label
-                            color: sortChip.selected ? Theme.base : Theme.lavender
+                            color: sortChip.selected ? Theme.base : Theme.secondary
                             font.family: Theme.font
                             font.pixelSize: 11
                             font.weight: Font.Bold
@@ -384,26 +384,26 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: parent.process !== null ? parent.process.name : ""
-                        color: Theme.mauve
+                        color: Theme.primary
                         elide: Text.ElideRight
                         font.family: Theme.font
                         font.pixelSize: 13
                     }
 
-                    // The sorted column in mauve, the other one in lavender.
+                    // The sorted column in the accent, the other one in the secondary color.
                     Detail {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
                         // top counts a share of one core, the card a share of the whole CPU like btop.
                         text: parent.process !== null ? (parent.process.cpu / Math.max(1, SystemStats.coreUsage.length)).toFixed(1) + "%" : ""
-                        color: monitor.processSort === "cpu" ? Theme.mauve : Theme.lavender
+                        color: monitor.processSort === "cpu" ? Theme.primary : Theme.secondary
                     }
 
                     Detail {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
                         text: parent.process !== null ? monitor.formatKiB(parent.process.memory) : ""
-                        color: monitor.processSort === "memory" ? Theme.mauve : Theme.lavender
+                        color: monitor.processSort === "memory" ? Theme.primary : Theme.secondary
                     }
 
                 }

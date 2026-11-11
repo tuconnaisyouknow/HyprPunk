@@ -547,7 +547,7 @@ Rectangle {
                     anchors.centerIn: parent
                     visible: musicPopupCover.status !== Image.Ready
                     text: "󰎆"
-                    color: Theme.mauve
+                    color: Theme.primary
                     font.family: Theme.font
                     font.pixelSize: musicPopup.lerp(16, 24)
                 }

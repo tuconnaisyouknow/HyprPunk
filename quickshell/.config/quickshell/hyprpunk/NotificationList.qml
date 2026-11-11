@@ -92,7 +92,7 @@ ColumnLayout {
             Layout.fillWidth: true
             icon: "󰂚"
             text: "Notifications"
-            color: Theme.mauve
+            color: Theme.primary
             font.pixelSize: 16
             font.weight: Font.Bold
         }
@@ -103,11 +103,11 @@ ColumnLayout {
             radius: 11
             color: "transparent"
 
-            // Mauve glass.
+            // Accent glass.
             GlassSurface {
                 radius: parent.radius
                 hovered: clearHover.hovered
-                backgroundColor: Theme.alpha(Theme.mauve, clearHover.hovered ? 0.95 : 0.8)
+                backgroundColor: Theme.alpha(Theme.primary, clearHover.hovered ? 0.95 : 0.8)
             }
 
             IconText {

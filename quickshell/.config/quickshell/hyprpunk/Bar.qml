@@ -365,12 +365,12 @@ Item {
         }
     }
 
-    // Green while charging, mauve on battery, red for the alerts.
+    // Green while charging, the accent on battery, red for the alerts.
     function batteryOsdColor() {
         if (statusOsdLabel === "Charging")
             return Theme.green;
 
-        return statusOsdLabel === "On battery" ? Theme.mauve : Theme.red;
+        return statusOsdLabel === "On battery" ? Theme.primary : Theme.red;
     }
 
     // "64% · 1 h 05 until full" while charging, "64% · 3 h 10 left" on battery,
@@ -394,7 +394,7 @@ Item {
             return ;
         }
         if (volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
-            // Muted, the gauge keeps its level and turns lavender.
+            // Muted, the gauge keeps its level and turns to the secondary color.
             showStatusOsd(Icons.volume(audioVolume, audioMuted), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
 
     }
@@ -1203,7 +1203,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         icon: "󰃭"
                         text: bar.regionalLocale.toString(clock.date, bar.regionalLocale.dateFormat(Locale.LongFormat))
-                        color: Theme.lavender
+                        color: Theme.secondary
                         font.pixelSize: 15
                         opacity: calendarPopup.expanded ? 1 : 0
 
@@ -1260,7 +1260,7 @@ Item {
 
                             Layout.alignment: Qt.AlignHCenter
                             text: bar.capitalized(bar.regionalLocale.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
-                            color: Theme.mauve
+                            color: Theme.primary
                             font.pixelSize: 18
                             font.weight: Font.Bold
                         }
@@ -1288,7 +1288,7 @@ Item {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 25
                                     text: modelData
-                                    color: Theme.mauve
+                                    color: Theme.primary
                                     font.pixelSize: 12
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -1308,12 +1308,12 @@ Item {
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 29
                                     radius: 9
-                                    color: isToday ? Theme.mauve : "transparent"
+                                    color: isToday ? Theme.primary : "transparent"
 
                                     Label {
                                         anchors.centerIn: parent
                                         text: parent.validDay ? parent.dayNumber : ""
-                                        color: parent.isToday ? Theme.base : Theme.mauve
+                                        color: parent.isToday ? Theme.base : Theme.primary
                                         font.pixelSize: 14
                                         font.weight: parent.isToday ? Font.Bold : Font.Medium
                                     }

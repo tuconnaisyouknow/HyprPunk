@@ -23,7 +23,7 @@ ColumnLayout {
     Text {
         Layout.topMargin: 0
         text: "Interface language"
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
@@ -49,7 +49,7 @@ ColumnLayout {
     Text {
         Layout.topMargin: 8
         text: "Regional formats"
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
@@ -77,7 +77,7 @@ ColumnLayout {
         Layout.topMargin: 6
         wrapMode: Text.WordWrap
         text: "New apps use it right away. Log out and back in to apply it to the apps already open."
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
     }

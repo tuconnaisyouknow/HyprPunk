@@ -55,7 +55,7 @@ Item {
         GlassSurface {
             radius: highlight.radius
             hovered: true
-            backgroundColor: Theme.alpha(Theme.mauve, 0.85)
+            backgroundColor: Theme.alpha(Theme.primary, 0.85)
         }
 
     }
@@ -88,7 +88,7 @@ Item {
 
                     Text {
                         text: segment.modelData.icon
-                        color: segment.chosen ? Theme.base : Theme.mauve
+                        color: segment.chosen ? Theme.base : Theme.primary
                         font.family: Theme.font
                         font.pixelSize: control.compact ? 16 : 20
 
@@ -103,7 +103,7 @@ Item {
 
                     Text {
                         text: segment.modelData.label
-                        color: segment.chosen ? Theme.base : Theme.lavender
+                        color: segment.chosen ? Theme.base : Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: control.compact ? 12 : 10
                         font.weight: segment.chosen ? Font.Bold : Font.Medium

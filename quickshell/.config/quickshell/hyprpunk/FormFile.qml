@@ -18,7 +18,7 @@ ColumnLayout {
 
     Text {
         text: file.label
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
@@ -41,7 +41,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideMiddle
             text: file.path !== "" ? file.path.split("/").pop() : "(None)"
-            color: file.path !== "" ? Theme.mauve : Theme.alpha(Theme.lavender, 0.5)
+            color: file.path !== "" ? Theme.primary : Theme.alpha(Theme.secondary, 0.5)
             font.family: Theme.font
             font.pixelSize: 14
         }
@@ -55,7 +55,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             visible: file.path !== ""
             text: ""
-            color: clearHover.hovered ? Theme.mauve : Theme.lavender
+            color: clearHover.hovered ? Theme.primary : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
 
@@ -79,7 +79,7 @@ ColumnLayout {
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: file.choosing ? "󰔟" : "󰉋"
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 14
         }

@@ -59,12 +59,12 @@ Item {
         gradient: Gradient {
             GradientStop {
                 position: 0
-                color: Theme.alpha(Theme.mauve, 0.5)
+                color: Theme.alpha(Theme.primary, 0.5)
             }
 
             GradientStop {
                 position: 1
-                color: Theme.alpha(Theme.mauve, 0.32)
+                color: Theme.alpha(Theme.primary, 0.32)
             }
 
         }

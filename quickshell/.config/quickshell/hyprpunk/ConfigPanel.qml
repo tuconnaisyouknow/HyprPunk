@@ -84,7 +84,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: config.results.length === 0
         text: "No file"
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 14
     }
@@ -124,7 +124,7 @@ SearchPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 22
                 text: row.modelData.icon
-                color: row.selected ? Theme.mauve : Theme.lavender
+                color: row.selected ? Theme.primary : Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 18
             }
@@ -141,7 +141,7 @@ SearchPanel {
                     width: parent.width
                     elide: Text.ElideRight
                     text: row.modelData.name
-                    color: row.selected ? Theme.mauve : Theme.lavender
+                    color: row.selected ? Theme.primary : Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 14
                     font.weight: row.selected ? Font.Bold : Font.Normal
@@ -151,7 +151,7 @@ SearchPanel {
                     width: parent.width
                     elide: Text.ElideMiddle
                     text: row.modelData.path
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 11
                 }

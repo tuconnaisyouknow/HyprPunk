@@ -29,7 +29,7 @@ ColumnLayout {
         visible: page.center.bluetoothDevices.length === 0
         icon: page.center.bluetoothEnabled ? "󰂰" : "󰂲"
         text: page.center.bluetoothEnabled ? "Searching for devices…" : "Bluetooth is off"
-        color: Theme.lavender
+        color: Theme.secondary
         font.pixelSize: 14
         font.weight: Font.Normal
 

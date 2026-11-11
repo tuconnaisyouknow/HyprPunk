@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Widgets
 
 // A looping carousel of pictures, for the wallpapers.
-// The middle one is bigger with a mauve ring, the one in use gets a check mark.
+// The middle one is bigger with an accent ring, the one in use gets a check mark.
 // Scroll to turn it, click a neighbour to bring it to the middle, click the middle
 // one to pick it (activated()).
 Item {
@@ -129,7 +129,7 @@ Item {
                     anchors.centerIn: parent
                     visible: slide.modelData.image === ""
                     text: slide.modelData.id
-                    color: Theme.mauve
+                    color: Theme.primary
                     font.family: Theme.font
                     font.pixelSize: 16
                     font.weight: Font.Bold
@@ -143,13 +143,13 @@ Item {
 
             }
 
-            // Mauve ring on the item in the centre.
+            // Accent ring on the item in the centre.
             Rectangle {
                 anchors.fill: parent
                 radius: 12
                 color: "transparent"
                 border.width: 2
-                border.color: Theme.mauve
+                border.color: Theme.primary
                 opacity: Math.max(0, 1 - slide.distance * 2)
             }
 
@@ -166,7 +166,7 @@ Item {
 
                 GlassSurface {
                     radius: parent.radius
-                    backgroundColor: Theme.alpha(Theme.mauve, 0.9)
+                    backgroundColor: Theme.alpha(Theme.primary, 0.9)
                 }
 
                 Text {

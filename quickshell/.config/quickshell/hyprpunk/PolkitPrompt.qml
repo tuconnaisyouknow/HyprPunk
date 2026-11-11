@@ -110,7 +110,7 @@ IslandPanel {
                     anchors.centerIn: parent
                     visible: prompt.iconSource === ""
                     text: "󰦝"
-                    color: Theme.mauve
+                    color: Theme.primary
                     font.family: Theme.font
                     font.pixelSize: 30
                 }
@@ -128,7 +128,7 @@ IslandPanel {
                     wrapMode: Text.Wrap
                     maximumLineCount: 4
                     elide: Text.ElideRight
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 13
                     lineHeight: 1.15
@@ -140,7 +140,7 @@ IslandPanel {
                     visible: prompt.actionId !== ""
                     text: prompt.actionId
                     elide: Text.ElideMiddle
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 11
                 }
@@ -160,7 +160,7 @@ IslandPanel {
             icon: prompt.waiting ? "󰔟" : "󰌾"
             // Some PAM steps ask for a code you should see, not a password.
             secret: !(prompt.flow && prompt.flow.responseVisible)
-            textColor: Theme.mauve
+            textColor: Theme.primary
             placeholder: prompt.waiting ? "Checking…" : (prompt.flow && prompt.flow.inputPrompt.replace(/:\s*$/, "").trim()) || "Password"
             // The account answering; Tab cycles when there's a choice.
             hint: prompt.flow && prompt.flow.selectedIdentity ? prompt.flow.selectedIdentity.displayName + (prompt.identities.length > 1 ? "  ⇥" : "") : ""
@@ -187,7 +187,7 @@ IslandPanel {
             text: prompt.flow ? prompt.flow.supplementaryMessage : ""
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
-            color: prompt.flow && prompt.flow.supplementaryIsError ? Theme.red : Theme.lavender
+            color: prompt.flow && prompt.flow.supplementaryIsError ? Theme.red : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
         }

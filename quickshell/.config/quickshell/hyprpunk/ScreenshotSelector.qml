@@ -129,7 +129,7 @@ PanelWindow {
             radius: 4
             color: "transparent"
             border.width: 2
-            border.color: Theme.mauve
+            border.color: Theme.primary
         }
 
         // The region's size, under it (over it at the bottom of the screen).
@@ -149,7 +149,7 @@ PanelWindow {
                 readonly property real scale: selector.request !== null ? selector.request.scale : 1
 
                 text: Math.round(dim.rect.width * scale) + " × " + Math.round(dim.rect.height * scale)
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 12
                 font.weight: Font.Bold
@@ -180,7 +180,7 @@ PanelWindow {
 
             anchors.centerIn: parent
             text: "Drag a region · Click a window · Esc to cancel"
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
         }

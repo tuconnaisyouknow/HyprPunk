@@ -125,7 +125,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: keybindings.results.length === 0
         text: bindsProcess.running && keybindings.binds.length === 0 ? "Loading…" : "No keybinding"
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 14
     }
@@ -166,7 +166,7 @@ SearchPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 text: row.modelData.description
-                color: row.selected ? Theme.mauve : Theme.lavender
+                color: row.selected ? Theme.primary : Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 13
             }
@@ -200,7 +200,7 @@ SearchPanel {
 
                             anchors.centerIn: parent
                             text: parent.modelData
-                            color: Theme.mauve
+                            color: Theme.primary
                             font.family: Theme.font
                             font.pixelSize: 12
                             font.weight: Font.Bold

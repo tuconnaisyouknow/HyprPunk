@@ -137,7 +137,7 @@ ColumnLayout {
                         visible: page.center.wifiNetworks.length === 0
                         icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
                         text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
-                        color: Theme.lavender
+                        color: Theme.secondary
                         font.pixelSize: 14
                         font.weight: Font.Normal
                     }
@@ -221,7 +221,7 @@ ColumnLayout {
                                 elide: Text.ElideRight
                                 icon: "󰌾"
                                 text: (page.center.passwordNetwork !== null ? page.center.passwordNetwork.name : "")
-                                color: Theme.mauve
+                                color: Theme.primary
                                 font.pixelSize: 14
                                 font.weight: Font.Bold
                             }
@@ -261,7 +261,7 @@ ColumnLayout {
                         visible: Vpn.profiles.length === 0
                         icon: "󰖂"
                         text: "No VPN yet"
-                        color: Theme.lavender
+                        color: Theme.secondary
                         font.pixelSize: 14
                         font.weight: Font.Normal
                     }
@@ -319,7 +319,7 @@ ColumnLayout {
                                 elide: Text.ElideRight
                                 icon: "󰌾"
                                 text: page.vpnAsking !== null ? page.vpnAsking.name : ""
-                                color: Theme.mauve
+                                color: Theme.primary
                                 font.pixelSize: 14
                                 font.weight: Font.Bold
                             }

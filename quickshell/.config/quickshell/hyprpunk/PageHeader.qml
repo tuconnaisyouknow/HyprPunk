@@ -31,7 +31,7 @@ RowLayout {
         Text {
             anchors.centerIn: parent
             text: "󰅁"
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 18
         }
@@ -61,7 +61,7 @@ RowLayout {
     Text {
         Layout.fillWidth: true
         text: header.title
-        color: Theme.mauve
+        color: Theme.primary
         font.family: Theme.font
         font.pixelSize: 18
         font.weight: Font.Bold

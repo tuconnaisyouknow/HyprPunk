@@ -25,7 +25,7 @@ ColumnLayout {
     Text {
         visible: field.label !== ""
         text: field.label
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
@@ -37,9 +37,9 @@ ColumnLayout {
         radius: 12
         color: Theme.recessed
         opacity: field.enabled ? 1 : 0.45
-        // A mauve ring while you can type in it, like the glass fields.
+        // An accent ring while you can type in it, like the glass fields.
         border.width: 1.5
-        border.color: Theme.alpha(Theme.mauve, input.activeFocus ? 0.85 : 0)
+        border.color: Theme.alpha(Theme.primary, input.activeFocus ? 0.85 : 0)
 
         Behavior on border.color {
             ColorAnimation {
@@ -57,7 +57,7 @@ ColumnLayout {
             verticalAlignment: TextInput.AlignVCenter
             echoMode: field.secret && !field.revealed ? TextInput.Password : TextInput.Normal
             passwordCharacter: "■"
-            color: Theme.mauve
+            color: Theme.primary
             selectionColor: Theme.selection
             selectedTextColor: Theme.text
             font.family: Theme.font
@@ -78,7 +78,7 @@ ColumnLayout {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: parent.text === ""
                 text: field.placeholder
-                color: Theme.alpha(Theme.lavender, 0.5)
+                color: Theme.alpha(Theme.secondary, 0.5)
                 font.family: parent.font.family
                 font.pixelSize: parent.font.pixelSize
             }

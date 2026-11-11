@@ -1,6 +1,6 @@
 import QtQuick
 
-// An on/off switch for the control center: mauve glass when on, plain glass when off,
+// An on/off switch for the control center: accent glass when on, plain glass when off,
 // the knob sliding across with a little bounce.
 Rectangle {
     id: toggleSwitch
@@ -18,7 +18,7 @@ Rectangle {
     GlassSurface {
         radius: parent.radius
         hovered: switchHover.hovered
-        backgroundColor: toggleSwitch.checked ? Theme.alpha(Theme.mauve, switchHover.hovered ? 0.95 : 0.8) : "transparent"
+        backgroundColor: toggleSwitch.checked ? Theme.alpha(Theme.primary, switchHover.hovered ? 0.95 : 0.8) : "transparent"
 
         Behavior on backgroundColor {
             ColorAnimation {
@@ -35,8 +35,8 @@ Rectangle {
         width: 18
         height: 18
         radius: height / 2
-        // Dark on the mauve, off-lavender on the plain glass, where dark would vanish.
-        color: toggleSwitch.checked ? Theme.base : Theme.alpha(Theme.lavender, 0.5)
+        // Dark on the accent, the faded secondary color on the plain glass, where dark would vanish.
+        color: toggleSwitch.checked ? Theme.base : Theme.alpha(Theme.secondary, 0.5)
 
         Behavior on color {
             ColorAnimation {

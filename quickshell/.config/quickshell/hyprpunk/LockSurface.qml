@@ -443,7 +443,7 @@ WlSessionLockSurface {
                 Layout.leftMargin: island.expanded && surface.padlockShown ? 10 : 0
                 clip: true
                 text: surface.islandMode === "unlocking" ? "Unlocked" : surface.islandMode === "locking" ? "Locked" : surface.lock.error
-                color: surface.islandMode === "error" ? Theme.red : Theme.mauve
+                color: surface.islandMode === "error" ? Theme.red : Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 15
                 font.weight: Font.Bold
@@ -658,7 +658,7 @@ WlSessionLockSurface {
 
         }
 
-        // The date and time in the middle, the date as wide as the time. Hours in mauve,
+        // The date and time in the middle, the date as wide as the time. Hours in the accent,
         // minutes in glass like the pills: see-through over the blur, with the glass rim.
         Item {
             id: clockBlock
@@ -689,7 +689,7 @@ WlSessionLockSurface {
 
                 width: parent.width
                 text: day.charAt(0).toUpperCase() + day.slice(1)
-                color: Theme.lavender
+                color: Theme.secondary
                 horizontalAlignment: Text.AlignHCenter
                 font.family: Theme.font
                 // As wide as the time: measured at 40px, then scaled to its width.
@@ -716,7 +716,7 @@ WlSessionLockSurface {
                     id: hours
 
                     text: Session.hourText(clock.date)
-                    color: Theme.mauve
+                    color: Theme.primary
                     font: minutes.font
                 }
 
@@ -738,7 +738,7 @@ WlSessionLockSurface {
                     anchors.baseline: hours.baseline
                     leftPadding: 14
                     text: Session.meridiemText(clock.date)
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 40
                     font.weight: Font.DemiBold
@@ -825,7 +825,7 @@ WlSessionLockSurface {
                 lines: lockPlayer.lyricsFound ? Lyrics.lines : []
                 synced: Lyrics.synced
                 current: lockPlayer.lyricsLine
-                creditColor: Theme.lavender
+                creditColor: Theme.secondary
                 onSeekRequested: (seconds) => {
                     if (lockPlayer.player !== null && lockPlayer.player.canSeek)
                         lockPlayer.seek(seconds);
@@ -882,7 +882,7 @@ WlSessionLockSurface {
                 anchors.leftMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
                 text: surface.lock.authenticating ? "󰔟" : "󰌾"
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 16
             }
@@ -903,7 +903,7 @@ WlSessionLockSurface {
                 // Spaced filled squares and a blinking block cursor, like the login screen.
                 echoMode: TextInput.Password
                 passwordCharacter: "■"
-                color: Theme.mauve
+                color: Theme.primary
                 selectionColor: Theme.selection
                 font.family: Theme.font
                 font.pixelSize: 14
