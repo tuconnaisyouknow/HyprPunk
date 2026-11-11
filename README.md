@@ -1,11 +1,27 @@
 # 🌆 HyprPunk
 
-> Arch Linux dotfiles for Hyprland, with a cyberpunk visual direction, Catppuccin Mocha colors, and Mauve accents.
+> Arch Linux dotfiles for Hyprland, with a cyberpunk visual direction and two themes, neon and daydream, where the wallpaper you pick colors the whole desktop.
 
 HyprPunk is a complete personal Wayland setup built around **Hyprland**.  
 It brings together the window manager, the desktop shell, themes, scripts, terminal, shell, and CLI tools in a modular **GNU Stow** based configuration.
 
 The goal is simple: a cohesive, dark, readable, and responsive desktop inspired by cyberpunk visuals without getting in the way of daily work.
+
+---
+
+## 🎭 Philosophy
+
+HyprPunk has one art direction, and every part of it is built for it: the two themes, their wallpapers and the
+palette each one brings, the glass, the shapes, the font and the motion. Each piece is tuned against the others, so
+the look is a whole, not a set of options.
+
+- ✅ **How it works is yours to change.** Your apps, shortcuts, window rules, input, environment, autostart, terminal
+  and shell: everything under [Customization](#-customization) is meant for you, and survives updates.
+- 🚫 **How it looks isn't.** Other GTK, Qt or icon themes, fonts, color schemes, a light mode or another bar aren't
+  supported, and nothing is built to allow them. The colors come from the wallpapers HyprPunk ships, each with a
+  palette picked by hand.
+
+If you want another look, HyprPunk isn't the right base: fork it, or take the parts you like into your own setup.
 
 ---
 
@@ -59,8 +75,6 @@ The clock's island grows into every panel, the password prompts for admin rights
 | ![capture](./assets/screenshots/capture.png) | ![monitors](./assets/screenshots/monitors.png) |
 | Keybindings | Configuration Files |
 | ![keybindings](./assets/screenshots/keybindings.png) | ![config-files](./assets/screenshots/config-files.png) |
-| SDDM Theme Selector | |
-| ![sddm-theme-selector](./assets/screenshots/sddm-theme-selector.png) | |
 
 </details>
 
@@ -92,14 +106,14 @@ The applications themed and configured by these dotfiles.
 ## 🧰 What Is Included?
 
 - 🪟 **Hyprland** as the main Wayland environment.
-- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, SDDM themes, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
+- 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, themes, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
 - 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
 - 🔒 **Hypridle** and **awww** for idle handling (locking, then suspending) and wallpapers with animated transitions.
-- 🎬 **SDDM** with cyberpunk video themes.
+- 🎬 **SDDM** with a video login screen for each subtheme, in the wallpaper's colors.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
-- 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** sharing one libadwaita look, on a Catppuccin Mocha base, with accents
-  written by **matugen**, ready to follow the wallpaper.
+- 🎨 **GTK 3/4**, **Qt5/Qt6** and **Kvantum** with one libadwaita look, the shell and the terminal tools, all in the
+  wallpaper's own palette, written by **matugen** (see [Visual Identity](#-visual-identity)).
 - 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
@@ -108,18 +122,24 @@ The applications themed and configured by these dotfiles.
 
 ## 🎨 Visual Identity
 
-HyprPunk uses **Catppuccin Mocha** as its dark base and **Mauve** as the main accent color.
+HyprPunk comes in two themes, **neon** and **daydream**: the city never sleeps, but it dreams. Each has its own
+wallpapers, sorted into subthemes in `~/Pictures/Wallpapers/<theme>/<subtheme>/`, and the wallpaper you pick decides
+the whole look:
 
-Core palette:
+- 🎨 Its own palette, picked by hand (`matugen/.config/matugen/palettes/`): the wallpaper's hues at Catppuccin Mocha's
+  lightness, so the desktop stays dark and readable.
+- ✨ An accent, in Mocha's mauve role, for titles and what's selected or active, and a secondary color, in lavender's
+  role, for everything else you read.
+- 🌑 Surfaces and grays tinted with the wallpaper's mood.
+- 🚦 Red, green, yellow, peach and blue never change, since they mean something: errors, the battery, the camera and
+  the microphone.
 
-- 🌑 Base: `#1e1e2e`
-- 🌘 Mantle: `#181825`
-- 🌌 Crust: `#11111b`
-- ✨ Text: `#cdd6f4`
-- 💜 Mauve: `#cba6f7`
-- 🪻 Lavender: `#b4befe`
+matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
+terminal and its tools (Catppuccin Mocha tinted with the palette), and Brave's Classic theme, through its policy. The
+shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop and Brave change at once, Qt apps, yazi and fastfetch
+the next time they start. Papirus's folders stay grey, which goes with every palette.
 
-The overall look favors soft contrast, mauve borders, dark surfaces, compact menus, and night-city inspired visuals.
+The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
 
 The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
 minutes with a soft rim. Switch between them live from the control center's Display block, or with
@@ -188,8 +208,8 @@ Reboot after the installation completes.
 HyprPunk installs its own choice of applications, without asking. You can remove any of them afterwards with
 `yay -Rns <package>`, and give its shortcut another app from your personal files (see [Customization](#-customization)).
 
-- 🌐 **Brave**, with **uBlock Origin Lite** and the **Catppuccin Mocha** theme installed by its policy, and Rewards,
-  Wallet and AI Chat turned off.
+- 🌐 **Brave**, with **uBlock Origin Lite** installed by its policy, its Classic theme in the wallpaper's colors, and
+  Rewards, Wallet and AI Chat turned off.
 - 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
   music files, set as the default apps for those files.
@@ -197,6 +217,10 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 - 📝 **Neovim** and **Lazygit**, with `cargo` and `npm` for the language servers Neovim's Mason downloads on its first
   start, with their linters and formatters: Bash, Python, HTML, CSS, TypeScript and React, Java, Markdown, Docker,
   JSON and Hyprland.
+- 🎨 **gtk4-live-css** in place of Arch's `gtk4`: the same package with one patch, so open GTK 4 apps take a new
+  wallpaper's colors at once. [saneaspect](https://github.com/saneaspect/gtk4-live-css) builds it every day from Arch's
+  own recipe, in a repository the installer adds to `pacman.conf`. Its packages aren't signed, so pacman installs them
+  without checking who made them.
 
 ---
 
@@ -237,7 +261,7 @@ you'd bind to your own shortcuts.
 | `emoji` | `Super + .` or `Super + ;` |
 | `keybindings` | `Super + Ctrl + K` |
 | `wallpaper` | `Super + Ctrl + W` |
-| `sddm` | `Super + Ctrl + G` |
+| `theme` (neon or daydream) | `Super + Ctrl + T` |
 | `session` | `Super + Escape` |
 | `controlcenter` | `Super + C` |
 | `notifications` | `Super + N` |
@@ -292,38 +316,37 @@ from other people's nearby.
 ```text
 .
 ├── assets/screenshots/  # Images used by this README
-├── bat/                 # Bat configuration and Catppuccin theme
+├── bat/                 # Bat configuration
 ├── battery/             # Battery charge limit script and service installed system-wide
-├── brave/               # Brave managed policy installed system-wide
-├── btop/                # Btop configuration and theme
+├── brave/               # Brave's policy, and the tool that gives its theme the wallpaper's colors, installed system-wide
+├── btop/                # Btop configuration
 ├── cava/                # Audio visualizer configuration
-├── fastfetch/           # Fastfetch system summary configuration and logo
+├── fastfetch/           # Fastfetch's logos
 ├── fontconfig/          # JetBrainsMono Nerd Font preference
 ├── grub/                # CyberEXS GRUB theme installed system-wide
-├── gtk3/                # GTK 3 theme settings
-├── gtk4/                # GTK 4 theme settings, and libadwaita's colors taken from GTK 3's
+├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
+├── gtk4/                # GTK 4 settings
 ├── hypridle/            # Idle and suspend behavior
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum's theme choice
-├── matugen/             # The Mocha base, the accents, and the GTK, Kvantum and Qt templates matugen fills
+├── matugen/             # Each wallpaper's palette, and the templates matugen fills for the apps, the shell and the terminal tools
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # System, display, Qt, and lock-screen helpers
+├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
-├── sddm/themes/         # Each theme's own video and name, assembled with the base system-wide
-├── sddm/previews/       # Preview images of the SDDM themes
-├── starship/            # Starship prompt configuration
+├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
 ├── tmux/                # Tmux configuration
-├── wallpapers/          # Cyberpunk wallpapers
-├── yazi/                # Yazi file manager configuration and theme
+├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
+├── yazi/                # Yazi file manager configuration
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen writes them from `matugen/`'s palettes and templates, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
@@ -409,7 +432,7 @@ The installer enables or configures:
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
-- 📁 Papirus Dark icons with Catppuccin Mocha Mauve folders
+- 📁 Papirus Dark icons, with grey folders
 - 🕹️ CyberEXS GRUB theme when GRUB is present
 
 ---
@@ -446,7 +469,8 @@ touching your preferences:
 
 We advise you to leave the rest of the dotfiles as they are. They're linked straight from the repository, so any
 edit there clashes with the next `git pull`, and the modules expect each other as they ship. If something you need
-can't be done from these files, open an issue rather than patching HyprPunk itself.
+can't be done from these files, open an issue rather than patching HyprPunk itself. The look isn't part of what you
+customize (see [Philosophy](#-philosophy)).
 
 ---
 
@@ -476,6 +500,7 @@ can't be done from these files, open an issue rather than patching HyprPunk itse
 - 🎨 The Kvantum theme is [GabePoel/KvLibadwaita](https://github.com/GabePoel/KvLibadwaita) by Gabriel Perko-Engel, under the GPL-3.0, with its colors swapped for the palette's. GTK 3 apps get libadwaita's look from [adw-gtk3](https://github.com/lassekongo83/adw-gtk3).
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
 - 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
+- 🐱 The terminal tools' colors (Kitty, Btop, Yazi, Bat) start from [Catppuccin](https://github.com/catppuccin)'s Mocha themes (MIT), tinted with the wallpaper's palette.
 - 🔒 The lock screen is inspired by the one in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
