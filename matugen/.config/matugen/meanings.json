@@ -1,0 +1,19 @@
+{
+  "colors": {
+    "error": {
+      "default": {
+        "color": "#f38ba8"
+      }
+    },
+    "green": {
+      "default": {
+        "color": "#a6e3a1"
+      }
+    },
+    "yellow": {
+      "default": {
+        "color": "#f9e2af"
+      }
+    }
+  }
+}

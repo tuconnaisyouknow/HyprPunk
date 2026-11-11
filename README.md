@@ -98,8 +98,8 @@ The applications themed and configured by these dotfiles.
 - 🎬 **SDDM** with cyberpunk video themes.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
-- 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** sharing one libadwaita look, on a Catppuccin Mocha base, with accents
-  written by **matugen**, ready to follow the wallpaper.
+- 🎨 **GTK 3/4**, **Qt5/Qt6**, and **Kvantum** sharing one libadwaita look, in each wallpaper's own palette: its
+  hues at Catppuccin Mocha's lightness, written by **matugen** and taken at once by open GTK apps.
 - 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
@@ -308,7 +308,7 @@ from other people's nearby.
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum's theme choice
-├── matugen/             # The Mocha base, the accents, and the GTK, Kvantum and Qt templates matugen fills
+├── matugen/             # Each wallpaper's palette, and the GTK, Kvantum and Qt templates matugen fills
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts

@@ -1,11 +1,11 @@
-# The GTK and Qt colors, written by matugen so both toolkits share them. The dark base
-# is always Catppuccin Mocha, only the accents change. wallpaperctl.sh renders them for
-# every new wallpaper: mauve and lavender (mauve.json) in neon, drawn from the wallpaper
-# in daydream, in the same Material 3 roles.
+# The GTK and Qt colors, written by matugen so both toolkits share them. Every wallpaper
+# has its own palette (palettes.conf names it, palettes/ holds them): the wallpaper's own
+# hues at Catppuccin Mocha's lightness, so the theme stays dark and readable.
+# wallpaperctl.sh renders the wallpaper's palette whenever it changes.
 
 [config]
-# Read last, over the accents' source, so a wallpaper never changes the base
-import_json_files = ["./mocha-base.json"]
+# Read last, over the palette: red, green and yellow mean something, they never change
+import_json_files = ["./meanings.json"]
 
 # The HyprPunk theme imports it. Setting the theme again, through an empty name, makes
 # open GTK 3 apps read it anew, and sets it in the first place.
