@@ -1,0 +1,18 @@
+-- Neovim's colors from the wallpaper's palette, written by matugen to
+-- ~/.local/state/hyprpunk/nvim-colors.lua. catppuccin.lua lays them over Mocha's.
+return {
+  mauve = "{{colors.primary.default.hex}}",
+  lavender = "{{colors.secondary.default.hex}}",
+  text = "{{colors.text.default.hex}}",
+  subtext1 = "{{colors.subtext1.default.hex}}",
+  subtext0 = "{{colors.subtext0.default.hex}}",
+  overlay2 = "{{colors.overlay2.default.hex}}",
+  overlay1 = "{{colors.overlay1.default.hex}}",
+  overlay0 = "{{colors.overlay0.default.hex}}",
+  surface2 = "{{colors.surface_container_highest.default.hex}}",
+  surface1 = "{{colors.surface_container_high.default.hex}}",
+  surface0 = "{{colors.surface_container.default.hex}}",
+  base = "{{colors.surface.default.hex}}",
+  mantle = "{{colors.surface_container_low.default.hex}}",
+  crust = "{{colors.surface_container_lowest.default.hex}}",
+}

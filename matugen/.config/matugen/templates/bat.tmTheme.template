@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Catppuccin Mocha for bat, retouched so code gets the same colors as in Neovim.
+<!-- Catppuccin Mocha for bat and yazi's previews, retouched so code gets the same colors
+     as in Neovim, and the wallpaper's palette in place of its surfaces, grays, mauve and
+     lavender. matugen writes it to ~/.config/bat/themes/HyprPunk.tmTheme.
      The NEOVIM'S COLORS rules come first, so they win over Catppuccin's own
      whenever both match a token just as closely. -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
     <key>name</key>
-    <string>HyprPunk Mocha</string>
+    <string>HyprPunk</string>
     <key>semanticClass</key>
     <string>theme.dark.catppuccin-mocha</string>
     <key>uuid</key>
@@ -21,25 +23,25 @@
         <key>settings</key>
         <dict>
           <key>background</key>
-          <string>#1e1e2e</string>
+          <string>{{colors.surface.default.hex}}</string>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
           <key>caret</key>
           <string>#f5e0dc</string>
           <key>lineHighlight</key>
-          <string>#313244</string>
+          <string>{{colors.surface_container.default.hex}}</string>
           <key>misspelling</key>
           <string>#f38ba8</string>
           <key>accent</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
           <key>selection</key>
           <string>#9399b240</string>
           <key>activeGuide</key>
-          <string>#45475a</string>
+          <string>{{colors.surface_container_high.default.hex}}</string>
           <key>findHighlight</key>
           <string>#3e5767</string>
           <key>gutterForeground</key>
-          <string>#7f849c</string>
+          <string>{{colors.overlay1.default.hex}}</string>
         </dict>
       </dict>
       <!-- ################### -->
@@ -61,7 +63,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -70,7 +72,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#9399b2</string>
+          <string>{{colors.overlay2.default.hex}}</string>
         </dict>
       </dict>
       <!-- Constants and numbers peach -->
@@ -102,14 +104,14 @@
           <string>#f5c2e7</string>
         </dict>
       </dict>
-      <!-- Properties lavender -->
+      <!-- Properties in the secondary color -->
       <dict>
         <key>scope</key>
         <string>variable.other.property.ts, variable.other.property.js, variable.object.property, variable.other.property, variable.other.object.property, support.variable.property, meta.object-literal.key, variable.other.enummember, meta.property.lua, string.unquoted.key.lua</string>
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -146,17 +148,17 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
-      <!-- Documentation tags mauve, like @param -->
+      <!-- Documentation tags in the accent, like @param -->
       <dict>
         <key>scope</key>
         <string>punctuation.definition.block.tag.jsdoc, comment.block.documentation punctuation.definition.block.tag.jsdoc</string>
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <!-- Strings: the bits inside them pink, docstrings teal -->
@@ -194,7 +196,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#9399b2</string>
+          <string>{{colors.overlay2.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -203,7 +205,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -249,7 +251,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -261,14 +263,14 @@
           <string>#a6e3a1</string>
         </dict>
       </dict>
-      <!-- JSON keys lavender -->
+      <!-- JSON keys in the secondary color -->
       <dict>
         <key>scope</key>
         <string>source.json meta.mapping.key string, source.json meta.mapping.key punctuation.definition.string.begin, source.json meta.mapping.key punctuation.definition.string.end</string>
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <!-- Markdown, each heading level its own color -->
@@ -323,7 +325,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -350,7 +352,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -391,7 +393,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -402,7 +404,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#9399b2</string>
+          <string>{{colors.overlay2.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -415,7 +417,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#9399b2</string>
+          <string>{{colors.overlay2.default.hex}}</string>
           <key>fontStyle</key>
           <string>italic</string>
         </dict>
@@ -455,7 +457,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -466,7 +468,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -659,7 +661,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -670,7 +672,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -692,7 +694,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -736,7 +738,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -747,7 +749,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1002,7 +1004,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1068,7 +1070,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1112,7 +1114,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1193,7 +1195,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1226,7 +1228,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1259,7 +1261,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1270,7 +1272,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1281,7 +1283,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1292,7 +1294,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1336,7 +1338,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1426,7 +1428,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -1439,7 +1441,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1493,7 +1495,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1524,7 +1526,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#a6adc8</string>
+          <string>{{colors.subtext0.default.hex}}</string>
           <key>fontStyle</key>
           <string>strikethrough</string>
         </dict>
@@ -1548,7 +1550,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1581,7 +1583,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#9399b2</string>
+          <string>{{colors.overlay2.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1647,7 +1649,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -1660,7 +1662,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#b4befe</string>
+          <string>{{colors.secondary.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -1708,7 +1710,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1741,7 +1743,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1778,7 +1780,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1789,7 +1791,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1857,7 +1859,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1927,7 +1929,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -1938,7 +1940,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -2050,7 +2052,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -2063,7 +2065,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
           <key>fontStyle</key>
           <string/>
         </dict>
@@ -2194,7 +2196,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -2249,7 +2251,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -2341,7 +2343,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -2352,7 +2354,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cdd6f4</string>
+          <string>{{colors.text.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -2383,7 +2385,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#9399b2</string>
+          <string>{{colors.overlay2.default.hex}}</string>
         </dict>
       </dict>
       <dict>
@@ -2392,7 +2394,7 @@
         <key>settings</key>
         <dict>
           <key>foreground</key>
-          <string>#cba6f7</string>
+          <string>{{colors.primary.default.hex}}</string>
         </dict>
       </dict>
       <dict>

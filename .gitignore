@@ -8,6 +8,10 @@ gtk3/.config/gtk-3.0/bookmarks
 gtk3/.local/share/themes/HyprPunk/gtk-3.0/colors.css
 gtk4/.config/gtk-4.0/gtk.css
 kvantum/.config/Kvantum/HyprPunk/
+bat/.config/bat/themes/
+btop/.config/btop/themes/
+yazi/.config/yazi/theme.toml
+fastfetch/.config/fastfetch/config.jsonc
 
 # Your own tmux and kitty settings, read by their configs
 tmux/.config/tmux/personal.conf

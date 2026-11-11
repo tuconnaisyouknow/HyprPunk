@@ -65,7 +65,9 @@ eval "$(zoxide init zsh)"
 # PROMPT #
 ##########
 
-# Starship, set up only once even if this file is sourced again
+# Starship, in the wallpaper's palette written by matugen, set up only once even if this
+# file is sourced again
+export STARSHIP_CONFIG="${XDG_STATE_HOME:-$HOME/.local/state}/hyprpunk/starship.toml"
 type starship_zle-keymap-select >/dev/null || \
   {
     eval "$(starship init zsh)"
@@ -96,6 +98,12 @@ _restore_prompt() {
 
 add-zle-hook-widget zle-line-finish _transient_prompt
 add-zle-hook-widget line-init _restore_prompt
+
+# A new palette sends SIGURG to every zsh, so the prompt you're typing at is drawn again
+# in its colors. Every other program ignores it.
+TRAPURG() {
+  zle && zle reset-prompt
+}
 
 #################
 # YOUR OWN BITS #

@@ -1,0 +1,83 @@
+# vim:ft=kitty
+# kitty's colors: Catppuccin Mocha's, with the wallpaper's palette in place of its
+# surfaces, grays, mauve and lavender, so magenta is the accent. matugen writes it to
+# ~/.local/state/hyprpunk/kitty-colors.conf, which kitty.conf includes.
+
+## name:     Catppuccin Kitty Mocha
+## author:   Catppuccin Org
+## license:  MIT
+## upstream: https://github.com/catppuccin/kitty/blob/main/themes/mocha.conf
+## blurb:    Soothing pastel theme for the high-spirited!
+
+
+
+# The basic colors
+foreground              {{colors.text.default.hex}}
+background              {{colors.surface.default.hex}}
+selection_foreground    {{colors.surface.default.hex}}
+selection_background    #f5e0dc
+
+# Cursor colors
+cursor                  #f5e0dc
+cursor_text_color       {{colors.surface.default.hex}}
+
+# URL underline color when hovering with mouse
+url_color               #f5e0dc
+
+# Kitty window border colors
+active_border_color     {{colors.secondary.default.hex}}
+inactive_border_color   {{colors.overlay0.default.hex}}
+bell_border_color       #f9e2af
+
+# OS Window titlebar colors
+wayland_titlebar_color system
+macos_titlebar_color system
+
+# Tab bar colors
+active_tab_foreground   {{colors.surface_container_lowest.default.hex}}
+active_tab_background   #f5c2e7
+inactive_tab_foreground {{colors.text.default.hex}}
+inactive_tab_background {{colors.surface_container_low.default.hex}}
+tab_bar_background      {{colors.surface_container_lowest.default.hex}}
+
+# Colors for marks (marked text in the terminal)
+mark1_foreground {{colors.surface.default.hex}}
+mark1_background {{colors.secondary.default.hex}}
+mark2_foreground {{colors.surface.default.hex}}
+mark2_background #f5c2e7
+mark3_foreground {{colors.surface.default.hex}}
+mark3_background #74c7ec
+
+# The 16 terminal colors
+
+# black
+color0 {{colors.surface_container_high.default.hex}}
+color8 {{colors.surface_container_highest.default.hex}}
+
+# red
+color1 #f38ba8
+color9 #f38ba8
+
+# green
+color2  #a6e3a1
+color10 #a6e3a1
+
+# yellow
+color3  #f9e2af
+color11 #f9e2af
+
+# blue
+color4  #89b4fa
+color12 #89b4fa
+
+# magenta
+color5  {{colors.primary.default.hex}}
+color13 {{colors.primary.default.hex}}
+
+# cyan
+color6  #94e2d5
+color14 #94e2d5
+
+# white
+color7  {{colors.subtext1.default.hex}}
+color15 {{colors.subtext0.default.hex}}

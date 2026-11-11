@@ -1,0 +1,7 @@
+# tmux's colors from the wallpaper's palette, written by matugen to
+# ~/.local/state/hyprpunk/tmux-colors.conf, over the Mocha ones tmux.conf starts from
+set -g @primary "{{colors.primary.default.hex}}"
+set -g @secondary "{{colors.secondary.default.hex}}"
+set -g @text "{{colors.text.default.hex}}"
+set -g @surface0 "{{colors.surface_container.default.hex}}"
+set -g @base "{{colors.surface.default.hex}}"
