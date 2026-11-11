@@ -406,7 +406,7 @@ The installer enables or configures:
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
-- 📁 Papirus Dark icons with Catppuccin Mocha Mauve folders
+- 📁 Papirus Dark icons, with folders in the color nearest to the wallpaper's accent
 - 🕹️ CyberEXS GRUB theme when GRUB is present
 
 ---

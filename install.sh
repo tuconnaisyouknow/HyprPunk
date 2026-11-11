@@ -550,12 +550,11 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Papirus and dark mode. The colors, the GTK theme and bat's theme come with the
+# The HyprPunk icons and dark mode. The colors, the GTK theme, bat's theme and the
+# HyprPunk icon theme itself, Papirus-Dark with folders in the accent, come with the
 # wallpaper.
 apply_themes() {
-  papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
-
-  gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
+  gsettings set org.gnome.desktop.interface icon-theme 'HyprPunk'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 }

@@ -2,7 +2,7 @@
 //@ pragma Env QT_QPA_PLATFORMTHEME = qt6ct
 //@ pragma Env QSG_DISTANCEFIELD_ANTIALIASING = gray
 //@ pragma Env QSG_USE_SIMPLE_ANIMATION_DRIVER = 1
-//@ pragma IconTheme Papirus-Dark
+//@ pragma IconTheme HyprPunk
 
 // Gray antialiasing for the text: colored edges assume an opaque background and
 // glitch through the see-through glass, worst over a light page.
