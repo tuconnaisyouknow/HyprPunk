@@ -61,10 +61,12 @@ input_path = "./templates/tmux.conf.template"
 output_path = "~/.local/state/hyprpunk/tmux-colors.conf"
 post_hook = "tmux source-file ~/.local/state/hyprpunk/tmux-colors.conf >/dev/null 2>&1 || true"
 
-# The whole prompt, which Starship reads again on every prompt
+# The whole prompt, which Starship reads again on every prompt. The prompts on screen are
+# drawn again by .zshrc on SIGURG, which every other program ignores.
 [templates.starship]
 input_path = "./templates/starship.toml.template"
 output_path = "~/.local/state/hyprpunk/starship.toml"
+post_hook = "pkill -URG -x zsh || true"
 
 # Open Neovims watch it themselves
 [templates.nvim]
@@ -78,7 +80,7 @@ input_path = "./templates/bat.tmTheme.template"
 output_path = "~/.config/bat/themes/HyprPunk.tmTheme"
 post_hook = "bat cache --build >/dev/null 2>&1 || true"
 
-# fastfetch, yazi and btop take theirs when they start
+# fastfetch and yazi take theirs when they start
 [templates.fastfetch]
 input_path = "./templates/fastfetch.jsonc.template"
 output_path = "~/.config/fastfetch/config.jsonc"
@@ -87,6 +89,8 @@ output_path = "~/.config/fastfetch/config.jsonc"
 input_path = "./templates/yazi.toml.template"
 output_path = "~/.config/yazi/theme.toml"
 
+# Open btops read their settings and theme again on SIGUSR2
 [templates.btop]
 input_path = "./templates/btop.theme.template"
 output_path = "~/.config/btop/themes/hyprpunk.theme"
+post_hook = "pkill -USR2 -x btop || true"

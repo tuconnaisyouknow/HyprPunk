@@ -120,7 +120,7 @@ the whole look:
 
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, and
 the terminal and its tools, which keep Catppuccin Mocha tinted with the palette. Papirus's folders take its color
-nearest to the accent. The shell, open GTK apps, terminals, tmux and Neovim change at once, Qt apps, yazi and btop the
+nearest to the accent. The shell, open GTK apps, terminals, the prompt, tmux, Neovim and btop change at once, Qt apps and yazi the
 next time they start.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.

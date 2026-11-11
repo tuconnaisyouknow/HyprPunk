@@ -99,6 +99,12 @@ _restore_prompt() {
 add-zle-hook-widget zle-line-finish _transient_prompt
 add-zle-hook-widget line-init _restore_prompt
 
+# A new palette sends SIGURG to every zsh, so the prompt you're typing at is drawn again
+# in its colors. Every other program ignores it.
+TRAPURG() {
+  zle && zle reset-prompt
+}
+
 #################
 # YOUR OWN BITS #
 #################
