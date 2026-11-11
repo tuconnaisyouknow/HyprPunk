@@ -10,7 +10,7 @@ Rectangle {
     id: root
     width: Screen.width
     height: Screen.height
-    color: root.catBase
+    color: root.crust
 
     // Everything is drawn for a 768 px tall screen and scaled from there
     readonly property real s: Screen.height / 768
@@ -20,17 +20,18 @@ Rectangle {
     property int userIndex: (typeof userModel !== "undefined" && userModel.lastIndex >= 0) ? userModel.lastIndex : 0
     property real ui: 0 // Fades the interface in, 0 to 1
 
-    // Catppuccin Mocha
-    readonly property color catBase: "#11111b"
-    readonly property color catMauve: "#cba6f7"
-    readonly property color catLavender: "#b4befe"
-    readonly property color catText: "#cdd6f4"
-    readonly property color catMantle: "#181825"
-    readonly property color catSurface0: "#313244"
-    readonly property color catRed: "#f38ba8"
-    readonly property color catShadow: "#80000000"
-    readonly property color catTopOverlay: "#e011111b"
-    readonly property color catBottomOverlay: "#f411111b"
+    // The wallpaper's palette: wallpaperctl.sh writes it to theme.conf.user, which SDDM
+    // reads over theme.conf and its Catppuccin Mocha.
+    readonly property color crust: config.crust
+    readonly property color mantle: config.mantle
+    readonly property color surface0: config.surface0
+    readonly property color primary: config.primary
+    readonly property color secondary: config.secondary
+    readonly property color red: config.red
+    readonly property color text: "#cdd6f4"
+    readonly property color shadow: "#80000000"
+    readonly property color topOverlay: Qt.rgba(crust.r, crust.g, crust.b, 0.88)
+    readonly property color bottomOverlay: Qt.rgba(crust.r, crust.g, crust.b, 0.96)
 
     // Whatever font sits in the theme's font folder
     FolderListModel {
@@ -105,7 +106,7 @@ Rectangle {
         source: "BackgroundVideo.qml"
     }
 
-    // Two thin mauve lines down the sides
+    // Two thin accent lines down the sides
     Rectangle {
         anchors.fill: parent
         z: 1
@@ -119,7 +120,7 @@ Rectangle {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: 20 * s
-            color: root.catMauve
+            color: root.primary
         }
         Rectangle {
             width: 2 * s
@@ -127,7 +128,7 @@ Rectangle {
             anchors.bottom: parent.bottom
             anchors.right: parent.right
             anchors.rightMargin: 20 * s
-            color: root.catMauve
+            color: root.primary
         }
     }
 
@@ -138,7 +139,7 @@ Rectangle {
         anchors.right: parent.right
         height: 120 * s
         gradient: Gradient {
-            GradientStop { position: 0.0; color: root.catTopOverlay }
+            GradientStop { position: 0.0; color: root.topOverlay }
             GradientStop { position: 1.0; color: "transparent" }
         }
     }
@@ -150,7 +151,7 @@ Rectangle {
         height: 300 * s
         gradient: Gradient {
             GradientStop { position: 0.0; color: "transparent" }
-            GradientStop { position: 1.0; color: root.catBottomOverlay }
+            GradientStop { position: 1.0; color: root.bottomOverlay }
         }
     }
 
@@ -161,7 +162,7 @@ Rectangle {
         anchors.horizontalCenter: loginPanel.horizontalCenter
         anchors.bottom: loginPanel.top
         anchors.bottomMargin: 6 * s
-        color: root.catRed
+        color: root.red
         font.family: pf.name
         font.pixelSize: 10 * s
         font.bold: true
@@ -186,9 +187,9 @@ Rectangle {
             // Background
             Rectangle {
                 anchors.fill: parent
-                color: root.catMantle
+                color: root.mantle
                 opacity: 0.85
-                border.color: userMouse.containsMouse ? root.catMauve : root.catLavender
+                border.color: userMouse.containsMouse ? root.primary : root.secondary
                 border.width: 1 * s
                 Behavior on border.color { ColorAnimation { duration: 120 } }
             }
@@ -196,7 +197,7 @@ Rectangle {
             Text {
                 id: userLabelText
                 text: "USER //"
-                color: root.catLavender
+                color: root.secondary
                 font.family: pf.name
                 font.pixelSize: 11 * s
                 font.bold: true
@@ -208,7 +209,7 @@ Rectangle {
 
             Text {
                 text: ((userHelper.currentItem && userHelper.currentItem.uName) ? userHelper.currentItem.uName : (userModel.lastUser || "User")).toUpperCase()
-                color: userMouse.containsMouse ? root.catMauve : root.catText
+                color: userMouse.containsMouse ? root.primary : root.text
                 font.family: pf.name
                 font.pixelSize: 11 * s
                 font.bold: true
@@ -242,9 +243,9 @@ Rectangle {
             // Background
             Rectangle {
                 anchors.fill: parent
-                color: root.catMantle
+                color: root.mantle
                 opacity: 0.85
-                border.color: pwd.focus ? root.catMauve : root.catLavender
+                border.color: pwd.focus ? root.primary : root.secondary
                 border.width: 1 * s
                 Behavior on border.color { ColorAnimation { duration: 150 } }
             }
@@ -256,7 +257,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.leftMargin: 10 * s
                 anchors.rightMargin: 10 * s
-                color: root.catMauve
+                color: root.primary
                 font.family: pf.name
                 font.pixelSize: 12 * s
                 font.letterSpacing: 3 * s
@@ -268,7 +269,7 @@ Rectangle {
                 verticalAlignment: TextInput.AlignVCenter
                 cursorVisible: false
                 cursorDelegate: Item { width: 0; height: 0 }
-                selectionColor: root.catMauve
+                selectionColor: root.primary
 
                 property bool wasClicked: false
                 onActiveFocusChanged: if (!activeFocus && text.length === 0) wasClicked = false
@@ -282,7 +283,7 @@ Rectangle {
                 anchors.leftMargin: 10 * s
                 anchors.verticalCenter: parent.verticalCenter
                 text: "PASSWORD"
-                color: root.catLavender
+                color: root.secondary
                 font.family: pf.name
                 font.pixelSize: 9 * s
                 font.letterSpacing: 1 * s
@@ -295,7 +296,7 @@ Rectangle {
                 id: customCursor
                 width: 8 * s
                 height: pwd.cursorRectangle.height
-                color: root.catMauve
+                color: root.primary
                 y: pwd.y + pwd.cursorRectangle.y
                 x: pwd.x + pwd.cursorRectangle.x
                 visible: pwd.focus && (pwd.text.length > 0 || pwd.wasClicked)
@@ -325,9 +326,9 @@ Rectangle {
             // Background
             Rectangle {
                 anchors.fill: parent
-                color: root.catMantle
+                color: root.mantle
                 opacity: loginMouse.containsMouse ? 0.95 : 0.85
-                border.color: loginMouse.containsMouse ? root.catMauve : root.catLavender
+                border.color: loginMouse.containsMouse ? root.primary : root.secondary
                 border.width: 1 * s
                 Behavior on opacity { NumberAnimation { duration: 120 } }
                 Behavior on border.color { ColorAnimation { duration: 120 } }
@@ -337,7 +338,7 @@ Rectangle {
                 id: btnText
                 anchors.centerIn: parent
                 text: "➔ LOGIN"
-                color: loginMouse.containsMouse ? root.catMauve : root.catText
+                color: loginMouse.containsMouse ? root.primary : root.text
                 font.family: pf.name
                 font.pixelSize: 9 * s
                 font.letterSpacing: 1 * s
@@ -378,7 +379,7 @@ Rectangle {
                 Rectangle {
                     width: 6 * s
                     height: 6 * s
-                    color: root.catMauve
+                    color: root.primary
                     anchors.verticalCenter: parent.verticalCenter
                     SequentialAnimation on opacity {
                         loops: Animation.Infinite
@@ -388,7 +389,7 @@ Rectangle {
                 }
                 Text {
                     text: "WELCOME BACK, " + ((userHelper.currentItem && userHelper.currentItem.uName) ? userHelper.currentItem.uName : (userModel.lastUser || "USER")).toUpperCase()
-                    color: root.catMauve
+                    color: root.primary
                     font.family: pf.name
                     font.pixelSize: 11 * s
                     font.letterSpacing: 2 * s
@@ -403,7 +404,7 @@ Rectangle {
                 Text {
                     id: hourText
                     text: Qt.formatTime(new Date(), "HH")
-                    color: root.catMauve
+                    color: root.primary
                     font.family: pf.name
                     font.pixelSize: 60 * s
                     font.bold: true
@@ -416,7 +417,7 @@ Rectangle {
                     }
                     layer.enabled: true
                     layer.effect: DropShadow {
-                        color: root.catShadow
+                        color: root.shadow
                         radius: 6
                         samples: 8
                         horizontalOffset: 2 * s
@@ -427,7 +428,7 @@ Rectangle {
                 Rectangle {
                     width: 3 * s
                     height: 48 * s
-                    color: root.catLavender
+                    color: root.secondary
                     anchors.verticalCenter: parent.verticalCenter
                     radius: 2 * s
                 }
@@ -435,7 +436,7 @@ Rectangle {
                 Text {
                     id: minuteText
                     text: Qt.formatTime(new Date(), "mm")
-                    color: root.catLavender
+                    color: root.secondary
                     font.family: pf.name
                     font.pixelSize: 60 * s
                     font.bold: true
@@ -448,7 +449,7 @@ Rectangle {
                     }
                     layer.enabled: true
                     layer.effect: DropShadow {
-                        color: root.catShadow
+                        color: root.shadow
                         radius: 6
                         samples: 8
                         horizontalOffset: 2 * s
@@ -467,9 +468,9 @@ Rectangle {
 
             Rectangle {
                 anchors.fill: parent
-                color: root.catSurface0
+                color: root.surface0
                 opacity: 0.3
-                border.color: root.catLavender
+                border.color: root.secondary
                 border.width: 1 * s
             }
 
@@ -477,7 +478,7 @@ Rectangle {
                 id: dateText
                 anchors.centerIn: parent
                 text: Qt.formatDate(new Date(), "dddd, MMMM d").toUpperCase()
-                color: root.catLavender
+                color: root.secondary
                 font.family: pf.name
                 font.pixelSize: 10 * s
                 font.letterSpacing: 3 * s
@@ -506,9 +507,9 @@ Rectangle {
                     // Panel
                     Rectangle {
                         anchors.fill: parent
-                        color: root.catSurface0
+                        color: root.surface0
                         opacity: pm.containsMouse ? 0.45 : 0.25
-                        border.color: pm.containsMouse ? root.catMauve : root.catLavender
+                        border.color: pm.containsMouse ? root.primary : root.secondary
                         border.width: 1 * s
                         Behavior on opacity { NumberAnimation { duration: 120 } }
                     }
@@ -517,7 +518,7 @@ Rectangle {
                         id: pmt
                         anchors.centerIn: parent
                         text: modelData.l
-                        color: pm.containsMouse ? root.catMauve : root.catText
+                        color: pm.containsMouse ? root.primary : root.text
                         font.family: pf.name
                         font.pixelSize: 10 * s
                         font.letterSpacing: 1.5 * s

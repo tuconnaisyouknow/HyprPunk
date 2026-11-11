@@ -37,3 +37,8 @@ output_path = "~/.local/share/color-schemes/HyprPunk.colors"
 [templates.quickshell]
 input_path = "./templates/quickshell.json.template"
 output_path = "~/.local/state/hyprpunk/colors.json"
+
+# The login screen's colors, which wallpaperctl.sh hands to SDDM with the login screen
+[templates.sddm]
+input_path = "./templates/sddm.conf.template"
+output_path = "~/.local/state/hyprpunk/login-colors.conf"
