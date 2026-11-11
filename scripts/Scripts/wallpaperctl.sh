@@ -9,6 +9,7 @@
 #   wallpaperctl.sh themes         prints each theme, the wallpaper it would switch to and its thumbnail (the theme picker)
 #   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order and their thumbnails (the current theme's by default)
 #   wallpaperctl.sh reset          back to the current theme's first wallpaper
+#   wallpaperctl.sh login          puts the saved one's login screen and colors back (sddm.sh, after an update)
 #   wallpaperctl.sh init           gives the default one's look without showing it, and makes every thumbnail (install.sh)
 #   wallpaperctl.sh status         prints the saved one and its theme
 set -euo pipefail
@@ -23,6 +24,7 @@ MATUGEN_DIR="$HOME/.config/matugen"
 PALETTES="$MATUGEN_DIR/palettes.conf"
 THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
+LOGIN_COLORS="$STATE_DIR/login-colors.conf"
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
@@ -35,6 +37,7 @@ Usage:
   $(basename "$0") themes
   $(basename "$0") list [theme]
   $(basename "$0") reset
+  $(basename "$0") login
   $(basename "$0") init
   $(basename "$0") status
 EOF
@@ -253,9 +256,10 @@ render_colors() {
   matugen -q json "$palette"
 }
 
-# pkexec, since the login screen is the system's, and polkit lets this tool through
+# pkexec, since the login screen is the system's, and polkit lets this tool through. It
+# gets the colors matugen wrote for it on its input.
 set_login_screen() {
-  pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")"
+  pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")" <"$LOGIN_COLORS"
 }
 
 # A new wallpaper and its look. The colors come first: a wallpaper without a palette
@@ -307,6 +311,10 @@ list:2)
 reset:1)
   acquire_lock
   switch_to "$(first_wallpaper "$(theme_of "$(saved_wallpaper)")")" "${TRANSITION[@]}"
+  ;;
+login:1)
+  acquire_lock
+  set_login_screen "$(saved_wallpaper)"
   ;;
 init:1)
   acquire_lock

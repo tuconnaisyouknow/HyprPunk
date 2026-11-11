@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Makes one of the installed login screens the active one. wallpaperctl.sh runs it
-# through pkexec on every new wallpaper, and the polkit rule lets it skip the password.
-# sddm.sh installs it in /usr/local/bin, owned by root, so nothing else can change it.
-#   hyprpunk-login-screen <theme>
+# Makes one of the installed login screens the active one, in the wallpaper's colors.
+# wallpaperctl.sh runs it through pkexec on every new wallpaper, and the polkit rule lets
+# it skip the password. sddm.sh installs it in /usr/local/bin, owned by root, so nothing
+# else can change it.
+#   hyprpunk-login-screen <theme> < colors
+# The colors come as key=#rrggbb lines, and land in the theme's theme.conf.user, which
+# SDDM reads over its theme.conf.
 set -euo pipefail
 
 THEMES_DIR="/usr/share/sddm/themes"
 CONF_DIR="/etc/sddm.conf.d"
+COLOR_KEYS="crust|mantle|surface0|primary|secondary|red"
 
 # Only a theme already installed: a name, nothing that could point elsewhere
 theme="${1:-}"
@@ -14,6 +18,22 @@ theme="${1:-}"
   echo "Not an installed login screen: $theme" >&2
   exit 1
 }
+
+# Only the colors Main.qml reads, each a plain hex color. Anyone can run this without a
+# password, so nothing else gets through, and only the first few kilobytes are read.
+colors="$(mktemp --tmpdir="$THEMES_DIR/$theme" theme.conf.user.XXXXXX)"
+trap 'rm -f "$colors"' EXIT
+printf '[General]\n' >"$colors"
+while IFS= read -r line; do
+  [[ -z "$line" || "$line" == \#* ]] && continue
+  [[ "$line" =~ ^($COLOR_KEYS)=#[0-9a-fA-F]{6}$ ]] || {
+    echo "Not a login screen color: $line" >&2
+    exit 1
+  }
+  printf '%s\n' "$line" >>"$colors"
+done < <(head -c 4096)
+chmod 644 "$colors"
+mv -f "$colors" "$THEMES_DIR/$theme/theme.conf.user"
 
 # This drop-in is ours alone, so it's written whole, and swapped in at once
 mkdir -p "$CONF_DIR"

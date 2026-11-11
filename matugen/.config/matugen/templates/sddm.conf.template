@@ -1,0 +1,9 @@
+# The login screen's colors. matugen writes them from
+# ~/.config/matugen/templates/sddm.conf.template, and wallpaperctl.sh hands them to the
+# login screen's helper, which keeps only these keys.
+crust={{colors.surface_container_lowest.default.hex}}
+mantle={{colors.surface_container_low.default.hex}}
+surface0={{colors.surface_container.default.hex}}
+primary={{colors.primary.default.hex}}
+secondary={{colors.secondary.default.hex}}
+red={{colors.error.default.hex}}

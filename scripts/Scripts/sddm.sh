@@ -3,7 +3,8 @@
 # among them. Each theme is the shared base (sddm/base) with its own video and name on
 # top. They're copied rather than linked: SDDM runs as its own user and can't read your home.
 #   sddm.sh install   copies the themes that aren't there yet
-#   sddm.sh update    copies them all again, after you edited one
+#   sddm.sh update    copies them all again, after you edited one, and puts your
+#                     wallpaper's login screen and colors back
 set -euo pipefail
 
 # The repository this script was linked from, wherever you cloned it
@@ -140,6 +141,8 @@ update)
   info "Updating installed themes"
   update_installed_themes
   install_login_screen_access
+  # The copies lost the wallpaper's colors
+  "$DOTFILES_DIR/scripts/Scripts/wallpaperctl.sh" login
   ;;
 *)
   usage
