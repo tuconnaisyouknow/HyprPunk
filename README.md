@@ -118,11 +118,10 @@ the whole look:
 - 🚦 Red, green, yellow, peach and blue never change, since they mean something: errors, the battery, the camera and
   the microphone.
 
-matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, and
-the terminal and its tools, which keep Catppuccin Mocha tinted with the palette, and Brave's Classic theme, through its
-policy. Papirus's folders stay grey, which
-goes with every palette. The shell, open GTK apps, terminals, the prompt, tmux, Neovim and btop change at once, Qt apps and yazi the
-next time they start.
+matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
+terminal and its tools (Catppuccin Mocha tinted with the palette), and Brave's Classic theme, through its policy. The
+shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop and Brave change at once, Qt apps, yazi and fastfetch
+the next time they start. Papirus's folders stay grey, which goes with every palette.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
 
@@ -202,6 +201,10 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 - 📝 **Neovim** and **Lazygit**, with `cargo` and `npm` for the language servers Neovim's Mason downloads on its first
   start, with their linters and formatters: Bash, Python, HTML, CSS, TypeScript and React, Java, Markdown, Docker,
   JSON and Hyprland.
+- 🎨 **gtk4-live-css** in place of Arch's `gtk4`: the same package with one patch, so open GTK 4 apps take a new
+  wallpaper's colors at once. [saneaspect](https://github.com/saneaspect/gtk4-live-css) builds it every day from Arch's
+  own recipe, in a repository the installer adds to `pacman.conf`. Its packages aren't signed, so pacman installs them
+  without checking who made them.
 
 ---
 
@@ -305,8 +308,8 @@ from other people's nearby.
 ├── fastfetch/           # Fastfetch's logos
 ├── fontconfig/          # JetBrainsMono Nerd Font preference
 ├── grub/                # CyberEXS GRUB theme installed system-wide
-├── gtk3/                # GTK 3 theme settings
-├── gtk4/                # GTK 4 theme settings, and libadwaita's colors taken from GTK 3's
+├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
+├── gtk4/                # GTK 4 settings
 ├── hypridle/            # Idle and suspend behavior
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
@@ -318,6 +321,7 @@ from other people's nearby.
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # System, display, Qt, and lock-screen helpers
+├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
 ├── tmux/                # Tmux configuration
