@@ -32,6 +32,10 @@ IconMenu {
         "name": "Wallpaper",
         "panel": "wallpaper"
     }, {
+        "icon": "󰏘",
+        "name": "Theme",
+        "panel": "theme"
+    }, {
         "icon": "",
         "name": "Configuration",
         "panel": "config"

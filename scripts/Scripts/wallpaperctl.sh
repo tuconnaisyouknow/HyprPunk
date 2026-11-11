@@ -6,9 +6,10 @@
 #   wallpaperctl.sh apply          puts the saved one back, at once (login, new screen)
 #   wallpaperctl.sh set <image>    saves it and shows it with a transition (the shell's selector)
 #   wallpaperctl.sh theme <theme>  switches to the theme's last wallpaper, or its first one
-#   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order (the current theme's by default)
+#   wallpaperctl.sh themes         prints each theme, the wallpaper it would switch to and its thumbnail (the theme picker)
+#   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order and their thumbnails (the current theme's by default)
 #   wallpaperctl.sh reset          back to the current theme's first wallpaper
-#   wallpaperctl.sh init           gives the default one's look without showing it (install.sh)
+#   wallpaperctl.sh init           gives the default one's look without showing it, and makes every thumbnail (install.sh)
 #   wallpaperctl.sh status         prints the saved one and its theme
 set -euo pipefail
 
@@ -20,6 +21,7 @@ WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 DEFAULT_THEME="neon"
 MATUGEN_DIR="$HOME/.config/matugen"
 PALETTES="$MATUGEN_DIR/palettes.conf"
+THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
@@ -30,6 +32,7 @@ Usage:
   $(basename "$0") apply
   $(basename "$0") set <image>
   $(basename "$0") theme <theme>
+  $(basename "$0") themes
   $(basename "$0") list [theme]
   $(basename "$0") reset
   $(basename "$0") init
@@ -104,6 +107,59 @@ validate_wallpaper() {
     return 1
     ;;
   esac
+}
+
+# Every theme with a wallpaper, as theme<tab>wallpaper: the default one first, the others
+# in their folders' order
+list_themes() {
+  local theme wallpaper
+  {
+    printf '%s\n' "$DEFAULT_THEME"
+    find -L "$WALLPAPER_DIR" -mindepth 1 -maxdepth 1 -type d ! -name '.*' ! -name "$DEFAULT_THEME" -printf '%f\n' |
+      LC_ALL=C sort
+  } | while IFS= read -r theme; do
+    wallpaper="$(theme_wallpaper "$theme" 2>/dev/null)" || continue
+    printf '%s\t%s\n' "$theme" "$wallpaper"
+  done
+}
+
+# The pickers show thumbnails: Qt decodes the whole picture to shrink it, which takes up
+# to a second for a 4K wallpaper and a few milliseconds for a thumbnail. Each one is made
+# once, and again only when its wallpaper changes.
+thumbnail_of() {
+  printf '%s/%s.jpg\n' "$THUMBNAIL_DIR" "${1#"$WALLPAPER_DIR"/}"
+}
+
+make_thumbnail() {
+  local thumbnail
+  thumbnail="$(thumbnail_of "$1")"
+  [[ "$thumbnail" -nt "$1" ]] && return 0
+  mkdir -p "${thumbnail%/*}"
+  if magick "$1[0]" -thumbnail 640x360 -quality 85 "$thumbnail.tmp.jpg"; then
+    mv -f "$thumbnail.tmp.jpg" "$thumbnail"
+  else
+    rm -f "$thumbnail.tmp.jpg"
+    echo "Unable to make a thumbnail of $1" >&2
+  fi
+}
+
+# Adds the thumbnail to lines ending with a wallpaper, making the missing ones side by side
+with_thumbnails() {
+  local lines=() line running=0 cores
+  cores="$(nproc)"
+  mapfile -t lines
+  for line in "${lines[@]}"; do
+    make_thumbnail "${line##*$'\t'}" &
+    running=$((running + 1))
+    if ((running >= cores)); then
+      wait -n || true
+      running=$((running - 1))
+    fi
+  done
+  wait
+  for line in "${lines[@]}"; do
+    printf '%s\t%s\n' "$line" "$(thumbnail_of "${line##*$'\t'}")"
+  done
 }
 
 # Subthemes in their folders' order, then the wallpapers by name
@@ -239,11 +295,14 @@ theme:2)
   validate_theme "$2"
   switch_to "$(theme_wallpaper "$2")" "${TRANSITION[@]}"
   ;;
+themes:1)
+  list_themes | with_thumbnails
+  ;;
 list:1)
-  list_wallpapers "$(theme_of "$(saved_wallpaper)")"
+  list_wallpapers "$(theme_of "$(saved_wallpaper)")" | with_thumbnails
   ;;
 list:2)
-  list_wallpapers "$2"
+  list_wallpapers "$2" | with_thumbnails
   ;;
 reset:1)
   acquire_lock
@@ -252,6 +311,8 @@ reset:1)
 init:1)
   acquire_lock
   switch_to "$(first_wallpaper "$DEFAULT_THEME")"
+  # Every thumbnail, so the pickers open at once the first time too
+  list_themes | cut -f1 | while IFS= read -r theme; do list_wallpapers "$theme"; done | with_thumbnails >/dev/null
   ;;
 status:1)
   wallpaper="$(saved_wallpaper)"

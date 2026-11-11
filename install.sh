@@ -374,7 +374,7 @@ install_packages() {
     xdg-desktop-portal-gtk \
     xwayland-satellite \
     \
-    adw-gtk-theme matugen \
+    adw-gtk-theme matugen imagemagick \
     papirus-icon-theme \
     papirus-folders-catppuccin-git \
     rose-pine-cursor \
@@ -468,8 +468,8 @@ configure_monitors() {
   "$HOME/Scripts/displayctl.sh" init preferred
 }
 
-# The default wallpaper's look: the GTK and Qt colors and its login screen, so it comes
-# after the login screens are installed
+# The default wallpaper's look (the colors and its login screen) and the pickers'
+# thumbnails. It comes after the login screens are installed.
 configure_wallpaper() {
   "$HOME/Scripts/wallpaperctl.sh" init
 }

@@ -87,6 +87,7 @@ bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), "Pick a color 
 -- What you open now and then takes Ctrl too
 bind(mainMod .. " + CTRL + SPACE", hl.dsp.exec_cmd(shell .. "menu toggle"), "Open the main menu")
 bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd(shell .. "wallpaper toggle"), "Open the wallpaper selector")
+bind(mainMod .. " + CTRL + T", hl.dsp.exec_cmd(shell .. "theme toggle"), "Choose the theme")
 bind(mainMod .. " + CTRL + K", hl.dsp.exec_cmd(shell .. "keybindings toggle"), "Show all keybindings")
 -- The keys of Windows' Task Manager, which every hand already knows
 bind("CTRL + SHIFT + Escape", hl.dsp.exec_cmd(shell .. "systemmonitor toggle"), "Show the system monitor")
