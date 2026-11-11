@@ -42,3 +42,9 @@ output_path = "~/.local/state/hyprpunk/colors.json"
 [templates.sddm]
 input_path = "./templates/sddm.conf.template"
 output_path = "~/.local/state/hyprpunk/login-colors.conf"
+
+# Hyprland's accent, read by colors_state.lua. Reloading Hyprland recolors the borders.
+[templates.hyprland]
+input_path = "./templates/hyprland.template"
+output_path = "~/.local/state/hyprpunk/hypr-colors"
+post_hook = "hyprctl reload >/dev/null 2>&1 || true"

@@ -1,0 +1,4 @@
+# The window borders' and glow's color, the palette's accent as bare hex so Hyprland can
+# add its own alpha. matugen writes it from ~/.config/matugen/templates/hyprland.template,
+# and colors_state.lua reads it.
+primary={{colors.primary.default.hex_stripped}}
