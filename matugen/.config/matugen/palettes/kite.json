@@ -15,6 +15,11 @@
         "color": "#71d9c4"
       }
     },
+    "on_surface": {
+      "default": {
+        "color": "#f8ada2"
+      }
+    },
     "surface_container_lowest": {
       "default": {
         "color": "#071518"
