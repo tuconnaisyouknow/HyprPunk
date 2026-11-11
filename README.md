@@ -9,6 +9,22 @@ The goal is simple: a cohesive, dark, readable, and responsive desktop inspired 
 
 ---
 
+## 🎭 Philosophy
+
+HyprPunk has one art direction, and every part of it is built for it: the two themes, their wallpapers and the
+palette each one brings, the glass, the shapes, the font and the motion. Each piece is tuned against the others, so
+the look is a whole, not a set of options.
+
+- ✅ **How it works is yours to change.** Your apps, shortcuts, window rules, input, environment, autostart, terminal
+  and shell: everything under [Customization](#-customization) is meant for you, and survives updates.
+- 🚫 **How it looks isn't.** Other GTK, Qt or icon themes, fonts, color schemes, a light mode or another bar aren't
+  supported, and nothing is built to allow them. The colors come from the wallpapers HyprPunk ships, each with a
+  palette picked by hand.
+
+If you want another look, HyprPunk isn't the right base: fork it, or take the parts you like into your own setup.
+
+---
+
 ## 🖼️ Screenshots
 
 ![desktop](./assets/screenshots/desktop.png)
@@ -453,7 +469,8 @@ touching your preferences:
 
 We advise you to leave the rest of the dotfiles as they are. They're linked straight from the repository, so any
 edit there clashes with the next `git pull`, and the modules expect each other as they ship. If something you need
-can't be done from these files, open an issue rather than patching HyprPunk itself.
+can't be done from these files, open an issue rather than patching HyprPunk itself. The look isn't part of what you
+customize (see [Philosophy](#-philosophy)).
 
 ---
 
