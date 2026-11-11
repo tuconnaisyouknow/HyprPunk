@@ -119,7 +119,8 @@ the whole look:
   the microphone.
 
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, and
-the terminal and its tools, which keep Catppuccin Mocha tinted with the palette. Papirus's folders stay grey, which
+the terminal and its tools, which keep Catppuccin Mocha tinted with the palette, and Brave's Classic theme, through its
+policy. Papirus's folders stay grey, which
 goes with every palette. The shell, open GTK apps, terminals, the prompt, tmux, Neovim and btop change at once, Qt apps and yazi the
 next time they start.
 
@@ -192,8 +193,8 @@ Reboot after the installation completes.
 HyprPunk installs its own choice of applications, without asking. You can remove any of them afterwards with
 `yay -Rns <package>`, and give its shortcut another app from your personal files (see [Customization](#-customization)).
 
-- 🌐 **Brave**, with **uBlock Origin Lite** and the **Catppuccin Mocha** theme installed by its policy, and Rewards,
-  Wallet and AI Chat turned off.
+- 🌐 **Brave**, with **uBlock Origin Lite** installed by its policy, its Classic theme in the wallpaper's colors, and
+  Rewards, Wallet and AI Chat turned off.
 - 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
   music files, set as the default apps for those files.
@@ -298,7 +299,7 @@ from other people's nearby.
 ├── assets/screenshots/  # Images used by this README
 ├── bat/                 # Bat configuration
 ├── battery/             # Battery charge limit script and service installed system-wide
-├── brave/               # Brave managed policy installed system-wide
+├── brave/               # Brave's policy, and the tool that gives its theme the wallpaper's colors, installed system-wide
 ├── btop/                # Btop configuration
 ├── cava/                # Audio visualizer configuration
 ├── fastfetch/           # Fastfetch's logos

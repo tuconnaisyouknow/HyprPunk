@@ -1,0 +1,9 @@
+// Every wallpaper gives Brave's theme its colors. This lets wallpaperctl.sh do so without
+// a password, for whoever is sitting at the machine. Only this tool, which takes nothing
+// but a color.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        action.lookup("program") == "/usr/local/bin/hyprpunk-brave-color" &&
+        subject.local && subject.active)
+        return polkit.Result.YES;
+});

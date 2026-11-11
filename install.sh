@@ -611,7 +611,8 @@ install_grub_theme() {
 }
 
 # Brave's managed settings, when Brave is installed. Copied rather than linked, so only
-# root can change what applies to every account, like the rest of /etc.
+# root can change what applies to every account, like the rest of /etc. wallpaperctl.sh
+# gives its theme the wallpaper's accent through the tool and its polkit rule.
 install_brave_policy() {
   local policy_src="$DOTFILES_DIR/brave/policies/managed/policy.json"
   local policy_target_dir="/etc/brave/policies/managed"
@@ -622,6 +623,9 @@ install_brave_policy() {
   fi
 
   sudo install -Dm644 "$policy_src" "$policy_target_dir/policy.json"
+  sudo install -Dm755 "$DOTFILES_DIR/brave/hyprpunk-brave-color" /usr/local/bin/hyprpunk-brave-color
+  sudo install -Dm644 "$DOTFILES_DIR/brave/polkit/50-hyprpunk-brave-color.rules" \
+    /etc/polkit-1/rules.d/50-hyprpunk-brave-color.rules
 }
 
 # The battery charge limit you set from the control center, on laptops that support one.
@@ -702,9 +706,9 @@ main() {
   run_step "apply_themes" "Applying themes" apply_themes
   run_step "install_locale" "Installing the locale" install_locale
   run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
+  run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
   run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
   run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
-  run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
   run_step "install_battery_limit" "Installing the battery charge limit" install_battery_limit
   run_step "enable_services" "Enabling services" enable_services
   run_step "ask_reboot" "Finishing installation" ask_reboot

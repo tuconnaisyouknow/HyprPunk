@@ -20,6 +20,11 @@
         "color": "#dbc07d"
       }
     },
+    "primary_dark": {
+      "default": {
+        "color": "#191100"
+      }
+    },
     "surface_container_lowest": {
       "default": {
         "color": "#121309"

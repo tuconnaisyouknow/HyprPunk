@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Gives Brave's Classic theme the wallpaper's colors, through its BrowserThemeColor
+# policy. Brave watches its policies and takes the color at once, open windows
+# included. wallpaperctl.sh runs it through pkexec on every new wallpaper, and the
+# polkit rule lets it skip the password. install.sh puts it in /usr/local/bin, owned by
+# root, so nothing else can change it.
+#   hyprpunk-brave-color <#rrggbb>
+set -euo pipefail
+
+POLICY_DIR="/etc/brave/policies/managed"
+
+# Only a plain hex color: anyone can run this without a password
+color="${1:-}"
+[[ $# -eq 1 && "$color" =~ ^#[0-9a-fA-F]{6}$ ]] || {
+  echo "Not a color: $color" >&2
+  exit 1
+}
+
+# Its own file, next to policy.json. Written beside the folder Brave reads, then swapped
+# in at once, so Brave never reads half of it.
+mkdir -p "$POLICY_DIR"
+tmp="$(mktemp --tmpdir="${POLICY_DIR%/*}" hyprpunk-theme.XXXXXX)"
+trap 'rm -f "$tmp"' EXIT
+printf '{ "BrowserThemeColor": "%s" }\n' "$color" >"$tmp"
+chmod 644 "$tmp"
+# Brave waits five seconds after a policy file's date changes, in case it's still being
+# written. This one never is, so it keeps the same date and Brave reloads at once.
+touch -m -d @0 "$tmp"
+mv -f "$tmp" "$POLICY_DIR/hyprpunk-theme.json"

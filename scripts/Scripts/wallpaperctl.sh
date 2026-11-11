@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Remembers the wallpaper and hands it to awww, which forgets it on every restart.
 # Wallpapers live in ~/Pictures/Wallpapers/<theme>/<subtheme>/, and the one you pick
-# decides the whole look: the theme, the colors and the login screen. Each theme
-# remembers its last wallpaper.
+# decides the whole look: the theme, the colors, Brave's and the login screen. Each
+# theme remembers its last wallpaper.
 #   wallpaperctl.sh apply          puts the saved one back, at once (login, new screen)
 #   wallpaperctl.sh set <image>    saves it and shows it with a transition (the shell's selector)
 #   wallpaperctl.sh theme <theme>  switches to the theme's last wallpaper, or its first one
@@ -25,6 +25,7 @@ PALETTES="$MATUGEN_DIR/palettes.conf"
 THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
 LOGIN_COLORS="$STATE_DIR/login-colors.conf"
+BRAVE_COLOR="/usr/local/bin/hyprpunk-brave-color"
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
@@ -256,6 +257,15 @@ render_colors() {
   matugen -q json "$palette"
 }
 
+# pkexec, since Brave's policies are the system's, and polkit lets this tool through.
+# Brave builds its whole theme from one color: its tab bar in it, its toolbar a shade
+# lighter, its buttons and selection in its hue. So it gets the accent's hue as dark as
+# the bar. Skipped without Brave, which install.sh then leaves out.
+set_brave_color() {
+  [[ -x "$BRAVE_COLOR" ]] || return 0
+  pkexec "$BRAVE_COLOR" "$(jq -r .colors.primary_dark.default.color "$(palette_of "$1")")"
+}
+
 # pkexec, since the login screen is the system's, and polkit lets this tool through. It
 # gets the colors matugen wrote for it on its input.
 set_login_screen() {
@@ -273,6 +283,7 @@ switch_to() {
   if (($#)); then
     show_wallpaper "$wallpaper" "$@"
   fi
+  set_brave_color "$wallpaper"
   set_login_screen "$wallpaper"
 }
 
