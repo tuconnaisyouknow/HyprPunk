@@ -117,8 +117,6 @@ Item {
                     anchors.fill: parent
                     visible: slide.modelData.image !== ""
                     source: slide.modelData.image !== "" ? "file://" + slide.modelData.image : ""
-                    sourceSize.width: 640
-                    sourceSize.height: 360
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     smooth: true

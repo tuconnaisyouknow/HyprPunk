@@ -236,6 +236,7 @@ you'd bind to your own shortcuts.
 | `emoji` | `Super + .` or `Super + ;` |
 | `keybindings` | `Super + Ctrl + K` |
 | `wallpaper` | `Super + Ctrl + W` |
+| `theme` (neon or daydream) | `Super + Ctrl + T` |
 | `session` | `Super + Escape` |
 | `controlcenter` | `Super + C` |
 | `notifications` | `Super + N` |

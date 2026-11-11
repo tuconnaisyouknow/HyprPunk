@@ -32,6 +32,16 @@ IslandPanel {
         carousel.centreOn(carousel.currentId);
     }
 
+    // A new wallpaper may be another theme's: its list is ready, images and all, by the
+    // time the picker opens.
+    Connections {
+        function onWallpaperChanged() {
+            listProcess.running = true;
+        }
+
+        target: Session
+    }
+
     Process {
         id: listProcess
 
@@ -39,12 +49,14 @@ IslandPanel {
         running: true
 
         stdout: StdioCollector {
+            // A wallpaper and its thumbnail per line, a tab between them.
             onStreamFinished: carousel.setItems(text.split("\n").filter((line) => {
                 return line !== "";
-            }).map((path) => {
+            }).map((line) => {
+                const [path, thumbnail] = line.split("\t");
                 return {
                     "id": path,
-                    "image": path
+                    "image": thumbnail
                 };
             }))
         }
