@@ -1,41 +1,45 @@
+# btop's colors: Catppuccin Mocha's, with the wallpaper's palette in place of its
+# surfaces, grays, mauve and lavender. matugen writes it to
+# ~/.config/btop/themes/hyprpunk.theme, which btop.conf picks.
+
 # Main background, empty for terminal default, need to be empty if you want transparent background
-theme[main_bg]="#1E1E2E"
+theme[main_bg]="{{colors.surface.default.hex}}"
 
 # Main text color
-theme[main_fg]="#CDD6F4"
+theme[main_fg]="{{colors.text.default.hex}}"
 
 # Title color for boxes
-theme[title]="#CDD6F4"
+theme[title]="{{colors.text.default.hex}}"
 
 # Highlight color for keyboard shortcuts
 theme[hi_fg]="#89B4FA"
 
 # Background color of selected item in processes box
-theme[selected_bg]="#45475A"
+theme[selected_bg]="{{colors.surface_container_high.default.hex}}"
 
 # Foreground color of selected item in processes box
 theme[selected_fg]="#89B4FA"
 
 # Color of inactive/disabled text
-theme[inactive_fg]="#7F849C"
+theme[inactive_fg]="{{colors.overlay1.default.hex}}"
 
 # Color of text appearing on top of graphs, i.e uptime and current network graph scaling
 theme[graph_text]="#F5E0DC"
 
 # Background color of the percentage meters
-theme[meter_bg]="#45475A"
+theme[meter_bg]="{{colors.surface_container_high.default.hex}}"
 
 # Misc colors for processes box including mini cpu graphs, details memory graph and details status text
 theme[proc_misc]="#F5E0DC"
 
 # CPU, Memory, Network, Proc box outline colors
-theme[cpu_box]="#cba6f7" #Mauve
+theme[cpu_box]="{{colors.primary.default.hex}}" #Mauve
 theme[mem_box]="#a6e3a1" #Green
 theme[net_box]="#eba0ac" #Maroon
 theme[proc_box]="#89b4fa" #Blue
 
 # Box divider line and small boxes line color
-theme[div_line]="#6C7086"
+theme[div_line]="{{colors.overlay0.default.hex}}"
 
 # Temperature graph color (Green -> Yellow -> Red)
 theme[temp_start]="#a6e3a1"
@@ -45,17 +49,17 @@ theme[temp_end]="#f38ba8"
 # CPU graph colors (Teal -> Lavender)
 theme[cpu_start]="#94e2d5"
 theme[cpu_mid]="#74c7ec"
-theme[cpu_end]="#b4befe"
+theme[cpu_end]="{{colors.secondary.default.hex}}"
 
 # Mem/Disk free meter (Mauve -> Lavender -> Blue)
-theme[free_start]="#cba6f7"
-theme[free_mid]="#b4befe"
+theme[free_start]="{{colors.primary.default.hex}}"
+theme[free_mid]="{{colors.secondary.default.hex}}"
 theme[free_end]="#89b4fa"
 
 # Mem/Disk cached meter (Sapphire -> Lavender)
 theme[cached_start]="#74c7ec"
 theme[cached_mid]="#89b4fa"
-theme[cached_end]="#b4befe"
+theme[cached_end]="{{colors.secondary.default.hex}}"
 
 # Mem/Disk available meter (Peach -> Red)
 theme[available_start]="#fab387"
@@ -80,4 +84,4 @@ theme[upload_end]="#89dceb"
 # Process box color gradient for threads, mem and cpu usage (Sapphire -> Mauve)
 theme[process_start]="#74C7EC"
 theme[process_mid]="#89DCEB"
-theme[process_end]="#cba6f7"
+theme[process_end]="{{colors.primary.default.hex}}"

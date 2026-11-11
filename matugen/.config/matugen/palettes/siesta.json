@@ -69,6 +69,36 @@
       "default": {
         "color": "#081607"
       }
+    },
+    "overlay0": {
+      "default": {
+        "color": "#5c7b5a"
+      }
+    },
+    "overlay1": {
+      "default": {
+        "color": "#6e906b"
+      }
+    },
+    "overlay2": {
+      "default": {
+        "color": "#82a57f"
+      }
+    },
+    "subtext0": {
+      "default": {
+        "color": "#94ba91"
+      }
+    },
+    "subtext1": {
+      "default": {
+        "color": "#a8d0a5"
+      }
+    },
+    "text": {
+      "default": {
+        "color": "#bae5b6"
+      }
     }
   }
 }

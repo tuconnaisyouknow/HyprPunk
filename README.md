@@ -296,7 +296,7 @@ from other people's nearby.
 ├── brave/               # Brave managed policy installed system-wide
 ├── btop/                # Btop configuration and theme
 ├── cava/                # Audio visualizer configuration
-├── fastfetch/           # Fastfetch system summary configuration and logo
+├── fastfetch/           # Fastfetch's logos
 ├── fontconfig/          # JetBrainsMono Nerd Font preference
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 theme settings
@@ -307,17 +307,16 @@ from other people's nearby.
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum's theme choice
-├── matugen/             # Each wallpaper's palette, and the GTK, Kvantum, Qt and shell templates matugen fills
+├── matugen/             # Each wallpaper's palette, and the templates matugen fills for the apps, the shell and the terminal tools
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # System, display, Qt, and lock-screen helpers
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
-├── starship/            # Starship prompt configuration
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
-├── yazi/                # Yazi file manager configuration and theme
+├── yazi/                # Yazi file manager configuration
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 

@@ -1,2 +1,3 @@
-# bat, which zsh-bat also puts behind cat. Its theme in themes/ only works once
-# bat cache --build has run, which the installer does.
+# bat, which zsh-bat also puts behind cat. matugen writes its theme in the wallpaper's
+# palette and builds it into bat's cache.
+--theme="HyprPunk"

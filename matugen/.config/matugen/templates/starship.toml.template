@@ -1,4 +1,6 @@
 # The prompt you see in every terminal, drawn by Starship once .zshrc has set it up.
+# matugen writes it to ~/.local/state/hyprpunk/starship.toml in the wallpaper's palette,
+# and .zshrc points Starship there.
 
 "$schema" = 'https://starship.rs/config-schema.json'
 
@@ -13,12 +15,12 @@ $os\
 $username\
 ${custom.local_spacer}\
 $hostname\
-[](bg:mauve fg:surface0)\
+[](bg:primary fg:surface0)\
 $directory\
-[](fg:mauve bg:lavender)\
+[](fg:primary bg:secondary)\
 $git_branch\
 $git_status\
-[](fg:lavender bg:sky)\
+[](fg:secondary bg:sky)\
 $nodejs\
 $php\
 $java\
@@ -28,14 +30,15 @@ $time\
 [ ](fg:sapphire)\
 $line_break$character"""
 
-# Catppuccin Mocha
-palette = 'catppuccin_mocha'
+# Catppuccin Mocha, with the wallpaper's palette in place of its surfaces, grays, mauve
+# and lavender
+palette = 'hyprpunk'
 
-[palettes.catppuccin_mocha]
+[palettes.hyprpunk]
 rosewater = "#f5e0dc"
 flamingo = "#f2cdcd"
 pink = "#f5c2e7"
-mauve = "#cba6f7"
+primary = "{{colors.primary.default.hex}}"
 red = "#f38ba8"
 maroon = "#eba0ac"
 peach = "#fab387"
@@ -45,24 +48,24 @@ teal = "#94e2d5"
 sky = "#89dceb"
 sapphire = "#74c7ec"
 blue = "#89b4fa"
-lavender = "#b4befe"
-text = "#cdd6f4"
-subtext1 = "#bac2de"
-subtext0 = "#a6adc8"
-overlay2 = "#9399b2"
-overlay1 = "#7f849c"
-overlay0 = "#6c7086"
-surface2 = "#585b70"
-surface1 = "#45475a"
-surface0 = "#313244"
-base = "#1e1e2e"
-mantle = "#181825"
-crust = "#11111b"
+secondary = "{{colors.secondary.default.hex}}"
+text = "{{colors.text.default.hex}}"
+subtext1 = "{{colors.subtext1.default.hex}}"
+subtext0 = "{{colors.subtext0.default.hex}}"
+overlay2 = "{{colors.overlay2.default.hex}}"
+overlay1 = "{{colors.overlay1.default.hex}}"
+overlay0 = "{{colors.overlay0.default.hex}}"
+surface2 = "{{colors.surface_container_highest.default.hex}}"
+surface1 = "{{colors.surface_container_high.default.hex}}"
+surface0 = "{{colors.surface_container.default.hex}}"
+base = "{{colors.surface.default.hex}}"
+mantle = "{{colors.surface_container_low.default.hex}}"
+crust = "{{colors.surface_container_lowest.default.hex}}"
 
 # Who and where: distro icon, user, and the machine's name over SSH only
 [os]
 disabled = false
-style = "bg:surface0 fg:lavender"
+style = "bg:surface0 fg:secondary"
 
 [os.symbols]
 Windows = "󰍲"
@@ -88,23 +91,23 @@ NixOS = "󱄅"
 
 [username]
 show_always = true
-style_user = "bg:surface0 fg:lavender"
+style_user = "bg:surface0 fg:secondary"
 style_root = "bg:surface0 fg:red"
 format = '[ $user]($style)'
 
 # Just a space when you're on your own machine, the hostname takes its place over SSH
 [custom.local_spacer]
 when = 'test -z "$SSH_CONNECTION$SSH_TTY$SSH_CLIENT"'
-format = '[ ](bg:surface0 fg:lavender)'
+format = '[ ](bg:surface0 fg:secondary)'
 
 [hostname]
 ssh_only = true
 ssh_symbol = "󰢹 "
-format = "[@$hostname ](bg:surface0 fg:lavender)[$ssh_symbol](bg:surface0 fg:lavender)"
+format = "[@$hostname ](bg:surface0 fg:secondary)[$ssh_symbol](bg:surface0 fg:secondary)"
 
 # The last three folders, the usual ones shown as icons
 [directory]
-style = "fg:base bg:mauve"
+style = "fg:base bg:primary"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -122,22 +125,22 @@ truncation_symbol = "…/"
 # Branch, then what's waiting: ? untracked, ! modified, ++ staged, ⇡⇣ ahead or behind
 [git_branch]
 symbol = ""
-style = "bg:lavender"
-format = '[[ $symbol $branch ](fg:base bg:lavender)]($style)'
+style = "bg:secondary"
+format = '[[ $symbol $branch ](fg:base bg:secondary)]($style)'
 
 [git_status]
-style = "bg:lavender"
-format = '[[($all_status$ahead_behind )](fg:base bg:lavender)]($style)'
-up_to_date = '[ ✓](bg:lavender fg:base)'
-untracked = '[?\($count\)](bg:lavender fg:base)'
-stashed = '[\$](bg:lavender fg:base)'
-modified = '[!\($count\)](bg:lavender fg:base)'
-renamed = '[»\($count\)](bg:lavender fg:base)'
-deleted = '[✘\($count\)](bg:lavender fg:base)'
-staged = '[++\($count\)](bg:lavender fg:base)'
-ahead = '[⇡\(${count}\)](bg:lavender fg:base)'
-diverged = '⇕[\[](bg:lavender fg:base)[⇡\(${ahead_count}\)](bg:lavender fg:base)[⇣\(${behind_count}\)](bg:lavender fg:base)[\]](bg:lavender fg:base)'
-behind = '[⇣\(${count}\)](bg:lavender fg:base)'
+style = "bg:secondary"
+format = '[[($all_status$ahead_behind )](fg:base bg:secondary)]($style)'
+up_to_date = '[ ✓](bg:secondary fg:base)'
+untracked = '[?\($count\)](bg:secondary fg:base)'
+stashed = '[\$](bg:secondary fg:base)'
+modified = '[!\($count\)](bg:secondary fg:base)'
+renamed = '[»\($count\)](bg:secondary fg:base)'
+deleted = '[✘\($count\)](bg:secondary fg:base)'
+staged = '[++\($count\)](bg:secondary fg:base)'
+ahead = '[⇡\(${count}\)](bg:secondary fg:base)'
+diverged = '⇕[\[](bg:secondary fg:base)[⇡\(${ahead_count}\)](bg:secondary fg:base)[⇣\(${behind_count}\)](bg:secondary fg:base)[\]](bg:secondary fg:base)'
+behind = '[⇣\(${count}\)](bg:secondary fg:base)'
 
 # The project's language and its version.
 # The commented ones are ready to go: uncomment them and add them to the format above.
@@ -196,12 +199,12 @@ format = '[[  $time ](fg:base bg:sapphire)]($style)'
 [line_break]
 disabled = false
 
-# The arrow you type after: mauve, red when the last command failed, other colors in Vim modes
+# The arrow you type after: the accent, red when the last command failed, other colors in Vim modes
 [character]
 disabled = false
-success_symbol = '[ ](bold fg:mauve)'
+success_symbol = '[ ](bold fg:primary)'
 error_symbol = '[ ](bold fg:red)'
-vimcmd_symbol = '[ ](bold fg:mauve)'
+vimcmd_symbol = '[ ](bold fg:primary)'
 vimcmd_replace_one_symbol = '[ ](bold fg:maroon)'
 vimcmd_replace_symbol = '[ ](bold fg:maroon)'
 vimcmd_visual_symbol = '[ ](bold fg:green)'

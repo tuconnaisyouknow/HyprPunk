@@ -40,7 +40,6 @@ readonly -a USER_CONFIG_PATHS=(
   ".config/qt5ct"
   ".config/qt6ct"
   ".config/quickshell"
-  ".config/starship.toml"
   ".config/tmux"
   ".config/yazi"
   ".zshrc"
@@ -431,7 +430,7 @@ clone_dotfiles() {
 # Link each module into your home. The others (sddm, grub, battery…) are installed
 # system-wide by their own steps.
 stow_dotfiles() {
-  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum matugen nvim portal quickshell scripts starship tmux wallpapers yazi zsh
+  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum matugen nvim portal quickshell scripts tmux wallpapers yazi zsh
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
   # ours, kept out of git, and the settings you already have stay
@@ -551,13 +550,10 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Papirus, dark mode, and bat's theme matching Neovim. The colors and the GTK theme
-# come with the wallpaper.
+# Papirus and dark mode. The colors, the GTK theme and bat's theme come with the
+# wallpaper.
 apply_themes() {
   papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
-
-  # bat only sees the themes in its folder once they're built into its cache
-  bat cache --build >/dev/null
 
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'

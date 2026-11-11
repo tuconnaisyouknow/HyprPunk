@@ -65,7 +65,9 @@ eval "$(zoxide init zsh)"
 # PROMPT #
 ##########
 
-# Starship, set up only once even if this file is sourced again
+# Starship, in the wallpaper's palette written by matugen, set up only once even if this
+# file is sourced again
+export STARSHIP_CONFIG="${XDG_STATE_HOME:-$HOME/.local/state}/hyprpunk/starship.toml"
 type starship_zle-keymap-select >/dev/null || \
   {
     eval "$(starship init zsh)"

@@ -1,4 +1,4 @@
-# The GTK and Qt colors, written by matugen so both toolkits share them. Every wallpaper
+# The desktop's colors, written by matugen so every app shares them. Every wallpaper
 # has its own palette (palettes.conf names it, palettes/ holds them): the wallpaper's own
 # hues at Catppuccin Mocha's lightness, so the theme stays dark and readable.
 # wallpaperctl.sh renders the wallpaper's palette whenever it changes.
@@ -48,3 +48,45 @@ output_path = "~/.local/state/hyprpunk/login-colors.conf"
 input_path = "./templates/hyprland.template"
 output_path = "~/.local/state/hyprpunk/hypr-colors"
 post_hook = "hyprctl reload >/dev/null 2>&1 || true"
+
+# The terminal's colors. kitty includes them, and reloads them on SIGUSR1.
+[templates.kitty]
+input_path = "./templates/kitty.conf.template"
+output_path = "~/.local/state/hyprpunk/kitty-colors.conf"
+post_hook = "pkill -USR1 -x kitty || true"
+
+# tmux.conf reads them too, but a running tmux takes them straight from here
+[templates.tmux]
+input_path = "./templates/tmux.conf.template"
+output_path = "~/.local/state/hyprpunk/tmux-colors.conf"
+post_hook = "tmux source-file ~/.local/state/hyprpunk/tmux-colors.conf >/dev/null 2>&1 || true"
+
+# The whole prompt, which Starship reads again on every prompt
+[templates.starship]
+input_path = "./templates/starship.toml.template"
+output_path = "~/.local/state/hyprpunk/starship.toml"
+
+# Open Neovims watch it themselves
+[templates.nvim]
+input_path = "./templates/nvim.lua.template"
+output_path = "~/.local/state/hyprpunk/nvim-colors.lua"
+
+# bat's code colors, which yazi's previews use too. bat only sees them once built into
+# its cache.
+[templates.bat]
+input_path = "./templates/bat.tmTheme.template"
+output_path = "~/.config/bat/themes/HyprPunk.tmTheme"
+post_hook = "bat cache --build >/dev/null 2>&1 || true"
+
+# fastfetch, yazi and btop take theirs when they start
+[templates.fastfetch]
+input_path = "./templates/fastfetch.jsonc.template"
+output_path = "~/.config/fastfetch/config.jsonc"
+
+[templates.yazi]
+input_path = "./templates/yazi.toml.template"
+output_path = "~/.config/yazi/theme.toml"
+
+[templates.btop]
+input_path = "./templates/btop.theme.template"
+output_path = "~/.config/btop/themes/hyprpunk.theme"
