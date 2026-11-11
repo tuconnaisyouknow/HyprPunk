@@ -2,6 +2,8 @@
 # has its own palette (palettes.conf names it, palettes/ holds them): the wallpaper's own
 # hues at Catppuccin Mocha's lightness, so the theme stays dark and readable.
 # wallpaperctl.sh renders the wallpaper's palette whenever it changes.
+# matugen only expands ~ in its paths, so the shell's and the terminal's colors go to
+# ~/.local/state/hyprpunk, the default $XDG_STATE_HOME that their readers fall back on.
 
 [config]
 # Read last, over the palette: red, green, yellow, peach and blue mean something, they
