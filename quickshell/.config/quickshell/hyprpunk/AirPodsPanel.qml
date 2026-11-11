@@ -43,7 +43,7 @@ ControlBlock {
             Text {
                 width: parent.width
                 text: panel.device.name
-                color: Theme.mauve
+                color: Theme.primary
                 elide: Text.ElideRight
                 font.family: Theme.font
                 font.pixelSize: 15
@@ -53,7 +53,7 @@ ControlBlock {
             Text {
                 width: parent.width
                 text: panel.device.connected ? panel.device.model : panel.device.model + " · Nearby"
-                color: Theme.lavender
+                color: Theme.secondary
                 elide: Text.ElideRight
                 font.family: Theme.font
                 font.pixelSize: 12

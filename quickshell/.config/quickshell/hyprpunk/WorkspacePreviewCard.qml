@@ -121,7 +121,7 @@ ClippingRectangle {
                     width: index === list.currentIndex ? 14 : 6
                     height: 6
                     radius: 3
-                    color: index === list.currentIndex ? Theme.mauve : Theme.lavender
+                    color: index === list.currentIndex ? Theme.primary : Theme.secondary
 
                     Behavior on width {
                         NumberAnimation {
@@ -166,7 +166,7 @@ ClippingRectangle {
         Text {
             anchors.centerIn: parent
             text: arrow.icon
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 18
         }

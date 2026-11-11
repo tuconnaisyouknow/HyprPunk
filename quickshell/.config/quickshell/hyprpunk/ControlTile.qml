@@ -33,11 +33,11 @@ ControlBlock {
             radius: 18
             color: "transparent"
 
-            // Mauve glass while on, plain glass while off.
+            // Accent glass while on, plain glass while off.
             GlassSurface {
                 radius: parent.radius
                 hovered: iconHover.hovered
-                backgroundColor: tile.active ? Theme.alpha(Theme.mauve, iconHover.hovered ? 0.95 : 0.8) : "transparent"
+                backgroundColor: tile.active ? Theme.alpha(Theme.primary, iconHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {
                     ColorAnimation {
@@ -51,7 +51,7 @@ ControlBlock {
             Text {
                 anchors.centerIn: parent
                 text: tile.icon
-                color: tile.active ? Theme.base : Theme.mauve
+                color: tile.active ? Theme.base : Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 17
                 font.weight: Font.Bold
@@ -90,7 +90,7 @@ ControlBlock {
                 Text {
                     width: parent.width
                     text: tile.title
-                    color: Theme.mauve
+                    color: Theme.primary
                     elide: Text.ElideRight
                     font.family: Theme.font
                     font.pixelSize: 14
@@ -112,7 +112,7 @@ ControlBlock {
                         width: parent.width
                         visible: !parent.scrolling
                         text: tile.subtitle
-                        color: Theme.lavender
+                        color: Theme.secondary
                         elide: Text.ElideRight
                         font.family: Theme.font
                         font.pixelSize: 12
@@ -125,7 +125,7 @@ ControlBlock {
                         visible: parent.scrolling
                         running: parent.scrolling
                         text: tile.subtitle
-                        color: Theme.lavender
+                        color: Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: 12
                     }
@@ -148,7 +148,7 @@ ControlBlock {
         Text {
             visible: tile.expandable
             text: "󰅂"
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 16
 

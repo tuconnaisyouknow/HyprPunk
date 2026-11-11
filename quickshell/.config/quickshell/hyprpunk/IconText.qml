@@ -9,7 +9,7 @@ Item {
 
     property string icon
     property string text
-    property color color: Theme.mauve
+    property color color: Theme.primary
     // The icon is drawn with the value's font.
     property alias font: valueLabel.font
     property alias elide: valueLabel.elide

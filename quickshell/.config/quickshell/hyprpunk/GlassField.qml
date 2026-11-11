@@ -10,14 +10,14 @@ Rectangle {
     property alias text: input.text
     property alias input: input
     property string placeholder: ""
-    property color placeholderColor: Theme.alpha(Theme.lavender, 0.5)
+    property color placeholderColor: Theme.alpha(Theme.secondary, 0.5)
     // At the right, e.g. what Enter will do. It never takes more than half the field.
     property string hint: ""
     property bool secret: false
     property bool readOnly: false
-    property color textColor: Theme.mauve
+    property color textColor: Theme.primary
     property string fontFamily: Theme.font
-    // The mauve ring while it has the keyboard. Off by default: alone in a panel the
+    // The accent ring while it has the keyboard. Off by default: alone in a panel the
     // field always has it, and the ring would only be noise.
     property bool showsFocus: false
 
@@ -43,7 +43,7 @@ Rectangle {
         anchors.leftMargin: 16
         anchors.verticalCenter: parent.verticalCenter
         text: field.icon
-        color: Theme.mauve
+        color: Theme.primary
         font.family: Theme.font
         font.pixelSize: 16
     }
@@ -98,7 +98,7 @@ Rectangle {
         width: Math.min(implicitWidth, field.width / 2)
         elide: Text.ElideRight
         text: field.hint
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
     }

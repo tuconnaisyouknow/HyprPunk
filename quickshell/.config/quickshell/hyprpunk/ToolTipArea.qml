@@ -62,7 +62,7 @@ Item {
 
                 anchors.centerIn: parent
                 text: area.text
-                color: Theme.mauve
+                color: Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 14
                 font.weight: Font.Medium

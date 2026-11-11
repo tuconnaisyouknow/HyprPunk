@@ -1,20 +1,20 @@
 import QtQuick
 
 // The control center's sliders (volume, brightness, the mixer): a rounded track that
-// fills up in mauve, an icon at the start, drag or click anywhere to set it.
+// fills up in the accent, an icon at the start, drag or click anywhere to set it.
 Item {
     id: control
 
     required property real value
     required property string icon
-    property color accent: Theme.mauve
+    property color accent: Theme.primary
     property color trackColor: Theme.alpha(Theme.text, 0.12)
     property color iconColor: Theme.base
     // Makes the icon a round button inside the fill (mute, on the volume slider),
     // with a glass halo on hover like the player's controls.
     property bool iconButton: false
     // Text inside the track after the icon (an app's name in the mixer), dark over the
-    // fill and lavender past it, switching color exactly at the fill's edge.
+    // fill and in the secondary color past it, switching color exactly at the fill's edge.
     property string label: ""
     // The value the fill shows, easing after the real one. Animating it rather than the
     // fill's width lets the fill follow the layout at once, so a slider built with the
@@ -54,9 +54,9 @@ Item {
             radius: parent.radius
             color: "transparent"
 
-            // Plain mauve in the classic style. The two fills swap at once when the style
+            // Plain accent in the classic style. The two fills swap at once when the style
             // changes, as fading one into the other flashed darker on the way. Each eases
-            // to lavender and back on its own when you mute.
+            // to the secondary color and back on its own when you mute.
             Rectangle {
                 anchors.fill: parent
                 visible: !fillGlass.liquid
@@ -100,7 +100,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             visible: control.label !== ""
             text: control.label
-            color: Theme.lavender
+            color: Theme.secondary
             elide: Text.ElideRight
             font.family: Theme.font
             font.pixelSize: 12

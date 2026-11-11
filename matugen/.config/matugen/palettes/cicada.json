@@ -1,0 +1,69 @@
+{
+  "colors": {
+    "primary": {
+      "default": {
+        "color": "#de3100"
+      }
+    },
+    "on_primary": {
+      "default": {
+        "color": "#0d150c"
+      }
+    },
+    "secondary": {
+      "default": {
+        "color": "#7ad5d4"
+      }
+    },
+    "surface_container_lowest": {
+      "default": {
+        "color": "#0d150c"
+      }
+    },
+    "surface_container_low": {
+      "default": {
+        "color": "#121d12"
+      }
+    },
+    "surface": {
+      "default": {
+        "color": "#172417"
+      }
+    },
+    "surface_container": {
+      "default": {
+        "color": "#2a3829"
+      }
+    },
+    "surface_container_high": {
+      "default": {
+        "color": "#3f4d3e"
+      }
+    },
+    "surface_container_highest": {
+      "default": {
+        "color": "#516251"
+      }
+    },
+    "shadow": {
+      "default": {
+        "color": "#0d150c"
+      }
+    },
+    "on_error": {
+      "default": {
+        "color": "#0d150c"
+      }
+    },
+    "on_green": {
+      "default": {
+        "color": "#0d150c"
+      }
+    },
+    "on_yellow": {
+      "default": {
+        "color": "#0d150c"
+      }
+    }
+  }
+}

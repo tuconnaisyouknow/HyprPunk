@@ -7,9 +7,9 @@ Item {
     id: disc
 
     property url source
-    // Blank record shown until the cover is loaded (crust and mauve).
+    // Blank record shown until the cover is loaded (crust and the accent).
     property color vinylColor: Theme.crust
-    property color labelColor: Theme.mauve
+    property color labelColor: Theme.primary
     // Decoding size, 0 = the displayed size (set it when the disc is resized).
     property int decodeSize: 0
     readonly property int status: art.status

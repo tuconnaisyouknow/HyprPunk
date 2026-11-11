@@ -19,7 +19,7 @@ ColumnLayout {
 
     Text {
         text: select.label
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 12
         font.weight: Font.Bold
@@ -42,7 +42,7 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: select.current ? select.current.label : ""
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 14
         }
@@ -54,7 +54,7 @@ ColumnLayout {
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             text: "󰅀"
-            color: Theme.lavender
+            color: Theme.secondary
             rotation: select.expanded ? 180 : 0
             font.family: Theme.font
             font.pixelSize: 14
@@ -124,7 +124,7 @@ ColumnLayout {
                     width: optionColumn.width
                     height: 32
                     radius: 10
-                    color: optionHover.hovered ? Theme.alpha(Theme.mauve, 0.16) : "transparent"
+                    color: optionHover.hovered ? Theme.alpha(Theme.primary, 0.16) : "transparent"
 
                     Text {
                         anchors.left: parent.left
@@ -134,7 +134,7 @@ ColumnLayout {
                         anchors.verticalCenter: parent.verticalCenter
                         elide: Text.ElideRight
                         text: option.modelData.label
-                        color: option.index === select.currentIndex ? Theme.mauve : Theme.lavender
+                        color: option.index === select.currentIndex ? Theme.primary : Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: 13
                         font.weight: option.index === select.currentIndex ? Font.Bold : Font.Normal
@@ -148,7 +148,7 @@ ColumnLayout {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: option.index === select.currentIndex
                         text: ""
-                        color: Theme.mauve
+                        color: Theme.primary
                         font.family: Theme.font
                         font.pixelSize: 12
                     }

@@ -19,6 +19,7 @@ LOCK_FILE="${STATE_FILE}.lock"
 WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 DEFAULT_THEME="neon"
 MATUGEN_DIR="$HOME/.config/matugen"
+PALETTES="$MATUGEN_DIR/palettes.conf"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
@@ -54,10 +55,15 @@ acquire_lock() {
   export WALLPAPERCTL_LOCKED=true
 }
 
+# The value of a key=value line, empty when the file or the key is missing
+conf_value() {
+  [[ -f "$1" ]] || return 0
+  awk -F= -v key="$2" '$1 == key { print substr($0, length($1) + 2); exit }' "$1"
+}
+
 # The state holds the wallpaper, and each theme's last one under the theme's name
 read_key() {
-  [[ -f "$STATE_FILE" ]] || return 0
-  awk -F= -v key="$1" '$1 == key { print substr($0, length($1) + 2); exit }' "$STATE_FILE"
+  conf_value "$STATE_FILE" "$1"
 }
 
 # The theme is the wallpaper's first folder under ~/Pictures/Wallpapers
@@ -173,14 +179,22 @@ show_wallpaper() {
   awww img "$@" -- "$wallpaper"
 }
 
-# matugen writes every app's colors, kept between sessions. Neon keeps mauve and
-# lavender, any other theme draws its accents from the wallpaper.
+# Every wallpaper has its own palette, picked by hand and named in palettes.conf
+palette_of() {
+  local name
+  name="$(conf_value "$PALETTES" "${1#"$WALLPAPER_DIR"/}")"
+  [[ -n "$name" && -f "$MATUGEN_DIR/palettes/$name.json" ]] || {
+    echo "No palette for this wallpaper: $1" >&2
+    return 1
+  }
+  printf '%s\n' "$MATUGEN_DIR/palettes/$name.json"
+}
+
+# matugen writes every app's colors from it, kept between sessions
 render_colors() {
-  if [[ "$(theme_of "$1")" == "neon" ]]; then
-    matugen -q json "$MATUGEN_DIR/mauve.json"
-  else
-    matugen -q image "$1" -m dark --source-color-index 0
-  fi
+  local palette
+  palette="$(palette_of "$1")"
+  matugen -q json "$palette"
 }
 
 # pkexec, since the login screen is the system's, and polkit lets this tool through
@@ -188,8 +202,8 @@ set_login_screen() {
   pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")"
 }
 
-# A new wallpaper and its look. The colors come first: matugen fails before writing
-# anything, so a bad image changes nothing. The login screen comes last, since you only
+# A new wallpaper and its look. The colors come first: a wallpaper without a palette
+# stops here, before anything changes. The login screen comes last, since you only
 # see it at the next login. Without awww arguments the wallpaper isn't shown (install.sh).
 switch_to() {
   local wallpaper="$1"

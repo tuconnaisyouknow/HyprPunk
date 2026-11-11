@@ -23,7 +23,7 @@ RowLayout {
         Layout.preferredWidth: 7
         Layout.preferredHeight: 7
         radius: 3.5
-        color: Theme.mauve
+        color: Theme.primary
     }
 
     // Spinner in place of the icon while NetworkManager connects (VPN included).
@@ -51,7 +51,7 @@ RowLayout {
 
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Theme.alpha(Theme.mauve, 0.25)
+                strokeColor: Theme.alpha(Theme.primary, 0.25)
                 strokeWidth: 2
 
                 PathAngleArc {
@@ -67,7 +67,7 @@ RowLayout {
 
             ShapePath {
                 fillColor: "transparent"
-                strokeColor: Theme.mauve
+                strokeColor: Theme.primary
                 strokeWidth: 2
                 capStyle: ShapePath.RoundCap
 
@@ -152,7 +152,7 @@ RowLayout {
 
         visible: status.bar.hasBattery
         // Red only when it's running out, not while charging.
-        color: UPower.onBattery && status.bar.batteryPercent <= 20 ? Theme.red : Theme.mauve
+        color: UPower.onBattery && status.bar.batteryPercent <= 20 ? Theme.red : Theme.primary
         icon: Icons.battery(status.bar.battery.percentage, UPower.onBattery)
         text: status.bar.batteryPercent + "%"
 

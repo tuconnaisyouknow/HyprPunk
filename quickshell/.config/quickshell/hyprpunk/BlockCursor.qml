@@ -1,6 +1,6 @@
 import QtQuick
 
-// The blinking mauve block cursor of the shell's prompts, borrowed from the SDDM theme.
+// The blinking accent block cursor of the shell's prompts, borrowed from the SDDM theme.
 // Put it inside the input and hide the input's own cursor (`cursorDelegate: Item {}`).
 // It only shows once you start typing, so the placeholder stays readable.
 Rectangle {
@@ -12,7 +12,7 @@ Rectangle {
     y: input.cursorRectangle.y
     width: 8
     height: input.cursorRectangle.height
-    color: Theme.mauve
+    color: Theme.primary
     visible: input.activeFocus && !input.readOnly && input.text !== ""
 
     SequentialAnimation {

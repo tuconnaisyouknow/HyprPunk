@@ -24,7 +24,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.bottomMargin: 6
         text: "Keeps the screen on: no dimming, locking or sleep."
-        color: Theme.lavender
+        color: Theme.secondary
         wrapMode: Text.Wrap
         font.family: Theme.font
         font.pixelSize: 12

@@ -1,6 +1,6 @@
 import QtQuick
 
-// A check box for the control center's forms: a small glass square that turns mauve
+// A check box for the control center's forms: a small glass square that turns to the accent
 // when checked, and bounces when clicked.
 Item {
     id: check
@@ -31,7 +31,7 @@ Item {
             GlassSurface {
                 radius: parent.radius
                 hovered: checkHover.hovered
-                backgroundColor: check.checked ? Theme.alpha(Theme.mauve, checkHover.hovered ? 0.95 : 0.8) : "transparent"
+                backgroundColor: check.checked ? Theme.alpha(Theme.primary, checkHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {
                     ColorAnimation {
@@ -63,7 +63,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: check.label
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
         }

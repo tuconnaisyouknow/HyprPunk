@@ -78,7 +78,7 @@ SearchPanel {
         anchors.centerIn: parent
         visible: clipboard.results.length === 0
         text: listProcess.running && clipboard.entries.length === 0 ? "Loading…" : clipboard.entries.length === 0 ? "The clipboard is empty" : "No match"
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 14
     }
@@ -146,7 +146,7 @@ SearchPanel {
                 maximumLineCount: 1
                 text: row.isImage ? clipboard.imageLabel(row.modelData.text) : row.modelData.text
                 textFormat: Text.PlainText
-                color: row.selected ? Theme.mauve : Theme.lavender
+                color: row.selected ? Theme.primary : Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 13
             }

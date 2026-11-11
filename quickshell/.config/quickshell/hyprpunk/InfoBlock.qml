@@ -34,7 +34,7 @@ ControlBlock {
 
                 Text {
                     text: modelData.label
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 13
                 }
@@ -44,7 +44,7 @@ ControlBlock {
                     horizontalAlignment: Text.AlignRight
                     elide: Text.ElideRight
                     text: modelData.value
-                    color: Theme.mauve
+                    color: Theme.primary
                     font.family: Theme.font
                     font.pixelSize: 13
                     font.weight: Font.Bold

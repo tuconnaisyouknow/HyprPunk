@@ -13,7 +13,7 @@ Item {
     property color backgroundColor: "transparent"
     // Off for panels, which keep their own background and only get the rim.
     property bool tinted: true
-    // A text field you can type in: the rim lights up in mauve, since an empty field
+    // A text field you can type in: the rim lights up in the accent, since an empty field
     // shows no cursor yet. Only for fields that share the keyboard with something else.
     property bool focused: false
     property real accent: focused ? 1 : 0
@@ -21,16 +21,16 @@ Item {
     // see-through colors and a soft rim instead of the ring.
     readonly property bool liquid: Session.glassStyle === "liquid"
     // How much of the background's color stays, at the top and at the bottom. A dark
-    // panel turns see-through, but a light color like the mauve of a selection gets a
+    // panel turns see-through, but a light color like the accent of a selection gets a
     // little stronger at the top and fades to its usual self, or it would look grey over
     // the dark glass.
     readonly property bool lightBackground: backgroundColor.hslLightness > 0.4
     property real liquidTop: lightBackground ? 1.15 : 0.6
     property real liquidBottom: lightBackground ? 0.95 : 0.4
 
-    // The rim's color, from the usual pale glass to mauve as the field gets the focus.
+    // The rim's color, from the usual pale glass to the accent as the field gets the focus.
     function rimColor(alpha, focusedAlpha) {
-        return Qt.rgba(Theme.text.r + (Theme.mauve.r - Theme.text.r) * accent, Theme.text.g + (Theme.mauve.g - Theme.text.g) * accent, Theme.text.b + (Theme.mauve.b - Theme.text.b) * accent, alpha + (focusedAlpha - alpha) * accent);
+        return Qt.rgba(Theme.text.r + (Theme.primary.r - Theme.text.r) * accent, Theme.text.g + (Theme.primary.g - Theme.text.g) * accent, Theme.text.b + (Theme.primary.b - Theme.text.b) * accent, alpha + (focusedAlpha - alpha) * accent);
     }
 
     anchors.fill: parent

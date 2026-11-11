@@ -1,0 +1,13 @@
+{
+  "crust": "{{colors.surface_container_lowest.default.hex}}",
+  "base": "{{colors.surface.default.hex}}",
+  "surface0": "{{colors.surface_container.default.hex}}",
+  "surface1": "{{colors.surface_container_high.default.hex}}",
+  "primary": "{{colors.primary.default.hex}}",
+  "secondary": "{{colors.secondary.default.hex}}",
+  "red": "{{colors.error.default.hex}}",
+  "green": "{{colors.green.default.hex}}",
+  "yellow": "{{colors.yellow.default.hex}}",
+  "peach": "{{colors.peach.default.hex}}",
+  "blue": "{{colors.blue.default.hex}}"
+}

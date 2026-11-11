@@ -1,8 +1,8 @@
 import QtQuick
 
-// Plain mauve text in the shell's font.
+// Plain text in the accent in the shell's font.
 Text {
-    color: Theme.mauve
+    color: Theme.primary
     font.family: Theme.font
     font.pixelSize: 16
     font.weight: Font.DemiBold

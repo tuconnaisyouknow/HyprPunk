@@ -5,7 +5,7 @@ import Quickshell.Widgets
 
 // One background app in the control center: left click brings it back, middle click
 // does its second action, right click opens its menu (apps that only have a menu open
-// it on any click). A mauve dot says it's waiting for you.
+// it on any click). An accent dot says it's waiting for you.
 Item {
     id: root
 
@@ -48,7 +48,7 @@ Item {
         width: 8
         height: 8
         radius: 4
-        color: Theme.mauve
+        color: Theme.primary
     }
 
     BounceAnimation {

@@ -46,7 +46,7 @@ Item {
         "value": "text",
         "icon": "󰊄"
     }]
-    readonly property var colors: [Theme.red, Theme.peach, Theme.yellow, Theme.green, Theme.blue, Theme.mauve]
+    readonly property var colors: [Theme.red, Theme.peach, Theme.yellow, Theme.green, Theme.blue, Theme.primary]
 
     signal finished(string file)
     signal cancelled()
@@ -368,7 +368,7 @@ Item {
                         radius: width / 2
                         color: "transparent"
                         border.width: parent.chosen ? 2 : 0
-                        border.color: Theme.mauve
+                        border.color: Theme.primary
 
                         Behavior on width {
                             NumberAnimation {
@@ -414,7 +414,7 @@ Item {
                         width: [6, 10, 15][parent.index]
                         height: width
                         radius: width / 2
-                        color: annotator.size === parent.index ? Theme.mauve : Theme.lavender
+                        color: annotator.size === parent.index ? Theme.primary : Theme.secondary
 
                         Behavior on color {
                             ColorAnimation {
@@ -476,12 +476,12 @@ Item {
         implicitWidth: 34
         implicitHeight: 34
         radius: 17
-        color: chosen ? Theme.mauve : buttonHover.hovered ? Theme.alpha(Theme.text, 0.12) : "transparent"
+        color: chosen ? Theme.primary : buttonHover.hovered ? Theme.alpha(Theme.text, 0.12) : "transparent"
 
         Text {
             anchors.centerIn: parent
             text: button.icon
-            color: button.chosen ? Theme.base : Theme.mauve
+            color: button.chosen ? Theme.base : Theme.primary
             font.family: Theme.font
             font.pixelSize: 17
         }

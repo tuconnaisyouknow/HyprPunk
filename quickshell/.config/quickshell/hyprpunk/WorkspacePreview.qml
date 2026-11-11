@@ -58,7 +58,7 @@ ClippingRectangle {
             radius: 4
             color: Theme.surface0
             border.width: 1
-            border.color: modelData.activated ? Theme.mauve : Theme.alpha(Theme.lavender, 0.25)
+            border.color: modelData.activated ? Theme.primary : Theme.alpha(Theme.secondary, 0.25)
 
             // While the capture comes, or when the window cannot be captured.
             IconImage {
@@ -107,7 +107,7 @@ ClippingRectangle {
 
             anchors.centerIn: parent
             text: "Empty"
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 13
             font.weight: Font.DemiBold

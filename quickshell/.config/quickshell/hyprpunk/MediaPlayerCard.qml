@@ -236,7 +236,7 @@ Rectangle {
             anchors.centerIn: parent
             visible: albumArt.status !== Image.Ready
             text: "󰎆"
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 24
         }
@@ -255,7 +255,7 @@ Rectangle {
             Layout.fillWidth: true
             running: card.active
             text: card.player !== null ? (card.player.trackTitle || card.player.identity) : ""
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 15
             font.weight: Font.DemiBold
@@ -264,7 +264,7 @@ Rectangle {
         Text {
             Layout.fillWidth: true
             text: card.player !== null ? (card.player.trackArtist || card.player.trackAlbum) : ""
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 13
             elide: Text.ElideRight
@@ -296,7 +296,7 @@ Rectangle {
                 width: 3
                 height: parent.height * level
                 radius: 1.5
-                color: Theme.mauve
+                color: Theme.primary
 
                 SequentialAnimation on level {
                     running: card.active && card.playing
@@ -351,7 +351,7 @@ Rectangle {
                 width: parent.width * progress.ratio
                 height: parent.height
                 radius: parent.radius
-                color: Theme.mauve
+                color: Theme.primary
             }
 
             Behavior on height {
@@ -410,7 +410,7 @@ Rectangle {
         anchors.top: progress.bottom
         anchors.topMargin: 5
         text: card.formatTime(card.shownPosition)
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 11
         font.features: {
@@ -423,7 +423,7 @@ Rectangle {
         anchors.top: progress.bottom
         anchors.topMargin: 5
         text: "-" + card.formatTime(card.length - card.shownPosition)
-        color: Theme.lavender
+        color: Theme.secondary
         font.family: Theme.font
         font.pixelSize: 11
         font.features: {
@@ -595,7 +595,7 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: control.icon
-            color: control.secondary ? (control.highlighted ? Theme.mauve : Theme.lavender) : Theme.mauve
+            color: control.secondary ? (control.highlighted ? Theme.primary : Theme.secondary) : Theme.primary
             font.family: Theme.font
             font.pixelSize: control.iconSize
         }

@@ -544,7 +544,7 @@ ColumnLayout {
             Layout.fillWidth: true
             elide: Text.ElideRight
             text: page.loading ? "Loading the saved settings…" : page.connecting ? "Connecting…" : page.missing !== "" ? page.missing.charAt(0).toUpperCase() + page.missing.slice(1) : ""
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
         }
@@ -563,7 +563,7 @@ ColumnLayout {
             GlassSurface {
                 radius: parent.radius
                 hovered: connectHover.hovered
-                backgroundColor: Theme.alpha(Theme.mauve, connectHover.hovered && connectButton.available ? 0.95 : 0.8)
+                backgroundColor: Theme.alpha(Theme.primary, connectHover.hovered && connectButton.available ? 0.95 : 0.8)
             }
 
             Text {

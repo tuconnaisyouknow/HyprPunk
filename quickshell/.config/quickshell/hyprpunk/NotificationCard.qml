@@ -205,7 +205,7 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.rightMargin: 16
                     text: card.summary || card.appName
-                    color: card.critical ? Theme.red : Theme.mauve
+                    color: card.critical ? Theme.red : Theme.primary
                     font.family: Theme.font
                     font.pixelSize: 18
                     font.weight: Font.Bold
@@ -219,7 +219,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: card.styledBody(card.body)
                 textFormat: Text.StyledText
-                color: card.critical ? Theme.red : Theme.mauve
+                color: card.critical ? Theme.red : Theme.primary
                 font.family: Theme.font
                 font.pixelSize: 16
                 wrapMode: Text.Wrap
@@ -241,11 +241,11 @@ Rectangle {
                         radius: 12
                         color: "transparent"
 
-                        // Mauve glass, like the button that clears the notifications.
+                        // Accent glass, like the button that clears the notifications.
                         GlassSurface {
                             radius: parent.radius
                             hovered: actionArea.containsMouse
-                            backgroundColor: Theme.alpha(Theme.mauve, actionArea.containsMouse ? 0.95 : 0.8)
+                            backgroundColor: Theme.alpha(Theme.primary, actionArea.containsMouse ? 0.95 : 0.8)
                         }
 
                         Text {
@@ -305,7 +305,7 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: ""
-            color: closeArea.containsMouse ? Theme.mauve : Theme.lavender
+            color: closeArea.containsMouse ? Theme.primary : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
         }

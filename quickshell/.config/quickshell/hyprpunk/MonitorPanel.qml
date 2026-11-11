@@ -286,14 +286,14 @@ IslandPanel {
         }
     }
 
-    // Glass pill, mauve when selected.
+    // Glass pill, accent when selected.
     component Chip: Rectangle {
         id: chip
 
         property string text
         property bool selected: false
         property bool dimmed: false
-        property color selectedColor: Theme.alpha(Theme.mauve, 0.9)
+        property color selectedColor: Theme.alpha(Theme.primary, 0.9)
 
         signal clicked()
 
@@ -324,7 +324,7 @@ IslandPanel {
 
             anchors.centerIn: parent
             text: chip.text
-            color: chip.selected ? Theme.base : chip.dimmed ? Theme.alpha(Theme.lavender, 0.5) : Theme.lavender
+            color: chip.selected ? Theme.base : chip.dimmed ? Theme.alpha(Theme.secondary, 0.5) : Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
             font.weight: chip.selected ? Font.Bold : Font.Normal
@@ -367,7 +367,7 @@ IslandPanel {
             anchors.top: parent.top
             anchors.topMargin: 7
             text: settingRow.title
-            color: Theme.mauve
+            color: Theme.primary
             font.family: Theme.font
             font.pixelSize: 13
             font.weight: Font.Bold
@@ -436,7 +436,7 @@ IslandPanel {
                 anchors.centerIn: parent
                 visible: monitors.outputs.length === 0
                 text: monitors.busy ? "Loading…" : "No output"
-                color: Theme.lavender
+                color: Theme.secondary
                 font.family: Theme.font
                 font.pixelSize: 14
             }
@@ -460,7 +460,7 @@ IslandPanel {
                     GlassSurface {
                         radius: parent.radius
                         hovered: screenHover.hovered
-                        backgroundColor: screenRect.selected ? Theme.alpha(Theme.mauve, 0.25) : Theme.alpha(Theme.surface0, 0.8)
+                        backgroundColor: screenRect.selected ? Theme.alpha(Theme.primary, 0.25) : Theme.alpha(Theme.surface0, 0.8)
                     }
 
                     Rectangle {
@@ -468,7 +468,7 @@ IslandPanel {
                         radius: parent.radius
                         color: "transparent"
                         border.width: 2
-                        border.color: Theme.mauve
+                        border.color: Theme.primary
                         visible: screenRect.selected
                     }
 
@@ -479,7 +479,7 @@ IslandPanel {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: screenRect.modelData.output.slot || "?"
-                            color: Theme.mauve
+                            color: Theme.primary
                             font.family: Theme.font
                             font.pixelSize: 22
                             font.weight: Font.Bold
@@ -488,7 +488,7 @@ IslandPanel {
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: screenRect.modelData.output.name
-                            color: Theme.lavender
+                            color: Theme.secondary
                             font.family: Theme.font
                             font.pixelSize: 11
                         }
@@ -517,7 +517,7 @@ IslandPanel {
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: monitors.selected ? monitors.selected.description + " · " + monitors.selected.width + "x" + monitors.selected.height + " · " + monitors.rateLabel(monitors.selected.refresh_rate) : ""
-            color: Theme.lavender
+            color: Theme.secondary
             font.family: Theme.font
             font.pixelSize: 12
         }
@@ -701,7 +701,7 @@ IslandPanel {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Keep these settings? Reverting in " + monitors.revertCountdown + " s"
-                    color: Theme.lavender
+                    color: Theme.secondary
                     font.family: Theme.font
                     font.pixelSize: 13
                 }

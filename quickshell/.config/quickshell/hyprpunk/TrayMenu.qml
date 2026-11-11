@@ -51,7 +51,7 @@ Column {
                     x: 10
                     width: parent.width - 20
                     height: 1
-                    color: Theme.alpha(Theme.lavender, 0.2)
+                    color: Theme.alpha(Theme.secondary, 0.2)
                 }
 
             }
@@ -64,7 +64,7 @@ Column {
                 Rectangle {
                     anchors.fill: parent
                     radius: 10
-                    color: entry.current ? Theme.alpha(Theme.mauve, 0.16) : "transparent"
+                    color: entry.current ? Theme.alpha(Theme.primary, 0.16) : "transparent"
 
                     Behavior on color {
                         ColorAnimation {
@@ -95,7 +95,7 @@ Column {
 
                             return "";
                         }
-                        color: entry.modelData.checkState === Qt.Checked ? Theme.mauve : Theme.lavender
+                        color: entry.modelData.checkState === Qt.Checked ? Theme.primary : Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: 15
                     }
@@ -112,7 +112,7 @@ Column {
                         Layout.fillWidth: true
                         elide: Text.ElideRight
                         text: entry.modelData.text
-                        color: entry.current ? Theme.mauve : Theme.lavender
+                        color: entry.current ? Theme.primary : Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: 13
                         font.weight: entry.current ? Font.Medium : Font.Normal
@@ -123,7 +123,7 @@ Column {
                         visible: entry.modelData.hasChildren
                         text: "󰅂"
                         rotation: entry.open ? 90 : 0
-                        color: entry.current ? Theme.mauve : Theme.lavender
+                        color: entry.current ? Theme.primary : Theme.secondary
                         font.family: Theme.font
                         font.pixelSize: 14
 
