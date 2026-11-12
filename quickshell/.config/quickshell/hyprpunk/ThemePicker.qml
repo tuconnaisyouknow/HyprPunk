@@ -10,7 +10,7 @@ import Quickshell.Widgets
 IslandPanel {
     id: picker
 
-    readonly property string wallpaperctl: Quickshell.env("HOME") + "/Scripts/wallpaperctl.sh"
+    readonly property string wallpaperctl: Session.scripts + "/wallpaperctl.sh"
     readonly property int cardPadding: 14
     readonly property int gap: 14
     readonly property int thumbWidth: 360

@@ -29,11 +29,11 @@ local startup = {
   { name = "systemd",          command = "dbus-update-activation-environment --systemd --all" },
 
   -- The desktop itself: screens, touchpad, wallpaper, the shell and idle handling
-  { name = "displays",         command = "~/Scripts/displayctl.sh bootstrap" },
-  { name = "touchpad",         command = "~/Scripts/touchpadctl.sh sync" },
+  { name = "displays",         command = hyprpunk.scripts .. "/displayctl.sh bootstrap" },
+  { name = "touchpad",         command = hyprpunk.scripts .. "/touchpadctl.sh sync" },
   -- awww-daemon forgets the last wallpaper, so wallpaperctl.sh puts it back
   { name = "wallpaper-daemon", command = "awww-daemon" },
-  { name = "wallpaper",        command = "~/Scripts/wallpaperctl.sh apply" },
+  { name = "wallpaper",        command = hyprpunk.scripts .. "/wallpaperctl.sh apply" },
   { name = "shell",            command = "qs -c hyprpunk" },
   { name = "idle",             command = "hypridle" },
   -- Your Documents, Pictures… folders, in English so screenshots land next to the
@@ -54,7 +54,7 @@ local startup = {
   { name = "keyring",          command = "/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh" },
 
   -- A notification when HyprPunk has an update, once per session
-  { name = "update-check",     command = "~/Scripts/update-notify.sh" },
+  { name = "update-check",     command = hyprpunk.scripts .. "/update-notify.sh" },
 }
 
 -- The list only runs once the whole config is read, so your additions and removals count
@@ -82,12 +82,12 @@ end)
 
 -- A screen gets plugged in: set it up (screens already configured keep their settings)
 hl.on("monitor.added", function()
-  hl.exec_cmd("~/Scripts/displayctl.sh sync")
+  hl.exec_cmd(hyprpunk.scripts .. "/displayctl.sh sync")
   -- Give awww a second to notice the new screen, otherwise it stays blank
-  hl.exec_cmd("sleep 1; ~/Scripts/wallpaperctl.sh apply")
+  hl.exec_cmd("sleep 1; " .. hyprpunk.scripts .. "/wallpaperctl.sh apply")
 end)
 
 -- A screen goes away: rearrange the ones left, the saved layout comes back on reconnect
 hl.on("monitor.removed", function()
-  hl.exec_cmd("~/Scripts/displayctl.sh reflow")
+  hl.exec_cmd(hyprpunk.scripts .. "/displayctl.sh reflow")
 end)

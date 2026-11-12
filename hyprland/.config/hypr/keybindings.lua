@@ -201,7 +201,7 @@ bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5
   "Increase the screen brightness", { locked = true, repeating = true })
 bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -c backlight -q set 5%-"),
   "Decrease the screen brightness", { locked = true, repeating = true })
-bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/Scripts/touchpadctl.sh toggle"),
+bind("XF86TouchpadToggle", hl.dsp.exec_cmd(hyprpunk.scripts .. "/touchpadctl.sh toggle"),
   "Enable or disable the touchpad", { locked = true })
 
 -----------

@@ -392,7 +392,7 @@ Card {
 
     // category is "language" or "regional".
     function setLocale(category, profile) {
-        Quickshell.execDetached([Quickshell.env("HOME") + "/Scripts/locale-profilectl.sh", "set-" + category, profile]);
+        Quickshell.execDetached([Session.scripts + "/locale-profilectl.sh", "set-" + category, profile]);
     }
 
     onOpenedChanged: {
@@ -674,7 +674,7 @@ Card {
                                     icon: "󰌌"
                                     title: "Keyboard"
                                     subtitle: controlCenter.keyboardLayout === "fr" ? "FR AZERTY" : "US QWERTY"
-                                    onToggled: Quickshell.execDetached([Quickshell.env("HOME") + "/Scripts/keyboard-layoutctl.sh", "set", controlCenter.keyboardLayout === "fr" ? "us" : "fr"])
+                                    onToggled: Quickshell.execDetached([Session.scripts + "/keyboard-layoutctl.sh", "set", controlCenter.keyboardLayout === "fr" ? "us" : "fr"])
                                 }
 
                             }
@@ -763,7 +763,7 @@ Card {
                                         "label": "Liquid"
                                     }]
                                     onSelected: (value) => {
-                                        return Quickshell.execDetached([Quickshell.env("HOME") + "/Scripts/glassctl.sh", "set", value]);
+                                        return Quickshell.execDetached([Session.scripts + "/glassctl.sh", "set", value]);
                                     }
                                 }
 

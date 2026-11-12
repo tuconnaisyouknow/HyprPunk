@@ -15,8 +15,7 @@ STATE_DIR="$STATE_HOME/hyprpunk"
 STATE_FILE="$STATE_DIR/keyboard-layout"
 GENERATED_DIR="$STATE_DIR/keyboard"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
-DOTFILES_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+DOTFILES_DIR="$HOME/.dotfiles"
 
 usage() {
   echo "Usage: $0 {get|list|set <fr|us>|toggle|init [fr|us]|ensure}"

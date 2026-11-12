@@ -143,7 +143,7 @@ The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wa
 
 The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
 minutes with a soft rim. Switch between them live from the control center's Display block, or with
-`~/Scripts/glassctl.sh set classic|liquid|toggle`.
+`hyprpunk glass set classic|liquid|toggle`.
 
 ---
 
@@ -226,11 +226,12 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 ### 🔄 Updating
 
 ```sh
-~/.dotfiles/install.sh update
+hyprpunk update
 ```
 
+`hyprpunk` is the one command HyprPunk adds to your `PATH` (in `~/.local/bin`): run it alone to list what else it does.
 When an update is waiting, a notification tells you at login, and its **Update** button runs it in your terminal
-(drop it with `hyprpunk.autostart.remove("update-check")` in your `personal/autostart.lua`). `install.sh check` asks
+(drop it with `hyprpunk.autostart.remove("update-check")` in your `personal/autostart.lua`). `hyprpunk check` asks
 the same from a terminal.
 
 It pulls the latest HyprPunk, then runs the installer's steps again with the new version. Each step describes how
@@ -364,7 +365,7 @@ from other people's nearby.
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
-├── scripts/             # System, display, Qt, and lock-screen helpers
+├── scripts/             # The hyprpunk command, and the helpers the shell and Hyprland run from ~/.local/lib/hyprpunk
 ├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
@@ -393,8 +394,8 @@ The installer offers two keyboard profiles:
 The active profile can be changed later from the command line:
 
 ```bash
-~/Scripts/keyboard-layoutctl.sh set us
-~/Scripts/keyboard-layoutctl.sh set fr
+hyprpunk keyboard set us
+hyprpunk keyboard set fr
 ```
 
 The selection is stored in `$XDG_STATE_HOME/hyprpunk/keyboard-layout` (or `~/.local/state/hyprpunk/keyboard-layout`).
@@ -408,7 +409,7 @@ The layout integration covers:
 
 - 🪟 `hyprland/.config/hypr/input.lua`
 - ⌨️ `hyprland/.config/hypr/keybindings.lua`
-- 📖 `scripts/Scripts/keyboard-layoutctl.sh` (generated less bindings)
+- 📖 `scripts/.local/lib/hyprpunk/keyboard-layoutctl.sh` (generated less bindings)
 - 📝 `nvim/.config/nvim/lua/config/keymaps.lua`
 - 💻 `tmux/.config/tmux/tmux.conf`
 - 📁 `keyboard/yazi/fr.toml`
@@ -429,10 +430,10 @@ and each is either English (`us`, `en_US.UTF-8`) or French (`fr`, `fr_FR.UTF-8`)
 They can be changed after installation from the command line:
 
 ```bash
-~/Scripts/locale-profilectl.sh set-language us
-~/Scripts/locale-profilectl.sh set-language fr
-~/Scripts/locale-profilectl.sh set-regional us
-~/Scripts/locale-profilectl.sh set-regional fr
+hyprpunk locale set-language us
+hyprpunk locale set-language fr
+hyprpunk locale set-regional us
+hyprpunk locale set-regional fr
 ```
 
 The profiles are stored in `$XDG_STATE_HOME/hyprpunk/locale-language` and `locale-regional`. Hyprland, D-Bus, and the
@@ -444,7 +445,7 @@ and on 24 hours with `fr`, and the calendar starts the week on the right day.
 
 ## 🖥️ Display Settings
 
-Monitors are managed by `~/Scripts/displayctl.sh`: per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment, plus an automatic layout and a reset of all saved display settings. The settings are persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`) and applied by Hyprland on reload. Run `~/Scripts/displayctl.sh` without arguments to list its commands.
+Monitors are managed by `hyprpunk display`: per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment, plus an automatic layout and a reset of all saved display settings. The settings are persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`) and applied by Hyprland on reload. Run `hyprpunk display` without arguments to list its commands.
 
 ---
 
@@ -483,8 +484,8 @@ without touching your preferences:
   - 🪟 `rules.lua` to send your apps to a workspace with `hyprpunk.app("org.gnome.Geary", 6)`, float the dialogs of
     an app that lets them get tiled with `hyprpunk.float_dialogs(class, main window's title)`, plus any window rule.
   - 🖱️ `input.lua` for the mouse, touchpad and gestures. The keyboard layout comes from the shell's settings.
-  - 🌱 `env.lua` for environment variables, like a bigger cursor or your own scripts in `PATH`. The language comes
-    from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
+  - 🌱 `env.lua` for environment variables, like a bigger cursor. Your own scripts go in `~/.local/bin`, already in
+    your `PATH`. The language comes from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
   - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
     `hyprpunk.autostart.remove`.
 - 🖥️ **Your tmux and Kitty settings** go in `~/.config/tmux/personal.conf` and `~/.config/kitty/personal.conf`,

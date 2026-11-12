@@ -1,5 +1,5 @@
 # The shell's own backend: the apps' Open and Save dialogs go to its file picker.
-# ~/Scripts/filechooser-portal.py answers it while quickshell runs.
+# filechooser-portal.py answers it while quickshell runs.
 [portal]
 DBusName=org.freedesktop.impl.portal.desktop.hyprpunk
 Interfaces=org.freedesktop.impl.portal.FileChooser;

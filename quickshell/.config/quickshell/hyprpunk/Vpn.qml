@@ -84,7 +84,7 @@ Singleton {
         if (passwordUuid === uuid)
             passwordUuid = "";
 
-        const command = [Quickshell.env("HOME") + "/Scripts/vpnctl.sh", "up", uuid];
+        const command = [Session.scripts + "/vpnctl.sh", "up", uuid];
         if (password !== "")
             command.push("--password");
 
@@ -242,7 +242,7 @@ Singleton {
 
         // The file chooser speaks the current locale, not the shell's at startup.
         environment: Session.localeEnvironment
-        command: ["sh", "-c", "file=$(zenity --file-selection --title='Import a VPN' --file-filter='VPN configurations | *.conf *.ovpn *.pcf' --file-filter='All files | *') || exit 0; exec \"$HOME/Scripts/vpnctl.sh\" import \"$file\""]
+        command: ["sh", "-c", "file=$(zenity --file-selection --title='Import a VPN' --file-filter='VPN configurations | *.conf *.ovpn *.pcf' --file-filter='All files | *') || exit 0; exec \"$1\" import \"$file\"", "sh", Session.scripts + "/vpnctl.sh"]
         onExited: (code) => {
             vpn.importing = false;
             if (code !== 0)

@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Talks to ~/Scripts/screenshare-picker.sh, which xdg-desktop-portal-hyprland runs when
+// Talks to screenshare-picker.sh, which xdg-desktop-portal-hyprland runs when
 // an app asks to share your screen: holds the request, and sends back the screen, window
 // or region you picked. The region is drawn with the screenshot selector.
 Scope {

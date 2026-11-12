@@ -6,6 +6,9 @@
 -- What the modules share with your personal files: programs, bind, app, autostart…
 hyprpunk = {}
 
+-- HyprPunk's scripts, for the commands that run them
+hyprpunk.scripts = os.getenv("HOME") .. "/.local/lib/hyprpunk"
+
 require("monitors")    -- Screens
 require("workspaces")  -- Which workspace lives on which screen, per machine
 require("input")       -- Keyboard, mouse, touchpad and gestures

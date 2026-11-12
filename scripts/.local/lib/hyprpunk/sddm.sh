@@ -7,9 +7,7 @@
 #                     screen and colors back, which the copies replaced
 set -euo pipefail
 
-# The repository this script was linked from, wherever you cloned it
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
-DOTFILES_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
+DOTFILES_DIR="$HOME/.dotfiles"
 BASE_DIR="$DOTFILES_DIR/sddm/base"
 THEMES_DIR="$DOTFILES_DIR/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
@@ -120,7 +118,7 @@ update)
   install_themes
   install_login_screen_access
   # The copies lost the wallpaper's colors
-  "$DOTFILES_DIR/scripts/Scripts/wallpaperctl.sh" login
+  "$HOME/.local/lib/hyprpunk/wallpaperctl.sh" login
   ;;
 *)
   usage
