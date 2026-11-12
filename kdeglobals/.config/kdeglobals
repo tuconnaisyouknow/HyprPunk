@@ -1,5 +1,5 @@
-# KDE apps like Dolphin take their icons and widget style from here rather than from
-# qt6ct, so this points them at the same ones as the other Qt apps.
+# KDE apps you install (Okular, Kate…) take their icons and widget style from here
+# rather than from qt6ct, so this points them at the same ones as the other Qt apps.
 [Icons]
 Theme=Papirus-Dark
 

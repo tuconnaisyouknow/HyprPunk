@@ -213,8 +213,10 @@ HyprPunk installs its own choice of applications, without asking. You can remove
   Rewards, Wallet and AI Chat turned off.
 - 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
-  music files, set as the default apps for those files.
-- 📁 **Dolphin** and **Ark** for files and archives, **Seahorse** for the keyring.
+  music files, set as the default apps for those files (an update leaves the ones you picked).
+- 📁 **Thunar** for files, with thumbnails of videos, audio covers, PDFs, office documents, EPUBs, RAW photos and
+  fonts (Tumbler), your phone and network shares (gvfs), and an "Open Terminal Here" that opens your terminal.
+  **xarchiver** for archives (7z, RAR, ZIP…), from Thunar's right-click menu too. **Seahorse** for the keyring.
 - 📝 **Neovim** and **Lazygit**, with `cargo` and `npm` for the language servers Neovim's Mason downloads on its first
   start, with their linters and formatters: Bash, Python, HTML, CSS, TypeScript and React, Java, Markdown, Docker,
   JSON and Hyprland.
@@ -369,13 +371,14 @@ from other people's nearby.
 ├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
+├── thunar/              # Thunar's custom actions, copied in once
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
 ├── yazi/                # Yazi file manager configuration
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, `sddm/`, and `thunar/`, repository, system-wide or copied resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 

@@ -65,9 +65,10 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
   budgie-desktop lxqt-session i3-wm sway hyprland niri
 )
 
-# The folders that aren't linked into your home: installed system-wide by their own
-# steps, or the README's images. Every other folder is a stow module.
-readonly -a SYSTEM_MODULES=(assets battery brave grub keyboard sddm)
+# The folders that aren't linked into your home: installed by their own steps (most
+# system-wide, Thunar's copied once), or the README's images. Every other folder is a
+# stow module.
+readonly -a SYSTEM_MODULES=(assets battery brave grub keyboard sddm thunar)
 
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
@@ -108,7 +109,10 @@ readonly -a PACKAGES=(
   otf-font-awesome
   ttf-apple-emoji
 
-  dolphin ffmpegthumbs kdegraphics-thumbnailers ark loupe papers
+  thunar thunar-archive-plugin xarchiver loupe papers
+  tumbler ffmpegthumbnailer poppler-glib libgsf libgepub libopenraw freetype2
+  gvfs gvfs-mtp gvfs-afc gvfs-smb
+  7zip unrar unzip zip
   ffmpeg mpv celluloid mate-media
   libreoffice-fresh brave-bin
   spotify-launcher obsidian
@@ -506,6 +510,14 @@ stow_dotfiles() {
   cp --update=none "$DOTFILES_DIR/hyprland/.config/hypr/personal.example/"*.lua "$HOME/.config/hypr/personal/"
 }
 
+# Thunar rewrites its custom actions whenever you edit one, so it starts from a copy of
+# ours, and the actions you already have stay. Its "Open Terminal Here" opens your
+# terminal (hyprpunk.programs), where Thunar's own asks Xfce's settings for one.
+configure_thunar() {
+  mkdir -p "$HOME/.config/Thunar"
+  cp --update=none "$DOTFILES_DIR/thunar/uca.xml" "$HOME/.config/Thunar/uca.xml"
+}
+
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy written by
 # qt-configctl.sh instead of a link. Their look is HyprPunk's, so it's written again.
 generate_qt_configs() {
@@ -545,11 +557,14 @@ seed_answers() {
   "$LIB_DIR/locale-profilectl.sh" init "$locale_language" "$locale_regional"
 }
 
-# Which app opens images, PDFs, videos and documents. Only set at install, since you
-# may pick others.
+# Which app opens folders, images, PDFs, videos and documents. A type you gave an app
+# of your own keeps it; one with none, or whose app is gone, gets ours. So an update
+# catches up when HyprPunk swaps an app, and leaves your picks alone.
 set_default_apps() {
   echo "Setting default applications..."
 
+  local mimeapps="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
+  local thunar="thunar.desktop"
   local loupe="org.gnome.Loupe.desktop"
   local papers="org.gnome.Papers.desktop"
   local mpv="mpv.desktop"
@@ -558,19 +573,35 @@ set_default_apps() {
   local calc="libreoffice-calc.desktop"
   local impress="libreoffice-impress.desktop"
 
+  installed() {
+    [[ -f "/usr/share/applications/$1" || -f "$HOME/.local/share/applications/$1" ]]
+  }
+
+  # The app you picked for a type, empty when there's none
+  chosen() {
+    [[ -f "$mimeapps" ]] || return 0
+    awk -F= -v mime="$1" '/^\[/ { section = $0 }
+      section == "[Default Applications]" && $1 == mime { split($2, apps, ";"); print apps[1]; exit }' "$mimeapps"
+  }
+
   set_default() {
-    local desktop_file="$1"
+    local desktop_file="$1" mime current
     shift
 
-    if [[ ! -f "/usr/share/applications/$desktop_file" && ! -f "$HOME/.local/share/applications/$desktop_file" ]]; then
+    if ! installed "$desktop_file"; then
       echo "Warning: $desktop_file not found, skipping."
       return
     fi
 
     for mime in "$@"; do
+      current="$(chosen "$mime")"
+      [[ -n "$current" ]] && installed "$current" && continue
       xdg-mime default "$desktop_file" "$mime"
     done
   }
+
+  set_default "$thunar" \
+    inode/directory
 
   set_default "$loupe" \
     image/avif image/bmp image/x-dds image/gif image/heif image/vnd.microsoft.icon \
@@ -754,6 +785,7 @@ converge() {
   run_step "Installing Oh My Zsh" install_oh_my_zsh
   run_step "Downloading the dotfiles" clone_dotfiles
   run_step "Linking dotfiles" stow_dotfiles
+  run_step "Configuring Thunar" configure_thunar
   run_step "Generating Qt configuration" generate_qt_configs
   run_step "Configuring the keyboard" configure_keyboard
   run_step "Configuring locale profiles" configure_locale_profiles
@@ -768,6 +800,7 @@ converge() {
   run_step "Installing the GRUB theme" install_grub_theme
   run_step "Installing the battery charge limit" install_battery_limit
   run_step "Enabling services" enable_services
+  run_step "Setting default applications" set_default_apps
 }
 
 # The questions come first, then everything runs on its own until the reboot question.
@@ -788,7 +821,6 @@ install_hyprpunk() {
   run_step "Asking for your password" keep_sudo_alive
   converge
   run_step "Applying your answers" seed_answers
-  run_step "Setting default applications" set_default_apps
 
   rm -f -- "$STATE_FILE"
   run_step "Finishing installation" ask_reboot
