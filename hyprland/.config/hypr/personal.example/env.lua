@@ -9,6 +9,3 @@
 -- A bigger cursor, for X11 and Wayland apps alike
 -- hl.env("XCURSOR_SIZE", "32")
 -- hl.env("HYPRCURSOR_SIZE", "32")
-
--- Your own scripts, found by name from the launcher and the shortcuts
--- hl.env("PATH", os.getenv("HOME") .. "/.local/bin:" .. os.getenv("PATH"))

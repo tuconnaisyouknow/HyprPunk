@@ -3,12 +3,12 @@ import Quickshell
 import Quickshell.Io
 
 // Display settings: your screens drawn to scale (click one to select it), then its
-// settings, applied straight away through ~/Scripts/displayctl.sh. A new resolution,
+// settings, applied straight away through displayctl.sh. A new resolution,
 // refresh rate or scale asks if you want to keep it, and undoes itself if you don't answer.
 IslandPanel {
     id: monitors
 
-    readonly property string displayctl: Quickshell.env("HOME") + "/Scripts/displayctl.sh"
+    readonly property string displayctl: Session.scripts + "/displayctl.sh"
     readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk/monitor-state.conf"
     readonly property string backupFile: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/hyprpunk/monitor-state.backup"
     readonly property int cardPadding: 14

@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Talks to ~/Scripts/airpodsd.py: your paired AirPods with their batteries and
+// Talks to airpodsd.py: your paired AirPods with their batteries and
 // settings, AirPods nearby waiting to pair, and when to pop their card up.
 Scope {
     id: airPods
@@ -103,7 +103,7 @@ Scope {
     Process {
         id: daemon
 
-        command: ["python3", "-u", Quickshell.env("HOME") + "/Scripts/airpodsd.py"]
+        command: ["python3", "-u", Session.scripts + "/airpodsd.py"]
         running: true
         stdinEnabled: true
         onExited: restartDelay.restart()

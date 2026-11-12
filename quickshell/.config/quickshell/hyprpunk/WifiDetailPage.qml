@@ -185,7 +185,7 @@ ColumnLayout {
 
         property string pending: ""
 
-        command: ["python3", Quickshell.env("HOME") + "/Scripts/wifi-connection.py"]
+        command: ["python3", Session.scripts + "/wifi-connection.py"]
         stdinEnabled: true
         onStarted: {
             write(pending + "\n");

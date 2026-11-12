@@ -8,11 +8,14 @@
 #   install.sh apply    applies the repository as it is, without pulling, for when you
 #                       edit it yourself
 #   install.sh check    exits 0 when an update is waiting (update-notify.sh, at login)
+# Once installed, the hyprpunk command runs update, apply and check for you.
 
 set -Eeuo pipefail
 
 DOTFILES_REPO="https://github.com/tuconnaisyouknow/HyprPunk.git"
 DOTFILES_DIR="$HOME/.dotfiles"
+# The scripts the steps run, linked there by stow from the scripts module
+LIB_DIR="$HOME/.local/lib/hyprpunk"
 LOG_DIR="$HOME/.local/state/hyprpunk"
 LOG_FILE=""
 STATE_FILE="$LOG_DIR/install.state"
@@ -27,7 +30,8 @@ locale_regional=""
 readonly -a USER_CONFIG_PATHS=(
   ".dotfiles"
   "Pictures/Wallpapers"
-  "Scripts"
+  ".local/bin/hyprpunk"
+  ".local/lib/hyprpunk"
   ".oh-my-zsh"
   ".config/bat"
   ".config/btop"
@@ -485,6 +489,9 @@ stow_dotfiles() {
     module=$(basename "$module")
     [[ " ${SYSTEM_MODULES[*]} " == *" $module "* ]] || modules+=("$module")
   done
+  # stow links a folder missing from your home as a whole, and what other programs
+  # write there would land in the repository: pip's packages in ~/.local/lib
+  mkdir -p "$HOME/.local/bin" "$HOME/.local/lib"
   stow --dir "$DOTFILES_DIR" --target "$HOME" "${modules[@]}"
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
@@ -502,7 +509,7 @@ stow_dotfiles() {
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy written by
 # qt-configctl.sh instead of a link. Their look is HyprPunk's, so it's written again.
 generate_qt_configs() {
-  "$HOME/Scripts/qt-configctl.sh" restore all
+  "$LIB_DIR/qt-configctl.sh" restore all
 }
 
 # The polkit rule lets the shell send a new layout to the login screen and the TTYs
@@ -510,32 +517,32 @@ generate_qt_configs() {
 configure_keyboard() {
   sudo install -Dm644 "$DOTFILES_DIR/keyboard/polkit/50-hyprpunk-keymap.rules" \
     /etc/polkit-1/rules.d/50-hyprpunk-keymap.rules
-  "$HOME/Scripts/keyboard-layoutctl.sh" ensure
+  "$LIB_DIR/keyboard-layoutctl.sh" ensure
 }
 
 # Each script applies what you picked in the shell again, or its default the first time
 configure_locale_profiles() {
-  "$HOME/Scripts/locale-profilectl.sh" ensure
+  "$LIB_DIR/locale-profilectl.sh" ensure
 }
 
 configure_monitors() {
-  "$HOME/Scripts/displayctl.sh" ensure
+  "$LIB_DIR/displayctl.sh" ensure
 }
 
 configure_touchpad() {
-  "$HOME/Scripts/touchpadctl.sh" ensure
+  "$LIB_DIR/touchpadctl.sh" ensure
 }
 
 # Your wallpaper's look (the colors and its login screen) and the pickers' thumbnails,
 # the default wallpaper's the first time. It comes after the login screens are installed.
 configure_wallpaper() {
-  "$HOME/Scripts/wallpaperctl.sh" ensure
+  "$LIB_DIR/wallpaperctl.sh" ensure
 }
 
 # Your answers, given once: the shell is where you change them afterwards
 seed_answers() {
-  "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
-  "$HOME/Scripts/locale-profilectl.sh" init "$locale_language" "$locale_regional"
+  "$LIB_DIR/keyboard-layoutctl.sh" init "$keyboard_layout"
+  "$LIB_DIR/locale-profilectl.sh" init "$locale_language" "$locale_regional"
 }
 
 # Which app opens images, PDFs, videos and documents. Only set at install, since you
@@ -638,7 +645,7 @@ install_locale() {
 
 # The login screens, one per subtheme. The wallpaper picks among them.
 install_sddm_theme() {
-  "$DOTFILES_DIR/scripts/Scripts/sddm.sh" install
+  "$LIB_DIR/sddm.sh" install
 }
 
 # The boot menu theme, when GRUB is the bootloader

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# HyprPunk's one command in your PATH: updating, and the settings you can change from a
+# terminal. The other scripts live in ~/.local/lib/hyprpunk, called by the shell and
+# Hyprland. Each command passes what follows it on to its script.
+#   hyprpunk update        pulls the dotfiles, then applies them (install.sh)
+#   hyprpunk check         exits 0 when an update is waiting
+#   hyprpunk apply         applies the repository as it is, after you edit it
+#   hyprpunk glass ...     the shell's glass (glassctl.sh)
+#   hyprpunk keyboard ...  the keyboard layout and its Vim keys (keyboard-layoutctl.sh)
+#   hyprpunk locale ...    the language and regional formats (locale-profilectl.sh)
+#   hyprpunk display ...   screens, resolutions and layout (displayctl.sh)
+set -euo pipefail
+
+LIB_DIR="$HOME/.local/lib/hyprpunk"
+
+usage() {
+  cat <<'EOF'
+Usage: hyprpunk <command> [arguments]
+  update     pull the dotfiles, then apply them
+  check      exit 0 when an update is waiting
+  apply      apply the repository as it is, after you edit it
+  glass      the shell's glass: get, set <classic|liquid>, toggle
+  keyboard   the keyboard layout: get, list, set <fr|us>, toggle
+  locale     the language and formats: list, set-language <us|fr>, set-regional <us|fr>
+  display    screens, resolutions and layout (run it alone to list its commands)
+EOF
+}
+
+command="${1:-}"
+(($#)) && shift
+
+case "$command" in
+update | check | apply) exec "$HOME/.dotfiles/install.sh" "$command" "$@" ;;
+glass) exec "$LIB_DIR/glassctl.sh" "$@" ;;
+keyboard) exec "$LIB_DIR/keyboard-layoutctl.sh" "$@" ;;
+locale) exec "$LIB_DIR/locale-profilectl.sh" "$@" ;;
+display) exec "$LIB_DIR/displayctl.sh" "$@" ;;
+"" | help | -h | --help) usage ;;
+*)
+  usage >&2
+  exit 1
+  ;;
+esac

@@ -40,6 +40,15 @@ hl.env("QT_QPA_PLATFORMTHEME", "qt5ct:qt6ct")
 hl.env("GTK_USE_PORTAL", "1")
 hl.env("GDK_DEBUG", "portals")
 
+-- ~/.local/bin, where the hyprpunk command and your own scripts are found by name, from
+-- the terminal, the launcher and the shortcuts. Only added when it's missing, so it's
+-- never there twice.
+local bin = os.getenv("HOME") .. "/.local/bin"
+local path = os.getenv("PATH") or ""
+if not (":" .. path .. ":"):find(":" .. bin .. ":", 1, true) then
+  hl.env("PATH", bin .. ":" .. path)
+end
+
 -- Set even when it's the default: kitty can't fall back on ~/.local/state by itself
 -- to find the keyboard files
 hl.env("XDG_STATE_HOME", os.getenv("XDG_STATE_HOME") or os.getenv("HOME") .. "/.local/state")

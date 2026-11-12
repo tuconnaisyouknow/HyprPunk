@@ -4,7 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Lyrics for whatever is playing, fetched from lrclib.net by ~/Scripts/lyrics-lookup.py
+// Lyrics for whatever is playing, fetched from lrclib.net by lyrics-lookup.py
 // (which caches them). On by default; the media card has a button to switch them off,
 // since every lookup tells lrclib what you're listening to.
 Singleton {
@@ -76,7 +76,7 @@ Singleton {
 
         status = "loading";
         lookup.asked = track;
-        lookup.command = ["python3", Quickshell.env("HOME") + "/Scripts/lyrics-lookup.py", artist, title, album, seconds];
+        lookup.command = ["python3", Session.scripts + "/lyrics-lookup.py", artist, title, album, seconds];
         lookup.running = true;
     }
 

@@ -5,10 +5,8 @@
 #   update-notify.sh
 set -euo pipefail
 
-# The repository this script was linked from, wherever you cloned it
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
-DOTFILES_DIR="$(cd "$(dirname "$SCRIPT_PATH")/../.." && pwd)"
-INSTALLER="$DOTFILES_DIR/install.sh"
+# Called by its full path, so the button works whatever your PATH holds
+INSTALLER="$HOME/.dotfiles/install.sh"
 
 # At login the network may still be coming up
 nm-online -q -t 60 || exit 0

@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Talks to ~/Scripts/filechooser-portal.py, the portal backend the apps' file dialogs
+// Talks to filechooser-portal.py, the portal backend the apps' file dialogs
 // go to: holds the dialog an app is asking for, and sends back what you picked.
 Scope {
     id: chooser
@@ -34,7 +34,7 @@ Scope {
     Process {
         id: daemon
 
-        command: ["python3", "-u", Quickshell.env("HOME") + "/Scripts/filechooser-portal.py"]
+        command: ["python3", "-u", Session.scripts + "/filechooser-portal.py"]
         running: true
         stdinEnabled: true
         onExited: {

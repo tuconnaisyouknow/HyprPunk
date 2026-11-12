@@ -44,6 +44,8 @@ Singleton {
         "LC_IDENTIFICATION": regionalLocale,
         "LC_ALL": null
     })
+    // The scripts the shell runs, linked from the dotfiles' scripts module.
+    readonly property string scripts: Quickshell.env("HOME") + "/.local/lib/hyprpunk"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk"
     readonly property string cacheDir: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/hyprpunk"
 

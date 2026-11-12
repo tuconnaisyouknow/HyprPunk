@@ -5,7 +5,7 @@ import Quickshell.Io
 import Quickshell.Networking
 
 // Signing in to an enterprise Wi-Fi network like eduroam, with the same fields as
-// NetworkManager's own dialog. ~/Scripts/wifi-connection.py saves it and connects.
+// NetworkManager's own dialog. wifi-connection.py saves it and connects.
 // Through edit(), the form opens on the saved settings and replaces them.
 ColumnLayout {
     id: page
@@ -139,7 +139,7 @@ ColumnLayout {
         reset();
         editing = true;
         loading = true;
-        reader.command = ["python3", Quickshell.env("HOME") + "/Scripts/wifi-connection.py", "--read", network.name];
+        reader.command = ["python3", Session.scripts + "/wifi-connection.py", "--read", network.name];
         reader.running = true;
     }
 
@@ -623,7 +623,7 @@ ColumnLayout {
 
         property string pending: ""
 
-        command: ["python3", Quickshell.env("HOME") + "/Scripts/wifi-connection.py"]
+        command: ["python3", Session.scripts + "/wifi-connection.py"]
         stdinEnabled: true
         onStarted: {
             write(pending + "\n");

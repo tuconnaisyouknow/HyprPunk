@@ -221,7 +221,7 @@ Singleton {
 
     Process {
         // Found the same way as keyboard-backlight.sh does, since the name depends on the driver.
-        command: ["sh", "-c", "device=$(\"$HOME/Scripts/keyboard-backlight.sh\" status) && echo \"/sys/class/leds/$device\""]
+        command: ["sh", "-c", "device=$(\"$1\" status) && echo \"/sys/class/leds/$device\"", "sh", Session.scripts + "/keyboard-backlight.sh"]
         running: true
 
         stdout: StdioCollector {
