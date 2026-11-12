@@ -5,7 +5,8 @@
 # ~/.local/state/hyprpunk.
 #   install.sh          installs on a fresh system, or resumes an interrupted install
 #   install.sh update   pulls the dotfiles, then applies them with the new installer
-#   install.sh apply    puts back everything HyprPunk owns, without pulling
+#   install.sh apply    applies the repository as it is, without pulling, for when you
+#                       edit it yourself
 
 set -Eeuo pipefail
 

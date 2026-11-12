@@ -206,7 +206,8 @@ Reboot after the installation completes.
 ### 📦 What gets installed
 
 HyprPunk installs its own choice of applications, without asking. You can remove any of them afterwards with
-`yay -Rns <package>`, and give its shortcut another app from your personal files (see [Customization](#-customization)).
+`yay -Rns <package>`, which no update brings back, and give its shortcut another app from your personal files (see
+[Customization](#-customization)).
 
 - 🌐 **Brave**, with **uBlock Origin Lite** installed by its policy, its Classic theme in the wallpaper's colors, and
   Rewards, Wallet and AI Chat turned off.
@@ -221,6 +222,29 @@ HyprPunk installs its own choice of applications, without asking. You can remove
   wallpaper's colors at once. [saneaspect](https://github.com/saneaspect/gtk4-live-css) builds it every day from Arch's
   own recipe, in a repository the installer adds to `pacman.conf`. Its packages aren't signed, so pacman installs them
   without checking who made them.
+
+### 🔄 Updating
+
+```sh
+~/.dotfiles/install.sh update
+```
+
+It pulls the latest HyprPunk, then runs the installer's steps again with the new version. Each step describes how
+things should be rather than what to do, so running it again only changes what differs, and a machine installed months
+ago catches up on everything at once.
+
+- 🔁 **Put back as HyprPunk ships it:** the look (GTK, Qt and icon themes, the font, dark mode, Papirus's grey
+  folders), the login screens, the GRUB theme, Brave's policy, the services and system files, and the links into your
+  home, a new module included. Links left broken by a file HyprPunk removed go away.
+- 🎛️ **Kept as you set it:** what you picked in the shell (layout, language, displays, touchpad, wallpaper), the
+  default apps, and your personal files (see [Customization](#-customization)). An example HyprPunk adds to
+  `~/.config/hypr/personal/` is copied in, the files you have stay.
+- 📦 **Packages:** the system and the AUR are upgraded, and only the packages new to HyprPunk's list since your last
+  update get installed, so an app you removed stays removed. One HyprPunk no longer installs becomes a dependency: it
+  leaves at your next orphan cleanup (`yay -Yc`), if nothing else needs it.
+
+It asks for your password once. If it stops, run it again: it finishes what's left. If you edited a file of the
+repository that the update changes, git refuses the pull and nothing changes.
 
 ---
 
@@ -346,7 +370,7 @@ from other people's nearby.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Most top-level configuration directories are GNU Stow modules that symlink into `$HOME`. `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/` are repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
@@ -439,8 +463,8 @@ The installer enables or configures:
 
 ## 🔧 Customization
 
-Everything you're meant to change lives outside the dotfiles, so `git pull` brings you every update without
-touching your preferences:
+Everything you're meant to change lives outside the dotfiles, so an [update](#-updating) brings you every change
+without touching your preferences:
 
 - 🎛️ **The shell's settings** (keyboard layout, displays, glass style, language…) are saved in
   `~/.local/state/hyprpunk/` as you pick them.
@@ -468,7 +492,7 @@ touching your preferences:
   - `~/.completionrc`, read before Oh My Zsh sets up completion, the place to add your own completions to `fpath`.
 
 We advise you to leave the rest of the dotfiles as they are. They're linked straight from the repository, so any
-edit there clashes with the next `git pull`, and the modules expect each other as they ship. If something you need
+edit there stops the next update, and the modules expect each other as they ship. If something you need
 can't be done from these files, open an issue rather than patching HyprPunk itself. The look isn't part of what you
 customize (see [Philosophy](#-philosophy)).
 
@@ -476,8 +500,9 @@ customize (see [Philosophy](#-philosophy)).
 
 ## 🩺 Troubleshooting
 
-- 📜 **The installer stopped halfway.** Run the same command again, it picks up where it left off. Every run is
-  logged to `~/.local/state/hyprpunk/install-<date>.log`, the place to look for what failed.
+- 📜 **The installer or an update stopped halfway.** Run the same command again, it picks up where it left off.
+  Every run is logged to `~/.local/state/hyprpunk/`, in `install-<date>.log` or `apply-<date>.log`, the place to look
+  for what failed.
 - 🧊 **The shell froze or vanished.** `Super + Alt + Q` restarts it. To see why it went wrong, run
   `qs -c hyprpunk log` in a terminal, or add `-f` to follow it live.
 - 🪟 **Hyprland doesn't take your change.** It rereads its config on its own when you save. Run `hyprctl reload` to
@@ -486,12 +511,6 @@ customize (see [Philosophy](#-philosophy)).
 - 💤 **The screen doesn't lock or dim.** `Super + Alt + I` restarts hypridle.
 - 🎬 **The login screen stays black or falls back to a plain one.** `journalctl -b -u sddm` shows what SDDM
   complained about at the last boot.
-
----
-
-## 🚧 Roadmap
-
-- 🔄 Add a way to update HyprPunk.
 
 ---
 
