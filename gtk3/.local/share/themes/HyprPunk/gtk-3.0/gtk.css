@@ -4,3 +4,10 @@
 
 @import url("file:///usr/share/themes/adw-gtk3-dark/gtk-3.0/gtk.css");
 @import url("colors.css");
+
+/* Older apps paint a selection with these colors rather than the theme's rules
+ * (Thunar's icons): the same faint tint of the accent under the usual text */
+@define-color theme_selected_bg_color alpha(@accent_bg_color, 0.25);
+@define-color theme_selected_fg_color @window_fg_color;
+@define-color theme_unfocused_selected_bg_color alpha(@accent_bg_color, 0.25);
+@define-color theme_unfocused_selected_fg_color @window_fg_color;
