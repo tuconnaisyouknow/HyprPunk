@@ -324,11 +324,17 @@ ShellRoot {
         id: airPodsService
     }
 
-    // A network that wants you to sign in first: a notification takes you to its page.
+    // A network that wants you to sign in first: a notification takes you to its page,
+    // and asks to set a VPN aside when it hides that page (captive-portal.sh).
     Connections {
         function onConnectivityChanged() {
-            if (Networking.connectivity === NetworkConnectivity.Portal)
-                Quickshell.execDetached([Session.scripts + "/captive-portal.sh"]);
+            const step = {
+                [NetworkConnectivity.Portal]: "portal",
+                [NetworkConnectivity.Limited]: "limited",
+                [NetworkConnectivity.Full]: "online"
+            }[Networking.connectivity];
+            if (step)
+                Quickshell.execDetached([Session.scripts + "/captive-portal.sh", step]);
 
         }
 
