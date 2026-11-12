@@ -7,7 +7,8 @@
 #   wallpaperctl.sh set <image>    saves it and shows it with a transition (the shell's selector)
 #   wallpaperctl.sh theme <theme>  switches to the theme's last wallpaper, or its first one
 #   wallpaperctl.sh themes         prints each theme, the wallpaper it would switch to and its thumbnail (the theme picker)
-#   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order and their thumbnails (the current theme's by default)
+#   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order, their thumbnails and their palette's accent,
+#                                  secondary and surface (the current theme's by default)
 #   wallpaperctl.sh reset          back to the current theme's first wallpaper
 #   wallpaperctl.sh login          puts the saved one's login screen and colors back (sddm.sh, after an update)
 #   wallpaperctl.sh ensure         gives the saved one's look again without showing it (the default one's the
@@ -166,6 +167,20 @@ with_thumbnails() {
   done
 }
 
+# Adds the palette's accent, secondary and surface to lines starting with a wallpaper,
+# so the selector shows the colors before you pick. A wallpaper without a palette gets
+# none, and setting it says why.
+with_colors() {
+  local line palette
+  while IFS= read -r line; do
+    if palette="$(palette_of "${line%%$'\t'*}" 2>/dev/null)"; then
+      printf '%s\t%s\n' "$line" "$(jq -r '.colors | [.primary, .secondary, .surface] | map(.default.color) | join("\t")' "$palette")"
+    else
+      printf '%s\n' "$line"
+    fi
+  done
+}
+
 # Subthemes in their folders' order, then the wallpapers by name
 list_wallpapers() {
   validate_theme "$1"
@@ -308,10 +323,10 @@ themes:1)
   list_themes | with_thumbnails
   ;;
 list:1)
-  list_wallpapers "$(theme_of "$(saved_wallpaper)")" | with_thumbnails
+  list_wallpapers "$(theme_of "$(saved_wallpaper)")" | with_thumbnails | with_colors
   ;;
 list:2)
-  list_wallpapers "$2" | with_thumbnails
+  list_wallpapers "$2" | with_thumbnails | with_colors
   ;;
 reset:1)
   acquire_lock
