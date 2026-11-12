@@ -2,9 +2,9 @@
 # Installs the login screen themes, one per subtheme, and what lets your wallpaper pick
 # among them. Each theme is the shared base (sddm/base) with its own video and name on
 # top. They're copied rather than linked: SDDM runs as its own user and can't read your home.
-#   sddm.sh install   copies the themes that aren't there yet
-#   sddm.sh update    copies them all again, after you edited one, and puts your
-#                     wallpaper's login screen and colors back
+#   sddm.sh install   copies every theme again, as the repository has it (install.sh)
+#   sddm.sh update    the same after you edited one, and puts your wallpaper's login
+#                     screen and colors back, which the copies replaced
 set -euo pipefail
 
 # The repository this script was linked from, wherever you cloned it
@@ -67,42 +67,20 @@ copy_theme() {
   sudo cp -r "$THEMES_DIR/$theme_name/." "$target/"
 }
 
-install_missing_themes() {
-  local installed_count=0
+install_themes() {
   sudo mkdir -p "$SYSTEM_THEMES_DIR"
 
   while IFS= read -r theme_path; do
     local theme_name
     theme_name="$(basename "$theme_path")"
     validate_theme_files "$theme_name"
-
-    if [ -e "$SYSTEM_THEMES_DIR/$theme_name" ]; then
-      substep "Already installed: $theme_name"
-      continue
-    fi
 
     substep "Installing: $theme_name"
-    copy_theme "$theme_name"
-    installed_count=$((installed_count + 1))
-  done < <(find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
-
-  success "Installed $installed_count new theme(s)."
-}
-
-update_installed_themes() {
-  sudo mkdir -p "$SYSTEM_THEMES_DIR"
-
-  while IFS= read -r theme_path; do
-    local theme_name
-    theme_name="$(basename "$theme_path")"
-    validate_theme_files "$theme_name"
-
-    substep "Updating: $theme_name"
     sudo rm -rf "${SYSTEM_THEMES_DIR:?}/$theme_name"
     copy_theme "$theme_name"
   done < <(find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d | sort)
 
-  success "Themes updated."
+  success "Themes installed."
 }
 
 # wallpaperctl.sh picks the login screen through this tool and its polkit rule. Copied
@@ -133,13 +111,13 @@ fi
 
 case "$1" in
 install)
-  info "Installing missing themes"
-  install_missing_themes
+  info "Installing the themes"
+  install_themes
   install_login_screen_access
   ;;
 update)
-  info "Updating installed themes"
-  update_installed_themes
+  info "Installing the themes"
+  install_themes
   install_login_screen_access
   # The copies lost the wallpaper's colors
   "$DOTFILES_DIR/scripts/Scripts/wallpaperctl.sh" login

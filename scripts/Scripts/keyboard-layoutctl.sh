@@ -49,7 +49,6 @@ generate_common() {
 
   ln -sfn "$CONFIG_HOME/yazi/package.toml" "$GENERATED_DIR/yazi/package.toml"
   ln -sfn "$CONFIG_HOME/yazi/theme.toml" "$GENERATED_DIR/yazi/theme.toml"
-  ln -sfn "$CONFIG_HOME/yazi/themes" "$GENERATED_DIR/yazi/themes"
 
   if [[ "$layout" == "fr" ]]; then
     ln -sfn "$DOTFILES_DIR/keyboard/yazi/fr.toml" "$GENERATED_DIR/yazi/keymap.toml"
