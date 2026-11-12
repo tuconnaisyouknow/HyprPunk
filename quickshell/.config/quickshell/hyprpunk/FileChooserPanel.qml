@@ -6,10 +6,11 @@ import Quickshell.Widgets
 
 // The file picker the apps' Open and Save dialogs get through the portal, grown out of
 // the island on the focused screen. Type to filter the folder, or a path from / or ~ to
-// go there. The arrows or Ctrl + the Vim keys move (left goes up a folder, right goes
-// into one), Backspace on an empty field goes up, Enter opens or picks, Shift+Enter
-// picks the folder itself when the app wants one. Ctrl+Space marks several files when
-// the app takes them, Ctrl+F switches the file type, Ctrl+. shows the hidden files.
+// go there. Up and down or Ctrl + the Vim keys move, Vim's left and right going up a
+// folder and into one. Enter opens or picks, and so does right once the field is
+// empty, where left and Backspace go up a folder. Shift+Enter picks the folder itself
+// when the app wants one. Ctrl+Space marks several files when the app takes them,
+// Ctrl+F switches the file type, Ctrl+. shows the hidden files.
 IslandPanel {
     id: picker
 
@@ -507,7 +508,9 @@ IslandPanel {
                 picker.move(1);
             else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab)
                 picker.move(-1);
-            else if (event.key === Qt.Key_Backspace && text === "")
+            else if (text === "" && event.key === Qt.Key_Right)
+                picker.activate();
+            else if (text === "" && (event.key === Qt.Key_Left || Navigation.backs(event)))
                 picker.up();
             else if (control && event.key === Qt.Key_Space)
                 picker.toggleMark();

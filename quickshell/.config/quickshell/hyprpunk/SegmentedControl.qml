@@ -2,7 +2,7 @@ import QtQuick
 
 // A few options side by side, one chosen. The highlight moves right away on click,
 // without waiting for the device to answer. In compact mode, icons sit beside their
-// labels instead of above.
+// labels instead of above. From the keyboard, Enter goes to the next option.
 Item {
     id: control
 
@@ -20,9 +20,25 @@ Item {
     // lets it follow the layout at once, so it doesn't fly in when the control is built.
     property real highlightIndex: Math.max(0, currentIndex)
 
+    readonly property real radius: 16
+
     signal selected(var value)
 
+    function choose(index) {
+        if (index === currentIndex)
+            return ;
+
+        shownValue = options[index].value;
+        settle.restart();
+        selected(shownValue);
+    }
+
+    function activate() {
+        choose((currentIndex + 1) % options.length);
+    }
+
     implicitHeight: compact ? 38 : 62
+    activeFocusOnTab: true
     onValueChanged: {
         settle.stop();
         shownValue = value;
@@ -38,7 +54,7 @@ Item {
 
     // The track.
     GlassSurface {
-        radius: 16
+        radius: control.radius
     }
 
     Rectangle {
@@ -129,13 +145,7 @@ Item {
                     gesturePolicy: TapHandler.ReleaseWithinBounds
                     onTapped: {
                         segmentBounce.restart();
-                        if (segment.chosen)
-                            return ;
-
-                        control.shownValue = segment.modelData.value;
-                        settle.restart();
-                        control.selected(segment.modelData.value);
-
+                        control.choose(segment.index);
                     }
                 }
 

@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 
-// A control center block with an icon toggle: bounces when toggled.
+// A control center block with an icon toggle: bounces when toggled. A click on the rest
+// opens its page when it has one (activate), the icon toggles it (activateAlt).
 ControlBlock {
     id: tile
 
@@ -19,7 +20,19 @@ ControlBlock {
         toggled();
     }
 
+    function activate() {
+        if (expandable)
+            expandRequested();
+        else
+            toggle();
+    }
+
+    function activateAlt() {
+        toggle();
+    }
+
     implicitHeight: 60
+    activeFocusOnTab: true
 
     RowLayout {
         anchors.fill: parent
@@ -140,7 +153,7 @@ ControlBlock {
 
             TapHandler {
                 gesturePolicy: TapHandler.ReleaseWithinBounds
-                onTapped: tile.expandable ? tile.expandRequested() : tile.toggle()
+                onTapped: tile.activate()
             }
 
         }

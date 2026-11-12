@@ -7,7 +7,8 @@ import Quickshell.Widgets
 // What an app gets to see when it shares your screen: a screen or a window, picked on
 // their live previews, or a region you draw. Grown out of the island on the focused
 // screen; shell.qml holds the request (ScreenShare) and opens it. The arrows or the Vim
-// keys move, Tab switches between screens and windows, Enter shares, Escape cancels.
+// keys move, Tab switches between screens and windows, Enter or Space shares, Escape or
+// Backspace cancels.
 IslandPanel {
     id: picker
 
@@ -122,7 +123,7 @@ IslandPanel {
 
         Keys.onPressed: (event) => {
             const move = picker.horizontalKey(event);
-            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+            if (Navigation.accepts(event))
                 picker.accept();
             else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
                 picker.switchTab(picker.tab === "screens" ? "windows" : "screens");

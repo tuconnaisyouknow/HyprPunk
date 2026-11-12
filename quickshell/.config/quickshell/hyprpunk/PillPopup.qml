@@ -3,7 +3,7 @@ import Quickshell.Widgets
 
 // A card that grows out of one of the bar's pills: the workspace preview, the system
 // monitor, the calendar and the player. A click on the pill or its shortcut opens it,
-// and it stays until Escape, a click outside, the shortcut or the pill again.
+// and it stays until Escape or Backspace, a click outside, the shortcut or the pill again.
 // The workspace preview also opens on hover, for a glance: resting on the pill a moment
 // opens it, and leaving both the pill and the card folds it back.
 // Its content is laid out at full size and uncovered as the card grows.
@@ -63,7 +63,7 @@ Card {
 
     // Right before it opens, to set the content up.
     signal opening()
-    // A key other than Escape while it's kept open, for a card that answers the keyboard.
+    // Any other key while it's kept open, for a card that answers the keyboard.
     signal keyPressed(int key)
 
     function lerp(from, to) {
@@ -192,7 +192,7 @@ Card {
             closeTimer.restart();
         }
     }
-    // Kept open: Escape closes it, and the card's own keys reach it.
+    // Kept open: Escape or Backspace closes it, and the card's own keys reach it.
     onPinnedChanged: {
         if (pinned)
             keys.forceActiveFocus();
@@ -290,7 +290,7 @@ Card {
             id: keys
 
             Keys.onPressed: (event) => {
-                if (event.key === Qt.Key_Escape)
+                if (event.key === Qt.Key_Escape || Navigation.backs(event))
                     popup.close();
                 else
                     popup.keyPressed(event.key);

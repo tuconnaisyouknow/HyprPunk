@@ -3,7 +3,7 @@ import Quickshell
 
 // An island panel laid out as a row of glass squares, one per entry, with the selected
 // one's name underneath: the main menu, the screenshot menu and the session menu.
-// Arrows, Tab or the Vim keys to choose, Enter or a click to pick (chosen()).
+// Arrows, Tab or the Vim keys to choose, Enter, Space or a click to pick (chosen()).
 IslandPanel {
     id: menu
 
@@ -45,17 +45,18 @@ IslandPanel {
 
         Keys.onPressed: (event) => {
             const direction = menu.horizontalKey(event);
-            if (direction !== 0) {
+            if (direction !== 0)
                 menu.select(direction);
-                event.accepted = true;
-            }
+            else if (Navigation.accepts(event))
+                menu.choose();
+            else
+                return ;
+            event.accepted = true;
         }
         Keys.onLeftPressed: menu.select(-1)
         Keys.onRightPressed: menu.select(1)
         Keys.onTabPressed: menu.select(1)
         Keys.onBacktabPressed: menu.select(-1)
-        Keys.onReturnPressed: menu.choose()
-        Keys.onEnterPressed: menu.choose()
     }
 
     // Built on each opening and dropped once folded away: it only takes a couple of

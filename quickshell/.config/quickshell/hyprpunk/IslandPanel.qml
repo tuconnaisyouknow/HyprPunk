@@ -3,7 +3,7 @@ import Quickshell.Widgets
 
 // The card that grows out of the dynamic island, behind every island panel (session
 // menu, wallpaper picker…), drawn in the island's shape (IslandFrame). While open it has
-// the keyboard: Escape closes it and other keys go to keyTargets. Clicking anywhere
+// the keyboard: Escape or Backspace closes it and other keys go to keyTargets. Clicking anywhere
 // outside closes it too.
 // One panel at a time on the island: opening one takes the shape from the others and the
 // calendar, which close.
@@ -65,7 +65,7 @@ Card {
         close();
     }
 
-    // Escape: back to the main menu when it opened this panel, closed otherwise.
+    // Escape or Backspace: back to the main menu when it opened this panel, closed otherwise.
     function back() {
         close();
         if (openedFrom === "menu")
@@ -174,6 +174,12 @@ Card {
         focus: true
         Keys.forwardTo: panel.keyTargets
         Keys.onEscapePressed: panel.back()
+        Keys.onPressed: (event) => {
+            if (Navigation.backs(event)) {
+                panel.back();
+                event.accepted = true;
+            }
+        }
 
         // A click on the card stays in it, away from the bar under it. Taken on press: a
         // MouseArea misses the clicks a control's TapHandler already watches.

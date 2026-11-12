@@ -91,12 +91,29 @@ ColumnLayout {
 
                         }
 
+                        // The row unfolds the menu, or brings back an app that has none;
+                        // its button (or Shift+Enter) brings the app back.
                         ControlBlock {
                             id: row
+
+                            function activate() {
+                                bounce();
+                                if (app.modelData.hasMenu)
+                                    page.center.trayExpanded = app.expanded ? null : app.modelData;
+                                else
+                                    app.modelData.activate();
+                            }
+
+                            function activateAlt() {
+                                if (!app.modelData.onlyMenu)
+                                    app.modelData.activate();
+
+                            }
 
                             Layout.fillWidth: true
                             implicitHeight: 48
                             radius: 14
+                            activeFocusOnTab: true
 
                             RowLayout {
                                 anchors.fill: parent
@@ -183,7 +200,7 @@ ColumnLayout {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: app.modelData.activate()
+                                        onClicked: row.activateAlt()
                                     }
 
                                 }
@@ -213,17 +230,9 @@ ColumnLayout {
                                 cursorShape: Qt.PointingHandCursor
                             }
 
-                            // The row unfolds the menu, or brings back an app that has none.
                             TapHandler {
                                 gesturePolicy: TapHandler.ReleaseWithinBounds
-                                onTapped: {
-                                    row.bounce();
-                                    if (app.modelData.hasMenu) {
-                                        page.center.trayExpanded = app.expanded ? null : app.modelData;
-                                    } else {
-                                        app.modelData.activate();
-                                    }
-                                }
+                                onTapped: row.activate()
                             }
 
                         }

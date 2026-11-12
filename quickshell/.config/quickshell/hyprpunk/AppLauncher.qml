@@ -320,7 +320,7 @@ IslandPanel {
             const controlMove = launcher.controlMove(event);
             if (controlMove) {
                 launcher.move(controlMove[0], controlMove[1]);
-            } else if (event.key === Qt.Key_Escape) {
+            } else if (event.key === Qt.Key_Escape || (Navigation.backs(event) && field.text === "")) {
                 if (launcher.actionsEntry)
                     launcher.actionsEntry = null;
                 else

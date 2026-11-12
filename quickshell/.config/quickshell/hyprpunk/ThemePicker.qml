@@ -6,7 +6,7 @@ import Quickshell.Widgets
 // The theme picker: a card per theme, showing the wallpaper it would switch to (its last
 // one), its name and its motto. Picking a theme brings that wallpaper back, and with it
 // the theme's whole look.
-// Arrows, Tab or the Vim keys to choose, Enter or a click to apply.
+// Arrows, Tab or the Vim keys to choose, Enter, Space or a click to apply.
 IslandPanel {
     id: picker
 
@@ -94,17 +94,18 @@ IslandPanel {
 
         Keys.onPressed: (event) => {
             const direction = picker.horizontalKey(event);
-            if (direction !== 0) {
+            if (direction !== 0)
                 picker.select(direction);
-                event.accepted = true;
-            }
+            else if (Navigation.accepts(event))
+                picker.apply(picker.selectedIndex);
+            else
+                return ;
+            event.accepted = true;
         }
         Keys.onLeftPressed: picker.select(-1)
         Keys.onRightPressed: picker.select(1)
         Keys.onTabPressed: picker.select(1)
         Keys.onBacktabPressed: picker.select(-1)
-        Keys.onReturnPressed: picker.apply(picker.selectedIndex)
-        Keys.onEnterPressed: picker.apply(picker.selectedIndex)
     }
 
     Row {

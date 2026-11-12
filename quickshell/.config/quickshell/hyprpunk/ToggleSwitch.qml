@@ -9,11 +9,17 @@ Rectangle {
 
     signal toggled()
 
+    function activate() {
+        switchBounce.restart();
+        toggled();
+    }
+
     implicitWidth: 46
     implicitHeight: 24
     // Round like the bar's pills, the knob too.
     radius: height / 2
     color: "transparent"
+    activeFocusOnTab: true
 
     GlassSurface {
         radius: parent.radius
@@ -63,10 +69,7 @@ Rectangle {
 
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds
-        onTapped: {
-            switchBounce.restart();
-            toggleSwitch.toggled();
-        }
+        onTapped: toggleSwitch.activate()
     }
 
     BounceAnimation {

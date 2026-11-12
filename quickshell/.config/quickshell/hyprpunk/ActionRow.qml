@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 
 // A button row on the control center's detail pages: icon, label, glass.
-// The dangerous ones (forget, delete) turn red and wait for a second click, like the session menu.
+// The dangerous ones (forget, delete) turn red and wait for a second click or Enter, like
+// the session menu.
 ControlBlock {
     id: action
 
@@ -14,8 +15,20 @@ ControlBlock {
 
     signal triggered()
 
+    function activate() {
+        bounce();
+        if (destructive && !armed) {
+            armed = true;
+            disarmDelay.restart();
+        } else {
+            armed = false;
+            triggered();
+        }
+    }
+
     implicitHeight: 44
     radius: 14
+    activeFocusOnTab: true
 
     Rectangle {
         anchors.fill: parent
@@ -63,16 +76,7 @@ ControlBlock {
 
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds
-        onTapped: {
-            action.bounce();
-            if (action.destructive && !action.armed) {
-                action.armed = true;
-                disarmDelay.restart();
-            } else {
-                action.armed = false;
-                action.triggered();
-            }
-        }
+        onTapped: action.activate()
     }
 
     // Disarmed after a while, or when the pointer leaves.

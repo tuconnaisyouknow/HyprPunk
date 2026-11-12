@@ -1,8 +1,10 @@
 import QtQuick
 
 // An island card with a search field over a list or grid of results, shared by the
-// clipboard, emoji and keybindings panels. You keep typing in the field while the
-// arrows, Tab or Ctrl + the Vim keys move the selection; Enter picks (activated).
+// clipboard, emoji, keybindings and config panels. You keep typing in the field while
+// the arrows, Tab or Ctrl + the Vim keys move the selection; Enter picks (activated).
+// Once the field is empty, Backspace goes back, and in a list right picks and left goes
+// back too: while you type, they edit what you typed.
 IslandPanel {
     id: panel
 
@@ -99,6 +101,10 @@ IslandPanel {
                 panel.move(-1, 0);
             else if (grid && event.key === Qt.Key_Right)
                 panel.move(1, 0);
+            else if (field.text === "" && event.key === Qt.Key_Right)
+                panel.count > 0 && panel.activated(panel.selectedIndex, false);
+            else if (field.text === "" && (event.key === Qt.Key_Left || Navigation.backs(event)))
+                panel.back();
             else
                 return ;
             event.accepted = true;

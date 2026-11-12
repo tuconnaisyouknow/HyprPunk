@@ -63,7 +63,11 @@ ColumnLayout {
             font.family: Theme.font
             font.pixelSize: 14
             font.letterSpacing: field.secret && !field.revealed ? 3 : 0
+            // The control center's keys reach it; the ring above already shows it has them.
+            property bool drawsFocus: true
+
             clip: true
+            activeFocusOnTab: true
             cursorDelegate: Item {
             }
             onAccepted: field.accepted()
