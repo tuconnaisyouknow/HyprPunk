@@ -1,4 +1,4 @@
-// Every wallpaper gives Brave's theme its colors. This lets wallpaperctl.sh do so without
+// Every wallpaper gives Brave's theme its colors. This lets matugen's hook do so without
 // a password, for whoever is sitting at the machine. Only this tool, which takes nothing
 // but a color.
 polkit.addRule(function(action, subject) {

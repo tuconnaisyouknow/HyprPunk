@@ -675,8 +675,8 @@ install_grub_theme() {
 }
 
 # Brave's managed settings, when Brave is installed. Copied rather than linked, so only
-# root can change what applies to every account, like the rest of /etc. wallpaperctl.sh
-# gives its theme the wallpaper's accent through the tool and its polkit rule.
+# root can change what applies to every account, like the rest of /etc. matugen gives
+# its theme the wallpaper's accent through the tool and its polkit rule.
 install_brave_policy() {
   local policy_src="$DOTFILES_DIR/brave/policies/managed/policy.json"
   local policy_target_dir="/etc/brave/policies/managed"

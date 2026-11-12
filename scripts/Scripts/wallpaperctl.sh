@@ -26,7 +26,6 @@ PALETTES="$MATUGEN_DIR/palettes.conf"
 THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
 LOGIN_COLORS="$STATE_DIR/login-colors.conf"
-BRAVE_COLOR="/usr/local/bin/hyprpunk-brave-color"
 # The new wallpaper grows as a circle out of the island, where the selector opens
 TRANSITION=(--transition-type grow --transition-pos top --transition-duration 1.2 --transition-fps 60)
 
@@ -251,20 +250,11 @@ palette_of() {
   printf '%s\n' "$MATUGEN_DIR/palettes/$name.json"
 }
 
-# matugen writes every app's colors from it, kept between sessions
+# matugen writes every app's colors from it, Brave's included, kept between sessions
 render_colors() {
   local palette
   palette="$(palette_of "$1")"
   matugen -q json "$palette"
-}
-
-# pkexec, since Brave's policies are the system's, and polkit lets this tool through.
-# Brave builds its whole theme from one color: its tab bar in it, its toolbar a shade
-# lighter, its buttons and selection in its hue. So it gets the accent's hue as dark as
-# the bar. Skipped without Brave, which install.sh then leaves out.
-set_brave_color() {
-  [[ -x "$BRAVE_COLOR" ]] || return 0
-  pkexec "$BRAVE_COLOR" "$(jq -r .colors.primary_dark.default.color "$(palette_of "$1")")"
 }
 
 # pkexec, since the login screen is the system's, and polkit lets this tool through. It
@@ -288,7 +278,6 @@ switch_to() {
   fi
   render_colors "$wallpaper"
   write_state "$wallpaper"
-  set_brave_color "$wallpaper"
   set_login_screen "$wallpaper"
 }
 

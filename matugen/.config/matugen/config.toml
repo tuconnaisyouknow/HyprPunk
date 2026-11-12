@@ -4,6 +4,8 @@
 # wallpaperctl.sh renders the wallpaper's palette whenever it changes.
 # matugen only expands ~ in its paths, so the shell's and the terminal's colors go to
 # ~/.local/state/hyprpunk, the default $XDG_STATE_HOME that their readers fall back on.
+# matugen waits for each hook before writing the next app's colors, so the hooks run in
+# the background: each only tells one app, and no app should wait for another's.
 
 [config]
 # Read last, over the palette: red, green, yellow, peach and blue mean something, they
@@ -15,7 +17,7 @@ import_json_files = ["./meanings.json"]
 [templates.gtk3]
 input_path = "./templates/gtk3.css.template"
 output_path = "~/.local/share/themes/HyprPunk/gtk-3.0/colors.css"
-post_hook = "gsettings set org.gnome.desktop.interface gtk-theme '' && gsettings set org.gnome.desktop.interface gtk-theme HyprPunk"
+post_hook = "{ gsettings set org.gnome.desktop.interface gtk-theme '' && gsettings set org.gnome.desktop.interface gtk-theme HyprPunk; } >/dev/null 2>&1 &"
 
 # Open GTK 4 apps watch this file themselves, through gtk4-live-css
 [templates.gtk4]
@@ -40,6 +42,17 @@ output_path = "~/.local/share/color-schemes/HyprPunk.colors"
 input_path = "./templates/quickshell.json.template"
 output_path = "~/.local/state/hyprpunk/colors.json"
 
+# Brave builds its whole theme from one color: its tab bar in it, its toolbar a shade
+# lighter, its buttons and selection in its hue. So it gets the accent's hue as dark as
+# the bar, through its root tool (pkexec, which polkit lets through), skipped without
+# Brave. Its file holds the color alone, for the tool's argument. This hook alone stays
+# in the foreground: pkexec refuses to run once the shell that started it is gone, and
+# it takes a few milliseconds.
+[templates.brave]
+input_path = "./templates/brave.template"
+output_path = "~/.local/state/hyprpunk/brave-color"
+post_hook = "[ -x /usr/local/bin/hyprpunk-brave-color ] && pkexec /usr/local/bin/hyprpunk-brave-color \"$(cat ~/.local/state/hyprpunk/brave-color)\" >/dev/null 2>&1 || true"
+
 # The login screen's colors, which wallpaperctl.sh hands to SDDM with the login screen
 [templates.sddm]
 input_path = "./templates/sddm.conf.template"
@@ -49,26 +62,26 @@ output_path = "~/.local/state/hyprpunk/login-colors.conf"
 [templates.hyprland]
 input_path = "./templates/hyprland.template"
 output_path = "~/.local/state/hyprpunk/hypr-colors"
-post_hook = "hyprctl reload >/dev/null 2>&1 || true"
+post_hook = "{ hyprctl reload; } >/dev/null 2>&1 &"
 
 # The terminal's colors. kitty includes them, and reloads them on SIGUSR1.
 [templates.kitty]
 input_path = "./templates/kitty.conf.template"
 output_path = "~/.local/state/hyprpunk/kitty-colors.conf"
-post_hook = "pkill -USR1 -x kitty || true"
+post_hook = "{ pkill -USR1 -x kitty; } >/dev/null 2>&1 &"
 
 # tmux.conf reads them too, but a running tmux takes them straight from here
 [templates.tmux]
 input_path = "./templates/tmux.conf.template"
 output_path = "~/.local/state/hyprpunk/tmux-colors.conf"
-post_hook = "tmux source-file ~/.local/state/hyprpunk/tmux-colors.conf >/dev/null 2>&1 || true"
+post_hook = "{ tmux source-file ~/.local/state/hyprpunk/tmux-colors.conf; } >/dev/null 2>&1 &"
 
 # The whole prompt, which Starship reads again on every prompt. The prompts on screen are
 # drawn again by .zshrc on SIGURG, which every other program ignores.
 [templates.starship]
 input_path = "./templates/starship.toml.template"
 output_path = "~/.local/state/hyprpunk/starship.toml"
-post_hook = "pkill -URG -x zsh || true"
+post_hook = "{ pkill -URG -x zsh; } >/dev/null 2>&1 &"
 
 # Open Neovims watch it themselves
 [templates.nvim]
@@ -80,7 +93,7 @@ output_path = "~/.local/state/hyprpunk/nvim-colors.lua"
 [templates.bat]
 input_path = "./templates/bat.tmTheme.template"
 output_path = "~/.config/bat/themes/HyprPunk.tmTheme"
-post_hook = "bat cache --build >/dev/null 2>&1 || true"
+post_hook = "{ bat cache --build; } >/dev/null 2>&1 &"
 
 # fastfetch and yazi take theirs when they start
 [templates.fastfetch]
@@ -95,4 +108,4 @@ output_path = "~/.config/yazi/theme.toml"
 [templates.btop]
 input_path = "./templates/btop.theme.template"
 output_path = "~/.config/btop/themes/hyprpunk.theme"
-post_hook = "pkill -USR2 -x btop || true"
+post_hook = "{ pkill -USR2 -x btop; } >/dev/null 2>&1 &"
