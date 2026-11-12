@@ -13,6 +13,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Networking
 import Quickshell.Services.Notifications
 import Quickshell.Services.Polkit
 
@@ -321,6 +322,17 @@ ShellRoot {
 
     AirPods {
         id: airPodsService
+    }
+
+    // A network that wants you to sign in first: a notification takes you to its page.
+    Connections {
+        function onConnectivityChanged() {
+            if (Networking.connectivity === NetworkConnectivity.Portal)
+                Quickshell.execDetached([Session.scripts + "/captive-portal.sh"]);
+
+        }
+
+        target: Networking
     }
 
 }

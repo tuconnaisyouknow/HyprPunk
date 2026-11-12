@@ -45,8 +45,11 @@ Card {
     property string detailVpn: ""
     // The background app whose menu is unfolded on its page.
     property var trayExpanded: null
-    // Where the enterprise form goes back to: the list, or the network's details.
+    // Where the enterprise form goes back to (the list, the network's details or the
+    // hidden network's page), and where it lands once connected: back where it came
+    // from, but a hidden network shows up in the list.
     property string enterpriseReturnPage: "wifi"
+    property string enterpriseDonePage: "wifi"
     // The Bluetooth page, or the sound page for an audio device opened from it.
     property string bluetoothDetailReturnPage: "bluetooth"
     property string powerProfile: "balanced"
@@ -151,7 +154,7 @@ Card {
         if (name === "main")
             return 0;
 
-        if (name === "wifiDetail" || name === "vpnDetail" || name === "bluetoothDetail")
+        if (name === "wifiDetail" || name === "vpnDetail" || name === "bluetoothDetail" || name === "hidden")
             return 2;
 
         return name === "enterprise" ? 3 : 1;
@@ -162,7 +165,7 @@ Card {
         if (name === "enterprise")
             return enterpriseReturnPage;
 
-        if (name === "wifiDetail" || name === "vpnDetail")
+        if (name === "wifiDetail" || name === "vpnDetail" || name === "hidden")
             return "wifi";
 
         if (name === "bluetoothDetail")
@@ -278,10 +281,12 @@ Card {
         return "󰂯";
     }
 
+    // A saved network, or one that needs no secret (open, Enhanced Open, or a kind
+    // NetworkManager works out alone), connects at once. The others ask first.
     function selectWifi(network) {
         if (network.connected) {
             network.disconnect();
-        } else if (network.known || network.security === WifiSecurityType.Open) {
+        } else if (network.known || !needsSecrets(network)) {
             passwordNetwork = null;
             requestedWifi = network;
             network.connect();
@@ -291,22 +296,55 @@ Card {
     }
 
     // Enterprise networks get the full form, the others just a password.
-    function isEnterprise(network) {
-        return [WifiSecurityType.WpaEap, WifiSecurityType.Wpa2Eap, WifiSecurityType.Wpa3SuiteB192, WifiSecurityType.DynamicWep, WifiSecurityType.Leap].includes(network.security);
+    function isEnterprise(security) {
+        return [WifiSecurityType.WpaEap, WifiSecurityType.Wpa2Eap, WifiSecurityType.Wpa3SuiteB192, WifiSecurityType.DynamicWep, WifiSecurityType.Leap].includes(security);
     }
 
+    // NetworkManager's key management for a network's password, "" when it takes none.
+    function passwordKeyMgmt(security) {
+        if (security === WifiSecurityType.Sae)
+            return "sae";
+
+        if (security === WifiSecurityType.WpaPsk || security === WifiSecurityType.Wpa2Psk)
+            return "wpa-psk";
+
+        if (security === WifiSecurityType.StaticWep)
+            return "none";
+
+        return "";
+    }
+
+    function needsSecrets(network) {
+        return isEnterprise(network.security) || passwordKeyMgmt(network.security) !== "";
+    }
+
+    // A network NetworkManager can't connect to alone asks for what it lacks. One with
+    // no secret to ask for (a kind it doesn't know) is left to fail.
     function askWifiSecrets(network) {
-        if (isEnterprise(network)) {
-            passwordNetwork = null;
-            enterpriseNetwork = network;
-            enterpriseReturnPage = "wifi";
-            pagesLoader.item.enterprise.reset();
-            page = "enterprise";
-        } else {
+        if (isEnterprise(network.security)) {
+            askEnterprise(network, "wifi");
+        } else if (passwordKeyMgmt(network.security) !== "") {
             passwordNetwork = network;
             pagesLoader.item.password.text = "";
             pagesLoader.item.password.input.forceActiveFocus();
         }
+    }
+
+    // The enterprise form, for a network of the list or a hidden one ({ name, security,
+    // hidden }), on to the networks once connected.
+    function askEnterprise(network, returnPage) {
+        passwordNetwork = null;
+        enterpriseNetwork = network;
+        enterpriseReturnPage = returnPage;
+        enterpriseDonePage = "wifi";
+        pagesLoader.item.enterprise.reset();
+        page = "enterprise";
+    }
+
+    function showHiddenWifi() {
+        passwordNetwork = null;
+        page = "hidden";
+        pagesLoader.item.hidden.reset();
     }
 
     function selectBluetooth(device) {
@@ -565,11 +603,13 @@ Card {
                     // For the functions up top, which can't see inside the Loader.
                     readonly property Item wifiDetail: wifiDetailPage
                     readonly property Item enterprise: enterprisePage
+                    readonly property Item hidden: hiddenPage
                     readonly property Item password: wifiPage.password
                     // Starts hidden even when built with the panel already opening (Super+C),
                     // so the pages still fade in.
                     property bool built: false
 
+                    implicitHeight: (byName[controlCenter.page] || mainPage).implicitHeight
                     opacity: built && controlCenter.opened ? 1 : 0
                     Component.onCompleted: built = true
                     Behavior on opacity {
@@ -580,7 +620,23 @@ Card {
 
                     }
 
-                    implicitHeight: controlCenter.page === "wifi" ? wifiPage.implicitHeight : controlCenter.page === "enterprise" ? enterprisePage.implicitHeight : controlCenter.page === "wifiDetail" ? wifiDetailPage.implicitHeight : controlCenter.page === "vpnDetail" ? vpnDetailPage.implicitHeight : controlCenter.page === "bluetoothDetail" ? bluetoothDetailPage.implicitHeight : controlCenter.page === "bluetooth" ? bluetoothPage.implicitHeight : controlCenter.page === "locale" ? localePage.implicitHeight : controlCenter.page === "sound" ? soundPage.implicitHeight : controlCenter.page === "caffeine" ? caffeinePage.implicitHeight : controlCenter.page === "chargeLimit" ? chargeLimitPage.implicitHeight : controlCenter.page === "tray" ? trayPage.implicitHeight : mainPage.implicitHeight
+                    // Each page by its name: the panel takes the height of the one shown.
+                    readonly property var byName: ({
+                        "main": mainPage,
+                        "wifi": wifiPage,
+                        "vpnDetail": vpnDetailPage,
+                        "bluetooth": bluetoothPage,
+                        "enterprise": enterprisePage,
+                        "hidden": hiddenPage,
+                        "wifiDetail": wifiDetailPage,
+                        "bluetoothDetail": bluetoothDetailPage,
+                        "sound": soundPage,
+                        "caffeine": caffeinePage,
+                        "chargeLimit": chargeLimitPage,
+                        "locale": localePage,
+                        "tray": trayPage
+                    })
+
 
                     ColumnLayout {
                         id: mainPage
@@ -966,6 +1022,7 @@ Card {
                         center: controlCenter
                         onBackRequested: controlCenter.page = "main"
                         onPasswordSent: panel.forceActiveFocus()
+                        onHiddenRequested: controlCenter.showHiddenWifi()
                         onVpnDetailsRequested: (uuid) => {
                             return controlCenter.showVpnDetails(uuid);
                         }
@@ -1007,7 +1064,19 @@ Card {
                         opacity: controlCenter.pageOpacity("enterprise")
                         network: controlCenter.enterpriseNetwork
                         onBackRequested: controlCenter.page = controlCenter.enterpriseReturnPage
-                        onFinished: controlCenter.page = controlCenter.enterpriseReturnPage
+                        onFinished: controlCenter.page = controlCenter.enterpriseDonePage
+                    }
+
+                    HiddenWifiPage {
+                        id: hiddenPage
+
+                        width: parent.width
+                        x: controlCenter.pageX("hidden")
+                        visible: controlCenter.pageVisible("hidden")
+                        enabled: controlCenter.page === "hidden"
+                        opacity: controlCenter.pageOpacity("hidden")
+                        center: controlCenter
+                        onBackRequested: controlCenter.page = "wifi"
                     }
 
                     WifiDetailPage {
@@ -1019,12 +1088,14 @@ Card {
                         enabled: controlCenter.page === "wifiDetail"
                         opacity: controlCenter.pageOpacity("wifiDetail")
                         network: controlCenter.detailNetwork
-                        enterprise: controlCenter.detailNetwork !== null && controlCenter.isEnterprise(controlCenter.detailNetwork)
+                        enterprise: controlCenter.detailNetwork !== null && controlCenter.isEnterprise(controlCenter.detailNetwork.security)
+                        passwordKeyMgmt: controlCenter.detailNetwork !== null ? controlCenter.passwordKeyMgmt(controlCenter.detailNetwork.security) : ""
                         onBackRequested: controlCenter.page = "wifi"
                         onConnectRequested: controlCenter.selectWifi(controlCenter.detailNetwork)
                         onModifyRequested: {
                             controlCenter.enterpriseNetwork = controlCenter.detailNetwork;
                             controlCenter.enterpriseReturnPage = "wifiDetail";
+                            controlCenter.enterpriseDonePage = "wifiDetail";
                             enterprisePage.edit();
                             controlCenter.page = "enterprise";
                         }

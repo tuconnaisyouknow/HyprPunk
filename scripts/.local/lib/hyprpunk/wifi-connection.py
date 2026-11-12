@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Creates or replaces a Wi-Fi connection for the Quickshell control center: WPA/WPA2/
 WPA3 Enterprise (802.1X) or LEAP with the settings of NetworkManager's own Wi-Fi
-dialog, or WPA/WPA3 Personal with a password.
+dialog, WPA/WPA3 Personal or WEP with a password, or an open network. Every new
+network you give a secret to, and every hidden one, connects through here.
 
 Reads one JSON object on stdin (secrets included, so they never show in the
 process list) and prints one JSON line: {"ok": true} or {"ok": false, "error": ...}.
 
-    {"ssid": "home", "keyMgmt": "wpa-psk" | "sae", "psk": "..."}
+    {"ssid": "home", "keyMgmt": "wpa-psk" | "sae" | "none", "psk": "...",
+     "wepKeyType": "1" | "2"}
+
+    {"ssid": "cafe", "keyMgmt": "" | "owe", "hidden": true}
 
     {"ssid": "eduroam", "keyMgmt": "wpa-eap", "eap": "peap",
      "identity": "...", "password": "...", "anonymousIdentity": "...",
@@ -15,7 +19,11 @@ process list) and prints one JSON line: {"ok": true} or {"ok": false, "error": .
      "clientCert": "/path", "clientCertPassword": "...", "privateKey": "/path",
      "privateKeyPassword": "...", "pacFile": "/path", "fastProvisioning": "0".."3"}
 
+keyMgmt "none" is static WEP: wepKeyType "1" for the key itself (5 or 13 characters,
+or 10 or 26 hex digits), "2" for a passphrase it's made from.
+"" is an open network and "owe" Enhanced Open, encrypted without a password.
 keyMgmt "ieee8021x" with eap "leap" is Cisco LEAP (identity and password only).
+"hidden" lets NetworkManager find a network that doesn't announce its name.
 The new profile replaces the other profiles of the same network once it works,
 and is removed again when it fails, so a wrong password leaves nothing behind.
 
@@ -82,8 +90,22 @@ def build(request):
         "ipv4": {"method": "auto"},
         "ipv6": {"method": "auto"},
     }
+    if request.get("hidden"):
+        settings["802-11-wireless"]["hidden"] = True
+    if key_mgmt == "":
+        del settings["802-11-wireless"]["security"]
+        del settings["802-11-wireless-security"]
+        return settings
+    if key_mgmt == "owe":
+        return settings
     if key_mgmt in ("wpa-psk", "sae"):
         security["psk"] = request.get("psk", "")
+        return settings
+    if key_mgmt == "none":
+        security["wep-key0"] = request.get("psk", "")
+        security["wep-key-type"] = dbus.UInt32(
+            2 if request.get("wepKeyType") == "2" else 1
+        )
         return settings
     if key_mgmt == "ieee8021x" and eap == "leap":
         # Cisco LEAP: the credentials live in the security setting.

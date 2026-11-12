@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import Quickshell.Networking
 
 // A saved Wi-Fi network: how it's doing, connect or disconnect, change its password
@@ -13,21 +12,11 @@ ColumnLayout {
     property bool enterprise: false
     // The new password field is open.
     property bool editing: false
-    property bool saving: false
+    readonly property bool saving: helper.busy
     property string error: ""
-    // NetworkManager's key management for a password, "" when there is nothing to modify.
-    readonly property string passwordKeyMgmt: {
-        if (network === null)
-            return "";
-
-        if (network.security === WifiSecurityType.Sae)
-            return "sae";
-
-        if (network.security === WifiSecurityType.WpaPsk || network.security === WifiSecurityType.Wpa2Psk)
-            return "wpa-psk";
-
-        return "";
-    }
+    // NetworkManager's key management for its password, from the control center, ""
+    // when it has none to change.
+    property string passwordKeyMgmt: ""
 
     signal backRequested()
     signal connectRequested()
@@ -37,9 +26,9 @@ ColumnLayout {
 
     function reset() {
         editing = false;
-        saving = false;
         error = "";
         newPassword.text = "";
+        wepKeyType.reset();
     }
 
     function savePassword() {
@@ -47,13 +36,12 @@ ColumnLayout {
             return ;
 
         error = "";
-        saving = true;
-        helper.pending = JSON.stringify({
+        helper.send({
             "ssid": network.name,
             "keyMgmt": passwordKeyMgmt,
-            "psk": newPassword.text
+            "psk": newPassword.text,
+            "wepKeyType": wepKeyType.value
         });
-        helper.running = true;
     }
 
     spacing: 12
@@ -120,6 +108,14 @@ ColumnLayout {
             anchors.margins: 12
             spacing: 10
 
+            WepKeySelect {
+                id: wepKeyType
+
+                Layout.fillWidth: true
+                visible: page.passwordKeyMgmt === "none"
+                enabled: !page.saving
+            }
+
             FormField {
                 id: newPassword
 
@@ -180,42 +176,15 @@ ColumnLayout {
     }
 
     // Replaces the profile with the new password, kept only if it connects.
-    Process {
+    WifiHelper {
         id: helper
 
-        property string pending: ""
+        onFinished: (ok, error) => {
+            page.error = error;
+            if (ok)
+                page.reset();
 
-        command: ["python3", Session.scripts + "/wifi-connection.py"]
-        stdinEnabled: true
-        onStarted: {
-            write(pending + "\n");
-            pending = "";
         }
-        onExited: {
-            if (page.saving) {
-                page.saving = false;
-                page.error = "Connection failed";
-            }
-        }
-
-        stdout: SplitParser {
-            onRead: (line) => {
-                let result;
-                try {
-                    result = JSON.parse(line);
-                } catch (error) {
-                    return ;
-                }
-                page.saving = false;
-                if (result.ok) {
-                    page.error = "";
-                    page.reset();
-                } else {
-                    page.error = result.error;
-                }
-            }
-        }
-
     }
 
 }
