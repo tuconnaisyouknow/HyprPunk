@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Gives Brave's Classic theme the wallpaper's colors, through its BrowserThemeColor
 # policy. Brave watches its policies and takes the color at once, open windows
-# included. wallpaperctl.sh runs it through pkexec on every new wallpaper, and the
+# included. matugen's hook runs it through pkexec on every new wallpaper, and the
 # polkit rule lets it skip the password. install.sh puts it in /usr/local/bin, owned by
 # root, so nothing else can change it.
 #   hyprpunk-brave-color <#rrggbb>
