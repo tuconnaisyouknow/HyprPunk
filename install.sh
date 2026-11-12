@@ -59,6 +59,10 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
   budgie-desktop lxqt-session i3-wm sway hyprland niri
 )
 
+# The folders that aren't linked into your home: installed system-wide by their own
+# steps, or the README's images. Every other folder is a stow module.
+readonly -a SYSTEM_MODULES=(assets battery brave grub keyboard sddm)
+
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
   zsh kitty starship zoxide
@@ -462,10 +466,24 @@ clone_dotfiles() {
   git clone --filter=blob:none "$DOTFILES_REPO" "$DOTFILES_DIR"
 }
 
-# Link each module into your home. The others (sddm, grub, battery…) are installed
-# system-wide by their own steps.
+# Links every module into your home, a new one included. Links left broken by a file or
+# a module that left the repository go first, wherever they are: stow only cleans the
+# folders a module still uses.
 stow_dotfiles() {
-  stow --dir "$DOTFILES_DIR" --target "$HOME" bat btop cava fastfetch fontconfig gtk3 gtk4 hypridle hyprland kdeglobals kitty kvantum matugen nvim portal quickshell scripts tmux wallpapers yazi zsh
+  local link module
+  local -a modules=()
+
+  while IFS= read -r -d '' link; do
+    if [[ "$(realpath -m -- "$link")" == "$DOTFILES_DIR"/* ]]; then
+      rm -f -- "$link"
+    fi
+  done < <(find "$HOME" -xdev -path "$DOTFILES_DIR" -prune -o -xtype l -print0 2>/dev/null)
+
+  for module in "$DOTFILES_DIR"/*/; do
+    module=$(basename "$module")
+    [[ " ${SYSTEM_MODULES[*]} " == *" $module "* ]] || modules+=("$module")
+  done
+  stow --dir "$DOTFILES_DIR" --target "$HOME" "${modules[@]}"
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
   # ours, kept out of git, and the settings you already have stay
