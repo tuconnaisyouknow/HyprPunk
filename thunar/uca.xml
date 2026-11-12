@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Thunar's custom actions, in its right-click menu. install.sh copies this into
+     ~/.config/Thunar once; Thunar rewrites that copy when you edit an action. -->
+<actions>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Open Terminal Here</name>
+	<submenu></submenu>
+	<unique-id>1780856285006005-1</unique-id>
+	<command>sh -c &apos;cd -- &quot;$1&quot; &amp;&amp; exec &quot;${TERMINAL:-kitty}&quot;&apos; sh %f</command>
+	<description>Your terminal (hyprpunk.programs), in this folder</description>
+	<range></range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+</action>
+</actions>

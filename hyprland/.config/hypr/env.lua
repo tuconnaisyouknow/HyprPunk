@@ -28,7 +28,6 @@ hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
-hl.env("XDG_MENU_PREFIX", "mate-")       -- Borrow MATE's app menu so Dolphin's "Open with" isn't empty
 hl.env("GDK_BACKEND", "wayland")
 hl.env("QT_ENABLE_HIGHDPI_SCALING", "1") -- Qt 6 always scales, this brings the Qt 5 apps along
 hl.env("QT_QPA_PLATFORM", "wayland")
