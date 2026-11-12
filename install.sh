@@ -650,14 +650,19 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Papirus-Dark with grey folders, which go with every wallpaper's palette, the font, dark
-# mode and the GTK theme. The look is HyprPunk's, so anything changed here is put back.
-# The colors inside the GTK theme come with the wallpaper.
+# Papirus-Dark with grey folders, which go with every wallpaper's palette, the fonts, the
+# cursor, dark mode and the GTK theme. GTK 4 apps read these rather than settings.ini,
+# so they match GTK 3 and Qt. The look is HyprPunk's, so anything changed here is put
+# back. The colors inside the GTK theme come with the wallpaper.
 apply_themes() {
   papirus-folders -C grey --theme Papirus-Dark
 
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
+  gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrainsMono Nerd Font 9'
+  gsettings set org.gnome.desktop.interface document-font-name 'JetBrainsMono Nerd Font 9'
+  gsettings set org.gnome.desktop.interface cursor-theme 'BreezeX-RosePine-Linux'
+  gsettings set org.gnome.desktop.interface cursor-size 24
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
   gsettings set org.gnome.desktop.interface gtk-theme 'HyprPunk'
 }

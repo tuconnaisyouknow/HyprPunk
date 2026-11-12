@@ -1,6 +1,7 @@
 # The palette of every Qt app, set by qt5ct and qt6ct, and the colors KDE apps read
 # beyond it (selection, links, positive and negative text). matugen writes it from
-# ~/.config/matugen/templates/qt.colors.template, with the same roles as GTK's.
+# ~/.config/matugen/templates/qt.colors.template, with the same roles as GTK's: a
+# selection is the accent's faint tint (64 of 255) under the usual text, as in GTK.
 [ColorEffects:Disabled]
 Color=255,255,255
 ColorAmount=0
@@ -64,16 +65,16 @@ ForegroundPositive={{colors.green.default.red}},{{colors.green.default.green}},{
 ForegroundVisited={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
 
 [Colors:Selection]
-BackgroundAlternate={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-BackgroundNormal={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
+BackgroundAlternate={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}},64
+BackgroundNormal={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}},64
 DecorationFocus={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
 DecorationHover={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
-ForegroundActive={{colors.on_primary.default.red}},{{colors.on_primary.default.green}},{{colors.on_primary.default.blue}}
-ForegroundInactive={{colors.on_primary.default.red}},{{colors.on_primary.default.green}},{{colors.on_primary.default.blue}}
+ForegroundActive={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
+ForegroundInactive={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
 ForegroundLink={{colors.primary.default.red}},{{colors.primary.default.green}},{{colors.primary.default.blue}}
 ForegroundNegative={{colors.error.default.red}},{{colors.error.default.green}},{{colors.error.default.blue}}
 ForegroundNeutral={{colors.yellow.default.red}},{{colors.yellow.default.green}},{{colors.yellow.default.blue}}
-ForegroundNormal={{colors.on_primary.default.red}},{{colors.on_primary.default.green}},{{colors.on_primary.default.blue}}
+ForegroundNormal={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
 ForegroundPositive={{colors.green.default.red}},{{colors.green.default.green}},{{colors.green.default.blue}}
 ForegroundVisited={{colors.on_surface.default.red}},{{colors.on_surface.default.green}},{{colors.on_surface.default.blue}}
 
