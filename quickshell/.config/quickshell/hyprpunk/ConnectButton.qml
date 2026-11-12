@@ -11,11 +11,20 @@ Rectangle {
 
     signal clicked()
 
+    function activate() {
+        if (!available)
+            return ;
+
+        bounce.restart();
+        clicked();
+    }
+
     implicitWidth: labelText.implicitWidth + 32
     implicitHeight: 34
     radius: 17
     color: "transparent"
     opacity: available ? 1 : 0.45
+    activeFocusOnTab: true
 
     GlassSurface {
         radius: parent.radius
@@ -43,10 +52,7 @@ Rectangle {
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds
         enabled: button.available
-        onTapped: {
-            bounce.restart();
-            button.clicked();
-        }
+        onTapped: button.activate()
     }
 
     BounceAnimation {

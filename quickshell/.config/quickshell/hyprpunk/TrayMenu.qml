@@ -57,9 +57,22 @@ Column {
             }
 
             Item {
+                // A submenu unfolds, any other entry does its job and the menu is done.
+                function activate() {
+                    if (entry.modelData.hasChildren) {
+                        menu.openIndex = entry.open ? -1 : entry.index;
+                        return ;
+                    }
+                    entry.modelData.triggered();
+                    menu.triggered();
+                }
+
+                readonly property real radius: 10
+
                 visible: !entry.modelData.isSeparator
                 width: parent.width
                 height: visible ? 34 : 0
+                activeFocusOnTab: entry.selectable
 
                 Rectangle {
                     anchors.fill: parent
@@ -146,14 +159,7 @@ Column {
                     enabled: entry.selectable
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (entry.modelData.hasChildren) {
-                            menu.openIndex = entry.open ? -1 : entry.index;
-                            return ;
-                        }
-                        entry.modelData.triggered();
-                        menu.triggered();
-                    }
+                    onClicked: parent.activate()
                 }
 
             }

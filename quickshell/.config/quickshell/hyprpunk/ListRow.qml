@@ -17,8 +17,22 @@ ControlBlock {
     signal clicked()
     signal detailsRequested()
 
+    function activate() {
+        bounce();
+        clicked();
+    }
+
+    function activateAlt() {
+        if (!detailsAvailable)
+            return ;
+
+        detailsBounce.restart();
+        detailsRequested();
+    }
+
     implicitHeight: 48
     radius: 14
+    activeFocusOnTab: true
 
     RowLayout {
         anchors.fill: parent
@@ -104,10 +118,7 @@ ControlBlock {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    detailsBounce.restart();
-                    row.detailsRequested();
-                }
+                onClicked: row.activateAlt()
             }
 
             BounceAnimation {
@@ -126,10 +137,7 @@ ControlBlock {
 
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds
-        onTapped: {
-            row.bounce();
-            row.clicked();
-        }
+        onTapped: row.activate()
     }
 
 }

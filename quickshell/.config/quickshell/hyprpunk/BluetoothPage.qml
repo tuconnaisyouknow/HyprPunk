@@ -52,6 +52,8 @@ ColumnLayout {
             anchors.rightMargin: -6
             height: Math.min(contentHeight, 340)
             clip: true
+            // The control center moves through the rows itself.
+            keyNavigationEnabled: false
             spacing: 4
             // Keeps the rows that stay instead of rebuilding them all at each change,
             // which held up the animations.

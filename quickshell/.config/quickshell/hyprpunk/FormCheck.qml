@@ -10,9 +10,16 @@ Item {
 
     signal toggled()
 
+    function activate() {
+        checkBounce.restart();
+        checked = !checked;
+        toggled();
+    }
+
     implicitWidth: row.implicitWidth
     implicitHeight: 24
     opacity: enabled ? 1 : 0.45
+    activeFocusOnTab: true
 
     Row {
         id: row
@@ -78,11 +85,7 @@ Item {
 
     TapHandler {
         gesturePolicy: TapHandler.ReleaseWithinBounds
-        onTapped: {
-            checkBounce.restart();
-            check.checked = !check.checked;
-            check.toggled();
-        }
+        onTapped: check.activate()
     }
 
 }

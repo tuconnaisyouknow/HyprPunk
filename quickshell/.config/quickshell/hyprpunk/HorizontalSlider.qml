@@ -1,7 +1,8 @@
 import QtQuick
 
 // The control center's sliders (volume, brightness, the mixer): a rounded track that
-// fills up in the accent, an icon at the start, drag or click anywhere to set it.
+// fills up in the accent, an icon at the start, drag or click anywhere to set it. From
+// the keyboard, left and right move it and Enter presses the icon's button.
 Item {
     id: control
 
@@ -24,12 +25,35 @@ Item {
     signal valueRequested(real value)
     signal iconClicked()
 
+    readonly property real radius: height / 2
+
     function valueFromPointer(pointerX) {
         return Math.max(0, Math.min(1, pointerX / sliderTrack.width));
     }
 
+    // A wheel notch or an arrow press.
+    function nudge(delta) {
+        valueRequested(Math.max(0, Math.min(1, value + delta)));
+    }
+
+    function activate() {
+        if (!iconButton)
+            return ;
+
+        iconBounce.restart();
+        iconClicked();
+    }
+
     implicitWidth: 280
     implicitHeight: 30
+    activeFocusOnTab: true
+    Keys.onPressed: (event) => {
+        const direction = Navigation.direction(event);
+        if (direction !== null && direction[0] !== 0) {
+            nudge(0.05 * direction[0]);
+            event.accepted = true;
+        }
+    }
 
     Rectangle {
         id: sliderTrack
@@ -140,7 +164,7 @@ Item {
 
             }
             onWheel: (wheel) => {
-                control.valueRequested(Math.max(0, Math.min(1, control.value + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))));
+                control.nudge(wheel.angleDelta.y > 0 ? 0.05 : -0.05);
                 wheel.accepted = true;
             }
         }
@@ -191,10 +215,7 @@ Item {
 
             gesturePolicy: TapHandler.ReleaseWithinBounds
             enabled: control.iconButton
-            onTapped: {
-                iconBounce.restart();
-                control.iconClicked();
-            }
+            onTapped: control.activate()
         }
 
         BounceAnimation {

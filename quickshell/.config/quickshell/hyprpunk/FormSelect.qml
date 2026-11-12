@@ -30,9 +30,15 @@ ColumnLayout {
 
         Layout.fillWidth: true
         implicitHeight: 34
+        function activate() {
+            boxBounce.restart();
+            select.expanded = !select.expanded;
+        }
+
         radius: 12
         color: Theme.alpha(Theme.crust, boxHover.hovered ? 0.6 : 0.45)
         opacity: select.enabled ? 1 : 0.45
+        activeFocusOnTab: true
 
         Text {
             anchors.left: parent.left
@@ -77,10 +83,7 @@ ColumnLayout {
 
         TapHandler {
             gesturePolicy: TapHandler.ReleaseWithinBounds
-            onTapped: {
-                boxBounce.restart();
-                select.expanded = !select.expanded;
-            }
+            onTapped: box.activate()
         }
 
         BounceAnimation {
@@ -121,9 +124,16 @@ ColumnLayout {
                     required property var modelData
                     required property int index
 
+                    function activate() {
+                        select.currentIndex = index;
+                        select.expanded = false;
+                        select.activated(index);
+                    }
+
                     width: optionColumn.width
                     height: 32
                     radius: 10
+                    activeFocusOnTab: true
                     color: optionHover.hovered ? Theme.alpha(Theme.primary, 0.16) : "transparent"
 
                     Text {
@@ -161,11 +171,7 @@ ColumnLayout {
 
                     TapHandler {
                         gesturePolicy: TapHandler.ReleaseWithinBounds
-                        onTapped: {
-                            select.currentIndex = option.index;
-                            select.expanded = false;
-                            select.activated(option.index);
-                        }
+                        onTapped: option.activate()
                     }
 
                     Behavior on color {

@@ -29,9 +29,21 @@ ColumnLayout {
 
         Layout.fillWidth: true
         implicitHeight: 34
+        function activate() {
+            boxBounce.restart();
+            if (!chooser.running)
+                chooser.running = true;
+
+        }
+
+        function activateAlt() {
+            file.path = "";
+        }
+
         radius: 12
         color: Theme.alpha(Theme.crust, boxHover.hovered ? 0.6 : 0.45)
         opacity: file.enabled ? 1 : 0.45
+        activeFocusOnTab: true
 
         Text {
             anchors.left: parent.left
@@ -67,7 +79,7 @@ ColumnLayout {
 
             TapHandler {
                 gesturePolicy: TapHandler.ReleaseWithinBounds
-                onTapped: file.path = ""
+                onTapped: box.activateAlt()
             }
 
         }
@@ -92,12 +104,7 @@ ColumnLayout {
 
         TapHandler {
             gesturePolicy: TapHandler.ReleaseWithinBounds
-            onTapped: {
-                boxBounce.restart();
-                if (!chooser.running)
-                    chooser.running = true;
-
-            }
+            onTapped: box.activate()
         }
 
         BounceAnimation {

@@ -274,15 +274,11 @@ IslandPanel {
 
         Keys.onTabPressed: monitors.selectOutput(1)
         Keys.onBacktabPressed: monitors.selectOutput(-1)
-        Keys.onReturnPressed: {
-            if (monitors.revertCountdown > 0)
+        Keys.onPressed: (event) => {
+            if (Navigation.accepts(event) && monitors.revertCountdown > 0) {
                 monitors.keep();
-
-        }
-        Keys.onEnterPressed: {
-            if (monitors.revertCountdown > 0)
-                monitors.keep();
-
+                event.accepted = true;
+            }
         }
     }
 

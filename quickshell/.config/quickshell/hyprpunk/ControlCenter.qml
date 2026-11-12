@@ -9,6 +9,10 @@ import Quickshell.Widgets
 
 // The control center, growing out of the bar's right-most pill. Click the pill or
 // press Super+C; Escape, a click outside or the pill again closes it.
+// The keys move through the controls (KeyboardFocus): Enter or Space clicks the one you're
+// on, Shift+Enter its small second button (a tile's icon, a row's details), Backspace or
+// Escape goes back a page. The main page is a grid the arrows move around; on the other
+// pages, where you only go up and down, right clicks and left goes back.
 Card {
     id: controlCenter
 
@@ -219,6 +223,32 @@ Card {
 
     function close() {
         opened = false;
+    }
+
+    function back() {
+        if (page !== "main")
+            page = parentPage(page);
+        else
+            close();
+    }
+
+    // Keys no control kept for itself (a field its letters, a slider its arrows).
+    function keyPressed(event) {
+        const direction = Navigation.direction(event);
+        const grid = page === "main";
+        if (event.key === Qt.Key_Escape || Navigation.backs(event) || (!grid && direction !== null && direction[0] < 0))
+            back();
+        else if (Navigation.accepts(event))
+            keyboardFocus.activate((event.modifiers & Qt.ShiftModifier) !== 0);
+        else if (!grid && direction !== null && direction[0] > 0 && keyboardFocus.current !== null)
+            keyboardFocus.activate(false);
+        else if (direction !== null)
+            keyboardFocus.move(direction[0], direction[1]);
+        else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
+            keyboardFocus.step(event.key === Qt.Key_Tab ? 1 : -1);
+        else
+            return ;
+        event.accepted = true;
     }
 
     function wifiSubtitle() {
@@ -441,6 +471,7 @@ Card {
             powerProfileProcess.running = true;
             chargeLimitError = "";
             chargeLimitProcess.running = true;
+            keyboardFocus.forget();
             panel.forceActiveFocus();
         } else {
             page = "main";
@@ -460,6 +491,7 @@ Card {
         previousPage = shownPage;
         shownPage = page;
         pageAnimation.restart();
+        Qt.callLater(keyboardFocus.settle);
         // Leaving the network page drops its password prompts: coming back shows the
         // networks, not a password half typed.
         if (page !== "wifi") {
@@ -533,11 +565,8 @@ Card {
             radius: controlCenter.pill.height / 2
             color: "transparent"
             focus: true
-            Keys.onEscapePressed: {
-                if (controlCenter.page !== "main")
-                    controlCenter.page = controlCenter.parentPage(controlCenter.page);
-                else
-                    controlCenter.close();
+            Keys.onPressed: (event) => {
+                return controlCenter.keyPressed(event);
             }
 
             // A click on the panel stays in it, away from the bar and the pill under it.
@@ -837,10 +866,7 @@ Card {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    soundBlock.bounce();
-                                    controlCenter.page = "sound";
-                                }
+                                onClicked: soundHeader.activate()
                             }
 
                             ColumnLayout {
@@ -850,8 +876,17 @@ Card {
                                 anchors.margins: 12
                                 spacing: 8
 
+                                // Its page's way in from the keyboard, the slider being the other.
                                 RowLayout {
+                                    id: soundHeader
+
+                                    function activate() {
+                                        soundBlock.bounce();
+                                        controlCenter.page = "sound";
+                                    }
+
                                     Layout.fillWidth: true
+                                    activeFocusOnTab: true
 
                                     Text {
                                         text: "Sound"
@@ -928,10 +963,7 @@ Card {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    trayBlock.bounce();
-                                    controlCenter.showTray(null);
-                                }
+                                onClicked: trayHeader.activate()
                             }
 
                             ColumnLayout {
@@ -941,8 +973,17 @@ Card {
                                 anchors.margins: 12
                                 spacing: 6
 
+                                // Its page's way in from the keyboard, the icons being the others.
                                 RowLayout {
+                                    id: trayHeader
+
+                                    function activate() {
+                                        trayBlock.bounce();
+                                        controlCenter.showTray(null);
+                                    }
+
                                     Layout.fillWidth: true
+                                    activeFocusOnTab: true
 
                                     Text {
                                         text: "Background apps"
@@ -1183,6 +1224,15 @@ Card {
 
                 }
 
+            }
+
+            // Over the pages, for its ring.
+            KeyboardFocus {
+                id: keyboardFocus
+
+                anchors.fill: parent
+                page: pagesLoader.item !== null ? pagesLoader.item.byName[controlCenter.page] || null : null
+                home: panel
             }
 
             Behavior on fullHeight {
