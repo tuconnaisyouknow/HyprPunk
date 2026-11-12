@@ -229,6 +229,10 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 ~/.dotfiles/install.sh update
 ```
 
+When an update is waiting, a notification tells you at login, and its **Update** button runs it in your terminal
+(drop it with `hyprpunk.autostart.remove("update-check")` in your `personal/autostart.lua`). `install.sh check` asks
+the same from a terminal.
+
 It pulls the latest HyprPunk, then runs the installer's steps again with the new version. Each step describes how
 things should be rather than what to do, so running it again only changes what differs, and a machine installed months
 ago catches up on everything at once.

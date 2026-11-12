@@ -7,6 +7,7 @@
 #   install.sh update   pulls the dotfiles, then applies them with the new installer
 #   install.sh apply    applies the repository as it is, without pulling, for when you
 #                       edit it yourself
+#   install.sh check    exits 0 when an update is waiting (update-notify.sh, at login)
 
 set -Eeuo pipefail
 
@@ -805,12 +806,28 @@ apply_hyprpunk() {
   printf '\nHyprPunk is up to date.\n'
 }
 
+# Fetches without changing anything: an update waits when your branch on GitHub has
+# commits you don't. No answer (offline, no upstream) counts as nothing new.
+check_hyprpunk() {
+  local behind
+
+  require_installed
+  if git -C "$DOTFILES_DIR" fetch -q &&
+    behind=$(git -C "$DOTFILES_DIR" rev-list --count 'HEAD..@{upstream}') && ((behind > 0)); then
+    echo "A HyprPunk update is waiting: run install.sh update."
+    exit 0
+  fi
+  echo "No HyprPunk update found."
+  exit 1
+}
+
 case "${1:-}" in
 "") install_hyprpunk ;;
 update) update_hyprpunk ;;
 apply) apply_hyprpunk ;;
+check) check_hyprpunk ;;
 *)
-  echo "Usage: install.sh [update|apply]" >&2
+  echo "Usage: install.sh [update|apply|check]" >&2
   exit 1
   ;;
 esac

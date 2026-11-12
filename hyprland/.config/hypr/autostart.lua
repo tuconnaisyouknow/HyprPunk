@@ -52,6 +52,9 @@ local startup = {
 
   -- Keyring for the apps that store passwords and SSH keys
   { name = "keyring",          command = "/usr/bin/gnome-keyring-daemon --start --components=secrets,pkcs11,ssh" },
+
+  -- A notification when HyprPunk has an update, once per session
+  { name = "update-check",     command = "~/Scripts/update-notify.sh" },
 }
 
 -- The list only runs once the whole config is read, so your additions and removals count
