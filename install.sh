@@ -14,6 +14,7 @@ DOTFILES_DIR="$HOME/.dotfiles"
 LOG_DIR="$HOME/.local/state/hyprpunk"
 LOG_FILE=""
 STATE_FILE="$LOG_DIR/install.state"
+PACKAGES_FILE="$LOG_DIR/packages"
 current_step="Initialisation"
 sudo_keepalive_pid=""
 keyboard_layout=""
@@ -56,6 +57,54 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
   gdm lightdm lxdm ly greetd sddm
   gnome-shell plasma-workspace xfce4-session cinnamon mate-session-manager
   budgie-desktop lxqt-session i3-wm sway hyprland niri
+)
+
+# Everything HyprPunk installs, by what it's for
+readonly -a PACKAGES=(
+  zsh kitty starship zoxide
+  fzf eza bat fd
+  ripgrep fastfetch btop tmux
+  yazi cava bc stow brightnessctl jq pacman-contrib xdg-user-dirs
+  webp-pixbuf-loader
+  neovim lazygit cargo npm
+
+  sddm networkmanager
+  bluez bluez-utils power-profiles-daemon upower
+  python-dbus python-gobject python-cryptography zenity
+  pipewire-pulse wireplumber playerctl
+  gnome-keyring seahorse
+
+  hyprland awww hypridle
+  grim wf-recorder hyprcursor hyprpicker
+  quickshell cliphist wl-clipboard libnotify psmisc
+
+  qt5ct-kde qt5-wayland qt5-tools
+  qt5-quickcontrols2 layer-shell-qt5
+  qt6ct-kde qt6-wayland qt6-tools
+  layer-shell-qt kvantum kvantum-qt5
+
+  xdg-desktop-portal
+  xdg-desktop-portal-hyprland
+  xdg-desktop-portal-gtk
+  xwayland-satellite
+
+  adw-gtk-theme matugen imagemagick
+  papirus-icon-theme
+  papirus-folders
+  rose-pine-cursor
+  rose-pine-hyprcursor nwg-look
+
+  ttf-jetbrains-mono-nerd
+  otf-font-awesome
+  ttf-apple-emoji
+
+  dolphin ffmpegthumbs kdegraphics-thumbnailers ark loupe papers
+  ffmpeg mpv celluloid mate-media
+  libreoffice-fresh brave-bin
+  spotify-launcher obsidian
+
+  qt6-multimedia
+  qt6-multimedia-ffmpeg
 )
 
 ############
@@ -309,8 +358,9 @@ ask_locale_regional() {
   done
 }
 
-# yay is built in /tmp, which Arch keeps in memory, so nothing is left in your home and
-# a build cut short is gone at the next reboot
+# Everything else goes through yay, so pacman only brings what builds it, with the
+# system up to date first. yay is built in /tmp, which Arch keeps in memory, so nothing
+# is left in your home and a build cut short is gone at the next reboot.
 install_yay() {
   local build_dir
 
@@ -318,7 +368,7 @@ install_yay() {
     return
   fi
 
-  sudo pacman -S --needed --noconfirm git base-devel
+  sudo pacman -Syu --needed --noconfirm git base-devel
 
   build_dir=$(mktemp -d "${TMPDIR:-/tmp}/hyprpunk-yay.XXXXXX")
   git clone "https://aur.archlinux.org/yay.git" "$build_dir"
@@ -329,67 +379,51 @@ install_yay() {
   rm -rf -- "$build_dir"
 }
 
+# The official repositories and the AUR together
 update_system() {
-  sudo pacman -Syu --noconfirm
+  yay -Syu --noconfirm
 }
 
 # Arch's gtk4 with one patch, built daily by saneaspect, that makes open GTK 4 apps
 # reload ~/.config/gtk-4.0/gtk.css: they follow the wallpaper's colors without a
 # restart. It replaces gtk4, so pacman is told to accept the conflict (--ask=4).
+# Its repository is new the first time, hence the sync.
 install_gtk4_live_css() {
   if ! grep -q '^\[saneaspect\]' /etc/pacman.conf; then
     printf '\n[saneaspect]\nSigLevel = Optional TrustAll\nServer = https://github.com/saneaspect/gtk4-live-css/releases/download/repo\n' |
       sudo tee -a /etc/pacman.conf >/dev/null
   fi
-  sudo pacman -Syu --needed --noconfirm --ask=4 gtk4-live-css
+  yay -Syu --needed --noconfirm --ask=4 gtk4-live-css
 }
 
+# Only the packages added to the list since the last time get installed, so one you
+# removed doesn't come back. One that left the list becomes a dependency: it goes at
+# your next orphan cleanup, once nothing needs it. The list is saved once they're all
+# in. A machine without a saved list (a new install, or one from before) gets every
+# missing package.
 install_packages() {
-  yay -S --needed --noconfirm --removemake \
-    zsh kitty starship zoxide \
-    fzf eza bat fd \
-    ripgrep fastfetch btop tmux \
-    yazi cava bc stow brightnessctl jq pacman-contrib xdg-user-dirs \
-    webp-pixbuf-loader \
-    neovim lazygit cargo npm \
-    \
-    sddm networkmanager \
-    bluez bluez-utils power-profiles-daemon upower \
-    python-dbus python-gobject python-cryptography zenity \
-    pipewire-pulse wireplumber playerctl \
-    gnome-keyring seahorse \
-    \
-    hyprland awww hypridle \
-    grim wf-recorder hyprcursor hyprpicker \
-    quickshell cliphist wl-clipboard libnotify psmisc \
-    \
-    qt5ct-kde qt5-wayland qt5-tools \
-    qt5-quickcontrols2 layer-shell-qt5 \
-    qt6ct-kde qt6-wayland qt6-tools \
-    layer-shell-qt kvantum kvantum-qt5 \
-    \
-    xdg-desktop-portal \
-    xdg-desktop-portal-hyprland \
-    xdg-desktop-portal-gtk \
-    xwayland-satellite \
-    \
-    adw-gtk-theme matugen imagemagick \
-    papirus-icon-theme \
-    papirus-folders \
-    rose-pine-cursor \
-    rose-pine-hyprcursor nwg-look \
-    \
-    ttf-jetbrains-mono-nerd \
-    otf-font-awesome \
-    ttf-apple-emoji \
-    \
-    dolphin ffmpegthumbs kdegraphics-thumbnailers ark loupe papers \
-    ffmpeg mpv celluloid mate-media \
-    libreoffice-fresh brave-bin \
-    spotify-launcher obsidian \
-    \
-    qt6-multimedia \
-    qt6-multimedia-ffmpeg
+  local -a new_packages=() dropped_packages=()
+
+  if [[ -f "$PACKAGES_FILE" ]]; then
+    mapfile -t new_packages < <(comm -23 <(printf '%s\n' "${PACKAGES[@]}" | sort -u) <(sort -u "$PACKAGES_FILE"))
+    mapfile -t dropped_packages < <(comm -13 <(printf '%s\n' "${PACKAGES[@]}" | sort -u) <(sort -u "$PACKAGES_FILE") |
+      xargs -r pacman -Qq 2>/dev/null)
+  else
+    new_packages=("${PACKAGES[@]}")
+  fi
+
+  if ((${#new_packages[@]})); then
+    yay -S --needed --noconfirm --removemake "${new_packages[@]}"
+  else
+    echo "No new packages."
+  fi
+
+  if ((${#dropped_packages[@]})); then
+    yay -D --asdeps "${dropped_packages[@]}"
+  fi
+
+  printf '%s\n' "${PACKAGES[@]}" | sort -u >"$PACKAGES_FILE.tmp"
+  mv -f "$PACKAGES_FILE.tmp" "$PACKAGES_FILE"
 }
 
 # Oh My Zsh and its plugins, zsh as your shell. A default .zshrc left behind would stop
@@ -686,9 +720,9 @@ ask_reboot() {
 # Everything HyprPunk owns, in the order each step needs the previous ones. All of it is
 # safe to run again: an update and a resumed install go through the same list.
 converge() {
+  run_step "Installing yay" install_yay
   run_step "Updating the system" update_system
   run_step "Installing GTK 4 with live colors" install_gtk4_live_css
-  run_step "Installing yay" install_yay
   run_step "Installing packages" install_packages
   run_step "Installing Oh My Zsh" install_oh_my_zsh
   run_step "Downloading the dotfiles" clone_dotfiles
