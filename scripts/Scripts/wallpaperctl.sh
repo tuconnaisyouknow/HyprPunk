@@ -10,7 +10,8 @@
 #   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order and their thumbnails (the current theme's by default)
 #   wallpaperctl.sh reset          back to the current theme's first wallpaper
 #   wallpaperctl.sh login          puts the saved one's login screen and colors back (sddm.sh, after an update)
-#   wallpaperctl.sh init           gives the default one's look without showing it, and makes every thumbnail (install.sh)
+#   wallpaperctl.sh ensure         gives the saved one's look again without showing it (the default one's the
+#                                  first time), and makes every thumbnail (install.sh)
 #   wallpaperctl.sh status         prints the saved one and its theme
 set -euo pipefail
 
@@ -39,7 +40,7 @@ Usage:
   $(basename "$0") list [theme]
   $(basename "$0") reset
   $(basename "$0") login
-  $(basename "$0") init
+  $(basename "$0") ensure
   $(basename "$0") status
 EOF
 }
@@ -331,9 +332,9 @@ login:1)
   acquire_lock
   set_login_screen "$(saved_wallpaper)"
   ;;
-init:1)
+ensure:1)
   acquire_lock
-  switch_to "$(first_wallpaper "$DEFAULT_THEME")"
+  switch_to "$(saved_wallpaper)"
   # Every thumbnail, so the pickers open at once the first time too
   list_themes | cut -f1 | while IFS= read -r theme; do list_wallpapers "$theme"; done | with_thumbnails >/dev/null
   ;;

@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
-# Sets up HyprPunk on a fresh minimal Arch install: packages, dotfiles, themes and services.
-# It refuses to run over an existing setup, logs everything to ~/.local/state/hyprpunk,
-# and if something fails, running it again picks up where it stopped.
+# Sets up HyprPunk on a fresh minimal Arch install, then keeps it up to date. Every step
+# describes a state to reach, so running them again only changes what differs: that's
+# both how an update works and how a failed install resumes. Logs go to
+# ~/.local/state/hyprpunk.
+#   install.sh          installs on a fresh system, or resumes an interrupted install
+#   install.sh update   pulls the dotfiles, then applies them with the new installer
+#   install.sh apply    puts back everything HyprPunk owns, without pulling
 
 set -Eeuo pipefail
 
 DOTFILES_REPO="https://github.com/tuconnaisyouknow/HyprPunk.git"
 DOTFILES_DIR="$HOME/.dotfiles"
 LOG_DIR="$HOME/.local/state/hyprpunk"
-LOG_FILE="$LOG_DIR/install-$(date +%Y-%m-%d_%H-%M-%S).log"
+LOG_FILE=""
 STATE_FILE="$LOG_DIR/install.state"
 current_step="Initialisation"
 sudo_keepalive_pid=""
 keyboard_layout=""
-locale_language="us"
-locale_regional="us"
-
-declare -A COMPLETED_STEPS=()
+locale_language=""
+locale_regional=""
 
 # What HyprPunk takes over in your home. Finding any of it means the system isn't fresh.
 readonly -a USER_CONFIG_PATHS=(
@@ -60,17 +62,18 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
 # PLUMBING #
 ############
 
-# Everything goes to the screen and to the log
+# Everything goes to the screen and to the log, one per run, named after the command
 setup_logging() {
+  LOG_FILE="$LOG_DIR/$1-$(date +%Y-%m-%d_%H-%M-%S).log"
   mkdir -p "$LOG_DIR"
   exec > >(tee -a "$LOG_FILE") 2>&1
-  echo "Installation log: $LOG_FILE"
+  echo "Log: $LOG_FILE"
 }
 
-# The steps already done and the answers given, so an interrupted install can resume
+# The answers, kept until the install is done: the file also says an install is under
+# way, so running it again resumes instead of refusing a system that isn't fresh anymore
 save_state() {
   local state_tmp
-  local step
 
   state_tmp=$(mktemp --tmpdir="$LOG_DIR" install-state.XXXXXX)
   {
@@ -78,9 +81,6 @@ save_state() {
     printf 'keyboard_layout=%s\n' "$keyboard_layout"
     printf 'locale_language=%s\n' "$locale_language"
     printf 'locale_regional=%s\n' "$locale_regional"
-    for step in "${!COMPLETED_STEPS[@]}"; do
-      printf 'completed=%s\n' "$step"
-    done
   } >"$state_tmp"
   mv -f "$state_tmp" "$STATE_FILE"
 }
@@ -88,14 +88,12 @@ save_state() {
 load_state() {
   local key value version=""
 
-  COMPLETED_STEPS=()
   while IFS='=' read -r key value; do
     case "$key" in
     version) version="$value" ;;
     keyboard_layout) keyboard_layout="$value" ;;
     locale_language) locale_language="$value" ;;
     locale_regional) locale_regional="$value" ;;
-    completed) [[ -n "$value" ]] && COMPLETED_STEPS["$value"]=1 ;;
     esac
   done <"$STATE_FILE"
 
@@ -107,18 +105,16 @@ load_state() {
     echo "Invalid keyboard layout in installation state: $keyboard_layout" >&2
     return 1
   }
-  [[ "$locale_language" == "us" || "$locale_language" == "fr" ]] || {
+  [[ -z "$locale_language" || "$locale_language" == "us" || "$locale_language" == "fr" ]] || {
     echo "Invalid language locale in installation state: $locale_language" >&2
     return 1
   }
-  [[ "$locale_regional" == "us" || "$locale_regional" == "fr" ]] || {
+  [[ -z "$locale_regional" || "$locale_regional" == "us" || "$locale_regional" == "fr" ]] || {
     echo "Invalid regional locale in installation state: $locale_regional" >&2
     return 1
   }
 }
 
-# An interrupted install always resumes: starting over would find its own half-done
-# work and take it for an existing setup
 initialize_state() {
   if [[ -f "$STATE_FILE" ]]; then
     load_state
@@ -158,7 +154,7 @@ on_error() {
   fi
 
   trap - ERR
-  printf '\nInstallation failed.\n' >&2
+  printf '\nStopped on an error.\n' >&2
   printf 'Step    : %s\n' "$current_step" >&2
   printf 'Line    : %s\n' "$line_number" >&2
   printf 'Command : %s\n' "$command" >&2
@@ -167,21 +163,13 @@ on_error() {
   exit "$exit_code"
 }
 
-# Runs a step unless a previous attempt already got through it
+# Names the step, for the screen and for the error message if it fails
 run_step() {
-  local step_id="$1"
-  current_step="$2"
-  shift 2
-
-  if [[ -n "${COMPLETED_STEPS[$step_id]:-}" ]]; then
-    printf '\n==> %s (already completed, skipping)\n' "$current_step"
-    return
-  fi
+  current_step="$1"
+  shift
 
   printf '\n==> %s\n' "$current_step"
   "$@"
-  COMPLETED_STEPS["$step_id"]=1
-  save_state
 }
 
 trap 'on_error "$LINENO" "$BASH_COMMAND"' ERR
@@ -247,6 +235,18 @@ require_fresh_system() {
   if ((${#found[@]})); then
     echo "HyprPunk only installs on a fresh minimal Arch Linux, and this one is already set up:" >&2
     printf '  - %s\n' "${found[@]}" >&2
+    exit 1
+  fi
+}
+
+# update and apply work on an installed HyprPunk, whose install went all the way
+require_installed() {
+  if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
+    echo "HyprPunk isn't installed: $DOTFILES_DIR is missing." >&2
+    exit 1
+  fi
+  if [[ -f "$STATE_FILE" ]]; then
+    echo "The installation didn't finish. Run install.sh again, without a command, to resume it." >&2
     exit 1
   fi
 }
@@ -330,7 +330,7 @@ install_yay() {
 }
 
 update_system() {
-  sudo pacman -Syyu --noconfirm
+  sudo pacman -Syu --noconfirm
 }
 
 # Arch's gtk4 with one patch, built daily by saneaspect, that makes open GTK 4 apps
@@ -392,8 +392,8 @@ install_packages() {
     qt6-multimedia-ffmpeg
 }
 
-# Oh My Zsh and its plugins, zsh as your shell. Its installer leaves a .zshrc behind,
-# ours replaces it.
+# Oh My Zsh and its plugins, zsh as your shell. A default .zshrc left behind would stop
+# stow from linking ours, so it goes, unless it's already our link.
 install_oh_my_zsh() {
   clone_or_pull "https://github.com/ohmyzsh/ohmyzsh.git" "$HOME/.oh-my-zsh"
 
@@ -410,11 +410,12 @@ install_oh_my_zsh() {
     "$HOME/.oh-my-zsh/custom/plugins/zsh-bat"
 
   sudo chsh -s "$(command -v zsh)" "$USER"
-  rm -f "$HOME/.zshrc"
+  [[ -L "$HOME/.zshrc" ]] || rm -f "$HOME/.zshrc"
 }
 
 # The dotfiles go straight to ~/.dotfiles, which the fresh system check found empty.
-# A clone that got through is kept, one cut short by an interruption starts over.
+# A clone that got through is kept (an update pulls it instead), one cut short by an
+# interruption starts over.
 # Only today's files are downloaded: the history comes without the old screenshots,
 # which git fetches if you ever go back to an older version.
 clone_dotfiles() {
@@ -445,39 +446,46 @@ stow_dotfiles() {
 }
 
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy written by
-# qt-configctl.sh instead of a link (the same script restores them later)
+# qt-configctl.sh instead of a link. Their look is HyprPunk's, so it's written again.
 generate_qt_configs() {
   "$HOME/Scripts/qt-configctl.sh" restore all
 }
 
-# The layout also goes to the login screen and the TTYs. The polkit rule lets later
-# changes from the shell do the same without a password.
+# The polkit rule lets the shell send a new layout to the login screen and the TTYs
+# without a password. The files generated from your layout are written again.
 configure_keyboard() {
   sudo install -Dm644 "$DOTFILES_DIR/keyboard/polkit/50-hyprpunk-keymap.rules" \
     /etc/polkit-1/rules.d/50-hyprpunk-keymap.rules
-  "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
+  "$HOME/Scripts/keyboard-layoutctl.sh" ensure
 }
 
-# Starting states for the language, screens, wallpaper and touchpad
+# Each script applies what you picked in the shell again, or its default the first time
 configure_locale_profiles() {
-  "$HOME/Scripts/locale-profilectl.sh" init "$locale_language" "$locale_regional"
+  "$HOME/Scripts/locale-profilectl.sh" ensure
 }
 
 configure_monitors() {
-  "$HOME/Scripts/displayctl.sh" init preferred
-}
-
-# The default wallpaper's look (the colors and its login screen) and the pickers'
-# thumbnails. It comes after the login screens are installed.
-configure_wallpaper() {
-  "$HOME/Scripts/wallpaperctl.sh" init
+  "$HOME/Scripts/displayctl.sh" ensure
 }
 
 configure_touchpad() {
-  "$HOME/Scripts/touchpadctl.sh" init true
+  "$HOME/Scripts/touchpadctl.sh" ensure
 }
 
-# Which app opens images, PDFs, videos and documents
+# Your wallpaper's look (the colors and its login screen) and the pickers' thumbnails,
+# the default wallpaper's the first time. It comes after the login screens are installed.
+configure_wallpaper() {
+  "$HOME/Scripts/wallpaperctl.sh" ensure
+}
+
+# Your answers, given once: the shell is where you change them afterwards
+seed_answers() {
+  "$HOME/Scripts/keyboard-layoutctl.sh" init "$keyboard_layout"
+  "$HOME/Scripts/locale-profilectl.sh" init "$locale_language" "$locale_regional"
+}
+
+# Which app opens images, PDFs, videos and documents. Only set at install, since you
+# may pick others.
 set_default_apps() {
   echo "Setting default applications..."
 
@@ -550,14 +558,16 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Papirus-Dark with grey folders, which go with every wallpaper's palette, and dark mode.
-# The colors, the GTK theme and bat's theme come with the wallpaper.
+# Papirus-Dark with grey folders, which go with every wallpaper's palette, the font, dark
+# mode and the GTK theme. The look is HyprPunk's, so anything changed here is put back.
+# The colors inside the GTK theme come with the wallpaper.
 apply_themes() {
   papirus-folders -C grey --theme Papirus-Dark
 
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+  gsettings set org.gnome.desktop.interface gtk-theme 'HyprPunk'
 }
 
 # Generate both locales the shell can switch between
@@ -673,47 +683,81 @@ ask_reboot() {
 # MAIN #
 ########
 
-main() {
-  require_regular_user
-  require_arch
-  setup_logging
-  initialize_state
-
-  run_step "ask_keyboard_layout" "Selecting the keyboard layout" ask_keyboard_layout
-  run_step "ask_locale_language" "Selecting the interface language" ask_locale_language
-  run_step "ask_locale_regional" "Selecting regional formats" ask_locale_regional
-
-  # The questions are all behind you, so the rest runs on its own until the reboot
-  # question at the end. Not a step of its own, since a resumed install needs sudo again.
-  current_step="Asking for your password"
-  printf '\n==> %s\n' "$current_step"
-  keep_sudo_alive
-
-  run_step "update_system" "Updating the system" update_system
-  run_step "install_gtk4_live_css" "Installing GTK 4 with live colors" install_gtk4_live_css
-  run_step "install_yay" "Installing yay" install_yay
-  run_step "install_packages" "Installing packages" install_packages
-  run_step "install_oh_my_zsh" "Installing Oh My Zsh" install_oh_my_zsh
-  run_step "clone_dotfiles" "Downloading the dotfiles" clone_dotfiles
-  run_step "stow_dotfiles" "Linking dotfiles" stow_dotfiles
-  run_step "generate_qt_configs" "Generating Qt configuration" generate_qt_configs
-  run_step "configure_keyboard" "Configuring the keyboard" configure_keyboard
-  run_step "configure_locale_profiles" "Configuring locale profiles" configure_locale_profiles
-  run_step "configure_monitors" "Configuring monitors" configure_monitors
-  run_step "configure_touchpad" "Configuring the touchpad" configure_touchpad
-  run_step "set_default_apps" "Setting default applications" set_default_apps
-  run_step "install_tmux_plugins" "Installing tmux plugins" install_tmux_plugins
-  run_step "apply_themes" "Applying themes" apply_themes
-  run_step "install_locale" "Installing the locale" install_locale
-  run_step "install_sddm_theme" "Installing the SDDM theme" install_sddm_theme
-  run_step "install_brave_policy" "Installing the Brave policy" install_brave_policy
-  run_step "configure_wallpaper" "Configuring the wallpaper" configure_wallpaper
-  run_step "install_grub_theme" "Installing the GRUB theme" install_grub_theme
-  run_step "install_battery_limit" "Installing the battery charge limit" install_battery_limit
-  run_step "enable_services" "Enabling services" enable_services
-  run_step "ask_reboot" "Finishing installation" ask_reboot
-
-  rm -f -- "$STATE_FILE"
+# Everything HyprPunk owns, in the order each step needs the previous ones. All of it is
+# safe to run again: an update and a resumed install go through the same list.
+converge() {
+  run_step "Updating the system" update_system
+  run_step "Installing GTK 4 with live colors" install_gtk4_live_css
+  run_step "Installing yay" install_yay
+  run_step "Installing packages" install_packages
+  run_step "Installing Oh My Zsh" install_oh_my_zsh
+  run_step "Downloading the dotfiles" clone_dotfiles
+  run_step "Linking dotfiles" stow_dotfiles
+  run_step "Generating Qt configuration" generate_qt_configs
+  run_step "Configuring the keyboard" configure_keyboard
+  run_step "Configuring locale profiles" configure_locale_profiles
+  run_step "Configuring monitors" configure_monitors
+  run_step "Configuring the touchpad" configure_touchpad
+  run_step "Installing tmux plugins" install_tmux_plugins
+  run_step "Applying themes" apply_themes
+  run_step "Installing the locale" install_locale
+  run_step "Installing the SDDM theme" install_sddm_theme
+  run_step "Installing the Brave policy" install_brave_policy
+  run_step "Configuring the wallpaper" configure_wallpaper
+  run_step "Installing the GRUB theme" install_grub_theme
+  run_step "Installing the battery charge limit" install_battery_limit
+  run_step "Enabling services" enable_services
 }
 
-main "$@"
+# The questions come first, then everything runs on its own until the reboot question.
+# Answers are saved as they're given, so a resumed install only asks the missing ones.
+install_hyprpunk() {
+  require_regular_user
+  require_arch
+  setup_logging install
+  initialize_state
+
+  [[ -n "$keyboard_layout" ]] || run_step "Selecting the keyboard layout" ask_keyboard_layout
+  save_state
+  [[ -n "$locale_language" ]] || run_step "Selecting the interface language" ask_locale_language
+  save_state
+  [[ -n "$locale_regional" ]] || run_step "Selecting regional formats" ask_locale_regional
+  save_state
+
+  run_step "Asking for your password" keep_sudo_alive
+  converge
+  run_step "Applying your answers" seed_answers
+  run_step "Setting default applications" set_default_apps
+
+  rm -f -- "$STATE_FILE"
+  run_step "Finishing installation" ask_reboot
+}
+
+# Pulls, then hands over to the installer it just pulled, so the new steps are the ones
+# that run. A pull that isn't a fast-forward stops here, before anything changes.
+update_hyprpunk() {
+  require_regular_user
+  require_installed
+  run_step "Downloading the update" git -C "$DOTFILES_DIR" pull --ff-only
+  exec "$DOTFILES_DIR/install.sh" apply
+}
+
+apply_hyprpunk() {
+  require_regular_user
+  require_arch
+  require_installed
+  setup_logging apply
+  run_step "Asking for your password" keep_sudo_alive
+  converge
+  printf '\nHyprPunk is up to date.\n'
+}
+
+case "${1:-}" in
+"") install_hyprpunk ;;
+update) update_hyprpunk ;;
+apply) apply_hyprpunk ;;
+*)
+  echo "Usage: install.sh [update|apply]" >&2
+  exit 1
+  ;;
+esac
