@@ -4,9 +4,9 @@ import Quickshell
 import Quickshell.Networking
 
 // The control center's network page, in tabs like the sound page. Wi-Fi: the networks
-// around, a click to connect, and the password prompt for a new one. VPN: your VPNs, a
-// click to bring one up or down, and the import of a new one. Saved networks and VPNs
-// open their details.
+// around, a click to connect, the password prompt for a new one, and a way to a hidden
+// one. VPN: your VPNs, a click to bring one up or down, and the import of a new one.
+// Saved networks and VPNs open their details.
 ColumnLayout {
     id: page
 
@@ -28,13 +28,25 @@ ColumnLayout {
     readonly property int tabGap: 24
     readonly property Item currentTab: tabIndex === 1 ? vpnTab : wifiTab
     readonly property var vpnAsking: Vpn.profile(Vpn.passwordUuid)
+    // Why the last password didn't connect, until another network asks.
+    property string wifiError: ""
 
     signal backRequested()
     // A password went out, so the prompt can hand the keyboard back to the panel.
     signal passwordSent()
     signal vpnDetailsRequested(string uuid)
+    signal hiddenRequested()
 
     spacing: 12
+
+    Connections {
+        function onPasswordNetworkChanged() {
+            page.wifiError = "";
+            wepKeyType.reset();
+        }
+
+        target: page.center
+    }
 
     // A VPN wants a password: its tab comes up with the prompt ready.
     Connections {
@@ -180,7 +192,7 @@ ColumnLayout {
                                     icon: Icons.wifi(modelData.signalStrength, false)
                                     title: modelData.name
                                     subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
-                                    trailing: modelData.security === WifiSecurityType.Open ? "" : "󰌾"
+                                    trailing: page.center.needsSecrets(modelData) ? "󰌾" : ""
                                     highlighted: modelData.connected
                                     detailsAvailable: modelData.known
                                     onClicked: page.center.selectWifi(modelData)
@@ -226,25 +238,66 @@ ColumnLayout {
                                 font.weight: Font.Bold
                             }
 
+                            WepKeySelect {
+                                id: wepKeyType
+
+                                Layout.fillWidth: true
+                                visible: page.center.passwordNetwork !== null && page.center.passwordKeyMgmt(page.center.passwordNetwork.security) === "none"
+                                enabled: !wifiHelper.busy
+                            }
+
                             FormField {
                                 id: passwordField
 
                                 Layout.fillWidth: true
+                                enabled: !wifiHelper.busy
                                 secret: true
                                 escapable: true
                                 placeholder: "Password, then Enter"
                                 onEscaped: page.center.passwordNetwork = null
                                 onAccepted: {
-                                    if (page.center.passwordNetwork !== null && text !== "") {
-                                        page.center.passwordNetwork.connectWithPsk(text);
-                                        page.center.passwordNetwork = null;
-                                        page.passwordSent();
-                                    }
+                                    const network = page.center.passwordNetwork;
+                                    if (network !== null && text !== "")
+                                        wifiHelper.send({
+                                        "ssid": network.name,
+                                        "keyMgmt": page.center.passwordKeyMgmt(network.security),
+                                        "psk": text,
+                                        "wepKeyType": wepKeyType.value
+                                    });
+
                                 }
+                            }
+
+                            ErrorText {
+                                text: wifiHelper.busy ? "Connecting…" : page.wifiError
+                                color: wifiHelper.busy ? Theme.secondary : Theme.red
                             }
 
                         }
 
+                    }
+
+                    ListRow {
+                        Layout.fillWidth: true
+                        visible: Networking.wifiEnabled
+                        icon: "󰤫"
+                        title: "Hidden network"
+                        onClicked: page.hiddenRequested()
+                    }
+
+                    // Saves the network only once the password works, and says why not.
+                    WifiHelper {
+                        id: wifiHelper
+
+                        onFinished: (ok, error) => {
+                            page.wifiError = error;
+                            if (ok) {
+                                page.center.passwordNetwork = null;
+                                page.passwordSent();
+                            } else {
+                                passwordField.input.forceActiveFocus();
+                            }
+                        }
                     }
 
                 }

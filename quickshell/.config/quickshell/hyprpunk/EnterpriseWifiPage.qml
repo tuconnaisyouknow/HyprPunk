@@ -6,7 +6,8 @@ import Quickshell.Networking
 
 // Signing in to an enterprise Wi-Fi network like eduroam, with the same fields as
 // NetworkManager's own dialog. wifi-connection.py saves it and connects.
-// Through edit(), the form opens on the saved settings and replaces them.
+// Through edit(), the form opens on the saved settings and replaces them. A hidden
+// network comes from its own page, as just a name, a security type and hidden.
 ColumnLayout {
     id: page
 
@@ -14,7 +15,7 @@ ColumnLayout {
     // Modifying the saved profile (edit()) rather than a first connection.
     property bool editing: false
     property bool loading: false
-    property bool connecting: false
+    readonly property bool connecting: helper.busy
     property string error: ""
     readonly property var securityOptions: {
         if (network === null)
@@ -208,6 +209,9 @@ ColumnLayout {
         if (eap === "peap" || eap === "ttls" || eap === "fast")
             values.anonymousIdentity = anonymousIdentity.text;
 
+        if (network.hidden === true)
+            values.hidden = true;
+
         if (eap === "peap") {
             values.peapVersion = peapVersion.current.value;
             values.phase2Auth = peapInner.current.value;
@@ -226,9 +230,7 @@ ColumnLayout {
             return ;
 
         error = "";
-        connecting = true;
-        helper.pending = JSON.stringify(request());
-        helper.running = true;
+        helper.send(request());
     }
 
     spacing: 12
@@ -549,55 +551,11 @@ ColumnLayout {
             font.pixelSize: 12
         }
 
-        Rectangle {
-            id: connectButton
-
-            readonly property bool available: page.missing === "" && !page.connecting && !page.loading
-
-            implicitWidth: connectLabel.implicitWidth + 32
-            implicitHeight: 34
-            radius: 17
-            color: "transparent"
-            opacity: available ? 1 : 0.45
-
-            GlassSurface {
-                radius: parent.radius
-                hovered: connectHover.hovered
-                backgroundColor: Theme.alpha(Theme.primary, connectHover.hovered && connectButton.available ? 0.95 : 0.8)
-            }
-
-            Text {
-                id: connectLabel
-
-                anchors.centerIn: parent
-                text: (page.connecting ? "󰔟  " : "") + (page.editing ? "Save" : "Connect")
-                color: Theme.base
-                font.family: Theme.font
-                font.pixelSize: 13
-                font.weight: Font.Bold
-            }
-
-            HoverHandler {
-                id: connectHover
-
-                cursorShape: connectButton.available ? Qt.PointingHandCursor : Qt.ArrowCursor
-            }
-
-            TapHandler {
-                gesturePolicy: TapHandler.ReleaseWithinBounds
-                enabled: connectButton.available
-                onTapped: {
-                    connectBounce.restart();
-                    page.connect();
-                }
-            }
-
-            BounceAnimation {
-                id: connectBounce
-
-                target: connectButton
-            }
-
+        ConnectButton {
+            label: page.editing ? "Save" : "Connect"
+            busy: page.connecting
+            available: page.missing === "" && !page.connecting && !page.loading
+            onClicked: page.connect()
         }
 
     }
@@ -618,42 +576,15 @@ ColumnLayout {
 
     }
 
-    Process {
+    WifiHelper {
         id: helper
 
-        property string pending: ""
+        onFinished: (ok, error) => {
+            page.error = error;
+            if (ok)
+                page.finished();
 
-        command: ["python3", Session.scripts + "/wifi-connection.py"]
-        stdinEnabled: true
-        onStarted: {
-            write(pending + "\n");
-            pending = "";
         }
-        onExited: {
-            if (page.connecting) {
-                page.connecting = false;
-                page.error = "Connection failed";
-            }
-        }
-
-        stdout: SplitParser {
-            onRead: (line) => {
-                let result;
-                try {
-                    result = JSON.parse(line);
-                } catch (error) {
-                    return ;
-                }
-                page.connecting = false;
-                if (result.ok) {
-                    page.error = "";
-                    page.finished();
-                } else {
-                    page.error = result.error;
-                }
-            }
-        }
-
     }
 
 }
