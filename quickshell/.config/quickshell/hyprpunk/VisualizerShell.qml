@@ -7,10 +7,13 @@ import Quickshell.Wayland
 // it would share its thread with the bar and drop a frame every few dozen. It settles
 // into the floor while the lock screen is on its way or up (it follows the levels then),
 // telling it when it lies flat, and the lock screen's own wave rises in its place
-// (LockSurface.qml).
+// (LockSurface.qml). Turned off in the settings (MusicSettings), neither shows and cava
+// doesn't run.
 ShellRoot {
     CavaLevels {
         id: cava
+
+        needed: MusicSettings.wave
     }
 
     Variants {
@@ -26,7 +29,7 @@ ShellRoot {
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
             // Kept mapped while it fades out
-            visible: cava.playing || wave.opacity > 0
+            visible: MusicSettings.wave && (cava.playing || wave.opacity > 0)
             WlrLayershell.layer: WlrLayer.Bottom
             WlrLayershell.namespace: "hyprpunk-visualizer"
 

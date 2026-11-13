@@ -5,8 +5,9 @@ import Quickshell.Io
 import Quickshell.Widgets
 
 // The Spotify track's cover as a spinning record, on the right of the bar. It spins
-// while the music plays and rolls out for the next track. A click grows the player out
-// of it, the cover gliding to its place in the card.
+// while the music plays, unless the settings keep it still or leave the cover out
+// (MusicSettings), and rolls out for the next track. A click grows the player out of it,
+// the cover gliding to its place in the card.
 Rectangle {
     id: musicPill
 
@@ -31,9 +32,11 @@ Rectangle {
     // While the player is open, the disc pauses and picks up from the same angle
     // afterwards, without jumping.
     readonly property bool displayFrozen: musicPopup.mapped
-    readonly property real frontAngle: spin + rewind
+    // Kept upright otherwise: a disc turning redraws the whole screen at every frame.
+    readonly property bool spins: MusicSettings.cover === "spinning"
+    readonly property real frontAngle: spins ? spin + rewind : 0
     // Degrees per second: speeds up and slows down like a turntable.
-    property real spinSpeed: musicPill.player !== null && musicPill.player.isPlaying ? 45 : 0
+    property real spinSpeed: spins && musicPill.player !== null && musicPill.player.isPlaying ? 45 : 0
     // Angle of the disc rolling out, frozen when the track changed.
     property real outgoingSpin: 0
     // 0 -> 1 while the discs swap, direction 1 = next track, -1 = previous.
@@ -241,6 +244,8 @@ Rectangle {
         CoverDisc {
             id: discA
 
+            bare: MusicSettings.cover === "off"
+
             width: parent.width
             height: parent.height
             x: musicPill.discX(musicPill.frontIsA)
@@ -250,6 +255,8 @@ Rectangle {
 
         CoverDisc {
             id: discB
+
+            bare: MusicSettings.cover === "off"
 
             width: parent.width
             height: parent.height
@@ -520,6 +527,7 @@ Rectangle {
                 antialiasing: true
                 // Same art as the pill's disc, so both match when it folds back.
                 source: musicPill.player !== null ? musicPill.pillArt() : ""
+                bare: MusicSettings.cover === "off"
                 decodeSize: 64
             }
 

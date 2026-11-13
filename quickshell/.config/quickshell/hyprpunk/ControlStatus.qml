@@ -151,14 +151,14 @@ RowLayout {
         id: batteryPill
 
         visible: status.bar.hasBattery
-        // Red only when it's running out, not while charging.
-        color: UPower.onBattery && status.bar.batteryPercent <= 20 ? Theme.red : Theme.primary
+        // Red only when it's running out (the settings' low level), not while charging.
+        color: UPower.onBattery && status.bar.batteryPercent <= BatterySettings.low ? Theme.red : Theme.primary
         icon: Icons.battery(status.bar.battery.percentage, UPower.onBattery)
         text: status.bar.batteryPercent + "%"
 
-        // Pulses from 10 %.
+        // Pulses once it's critical.
         SequentialAnimation on opacity {
-            running: status.bar.hasBattery && UPower.onBattery && status.bar.batteryPercent <= 10
+            running: status.bar.batteryCritical
             loops: Animation.Infinite
             onRunningChanged: {
                 if (!running)

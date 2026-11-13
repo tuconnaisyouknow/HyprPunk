@@ -5,9 +5,10 @@ import Quickshell.Services.Notifications
 import Quickshell.Widgets
 
 // New notifications, in a card that grows out of the dynamic island of the screen you're
-// on when they arrive. They leave after a few seconds unless hovered or critical, Focus
-// keeps all but the critical ones away, they wait while an island panel takes the
-// island, and they fold back into it when the notification center opens.
+// on when they arrive. They leave after the time set in the settings unless hovered or
+// critical, Focus keeps all but the critical ones away, so do the apps muted in the
+// settings, they wait while an island panel takes the island, and they fold back into
+// it when the notification center opens.
 Card {
     id: popups
 
@@ -49,6 +50,10 @@ Card {
             return ;
 
         if (shellState.doNotDisturb && notification.urgency !== NotificationUrgency.Critical)
+            return ;
+
+        // Muted in the settings: it waits in the center without popping up.
+        if (NotificationSettings.muted(NotificationSettings.identity(notification)))
             return ;
 
         // Another screen's: each one shows those that arrive while you're on it.
@@ -212,9 +217,11 @@ Card {
                     }
 
                     Timer {
-                        // expireTimeout is in milliseconds: -1 means our default, 0 means never.
-                        interval: popup.notification !== null && popup.notification.expireTimeout > 0 ? popup.notification.expireTimeout : 5000
-                        running: popup.notification !== null && popups.opened && !cardHover.hovered && !popup.critical && popup.notification.expireTimeout !== 0
+                        // In milliseconds, -1 when the app leaves it to the settings, 0 for never.
+                        readonly property int expireTimeout: popup.notification !== null ? popup.notification.expireTimeout : 0
+
+                        interval: expireTimeout > 0 ? expireTimeout : NotificationSettings.duration * 1000
+                        running: interval > 0 && expireTimeout !== 0 && popups.opened && !cardHover.hovered && !popup.critical
                         onTriggered: popups.hide(popup.modelData.id)
                     }
 

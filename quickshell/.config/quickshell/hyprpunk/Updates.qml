@@ -5,16 +5,21 @@ import Quickshell
 import Quickshell.Io
 
 // The pending package updates, official repos and AUR counted together, for the bar's
-// updates pill. Checked at startup, every 15 minutes, and after anything pacman does,
-// from the pill or from a terminal.
+// updates pill. Checked at startup, as often as the settings say (UpdateSettings), and
+// after anything pacman does, from the pill or from a terminal. Turned off there, it
+// counts nothing and the pill stays hidden.
 Singleton {
     id: updates
 
-    property int count: 0
+    readonly property int count: UpdateSettings.packages ? found : 0
+    property int found: 0
     // Asked while a check was running: it would only see the state from before.
     property bool checkAgain: false
 
     function check() {
+        if (!UpdateSettings.packages)
+            return;
+
         if (countProcess.running)
             checkAgain = true;
         else
@@ -33,7 +38,6 @@ Singleton {
         id: countProcess
 
         command: ["sh", "-c", "{ checkupdates & yay -Qua & wait; } 2>/dev/null | wc -l"]
-        running: true
         onExited: {
             if (updates.checkAgain) {
                 updates.checkAgain = false;
@@ -44,7 +48,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const count = parseInt(text.trim());
-                updates.count = isNaN(count) ? 0 : count;
+                updates.found = isNaN(count) ? 0 : count;
             }
         }
 
@@ -68,11 +72,13 @@ Singleton {
         onTriggered: updates.check()
     }
 
-    // Cheap: the mirror only sends its package list again when it has changed.
+    // Cheap: the mirror only sends its package list again when it has changed. Turning
+    // the count back on counts at once, like the startup.
     Timer {
-        interval: 15 * 60 * 1000
-        running: true
+        interval: (UpdateSettings.interval || 15) * 60 * 1000
+        running: UpdateSettings.packages
         repeat: true
+        triggeredOnStart: true
         onTriggered: updates.check()
     }
 

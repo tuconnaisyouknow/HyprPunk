@@ -61,19 +61,6 @@ Card {
     property bool bluetoothPowerPending: false
     // Laptops and desktops alike: power-profiles-daemon always has at least saver and balanced.
     readonly property bool powerProfilesAvailable: powerProfiles.length > 1
-    // Keyboard layout and language settings ("fr" or "us"), saved by the scripts.
-    readonly property string keyboardLayout: Session.keyboardLayout
-    readonly property string localeLanguage: Session.languageProfile
-    readonly property string localeRegional: Session.regionalProfile
-    readonly property var localeProfiles: [{
-        "id": "fr",
-        "name": "French",
-        "locale": "fr_FR.UTF-8"
-    }, {
-        "id": "us",
-        "name": "English",
-        "locale": "en_US.UTF-8"
-    }]
     // The time caffeine's countdown is shown at, ticking while the panel is open.
     property real now: Date.now()
     readonly property var caffeineDurations: [{
@@ -458,11 +445,6 @@ Card {
         powerProfileSetProcess.running = true;
     }
 
-    // category is "language" or "regional".
-    function setLocale(category, profile) {
-        Quickshell.execDetached([Session.scripts + "/locale-profilectl.sh", "set-" + category, profile]);
-    }
-
     onOpenedChanged: {
         shellState.controlCenterOpen = opened;
         if (opened) {
@@ -662,7 +644,6 @@ Card {
                         "sound": soundPage,
                         "caffeine": caffeinePage,
                         "chargeLimit": chargeLimitPage,
-                        "locale": localePage,
                         "tray": trayPage
                     })
 
@@ -714,16 +695,6 @@ Card {
                                     onExpandRequested: controlCenter.page = "bluetooth"
                                 }
 
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    icon: "󰗊"
-                                    title: "Locale"
-                                    subtitle: controlCenter.localeLanguage.toUpperCase() + " · " + controlCenter.localeRegional.toUpperCase() + " formats"
-                                    expandable: true
-                                    onToggled: controlCenter.page = "locale"
-                                    onExpandRequested: controlCenter.page = "locale"
-                                }
-
                             }
 
                             ColumnLayout {
@@ -750,16 +721,6 @@ Card {
                                     subtitle: controlCenter.powerProfile === "power-saver" ? "Saver" : controlCenter.powerProfile === "performance" ? "Performance" : "Balanced"
                                     active: controlCenter.powerProfile !== "balanced"
                                     onToggled: controlCenter.cyclePowerProfile()
-                                }
-
-                                // A click switches between the AZERTY and QWERTY profiles.
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    icon: "󰌌"
-                                    title: "Keyboard"
-                                    subtitle: controlCenter.keyboardLayout === "fr" ? "FR AZERTY" : "US QWERTY"
-                                    onToggled: Quickshell.execDetached([Session.scripts + "/keyboard-layoutctl.sh", "set", controlCenter.keyboardLayout === "fr" ? "us" : "fr"])
                                 }
 
                             }
@@ -930,10 +891,11 @@ Card {
                                     accent: controlCenter.muted ? Theme.secondary : Theme.primary
                                     iconButton: true
                                     icon: Icons.volume(controlCenter.volume, controlCenter.muted)
+                                    // Up to the volume limit set in the settings.
                                     onValueRequested: (value) => {
                                         if (controlCenter.audio !== null) {
                                             controlCenter.audio.muted = false;
-                                            controlCenter.audio.volume = value;
+                                            controlCenter.audio.volume = Math.min(value, (SoundSettings.limit || 100) / 100);
                                         }
                                     }
                                     onIconClicked: {
@@ -1193,18 +1155,6 @@ Card {
                         visible: controlCenter.pageVisible("chargeLimit")
                         enabled: controlCenter.page === "chargeLimit"
                         opacity: controlCenter.pageOpacity("chargeLimit")
-                        center: controlCenter
-                        onBackRequested: controlCenter.page = "main"
-                    }
-
-                    LocalePage {
-                        id: localePage
-
-                        width: parent.width
-                        x: controlCenter.pageX("locale")
-                        visible: controlCenter.pageVisible("locale")
-                        enabled: controlCenter.page === "locale"
-                        opacity: controlCenter.pageOpacity("locale")
                         center: controlCenter
                         onBackRequested: controlCenter.page = "main"
                     }

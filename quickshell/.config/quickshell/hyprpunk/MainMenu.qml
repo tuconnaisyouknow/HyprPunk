@@ -2,7 +2,8 @@ import QtQuick
 import Quickshell
 
 // The main menu: a glass square per panel, with the selected one's name underneath.
-// Picking one opens that panel, and Escape there comes back here.
+// Picking one opens that panel, and Escape there comes back here. Settings opens the
+// settings window instead.
 IconMenu {
     id: menu
 
@@ -40,9 +41,9 @@ IconMenu {
         "name": "Configuration",
         "panel": "config"
     }, {
-        "icon": "󰍹",
-        "name": "Monitor",
-        "panel": "monitor"
+        "icon": "",
+        "name": "Settings",
+        "panel": "settings"
     }, {
         "icon": "",
         "name": "Session",

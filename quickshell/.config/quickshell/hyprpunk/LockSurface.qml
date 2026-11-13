@@ -10,7 +10,8 @@ import Quickshell.Widgets
 //
 // Locking starts from the screen as it was: the bar's pills leave, move or stay, the
 // island grows from the clock into a padlock that clicks shut, and everything blurs into
-// the wallpaper. Unlocking plays it all backwards once the padlock has opened.
+// the wallpaper. Unlocking plays it all backwards once the padlock has opened. With the
+// animation off, the lock is there at once and only the island plays its padlock.
 WlSessionLockSurface {
     id: surface
 
@@ -20,14 +21,14 @@ WlSessionLockSurface {
     // Where the bar's pills were when locking (Bar.lockGeometry), null until known.
     property var from: null
     // 0 is the screen as it was, 1 the lock fully in place.
-    property real reveal: lock.instant ? 1 : 0
+    property real reveal: lock.instant || lock.still ? 1 : 0
     // 0 = the pills where the bar has them, 1 = where the lock has them.
-    property real morph: lock.instant ? 1 : 0
+    property real morph: lock.instant || lock.still ? 1 : 0
     // Showing the time like the bar's island, before growing and after unlocking.
     property bool intro: !lock.instant
     property bool leaving: false
     // The music wave stands: it rises as the lock comes in and settles as it goes.
-    property bool waveUp: lock.instant
+    property bool waveUp: lock.instant || lock.still
     // The padlock closes once the island has grown, and stays shut until unlocked.
     property bool padlockClosed: lock.instant
     // The first moments, while the island tells it locked.
@@ -153,12 +154,38 @@ WlSessionLockSurface {
 
     }
 
+    // Without the animation, only the island plays its way out, on revealOut's timing: the
+    // padlock opens, the island goes back to the time, then the lock goes at once.
+    SequentialAnimation {
+        id: stillOut
+
+        PauseAnimation {
+            duration: padlockDelay.interval
+        }
+
+        ScriptAction {
+            script: surface.leaving = true
+        }
+
+        PauseAnimation {
+            duration: introDelay.interval + morphIn.duration - padlockDelay.interval
+        }
+
+        ScriptAction {
+            script: surface.lock.unlockNow()
+        }
+
+    }
+
     Connections {
         function onUnlockingChanged() {
             if (surface.lock.unlocking) {
                 revealIn.stop();
                 morphIn.stop();
-                revealOut.restart();
+                if (surface.lock.still)
+                    stillOut.restart();
+                else
+                    revealOut.restart();
                 // Right away, as the desktop's settles as soon as you lock.
                 surface.waveUp = false;
                 // The lock already showed the OSD. Ended now, so the bar's island doesn't
@@ -187,7 +214,7 @@ WlSessionLockSurface {
         running: !surface.lock.instant
         onTriggered: {
             surface.intro = false;
-            if (!surface.lock.unlocking) {
+            if (!surface.lock.unlocking && !surface.lock.still) {
                 revealIn.start();
                 morphIn.start();
                 surface.waveUp = true;
@@ -212,11 +239,12 @@ WlSessionLockSurface {
         onTriggered: surface.locking = false
     }
 
+    // None without the animation: nothing blurs out of the screen as it was.
     Image {
         id: snapshot
 
         anchors.fill: parent
-        source: surface.lock.snapshotFor(surface.screen) !== "" ? "file://" + surface.lock.snapshotFor(surface.screen) : ""
+        source: !surface.lock.still && surface.lock.snapshotFor(surface.screen) !== "" ? "file://" + surface.lock.snapshotFor(surface.screen) : ""
         cache: false
         visible: false
     }
@@ -295,6 +323,7 @@ WlSessionLockSurface {
         anchors.horizontalCenter: parent.horizontalCenter
         width: Math.round(parent.width * 0.5)
         height: 110
+        visible: MusicSettings.wave
         music: surface.lock.music
         presence: surface.waveUp ? 1 : 0
 
@@ -767,7 +796,8 @@ WlSessionLockSurface {
             height: lockPlayer.height
             // Waits to know where the track is: a fresh card starts at 0:00 with its lyrics
             // at the top until playerctl answers, which would jump right after waking.
-            visible: lockPlayer.player !== null && lockPlayer.positionKnown
+            // Never there when the settings keep what you listen to private.
+            visible: LockSettings.player && lockPlayer.player !== null && lockPlayer.positionKnown
             opacity: surface.stage(0.45, 1)
             scale: 0.96 + 0.04 * surface.stage(0.45, 1)
 
@@ -804,7 +834,7 @@ WlSessionLockSurface {
                 width: 380
                 lyricsInside: false
                 active: player !== null
-                player: surface.bar !== null ? surface.bar.spotifyPlayer : null
+                player: LockSettings.player && surface.bar !== null ? surface.bar.spotifyPlayer : null
                 backgroundColor: Theme.alpha(Theme.base, 0.55)
             }
 

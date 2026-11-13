@@ -72,7 +72,7 @@ Scope {
     PanelWindow {
         id: window
 
-        readonly property var cards: bar.ownCards.concat([controlCenter, sessionMenu, wallpaperPicker, themePicker, appLauncher, clipboardPanel, emojiPanel, keybindingsPanel, configPanel, mainMenu, monitorPanel, screenshotMenu, polkitPrompt, fileChooserPanel, screenSharePanel, notifications, airPodsCard, islandFrame])
+        readonly property var cards: bar.ownCards.concat([controlCenter, sessionMenu, wallpaperPicker, themePicker, appLauncher, clipboardPanel, emojiPanel, keybindingsPanel, configPanel, mainMenu, screenshotMenu, polkitPrompt, fileChooserPanel, screenSharePanel, notifications, airPodsCard, islandFrame])
         readonly property bool cardOut: cards.some((card) => {
             return card.covering;
         })
@@ -279,15 +279,6 @@ Scope {
 
             MainMenu {
                 id: mainMenu
-
-                screen: shell.screen
-                shellState: shell.shellState
-                bar: bar
-                islandFrame: islandFrame
-            }
-
-            MonitorPanel {
-                id: monitorPanel
 
                 screen: shell.screen
                 shellState: shell.shellState
