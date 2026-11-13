@@ -66,9 +66,16 @@ hl.config({
   },
 })
 
+-- Off for the reload that moves the screens, so the windows land in their new places
+-- at once (displayctl.sh, which turns them back on right after)
+local still = io.open((os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/hyprpunk-still-reload")
+if still ~= nil then
+  still:close()
+end
+
 hl.config({
   animations = {
-    enabled = true,
+    enabled = still == nil,
   },
 })
 

@@ -42,6 +42,9 @@ end
 -- GIMP's preferences and splash, among others
 hyprpunk.float_dialogs("^gimp$", "^(GNU Image Manipulation Program|.* – GIMP)$")
 
+-- The shell's settings float over your work, at the size the shell asks for
+hl.window_rule({ match = { class = "^org\\.quickshell$", title = "^HyprPunk Settings$" }, float = true })
+
 -- Floating windows open in the middle of the screen
 hl.window_rule({ match = { float = true }, center = true })
 
