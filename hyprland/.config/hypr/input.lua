@@ -1,7 +1,8 @@
 -- The keyboard, mouse and touchpad, and the touchpad's gestures. Loaded by hyprland.lua,
 -- before your personal/input.lua.
 
-local keyboard = __require("keyboard_state") -- Keyboard layout, reloaded when you switch it
+local keyboard = __require("keyboard_state")              -- Keyboard layout, reloaded when you switch it
+local mouse = __require("lib.state").fresh("input_state") -- The settings' mouse and touchpad
 
 -----------
 -- INPUT --
@@ -15,13 +16,17 @@ hl.config({
     kb_options = "",
     kb_rules = "",
 
-    follow_mouse = 1, -- Focus follows the mouse
+    follow_mouse = mouse.focus and 1 or 0, -- Focus follows the mouse, or waits for a click
 
-    sensitivity = 0,  -- From -1.0 to 1.0, 0 leaves the mouse as it is
+    sensitivity = mouse.sensitivity,       -- From -1.0 to 1.0, 0 leaves the mouse as it is
+    accel_profile = mouse.acceleration,
+    natural_scroll = mouse.mouse_natural,
 
     touchpad = {
-      natural_scroll = false,
-      disable_while_typing = true,
+      natural_scroll = mouse.touchpad_natural,
+      tap_to_click = mouse.touchpad_tap,
+      disable_while_typing = mouse.touchpad_typing,
+      scroll_factor = mouse.touchpad_scroll,
     },
   },
 })

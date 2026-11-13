@@ -1,9 +1,9 @@
 import QtQuick
 
-// The control center's keyboard focus: which control the keys act on, how they move to
-// another, and the accent ring around it. A control takes part by turning on
-// activeFocusOnTab and giving activate() (its click) and, when it has a small second
-// button, activateAlt(). Fields draw their own ring (drawsFocus).
+// The keyboard focus of the control center and the settings window: which control the
+// keys act on, how they move to another, and the accent ring around it. A control takes
+// part by turning on activeFocusOnTab and giving activate() (its click) and, when it has
+// a small second button, activateAlt(). Fields draw their own ring (drawsFocus).
 Item {
     id: keyboardFocus
 

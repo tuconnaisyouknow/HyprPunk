@@ -43,9 +43,10 @@ local startup = {
   -- Bluetooth stays off until you need it
   { name = "bluetooth",        command = "bluetoothctl power off" },
 
-  -- Clipboard history, text and images alike (images feed the shell's thumbnails)
-  { name = "clipboard-text",   command = "wl-paste --type text --watch cliphist store" },
-  { name = "clipboard-images", command = "wl-paste --type image --watch cliphist store" },
+  -- Clipboard history, text and images alike (images feed the shell's thumbnails), kept
+  -- or not as the settings say
+  { name = "clipboard-text",   command = "wl-paste --type text --watch " .. hyprpunk.scripts .. "/historyctl.sh store" },
+  { name = "clipboard-images", command = "wl-paste --type image --watch " .. hyprpunk.scripts .. "/historyctl.sh store" },
 
   -- X11 apps, since Hyprland's own XWayland is off (see above)
   { name = "xwayland",         command = "xwayland-satellite " .. x11Display },

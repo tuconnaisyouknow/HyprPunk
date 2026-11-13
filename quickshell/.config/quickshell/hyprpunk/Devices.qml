@@ -13,6 +13,8 @@ Singleton {
     property bool capsLock: false
     property bool numLock: false
     property bool touchpadEnabled: true
+    // touchpadctl.sh found one, for the settings' touchpad part.
+    property bool hasTouchpad: false
     // In %, and whether the screen has a backlight at all (desktops don't).
     property int brightness: 0
     property bool hasBacklight: false
@@ -20,7 +22,7 @@ Singleton {
     property int keyboardBacklight: -1
     property int keyboardBacklightMax: 3
     // Until these times (ms since epoch), the next keyboard backlight or screen brightness
-    // change shows no OSD. hypridle sets them through ipc before it dims things.
+    // change shows no OSD. Idle sets them before it dims things.
     property real keyboardOsdMutedUntil: 0
     property real screenOsdMutedUntil: 0
     // The keyboards' Caps Lock and Num Lock lights, as the kernel exposes them.
@@ -77,7 +79,7 @@ Singleton {
         }));
     }
 
-    // A change hypridle announced is not shown, only that one.
+    // A change Idle announced is not shown, only that one.
     function screenOsdMuted() {
         const muted = Date.now() < screenOsdMutedUntil;
         if (muted)
@@ -256,7 +258,7 @@ Singleton {
         onTriggered: keyboardBacklightFile.reload()
     }
 
-    // Only the driver writes this, on Fn key presses, never brightnessctl (hypridle),
+    // Only the driver writes this, on Fn key presses, never brightnessctl (Idle),
     // so these changes always get the OSD.
     FileView {
         path: devices.keyboardBacklightPath !== "" ? devices.keyboardBacklightPath + "/brightness_hw_changed" : ""
@@ -290,6 +292,7 @@ Singleton {
                 return ;
 
             const enabled = match[1] === "true";
+            devices.hasTouchpad = /(?:^|\n)device=/.test(text());
             if (devices.touchpadKnown && enabled !== devices.touchpadEnabled)
                 devices.touchpadToggled(enabled);
 

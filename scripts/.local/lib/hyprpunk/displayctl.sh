@@ -65,6 +65,7 @@ Usage:
   $(basename "$0") workspace-set <output> <list|none>
   $(basename "$0") position <output> <left|right|above|below> <reference>
   $(basename "$0") reflow
+  $(basename "$0") reload
   $(basename "$0") auto-layout
   $(basename "$0") auto <output>
   $(basename "$0") reset
@@ -132,9 +133,52 @@ migrate_state_file() {
   mv "$LEGACY_STATE_FILE" "$STATE_FILE"
 }
 
+# The screen the pointer is on and where on it, as "name x y", empty when on none
+pointer_spot() {
+  local position
+  position="$(hyprctl cursorpos 2>/dev/null)" || return 0
+  hyprctl monitors -j | jq -r --argjson x "${position%%,*}" --argjson y "${position#*, }" '
+    .[] | select(.disabled != true) |
+    .scale as $scale |
+    (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end | map(. / $scale)) as [$w, $h] |
+    select($x >= .x and $x < .x + $w and $y >= .y and $y < .y + $h) |
+    "\(.name) \($x - .x) \($y - .y)"
+  ' 2>/dev/null | head -n 1
+}
+
+# The pointer back on that screen at the same spot, or as close as its new size allows
+restore_pointer() {
+  local target
+  target="$(hyprctl monitors -j | jq -r --arg name "$1" --argjson dx "$2" --argjson dy "$3" '
+    .[] | select(.name == $name and .disabled != true) |
+    .scale as $scale |
+    (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end | map(. / $scale)) as [$w, $h] |
+    "\(.x + ([$dx, $w - 1] | min) | floor) \(.y + ([$dy, $h - 1] | min) | floor)"
+  ')"
+  [[ -n "$target" ]] || return 0
+  hyprctl dispatch "hl.dsp.cursor.move({ x = ${target% *}, y = ${target#* } })" >/dev/null 2>&1 || true
+}
+
+# Without animations, so the windows don't slide across to the screens' new places
+# (looknfeel.lua reads the flag), and with the pointer kept on its screen rather than
+# left at the same point of a layout that moved. Then a reload that leaves the screens
+# alone brings the animations back, once Hyprland has moved everything; it runs on its
+# own, off the lock.
 reload_hyprland() {
+  local flag="${XDG_RUNTIME_DIR:-/tmp}/hyprpunk-still-reload" spot name dx dy
   if command -v hyprctl >/dev/null 2>&1; then
+    spot="$(pointer_spot || true)"
+    : >"$flag"
     hyprctl reload >/dev/null 2>&1 || true
+    rm -f "$flag"
+    if [[ -n "$spot" ]]; then
+      read -r name dx dy <<<"$spot"
+      restore_pointer "$name" "$dx" "$dy"
+    fi
+    (
+      sleep 1
+      hyprctl reload config-only >/dev/null 2>&1 || true
+    ) 9>&- >/dev/null 2>&1 &
   fi
 }
 
@@ -1098,6 +1142,17 @@ position)
       echo "The selected outputs have the same monitor identity." >&2
       exit 1
     }
+  # Against the screen placed against it: the same layout, said the other way round, so
+  # dragging either of two screens works
+  if [[ "$(read_value "relative.$reference_id" || true)" == *":$output_id" ]]; then
+    case "$direction" in
+    left) direction=right ;;
+    right) direction=left ;;
+    above) direction=below ;;
+    below) direction=above ;;
+    esac
+    exec "$0" position "$reference" "$direction" "$output"
+  fi
   if would_create_layout_cycle "$output_id" "$reference_id"; then
     echo "Unable to position $output relative to $reference: this would create a layout cycle." >&2
     exit 1
@@ -1152,6 +1207,14 @@ position)
   else
     reload_hyprland
   fi
+  ;;
+# The saved state as it is, after it was put back by hand (the settings' Revert)
+reload)
+  [[ $# -eq 1 ]] || {
+    usage >&2
+    exit 1
+  }
+  reload_hyprland
   ;;
 reflow)
   [[ $# -eq 1 ]] || {

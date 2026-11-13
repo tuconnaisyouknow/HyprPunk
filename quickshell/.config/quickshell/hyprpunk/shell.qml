@@ -34,9 +34,10 @@ ShellRoot {
         property bool controlCenterOpen: false
         // Ask for a panel on a screen. panel is one of "controlcenter", "notifications",
         // "session", "wallpaper", "theme", "launcher", "clipboard", "emoji", "keybindings",
-        // "config", "monitor", "workspaces", "systemmonitor", "player", "screenshot",
-        // "polkit", "filechooser", "screenshare" or "menu"; action is "toggle", "open" or
-        // "close"; screen is a screen's name, or empty for the focused one.
+        // "config", "workspaces", "systemmonitor", "player", "screenshot", "polkit",
+        // "filechooser", "screenshare", "menu", or "settings" for the settings window;
+        // action is "toggle", "open" or "close"; screen is a screen's name, or empty for
+        // the focused one.
         property var panelRequest: ({
             "panel": "",
             "action": "",
@@ -94,8 +95,8 @@ ShellRoot {
         // Screenshots. A request has a mode ("screen", "region", "annotate", "record",
         // "record-region", "share-region" or "stop"), a screen (empty for the focused one) and a delay in ms.
         // Then the region being chosen ({screen, file, scale}), and the last capture for the
-        // island: {screen, file, annotated}, or for a recording {screen, file (its first
-        // frame), video, duration in s}.
+        // island: {screen, file, annotated, copied, saved}, or for a recording {screen, file
+        // (its first frame), video, duration in s}.
         property var screenshotRequest: ({
             "mode": "",
             "screen": "",
@@ -148,18 +149,42 @@ ShellRoot {
         property int airPodsOsdRequests: 0
     }
 
-    // hypridle calls `qs -c hyprpunk ipc call osd ignoreNextChange <keyboard|screen>`
-    // right before dimming or restoring, so those changes don't pop an OSD.
-    IpcHandler {
-        function ignoreNextChange(device: string): void {
-            const until = Date.now() + 2000;
-            if (device === "keyboard")
-                Devices.keyboardOsdMutedUntil = until;
-            else if (device === "screen")
-                Devices.screenOsdMutedUntil = until;
+    // Dims, locks and suspends once you're away.
+    Idle {
+    }
+
+    // Warms the screens in the evening.
+    NightLight {
+    }
+
+    // Sleeps or shuts down before the battery dies.
+    CriticalBattery {
+    }
+
+    // The settings window, asked for like a panel, as "settings": Super+I through
+    // `qs -c hyprpunk ipc call settings <toggle|open|close>`, and the main menu.
+    SettingsWindow {
+        id: settingsWindow
+
+        fileChooser: fileChooserService
+        shellState: globalState
+    }
+
+    Connections {
+        function onPanelRequestsChanged() {
+            const request = globalState.panelRequest;
+            if (request.panel !== "settings")
+                return ;
+
+            if (request.action === "toggle")
+                settingsWindow.toggle();
+            else if (request.action === "open")
+                settingsWindow.open();
+            else
+                settingsWindow.close();
         }
 
-        target: "osd"
+        target: globalState
     }
 
     // The previous/next shortcuts go through `qs -c hyprpunk ipc call music <previous|next>`
@@ -187,7 +212,7 @@ ShellRoot {
 
     // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
     Variants {
-        model: ["controlcenter", "notifications", "session", "wallpaper", "theme", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "monitor", "workspaces", "systemmonitor", "player"]
+        model: ["controlcenter", "notifications", "session", "wallpaper", "theme", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "workspaces", "systemmonitor", "player", "settings"]
 
         // Kept around the handler, so ipc show lists only the three functions.
         Scope {
@@ -227,6 +252,7 @@ ShellRoot {
         persistenceSupported: true
         onNotification: (notification) => {
             notification.tracked = true;
+            NotificationSettings.noticed(notification);
         }
     }
 

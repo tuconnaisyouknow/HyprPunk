@@ -12,13 +12,16 @@ Item {
     property color labelColor: Theme.primary
     // Decoding size, 0 = the displayed size (set it when the disc is resized).
     property int decodeSize: 0
+    // A plain record, with the cover left out.
+    property bool bare: false
     readonly property int status: art.status
+    readonly property bool artShown: !bare && art.status === Image.Ready
 
     Item {
         id: vinyl
 
         anchors.fill: parent
-        opacity: art.status === Image.Ready ? 0 : 1
+        opacity: disc.artShown ? 0 : 1
 
         Rectangle {
             anchors.fill: parent
@@ -126,7 +129,7 @@ Item {
         anchors.fill: parent
         source: art
         // A cover arriving late (slow network) fades in over the placeholder.
-        opacity: art.status === Image.Ready ? 1 : 0
+        opacity: disc.artShown ? 1 : 0
         maskEnabled: true
         maskSource: artMask
         maskThresholdMin: 0.5

@@ -4,8 +4,9 @@ import Quickshell.Hyprland
 import Quickshell.Io
 
 // Screenshots and screen recordings, asked for by the shortcuts and the screenshot
-// menu (`qs -c hyprpunk ipc call screenshot …`). Screenshots go to Screenshots in your
-// pictures folder and the clipboard, recordings to Recordings in your videos folder.
+// menu (`qs -c hyprpunk ipc call screenshot …`). Screenshots go to their folder, the
+// clipboard or both, recordings to theirs, with the sound and frame rate you chose
+// (CaptureSettings).
 Scope {
     id: screenshot
 
@@ -21,13 +22,6 @@ Scope {
     // The whole screen, frozen before the selection is shown over it.
     property string frozenFile: ""
 
-    // Your pictures or videos folder, wherever user-dirs.dirs puts it, or the usual
-    // one before xdg-user-dirs has run.
-    function userDir(name, fallback) {
-        const match = userDirs.text().match(new RegExp("^XDG_" + name + "_DIR=\"(.*)\"$", "m"));
-        return match ? match[1].replace(/^\$HOME/, Quickshell.env("HOME")) : Quickshell.env("HOME") + "/" + fallback;
-    }
-
     function capture(mode, name) {
         const monitor = Hyprland.monitors.values.find((item) => {
             return item.name === name;
@@ -36,8 +30,7 @@ Scope {
             return ;
 
         busy = true;
-        // The folders file only appears at the first login, maybe after the shell started
-        userDirs.reload();
+        CaptureSettings.readUserDirs();
         screenshot.mode = mode;
         screenName = monitor.name;
         scale = monitor.lastIpcObject.scale || 1;
@@ -53,22 +46,32 @@ Scope {
 
     // rect: the logical region on the screen, null for the whole screen; with a file,
     // the region already annotated.
+    // Only copied, it's kept in the runtime folder for the island's preview, until the next one.
     function save(rect) {
-        const file = userDir("PICTURES", "Pictures") + "/Screenshots/Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
+        const name = "Screenshot_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".png";
+        const file = CaptureSettings.saves ? CaptureSettings.screenshotsFolder + "/" + name : Quickshell.env("XDG_RUNTIME_DIR") + "/hyprpunk-copied/" + name;
         const crop = rect === null || rect.file ? "" : [rect.width, rect.height, rect.x, rect.y].map((value) => {
             return Math.round(value * scale);
         }).join(":");
         saveProcess.file = file;
-        saveProcess.command = ["sh", "-c", saveProcess.script, "sh", frozenFile, file, crop, rect !== null && rect.file ? rect.file : ""];
+        saveProcess.copies = CaptureSettings.copies;
+        saveProcess.saves = CaptureSettings.saves;
+        saveProcess.command = ["sh", "-c", saveProcess.script, "sh", frozenFile, file, crop, rect !== null && rect.file ? rect.file : "", saveProcess.copies ? "copy" : "", saveProcess.saves ? "" : "replace"];
         saveProcess.running = true;
     }
 
     // rect: the logical region on the screen, null for the whole screen.
     function record(rect) {
-        const file = userDir("VIDEOS", "Videos") + "/Recordings/Recording_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".mp4";
+        const file = CaptureSettings.recordingsFolder + "/Recording_" + Qt.formatDateTime(new Date(), "yyyy-MM-dd_HH-mm-ss") + ".mp4";
         const area = rect === null ? ["-o", screenName] : ["-g", Math.round(origin.x + rect.x) + "," + Math.round(origin.y + rect.y) + " " + Math.round(rect.width) + "x" + Math.round(rect.height)];
+        // What plays on the computer, or the microphone, as PulseAudio names them.
+        const audio = {
+            "system": ["--audio=@DEFAULT_MONITOR@"],
+            "microphone": ["--audio=@DEFAULT_SOURCE@"]
+        }[CaptureSettings.audio] || [];
+        const framerate = CaptureSettings.framerate > 0 ? ["-r", String(CaptureSettings.framerate)] : [];
         recorder.file = file;
-        recorder.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && shift && exec wf-recorder -y --audio=@DEFAULT_MONITOR@ -F "crop=trunc(iw/2)*2:trunc(ih/2)*2" -x yuv420p "$@"', "sh", file].concat(area).concat(["-f", file]);
+        recorder.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && shift && exec wf-recorder -y -F "crop=trunc(iw/2)*2:trunc(ih/2)*2" -x yuv420p "$@"', "sh", file].concat(audio, framerate, area, ["-f", file]);
         // Once the selection is gone from the screen.
         recordDelay.restart();
     }
@@ -174,15 +177,19 @@ Scope {
         id: saveProcess
 
         property string file: ""
+        property bool copies: true
+        property bool saves: true
         // $1 the frozen screen, $2 the screenshot, $3 the crop (w:h:x:y, empty for the
-        // whole screen), $4 the annotated region when there is one.
+        // whole screen), $4 the annotated region when there is one, $5 "copy" to put it
+        // on the clipboard, $6 "replace" to drop the last one only copied.
         readonly property string script: 'mkdir -p "$(dirname "$2")"
+[ -n "$6" ] && find "$(dirname "$2")" -name "*.png" -delete
 if [ -n "$4" ]; then mv "$4" "$2" || exit 1
 elif [ -n "$3" ]; then ffmpeg -loglevel error -y -i "$1" -vf "crop=$3" "$2" || exit 1
 else cp "$1" "$2" || exit 1
 fi
 rm -f "$1"
-wl-copy --type image/png < "$2" >/dev/null 2>&1'
+[ -z "$5" ] || wl-copy --type image/png < "$2" >/dev/null 2>&1'
 
         onExited: (code) => {
             screenshot.busy = false;
@@ -190,7 +197,9 @@ wl-copy --type image/png < "$2" >/dev/null 2>&1'
                 screenshot.shellState.screenshotTaken = {
                 "screen": screenshot.screenName,
                 "file": file,
-                "annotated": screenshot.mode === "annotate"
+                "annotated": screenshot.mode === "annotate",
+                "copied": copies,
+                "saved": saves
             };
 
         }
@@ -244,16 +253,6 @@ ffmpeg -loglevel error -y -i "$1" -frames:v 1 -vf scale=-2:180 "$2"'
 
     Process {
         id: cleanup
-    }
-
-    // ~/.config/user-dirs.dirs, written by xdg-user-dirs-update at each login
-    FileView {
-        id: userDirs
-
-        path: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/user-dirs.dirs"
-        // Read on the spot, so a capture right after the reload sees the folders
-        blockLoading: true
-        printErrors: false
     }
 
     IpcHandler {

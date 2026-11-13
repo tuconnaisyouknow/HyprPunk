@@ -6,8 +6,8 @@
 --------------
 
 -- The apps the shortcuts below open, and the terminal and editor everything else
--- uses. Change one in personal/keybindings.lua (hyprpunk.programs.music = "...") and
--- what opens it follows.
+-- uses. The shell's settings choose the terminal, browser, files and music apps;
+-- personal/keybindings.lua (hyprpunk.programs.music = "...") wins over them.
 hyprpunk.programs = {
   terminal = "kitty",
   editor = "nvim",
@@ -16,6 +16,9 @@ hyprpunk.programs = {
   notes = "obsidian",
   music = "spotify-launcher",
 }
+for role, command in pairs(__require("lib.state").fresh("apps_state")) do
+  hyprpunk.programs[role] = command
+end
 
 -- Read when the key is pressed rather than now, so a change made after this file still counts
 local function launch(program)
@@ -82,6 +85,7 @@ bind(mainMod .. " + period", hl.dsp.exec_cmd(shell .. "emoji toggle"), "Open the
 bind(mainMod .. " + semicolon", hl.dsp.exec_cmd(shell .. "emoji toggle"), "Open the emoji selector")
 bind(mainMod .. " + N", hl.dsp.exec_cmd(shell .. "notifications toggle"), "Toggle the calendar and notifications")
 bind(mainMod .. " + C", hl.dsp.exec_cmd(shell .. "controlcenter toggle"), "Toggle the control center")
+bind(mainMod .. " + I", hl.dsp.exec_cmd(shell .. "settings toggle"), "Open the settings")
 bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), "Pick a color from the screen")
 
 -- What you open now and then takes Ctrl too
@@ -186,10 +190,10 @@ bind(mainMod .. " + ALT + U", hl.dsp.exec_cmd("$TERMINAL -e yay -Syu --removemak
 
 -- They keep working on the lock screen
 
--- Sound
-bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"),
+-- Sound, by the step and up to the limit set in the shell's settings
+bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(hyprpunk.scripts .. "/soundctl.sh raise"),
   "Increase the output volume", { locked = true, repeating = true })
-bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
+bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(hyprpunk.scripts .. "/soundctl.sh lower"),
   "Decrease the output volume", { locked = true, repeating = true })
 bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
   "Mute or unmute the audio output", { locked = true })

@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 
-// A button row on the control center's detail pages: icon, label, glass.
+// A button row on the control center's detail pages and in the settings: icon, label, glass.
 // The dangerous ones (forget, delete) turn red and wait for a second click or Enter, like
 // the session menu.
 ControlBlock {

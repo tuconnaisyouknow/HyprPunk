@@ -7,7 +7,9 @@ import Quickshell.Wayland
 // The lock screen. It's a real session lock: if the shell crashes, the screens stay
 // locked. Every screen gets the bar's look, and the password is checked by PAM like
 // any login. `qs -c hyprpunk ipc call lock lock` locks it (the shortcut, the session
-// menu and hypridle do that), `lock lockInstantly` skips the animation before sleep.
+// menu and hypridle, for logind, do that), `lock lockInstantly` skips the animation before sleep.
+// Without the animation in the settings (LockSettings), the lock covers the screen and
+// leaves it at once, and only its island plays its padlock.
 Scope {
     id: locker
 
@@ -22,6 +24,9 @@ Scope {
     property string error: ""
     // Locking for sleep (lid closed): no animation, it would freeze and only play on waking.
     property bool instant: false
+    // The animation turned off in the settings, as it was when locking: no blur, no pills
+    // moving, so no snapshot or wave to wait for either.
+    property bool still: false
     readonly property bool locked: sessionLock.locked
     // Snapshots of the screens just before locking, so the lock can blur out of them
     // and back. Uncompressed, since a PNG takes grim most of a second.
@@ -57,12 +62,15 @@ Scope {
         }
         covering = true;
         locker.instant = instant;
+        still = !LockSettings.animation;
         password = "";
         error = "";
         unlocking = false;
         deadline.restart();
-        // Not before sleep, which can't wait.
-        if (music.playing && !instant)
+        // Not before sleep, which can't wait, nor for a wave turned off.
+        if (still)
+            lockNow();
+        else if (music.playing && MusicSettings.wave && !instant)
             waitingForWave = true;
         else
             freeze();
@@ -171,7 +179,9 @@ Scope {
         id: cava
 
         shared: true
-        active: locker.covering
+        // Turned off, there's no wave to follow: cava, started for the lock, would send
+        // its first levels most of a second later, in the middle of the animation.
+        active: locker.covering && MusicSettings.wave
         onFlat: {
             if (locker.waitingForWave)
                 locker.freeze();

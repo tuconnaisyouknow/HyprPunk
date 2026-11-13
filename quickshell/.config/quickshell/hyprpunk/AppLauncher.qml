@@ -3,8 +3,9 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 
-// The app launcher in the dynamic island: a grid of your apps, the ones you use most
-// first, narrowed down as you type. It does a bit more too:
+// The app launcher in the dynamic island: a grid of your apps, the ones you pinned in
+// the settings first, then the ones you use most, narrowed down as you type. The ones
+// you hid there never show. It does a bit more too:
 //   2+2       a calculation, Enter copies the result
 //   > cmd     runs a command (Shift+Enter in a terminal)
 //   ? words   searches the web, also offered when no app matches
@@ -44,7 +45,7 @@ IslandPanel {
     // the applications arrive one by one at startup, and sorting them and rebuilding the
     // grid each time held up the bar's first values.
     property bool listWanted: false
-    readonly property var results: listWanted && mode === "apps" ? search(trimmedQuery, DesktopEntries.applications.values, history) : []
+    readonly property var results: listWanted && mode === "apps" ? search(trimmedQuery, DesktopEntries.applications.values, history, LauncherSettings.pinned, LauncherSettings.hidden) : []
     // calc, command, web or "" when there is no special row.
     readonly property string special: mode === "command" ? "command" : mode === "web" ? "web" : calculation !== null ? "calc" : trimmedQuery !== "" && results.length === 0 ? "web" : ""
     readonly property int gridRows: Math.min(maxRows, Math.ceil(results.length / columns))
@@ -103,11 +104,12 @@ IslandPanel {
         return record.count / (1 + days / 14);
     }
 
-    function search(text, entries, records) {
+    // Pinned apps come before every other while nothing is typed, in their order.
+    function search(text, entries, records, pinned, hidden) {
         const needle = text.toLowerCase();
         const matches = [];
         for (const entry of entries) {
-            if (entry.noDisplay)
+            if (entry.noDisplay || hidden.includes(entry.id))
                 continue;
 
             let score = 0;
@@ -119,9 +121,10 @@ IslandPanel {
                     continue;
 
             }
+            const pin = needle === "" ? pinned.indexOf(entry.id) : -1;
             matches.push({
                 "entry": entry,
-                "score": score + Math.min(20, 4 * frecency(entry.id, records))
+                "score": pin >= 0 ? 1000 - pin : score + Math.min(20, 4 * frecency(entry.id, records))
             });
         }
         matches.sort((a, b) => {

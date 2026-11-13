@@ -1,5 +1,5 @@
 #!/bin/bash
-# Turns the keyboard backlight off when idle and back on after (see hypridle.conf).
+# Turns the keyboard backlight off when idle and back on after (see the shell's Idle.qml).
 #   keyboard-backlight.sh off      saves the current level, then switches it off
 #   keyboard-backlight.sh restore  brings the saved level back
 #   keyboard-backlight.sh status   prints the backlight's device name

@@ -106,10 +106,11 @@ Item {
     property int statusOsdLevel: 0
     property int statusOsdMaxLevel: 0
     readonly property int batteryPercent: Math.round(battery.percentage * 100)
-    // The lowest warning level (20, 10 or 5 %) crossed since the last time it was plugged
-    // in, 0 above them. Each warning shows once; the critical one stays up.
+    // The warning given since the last time it was plugged in, at the levels set in the
+    // settings (BatterySettings): 0 none, 1 low, 2 critical. Each shows once; the
+    // critical one stays up.
     property int batteryAlertStage: 0
-    readonly property bool batteryCritical: hasBattery && UPower.onBattery && batteryAlertStage === 5
+    readonly property bool batteryCritical: hasBattery && UPower.onBattery && batteryAlertStage === 2
     // Off while the shell starts: UPower's first values aren't a plug or unplug.
     property bool powerEventsReady: false
     // Time left worked out from the battery's own draw, for the first seconds after
@@ -204,11 +205,16 @@ Item {
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
+    // How long an OSD stays, its usual time stretched as the settings ask (OsdSettings).
+    function osdTime(milliseconds) {
+        return Math.round(milliseconds * OsdSettings.pace);
+    }
+
     // With maxLevel > 0, a gauge of level / maxLevel replaces the On/Off badge.
     function showStatusOsd(icon, label, enabled, level, maxLevel) {
         keepInterruptedOsd("");
         statusOsdKind = "";
-        statusOsdHideDelay.interval = 1500;
+        statusOsdHideDelay.interval = osdTime(1500);
         statusOsdIcon = icon;
         statusOsdLabel = label;
         statusOsdEnabled = enabled;
@@ -266,7 +272,7 @@ Item {
         statusOsdRingCharging = osd.charging;
         // Fades the content in like a new OSD.
         statusOsdLabel = "AirPods";
-        statusOsdHideDelay.interval = 3000;
+        statusOsdHideDelay.interval = osdTime(3000);
         statusOsdVisible = true;
         restartStatusOsdDelay();
     }
@@ -275,19 +281,16 @@ Item {
         if (!hasBattery)
             return ;
 
-        if (!UPower.onBattery) {
-            batteryAlertStage = 0;
+        const stage = !UPower.onBattery ? 0 : batteryPercent <= BatterySettings.critical ? 2 : batteryPercent <= BatterySettings.low ? 1 : 0;
+        // Only a deeper warning shows: one already given waits for the battery to go back
+        // above its level.
+        if (stage !== 0 && stage <= batteryAlertStage)
             return ;
-        }
-        const stage = batteryPercent <= 5 ? 5 : batteryPercent <= 10 ? 10 : batteryPercent <= 20 ? 20 : 0;
-        if (stage === 0 || (batteryAlertStage > 0 && stage >= batteryAlertStage)) {
-            if (stage === 0)
-                batteryAlertStage = 0;
 
-            return ;
-        }
         batteryAlertStage = stage;
-        showBatteryOsd(stage === 5 ? "Battery critical" : "Battery low");
+        if (stage > 0)
+            showBatteryOsd(stage === 2 ? "Battery critical" : "Battery low");
+
     }
 
     // m:ss, h:mm:ss past an hour.
@@ -306,8 +309,10 @@ Item {
         statusOsdImage = taken.file;
         statusOsdFile = taken.video || taken.file;
         statusOsdTitle = taken.video ? "Recording" : "Screenshot";
-        statusOsdLabel = taken.video ? formatDuration(taken.duration) + " · Saved" : taken.annotated ? "Annotated · Saved" : "Copied · Saved";
-        statusOsdHideDelay.interval = 3500;
+        statusOsdLabel = taken.video ? formatDuration(taken.duration) + " · Saved" : [taken.annotated ? "Annotated" : "", taken.copied ? "Copied" : "", taken.saved ? "Saved" : ""].filter((word) => {
+            return word !== "";
+        }).join(" · ");
+        statusOsdHideDelay.interval = osdTime(3500);
         statusOsdVisible = true;
         restartStatusOsdDelay();
     }
@@ -319,10 +324,10 @@ Item {
     }
 
     // Plugging in or unplugging shows in the island, unless unplugging brings up a
-    // low-battery warning instead.
+    // low-battery warning instead, or the settings leave it out.
     function powerSourceChanged() {
         updateBatteryAlert();
-        if (!hasBattery || !powerEventsReady)
+        if (!hasBattery || !powerEventsReady || !OsdSettings.shows("power"))
             return ;
 
         if (!UPower.onBattery)
@@ -337,7 +342,7 @@ Item {
         statusOsdLabel = title;
         batteryDrawEstimate = 0;
         // Unplugged: stays until the time left is known, then a moment to read it.
-        statusOsdHideDelay.interval = title === "On battery" && batteryTimeLeft <= 0 ? 8000 : title === "Charging" || title === "On battery" ? 2500 : 6000;
+        statusOsdHideDelay.interval = osdTime(title === "On battery" && batteryTimeLeft <= 0 ? 8000 : title === "Charging" || title === "On battery" ? 2500 : 6000);
         statusOsdVisible = true;
         // The critical alert stays until the computer is plugged in.
         if (batteryCritical)
@@ -393,7 +398,7 @@ Item {
             resetVolumeOsd();
             return ;
         }
-        if (volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
+        if (OsdSettings.shows("volume") && volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
             // Muted, the gauge keeps its level and turns to the secondary color.
             showStatusOsd(Icons.volume(audioVolume, audioMuted), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
 
@@ -433,7 +438,7 @@ Item {
         micInitDelay.restart();
     }
     onMicMutedChanged: {
-        if (micStateInitialized)
+        if (micStateInitialized && OsdSettings.shows("microphone"))
             showStatusOsd(micMuted ? "󰍭" : "󰍬", "Microphone", !micMuted);
 
     }
@@ -1572,7 +1577,7 @@ Item {
     Connections {
         function onAirPodsOsdRequestsChanged() {
             const osd = bar.shellState.airPodsOsd;
-            if (osd.screen === bar.screen.name)
+            if (osd.screen === bar.screen.name && OsdSettings.shows("airpods"))
                 bar.showAirPodsOsd(osd);
 
         }
@@ -1580,26 +1585,36 @@ Item {
         target: bar.shellState
     }
 
-    // The hardware's changes, in this screen's island too.
+    // The hardware's changes, in this screen's island too, those the settings show.
     Connections {
         function onCapsLockToggled(enabled) {
-            bar.showStatusOsd("󰪛", "Caps Lock", enabled);
+            if (OsdSettings.shows("keys"))
+                bar.showStatusOsd("󰪛", "Caps Lock", enabled);
+
         }
 
         function onNumLockToggled(enabled) {
-            bar.showStatusOsd("󰎤", "Num Lock", enabled);
+            if (OsdSettings.shows("keys"))
+                bar.showStatusOsd("󰎤", "Num Lock", enabled);
+
         }
 
         function onTouchpadToggled(enabled) {
-            bar.showStatusOsd("󰟸", "Touchpad", enabled);
+            if (OsdSettings.shows("keys"))
+                bar.showStatusOsd("󰟸", "Touchpad", enabled);
+
         }
 
         function onBrightnessShown(percent) {
-            bar.showStatusOsd(Icons.brightness(percent), "Brightness", percent > 0, percent, 100);
+            if (OsdSettings.shows("brightness"))
+                bar.showStatusOsd(Icons.brightness(percent), "Brightness", percent > 0, percent, 100);
+
         }
 
         function onKeyboardBacklightShown(level, max) {
-            bar.showStatusOsd("󰌌", "Keyboard light", level > 0, level, max);
+            if (OsdSettings.shows("brightness"))
+                bar.showStatusOsd("󰌌", "Keyboard light", level > 0, level, max);
+
         }
 
         target: Devices
@@ -1650,6 +1665,19 @@ Item {
         Component.onCompleted: Qt.callLater(bar.updateBatteryAlert)
     }
 
+    // New levels count at once.
+    Connections {
+        function onLowChanged() {
+            bar.updateBatteryAlert();
+        }
+
+        function onCriticalChanged() {
+            bar.updateBatteryAlert();
+        }
+
+        target: BatterySettings
+    }
+
     Timer {
         running: true
         interval: 3000
@@ -1660,7 +1688,7 @@ Item {
     Connections {
         function onBatteryEstimatingChanged() {
             if (!bar.batteryEstimating && bar.statusOsdVisible && bar.statusOsdLabel === "On battery") {
-                statusOsdHideDelay.interval = 2500;
+                statusOsdHideDelay.interval = bar.osdTime(2500);
                 bar.restartStatusOsdDelay();
             }
         }
@@ -1722,7 +1750,7 @@ done'
     Connections {
         function onScreenshotTakenChanged() {
             const taken = bar.shellState.screenshotTaken;
-            if (taken !== null && taken.screen === bar.screen.name)
+            if (taken !== null && taken.screen === bar.screen.name && OsdSettings.shows("screenshots"))
                 bar.showScreenshotOsd(taken);
 
         }
@@ -1730,10 +1758,11 @@ done'
         target: bar.shellState
     }
 
-    // Caffeine lives on the bar because the bar is always there, so it keeps hypridle at bay.
+    // Caffeine, or media playing when you asked for it (Power), keeps the computer
+    // awake. On the bar because the bar is always there.
     IdleInhibitor {
         window: bar
-        enabled: bar.shellState.caffeine
+        enabled: bar.shellState.caffeine || Power.awakeForMedia
     }
 
 }
