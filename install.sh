@@ -85,7 +85,7 @@ readonly -a PACKAGES=(
   pipewire-pulse wireplumber playerctl
   gnome-keyring seahorse
 
-  hyprland awww hypridle
+  hyprland awww hypridle hyprsunset
   grim wf-recorder hyprcursor hyprpicker
   quickshell cliphist wl-clipboard libnotify psmisc
 
@@ -545,6 +545,62 @@ configure_touchpad() {
   "$LIB_DIR/touchpadctl.sh" ensure
 }
 
+configure_power() {
+  "$LIB_DIR/powerctl.sh" ensure
+}
+
+configure_notifications() {
+  "$LIB_DIR/notificationctl.sh" ensure
+}
+
+configure_capture() {
+  "$LIB_DIR/capturectl.sh" ensure
+}
+
+configure_history() {
+  "$LIB_DIR/historyctl.sh" ensure
+}
+
+configure_nightlight() {
+  "$LIB_DIR/nightlightctl.sh" ensure
+}
+
+configure_sound() {
+  "$LIB_DIR/soundctl.sh" ensure
+}
+
+configure_input() {
+  "$LIB_DIR/inputctl.sh" ensure
+}
+
+configure_lock() {
+  "$LIB_DIR/lockctl.sh" ensure
+}
+
+configure_music() {
+  "$LIB_DIR/musicctl.sh" ensure
+}
+
+configure_osd() {
+  "$LIB_DIR/osdctl.sh" ensure
+}
+
+configure_apps() {
+  "$LIB_DIR/appsctl.sh" ensure
+}
+
+configure_launcher() {
+  "$LIB_DIR/launcherctl.sh" ensure
+}
+
+configure_battery() {
+  "$LIB_DIR/batteryctl.sh" ensure
+}
+
+configure_updates() {
+  "$LIB_DIR/updatesctl.sh" ensure
+}
+
 # Your wallpaper's look (the colors and its login screen) and the pickers' thumbnails,
 # the default wallpaper's the first time. It comes after the login screens are installed.
 configure_wallpaper() {
@@ -796,6 +852,20 @@ converge() {
   run_step "Configuring locale profiles" configure_locale_profiles
   run_step "Configuring monitors" configure_monitors
   run_step "Configuring the touchpad" configure_touchpad
+  run_step "Configuring idle and sleep" configure_power
+  run_step "Configuring notifications" configure_notifications
+  run_step "Configuring screenshots and recordings" configure_capture
+  run_step "Configuring the clipboard history" configure_history
+  run_step "Configuring the night light" configure_nightlight
+  run_step "Configuring the volume keys" configure_sound
+  run_step "Configuring the battery warnings" configure_battery
+  run_step "Configuring the mouse and touchpad" configure_input
+  run_step "Configuring the lock screen" configure_lock
+  run_step "Configuring the music's cover and wave" configure_music
+  run_step "Configuring the island's OSD" configure_osd
+  run_step "Configuring the default apps" configure_apps
+  run_step "Configuring the launcher" configure_launcher
+  run_step "Configuring the update checks" configure_updates
   run_step "Installing tmux plugins" install_tmux_plugins
   run_step "Applying themes" apply_themes
   run_step "Installing the locale" install_locale
