@@ -100,10 +100,10 @@ Scope {
         target: "airpods"
     }
 
-    Process {
+    TiedProcess {
         id: daemon
 
-        command: ["python3", "-u", Session.scripts + "/airpodsd.py"]
+        program: ["python3", "-u", Session.scripts + "/airpodsd.py"]
         running: true
         stdinEnabled: true
         onExited: restartDelay.restart()

@@ -1,14 +1,13 @@
 //@ pragma UseQApplication
 //@ pragma Env QT_QPA_PLATFORMTHEME = qt6ct
 //@ pragma Env QSG_DISTANCEFIELD_ANTIALIASING = gray
-//@ pragma Env QSG_USE_SIMPLE_ANIMATION_DRIVER = 1
 //@ pragma IconTheme Papirus-Dark
 
 // Gray antialiasing for the text: colored edges assume an opaque background and
 // glitch through the see-through glass, worst over a light page.
-// Animations follow the clock: by default Qt moves them one screen refresh per frame
-// drawn, so whenever drawing falls behind (the glass over several windows at once)
-// they play in slow motion, a 280 ms fold taking twice as long.
+// Animations keep Qt's own driver, paced by the main screen: its clock-driven one
+// (QSG_USE_SIMPLE_ANIMATION_DRIVER) let each screen animate at its own rate, but made
+// every screen redraw whole while anything moved on another one.
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -22,8 +21,23 @@ import Quickshell.Services.Polkit
 // that the shortcuts and scripts send, and puts a bar, popups and panels on every screen.
 ShellRoot {
     // The desktop's music wave runs as its own Quickshell, so the shell's stalls (building
-    // the lock screen) don't freeze it. -n: only one, whenever the shell starts or reloads.
-    Component.onCompleted: Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath("VisualizerShell.qml")])
+    // the lock screen) don't freeze it. Started whenever it's wanted, it quits once it isn't
+    // (VisualizerShell.qml). -n: only one, whenever the shell starts or reloads.
+    function startWave() {
+        if (MusicSettings.wave)
+            Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath("VisualizerShell.qml")]);
+
+    }
+
+    Component.onCompleted: startWave()
+
+    Connections {
+        function onWaveChanged() {
+            startWave();
+        }
+
+        target: MusicSettings
+    }
 
     QtObject {
         id: globalState

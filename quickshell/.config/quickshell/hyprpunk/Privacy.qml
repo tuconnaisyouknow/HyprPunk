@@ -37,7 +37,9 @@ Scope {
         return names;
     }
 
-    // Who has the camera open, every few seconds.
+    // Who has the camera open, every few seconds. A USB camera sleeps while nothing has it
+    // open, which a cheap read of its power state tells: only an awake one is looked into,
+    // fuser going through every process. One with no such state always is.
     Timer {
         running: true
         interval: 3000
@@ -49,7 +51,7 @@ Scope {
     Process {
         id: cameraProcess
 
-        command: ["sh", "-c", "for pid in $(fuser /dev/video* 2>/dev/null); do cat /proc/$pid/comm; done"]
+        command: ["sh", "-c", 'for video in /sys/class/video4linux/video*; do [ -e "$video" ] || exit 0; state=active; read -r state 2>/dev/null <"$video/device/../power/runtime_status"; [ "$state" = suspended ] && continue; for pid in $(fuser /dev/video* 2>/dev/null); do cat "/proc/$pid/comm"; done; exit 0; done']
 
         stdout: StdioCollector {
             onStreamFinished: {

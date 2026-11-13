@@ -184,8 +184,8 @@ Singleton {
     }
 
     // Any NetworkManager change lists them again, a burst of changes only once.
-    Process {
-        command: ["nmcli", "monitor"]
+    TiedProcess {
+        program: ["nmcli", "monitor"]
         running: true
 
         stdout: SplitParser {

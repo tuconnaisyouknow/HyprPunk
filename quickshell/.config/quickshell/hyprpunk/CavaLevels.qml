@@ -14,8 +14,6 @@ Scope {
     property bool shared: false
     // Off, a shared one stops following.
     property bool active: true
-    // Off, the desktop's doesn't run cava at all.
-    property bool needed: true
     // Any player, not only Spotify: whatever is playing moves the wave.
     readonly property bool playing: {
         for (const player of Mpris.players.values) {
@@ -66,9 +64,9 @@ Scope {
         onTriggered: cavaLevels.levels = []
     }
 
-    Process {
-        running: !cavaLevels.shared && cavaLevels.playing && cavaLevels.needed
-        command: ["cava", "-p", Quickshell.shellPath("data/visualizer.cava")]
+    TiedProcess {
+        running: !cavaLevels.shared && cavaLevels.playing
+        program: ["cava", "-p", Quickshell.shellPath("data/visualizer.cava")]
 
         stdout: SplitParser {
             onRead: (line) => {
