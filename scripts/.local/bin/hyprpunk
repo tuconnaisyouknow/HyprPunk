@@ -9,6 +9,20 @@
 #   hyprpunk keyboard ...  the keyboard layout and its Vim keys (keyboard-layoutctl.sh)
 #   hyprpunk locale ...    the language and regional formats (locale-profilectl.sh)
 #   hyprpunk display ...   screens, resolutions and layout (displayctl.sh)
+#   hyprpunk power ...     when the computer dims, locks and sleeps (powerctl.sh)
+#   hyprpunk notifications ...  how long they stay, which apps pop up (notificationctl.sh)
+#   hyprpunk capture ...   how screenshots and recordings are kept (capturectl.sh)
+#   hyprpunk history ...   the clipboard history and the recent picks (historyctl.sh)
+#   hyprpunk nightlight ...  when and how warm the night light is (nightlightctl.sh)
+#   hyprpunk sound ...     the volume keys' step and the volume limit (soundctl.sh)
+#   hyprpunk input ...     the mouse and the touchpad (inputctl.sh)
+#   hyprpunk lock ...      what the lock screen shows, and its animation (lockctl.sh)
+#   hyprpunk music ...     the bar's cover spinning or not, and the wave (musicctl.sh)
+#   hyprpunk osd ...       what the island shows as it happens (osdctl.sh)
+#   hyprpunk apps ...      the terminal, browser, files and music apps (appsctl.sh)
+#   hyprpunk launcher ...  the launcher's pinned and hidden apps (launcherctl.sh)
+#   hyprpunk battery ...   the battery's warnings and what a critical one does (batteryctl.sh)
+#   hyprpunk updates ...   the update notification and the package count (updatesctl.sh)
 set -euo pipefail
 
 LIB_DIR="$HOME/.local/lib/hyprpunk"
@@ -23,6 +37,20 @@ Usage: hyprpunk <command> [arguments]
   keyboard   the keyboard layout: get, list, set <fr|us>, toggle
   locale     the language and formats: list, set-language <us|fr>, set-regional <us|fr>
   display    screens, resolutions and layout (run it alone to list its commands)
+  power      idle and sleep: get, set <key> <seconds|true|false>
+  notifications  get, set duration <seconds>, mute|unmute|forget <app>
+  capture    screenshots and recordings: get, set <key> <value>
+  history    get, set <clipboard|size> <value>, clear <clipboard|launcher|emoji>
+  nightlight  get, set <mode|temperature|from|to> <value>
+  sound      get, set <step|limit> <percent>
+  input      get, set <key> <value>
+  lock       get, set <player|animation> <true|false>
+  music      get, set cover <spinning|still|off>, set wave <true|false>
+  osd        get, set <change> <true|false>, set duration <short|normal|long>
+  apps       get, set <terminal|browser|files|music> <command> [desktop entry]
+  launcher   get, pin|unpin|hide|show <desktop entry>
+  battery    get, set <low|critical> <percent>, set action <none|suspend|poweroff>
+  updates    get, set <hyprpunk|packages|interval> <value>
 EOF
 }
 
@@ -35,6 +63,20 @@ glass) exec "$LIB_DIR/glassctl.sh" "$@" ;;
 keyboard) exec "$LIB_DIR/keyboard-layoutctl.sh" "$@" ;;
 locale) exec "$LIB_DIR/locale-profilectl.sh" "$@" ;;
 display) exec "$LIB_DIR/displayctl.sh" "$@" ;;
+power) exec "$LIB_DIR/powerctl.sh" "$@" ;;
+notifications) exec "$LIB_DIR/notificationctl.sh" "$@" ;;
+capture) exec "$LIB_DIR/capturectl.sh" "$@" ;;
+history) exec "$LIB_DIR/historyctl.sh" "$@" ;;
+nightlight) exec "$LIB_DIR/nightlightctl.sh" "$@" ;;
+sound) exec "$LIB_DIR/soundctl.sh" "$@" ;;
+input) exec "$LIB_DIR/inputctl.sh" "$@" ;;
+lock) exec "$LIB_DIR/lockctl.sh" "$@" ;;
+music) exec "$LIB_DIR/musicctl.sh" "$@" ;;
+osd) exec "$LIB_DIR/osdctl.sh" "$@" ;;
+apps) exec "$LIB_DIR/appsctl.sh" "$@" ;;
+launcher) exec "$LIB_DIR/launcherctl.sh" "$@" ;;
+battery) exec "$LIB_DIR/batteryctl.sh" "$@" ;;
+updates) exec "$LIB_DIR/updatesctl.sh" "$@" ;;
 "" | help | -h | --help) usage ;;
 *)
   usage >&2
