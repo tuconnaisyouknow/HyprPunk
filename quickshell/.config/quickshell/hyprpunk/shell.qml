@@ -22,8 +22,23 @@ import Quickshell.Services.Polkit
 // that the shortcuts and scripts send, and puts a bar, popups and panels on every screen.
 ShellRoot {
     // The desktop's music wave runs as its own Quickshell, so the shell's stalls (building
-    // the lock screen) don't freeze it. -n: only one, whenever the shell starts or reloads.
-    Component.onCompleted: Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath("VisualizerShell.qml")])
+    // the lock screen) don't freeze it. Started whenever it's wanted, it quits once it isn't
+    // (VisualizerShell.qml). -n: only one, whenever the shell starts or reloads.
+    function startWave() {
+        if (MusicSettings.wave)
+            Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath("VisualizerShell.qml")]);
+
+    }
+
+    Component.onCompleted: startWave()
+
+    Connections {
+        function onWaveChanged() {
+            startWave();
+        }
+
+        target: MusicSettings
+    }
 
     QtObject {
         id: globalState

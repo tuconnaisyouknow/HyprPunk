@@ -615,9 +615,9 @@ ColumnLayout {
     }
 
     // A screen, headphones or a microphone plugged in while the page is open.
-    Process {
+    TiedProcess {
         running: page.active
-        command: ["pactl", "subscribe"]
+        program: ["pactl", "subscribe"]
 
         stdout: SplitParser {
             onRead: (line) => {

@@ -67,10 +67,10 @@ Scope {
         answer([], -1);
     }
 
-    Process {
+    TiedProcess {
         id: daemon
 
-        command: ["python3", "-u", Session.scripts + "/filechooser-portal.py"]
+        program: ["python3", "-u", Session.scripts + "/filechooser-portal.py"]
         running: true
         stdinEnabled: true
         onExited: {

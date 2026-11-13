@@ -202,8 +202,8 @@ Singleton {
     }
 
     // The backlight and the keyboards' lights only send events when they change.
-    Process {
-        command: ["udevadm", "monitor", "--kernel", "--subsystem-match=backlight", "--subsystem-match=leds"]
+    TiedProcess {
+        program: ["udevadm", "monitor", "--kernel", "--subsystem-match=backlight", "--subsystem-match=leds"]
         running: true
 
         stdout: SplitParser {
