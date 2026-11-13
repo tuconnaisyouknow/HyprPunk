@@ -108,7 +108,10 @@ The applications themed and configured by these dotfiles.
 - 🪟 **Hyprland** as the main Wayland environment.
 - 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, themes, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
 - 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
-- 🔒 **Hypridle** and **awww** for idle handling (locking, then suspending) and wallpapers with animated transitions.
+- 🪫 Battery warnings at the levels you choose in the settings, and the computer sleeping or shutting down when
+  it stays critical.
+- 🔒 **Hypridle**, **hyprsunset** and **awww** for locking around sleep, the night light, and wallpapers with animated
+  transitions.
 - 🎬 **SDDM** with a video login screen for each subtheme, in the wallpaper's colors.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
@@ -142,8 +145,8 @@ the next time they start. Papirus's folders stay grey, which goes with every pal
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
 
 The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
-minutes with a soft rim. Switch between them live from the control center's Display block, or with
-`hyprpunk glass set classic|liquid|toggle`.
+minutes with a soft rim. Switch between them live from the control center's Display block, the settings' Appearance
+page, or with `hyprpunk glass set classic|liquid|toggle`.
 
 ---
 
@@ -194,7 +197,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/re
 The script asks for the keyboard layout, interface language, and regional formats first, then your password once.
 After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. Left empty, the
 answers give a US layout and English for both the interface and the formats (`en_US.UTF-8`). English and French
-(`fr_FR.UTF-8`) are both generated during installation, so you can switch later. If the installation stops, run the
+(`fr_FR.UTF-8`) are both generated during installation, so you can switch later in the settings (`Super + I`). If the installation stops, run the
 same command again and it picks up where it left off.
 
 Reboot after the installation completes.
@@ -233,7 +236,7 @@ hyprpunk update
 
 `hyprpunk` is the one command HyprPunk adds to your `PATH` (in `~/.local/bin`): run it alone to list what else it does.
 When an update is waiting, a notification tells you at login, and its **Update** button runs it in your terminal
-(drop it with `hyprpunk.autostart.remove("update-check")` in your `personal/autostart.lua`). `hyprpunk check` asks
+(turn it off in the settings, `Super + I`, Updates, where a button also updates HyprPunk). `hyprpunk check` asks
 the same from a terminal.
 
 It pulls the latest HyprPunk, then runs the installer's steps again with the new version. Each step describes how
@@ -263,10 +266,11 @@ repository that the update changes, git refuses the pull and nothing changes.
 
 | Shortcut | What it does |
 |---|---|
-| `Super + T` | Open the terminal (Kitty) |
+| `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
 | `Super + Space` | Open the application launcher |
 | `Super + Ctrl + Space` | Open the main menu |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery, background apps…) |
+| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and language, sound, battery, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the main menu |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
@@ -295,11 +299,12 @@ you'd bind to your own shortcuts.
 | `theme` (neon or daydream) | `Super + Ctrl + T` |
 | `session` | `Super + Escape` |
 | `controlcenter` | `Super + C` |
+| `settings` (a floating window) | `Super + I` |
 | `notifications` | `Super + N` |
 | `workspaces` (preview of the others) | `Super + W` |
 | `systemmonitor` | `Ctrl + Shift + Escape` |
 | `player` (the bar's player card, while Spotify runs) | `Super + Shift + P` |
-| `config`, `monitor`, `screenshot` | From the main menu |
+| `config`, `screenshot` | From the main menu |
 
 ### 📸 Screenshots and recordings
 
@@ -313,20 +318,27 @@ you'd bind to your own shortcuts.
 
 Screenshots are saved in `~/Pictures/Screenshots` and copied to the clipboard. Recordings, with the system's sound,
 go to `~/Videos/Recordings`, and stop from the same shortcut or from their timer in the island. Both follow you if you
-move your pictures or videos folder in `~/.config/user-dirs.dirs`.
+move your pictures or videos folder in `~/.config/user-dirs.dirs`. The settings (`Super + I`, Screenshots) choose
+other folders, whether a screenshot is copied, saved or both, and what a recording hears.
 
 ### 🔒 Locking and sleep
 
 The screen locks with `Super + Ctrl + L`, from the session menu, or after 5½ minutes without use. The screen dims
-first, at 5 minutes, and the computer goes to sleep after 30 minutes. Before sleeping, the screen locks at once,
+first, at 5 minutes, and the computer goes to sleep after 30 minutes. These delays, plugged in and on battery, are in
+the settings (`Super + I`, Idle and sleep). Before sleeping, the screen locks at once,
 without its animation. The lock is held by Hyprland itself, so the screens stay locked even if the shell crashes.
 
 ### 🎵 Music player
 
 The bar's spinning record, its player card and the lock screen's player and synced lyrics follow **Spotify only**.
 Other players, like a video in the browser or mpv, still work with the media keys but don't show there. This is a
-choice, not something you can switch: setting `hyprpunk.programs.music` to another app only changes what
-`Super + P` opens.
+choice, not something you can switch: picking another music app in the settings, or setting
+`hyprpunk.programs.music`, only changes what `Super + P` opens.
+
+The record spins while the music plays, and a wave moves with it at the bottom of the desktop. Both keep the screen
+redrawing, which a laptop's GPU feels: the settings' Appearance page, or `hyprpunk music set cover spinning|still|off`
+and `hyprpunk music set wave true|false`, keeps the record still or leaves its cover out, and turns the wave off, on
+the lock screen too.
 
 ### 🎧 AirPods
 
@@ -357,7 +369,7 @@ from other people's nearby.
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
 ├── gtk4/                # GTK 4 settings
-├── hypridle/            # Idle and suspend behavior
+├── hypridle/            # Locking for logind, and before sleep
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
@@ -394,7 +406,8 @@ The installer offers two keyboard profiles:
 
 `US` is the default when no profile has been selected yet or when the installer prompt is left empty.
 
-The active profile can be changed later from the command line:
+The active profile can be changed later in the settings (`Super + I`, Keyboard and language), or from the command
+line:
 
 ```bash
 hyprpunk keyboard set us
@@ -448,7 +461,8 @@ and on 24 hours with `fr`, and the calendar starts the week on the right day.
 
 ## 🖥️ Display Settings
 
-Monitors are managed by `hyprpunk display`: per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment, plus an automatic layout and a reset of all saved display settings. The settings are persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`) and applied by Hyprland on reload. Run `hyprpunk display` without arguments to list its commands.
+Monitors are set up in the settings' Displays page (`Super + I`), where you drag a screen against another to place
+it, or with `hyprpunk display`: per-output resolution, refresh rate, scale, relative positioning, persistent output numbering, and workspace assignment, plus an automatic layout and a reset of all saved display settings. The settings are persisted in `$XDG_STATE_HOME/hyprpunk/monitor-state.conf` (or `~/.local/state/hyprpunk/monitor-state.conf`) and applied by Hyprland on reload. Run `hyprpunk display` without arguments to list its commands.
 
 ---
 
@@ -474,19 +488,24 @@ The installer enables or configures:
 Everything you're meant to change lives outside the dotfiles, so an [update](#-updating) brings you every change
 without touching your preferences:
 
-- 🎛️ **The shell's settings** (keyboard layout, displays, glass style, language…) are saved in
-  `~/.local/state/hyprpunk/` as you pick them.
+- 🎛️ **The shell's settings** (keyboard layout, displays, the mouse and touchpad, glass style, language, when the
+  computer dims, locks and sleeps, which apps' notifications pop up, what the island shows, the default apps, the
+  launcher's pinned and hidden apps, how screenshots and recordings are kept, the clipboard history, the night light,
+  the volume limit…) are saved in `~/.local/state/hyprpunk/` as you pick them, in the control center or the settings
+  window (`Super + I`).
 - 🧩 **Your Hyprland preferences** go in `~/.config/hypr/personal/`. The installer fills it with commented examples
   from `hyprland/.config/hypr/personal.example/`, one per subject, each loaded after HyprPunk's own file so
   whatever you set wins:
-  - ⌨️ `keybindings.lua` to swap the apps the shortcuts open (`hyprpunk.programs.music = "spicetify auto"`), or
+  - ⌨️ `keybindings.lua` to swap the apps the shortcuts open (`hyprpunk.programs.music = "spicetify auto"`), over
+    the terminal, browser, files and music apps picked in the settings, or
     add, rebind and free shortcuts with `hyprpunk.bind`, `hyprpunk.rebind` and `hyprpunk.unbind`. Your terminal
     and editor (`hyprpunk.programs.terminal` and `.editor`) are also what the shell opens your config files and
     commands in. Only terminals that run a command given with `-e` are supported (Kitty, Alacritty, foot,
     Ghostty…).
   - 🪟 `rules.lua` to send your apps to a workspace with `hyprpunk.app("org.gnome.Geary", 6)`, float the dialogs of
     an app that lets them get tiled with `hyprpunk.float_dialogs(class, main window's title)`, plus any window rule.
-  - 🖱️ `input.lua` for the mouse, touchpad and gestures. The keyboard layout comes from the shell's settings.
+  - 🖱️ `input.lua` for the mouse, touchpad and gestures, over what the settings set. The keyboard layout comes
+    from the shell's settings.
   - 🌱 `env.lua` for environment variables, like a bigger cursor. Your own scripts go in `~/.local/bin`, already in
     your `PATH`. The language comes from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
   - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
@@ -516,7 +535,8 @@ customize (see [Philosophy](#-philosophy)).
 - 🪟 **Hyprland doesn't take your change.** It rereads its config on its own when you save. Run `hyprctl reload` to
   force it, and `hyprctl configerrors` to list the mistakes it found. Its full log is in
   `$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/hyprland.log`.
-- 💤 **The screen doesn't lock or dim.** `Super + Alt + I` restarts hypridle.
+- 💤 **The screen doesn't lock or dim.** The shell does it after the delays in its settings (`Super + I`):
+  `Super + Alt + Q` restarts it. If it doesn't lock before sleep, `Super + Alt + I` restarts hypridle.
 - 🎬 **The login screen stays black or falls back to a plain one.** `journalctl -b -u sddm` shows what SDDM
   complained about at the last boot.
 
