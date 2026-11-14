@@ -7,6 +7,7 @@ import qs.components
 import qs.theme
 import qs.windows
 import qs.state
+import qs.services
 
 // The AirPods card that grows out of the island when you open the case or they
 // connect, like on an iPhone. AirPods waiting to pair get a Connect button instead.
@@ -22,7 +23,6 @@ Card {
     // The island's card shape, shared with its other cards.
     required property Item islandFrame
     readonly property rect contentRect: islandFrame.contentRect(popup)
-    required property var airPods
     property color base: Colors.base
     property color secondary: Colors.secondary
     property color primary: Colors.primary
@@ -30,15 +30,15 @@ Card {
     // "manual" (ipc).
     property string address: ""
     property string reason: ""
-    readonly property var device: address !== "" ? airPods.device(address) : null
-    readonly property var candidate: airPods.pairing !== null && airPods.pairing.address === address ? airPods.pairing : null
+    readonly property var device: address !== "" ? AirPods.device(address) : null
+    readonly property var candidate: AirPods.pairing !== null && AirPods.pairing.address === address ? AirPods.pairing : null
     readonly property bool pairingView: reason === "pairing" && candidate !== null
     readonly property var shownAirPods: pairingView ? candidate : device
     readonly property bool headphones: shownAirPods !== null && shownAirPods.kind === "headphones"
     // Apple's renders ({buds, case} paths), null for models without any or until downloaded.
     readonly property var images: shownAirPods !== null && shownAirPods.images ? shownAirPods.images : null
     // [{level, charging, label}] under the pods: one ring while both pods agree.
-    readonly property var podBatteries: airPods.podBatteries(device)
+    readonly property var podBatteries: AirPods.podBatteries(device)
     // The case is left out while its battery is unknown (pods out of it, lid shut).
     readonly property bool caseShown: !headphones && images !== null && (pairingView || (device !== null && device["case"].level !== null))
     // Both pods worn: the card has done its job.
@@ -58,8 +58,8 @@ Card {
         return key !== islandKey && key.endsWith("@" + screen.name);
     })
 
-    function inEars(airPods) {
-        return airPods !== null && airPods.kind === "buds" && airPods.left.inEar && airPods.right.inEar;
+    function inEars(device) {
+        return device !== null && device.kind === "buds" && device.left.inEar && device.right.inEar;
     }
 
     function open(address, reason) {
@@ -96,7 +96,7 @@ Card {
     // The cross and "Not now": AirPods in pairing mode stay quiet for a while.
     function dismiss() {
         if (pairingView)
-            airPods.ignore(address);
+            AirPods.ignore(address);
 
         close();
     }
@@ -126,8 +126,8 @@ Card {
 
         const asked = pending;
         pending = null;
-        const device = airPods.device(asked.address);
-        const stillThere = asked.reason === "pairing" ? airPods.pairing !== null && airPods.pairing.address === asked.address : asked.reason === "lid" ? device !== null && device.lidOpen : Date.now() - asked.at < 8000;
+        const device = AirPods.device(asked.address);
+        const stillThere = asked.reason === "pairing" ? AirPods.pairing !== null && AirPods.pairing.address === asked.address : asked.reason === "lid" ? device !== null && device.lidOpen : Date.now() - asked.at < 8000;
         if (stillThere)
             open(asked.address, asked.reason);
 
@@ -185,7 +185,7 @@ Card {
                 return ;
 
             // They connected because they went in your ears: nothing to show, unless asked for ("manual").
-            if ((reason === "lid" || reason === "connected") && popup.inEars(popup.airPods.device(address)))
+            if ((reason === "lid" || reason === "connected") && popup.inEars(AirPods.device(address)))
                 return ;
 
             popup.open(address, reason);
@@ -200,7 +200,7 @@ Card {
 
         }
 
-        target: popup.airPods
+        target: AirPods
     }
 
     ClippingRectangle {
@@ -317,7 +317,7 @@ Card {
                     Layout.topMargin: 22
                     text: popup.pairingView ? popup.pairingButtonText() : ""
                     enabled: popup.pairingView && popup.candidate.state !== "pairing"
-                    onClicked: popup.airPods.pair(popup.address)
+                    onClicked: AirPods.pair(popup.address)
                 }
 
                 Text {

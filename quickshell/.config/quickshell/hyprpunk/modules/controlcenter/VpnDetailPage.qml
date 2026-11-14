@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
 import qs.components
 import qs.services
 import qs.theme
@@ -22,9 +21,15 @@ ColumnLayout {
 
     // Read again on each change: the address only exists while it's up.
     function readDetails() {
-        if (uuid !== "")
-            detailsProcess.running = true;
+        if (uuid === "")
+            return ;
 
+        const asked = uuid;
+        Vpn.readDetails(uuid, (details) => {
+            if (asked === uuid)
+                page.details = details;
+
+        });
     }
 
     spacing: 12
@@ -124,48 +129,6 @@ ColumnLayout {
             Vpn.remove(page.uuid);
             page.deleted();
         }
-    }
-
-    Process {
-        id: detailsProcess
-
-        // One "key:value" a line; the values keep their colons (an endpoint's port).
-        command: ["nmcli", "-t", "connection", "show", "uuid", page.uuid]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const values = {
-                };
-                for (const line of text.split("\n")) {
-                    const colon = line.indexOf(":");
-                    if (colon > 0)
-                        values[line.slice(0, colon)] = line.slice(colon + 1);
-
-                }
-                // "org.freedesktop.NetworkManager.openvpn" reads OpenVPN.
-                const service = (values["vpn.service-type"] || "").split(".").pop();
-                const names = {
-                    "openvpn": "OpenVPN",
-                    "openconnect": "OpenConnect",
-                    "vpnc": "Cisco VPNC",
-                    "l2tp": "L2TP",
-                    "pptp": "PPTP",
-                    "strongswan": "IPsec (strongSwan)",
-                    "libreswan": "IPsec (Libreswan)",
-                    "fortisslvpn": "Fortinet SSL VPN",
-                    "sstp": "SSTP"
-                };
-                // WireGuard's first peer, or the plugin's own setting for its server.
-                const endpoint = /endpoint=(\S+)/.exec(values["wireguard.peers"] || "");
-                const remote = /\b(?:remote|gateway)\s*=\s*([^,]+)/.exec(values["vpn.data"] || "");
-                page.details = {
-                    "serviceType": names[service] || service,
-                    "server": endpoint !== null ? endpoint[1] : remote !== null ? remote[1].trim() : "",
-                    "address": (values["IP4.ADDRESS[1]"] || values["IP6.ADDRESS[1]"] || "").split("/")[0]
-                };
-            }
-        }
-
     }
 
 }

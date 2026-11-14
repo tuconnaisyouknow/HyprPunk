@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
 import qs.components
 import qs.config
 import qs.services
@@ -11,11 +10,9 @@ import qs.theme
 ColumnLayout {
     id: page
 
-    // The commit you're on and its day ("2026-11-12 d48bc5d"), read each time the window
-    // opens.
-    property string version: ""
+    // "d48bc5d, from 12/11/2026", in your regional format.
     readonly property string versionText: {
-        const [day, commit] = version.split(" ");
+        const [day, commit] = Updates.version.split(" ");
         if (!commit)
             return "";
 
@@ -109,14 +106,9 @@ ColumnLayout {
 
     }
 
-    Process {
-        command: [Session.scripts + "/updatesctl.sh", "version"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: page.version = text.trim()
-        }
-
+    ServiceRef {
+        service: Updates
+        active: true
     }
 
 }

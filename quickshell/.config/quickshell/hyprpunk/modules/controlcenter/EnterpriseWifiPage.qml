@@ -1,10 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import Quickshell.Networking
 import qs.components
-import qs.config
 import qs.services
 import qs.theme
 
@@ -19,7 +17,7 @@ ColumnLayout {
     // Modifying the saved profile (edit()) rather than a first connection.
     property bool editing: false
     property bool loading: false
-    readonly property bool connecting: helper.busy
+    readonly property bool connecting: WifiProfiles.busy
     property string error: ""
     readonly property var securityOptions: {
         if (network === null)
@@ -83,7 +81,10 @@ ColumnLayout {
     // Methods with a CA certificate and a domain.
     readonly property bool tunneled: eap === "peap" || eap === "ttls" || eap === "tls"
     readonly property bool userPass: eap !== "tls"
-    readonly property string caFilter: "DER, PEM, or PKCS#12 certificates (*.der *.pem *.crt *.cer *.p12) | *.der *.pem *.crt *.cer *.p12"
+    readonly property var caFilter: ({
+        "name": "DER, PEM, or PKCS#12 certificates",
+        "globs": ["*.der", "*.pem", "*.crt", "*.cer", "*.p12"]
+    })
     readonly property bool userCertIsPkcs12: /\.(p12|pfx)$/i.test(userCert.path)
     // Why Connect is not available yet, like the dialog's disabled button.
     readonly property string missing: {
@@ -144,8 +145,13 @@ ColumnLayout {
         reset();
         editing = true;
         loading = true;
-        reader.command = ["python3", Session.scripts + "/wifi-connection.py", "--read", network.name];
-        reader.running = true;
+        WifiProfiles.read(network.name, (settings) => {
+            loading = false;
+            if (settings !== null)
+                prefill(settings);
+            else
+                error = "Could not read the saved settings";
+        });
     }
 
     // Selects the first option of a FormSelect matching key: value.
@@ -234,7 +240,12 @@ ColumnLayout {
             return ;
 
         error = "";
-        helper.send(request());
+        WifiProfiles.connect(request(), (ok, error) => {
+            page.error = error;
+            if (ok)
+                page.finished();
+
+        });
     }
 
     spacing: 12
@@ -309,7 +320,10 @@ ColumnLayout {
                     visible: page.eap === "fast"
                     label: "PAC file"
                     dialogTitle: "Choose a PAC file"
-                    filters: ["PAC files (*.pac) | *.pac"]
+                    filters: [{
+                        "name": "PAC files",
+                        "globs": ["*.pac"]
+                    }]
                 }
 
                 FormCheck {
@@ -402,7 +416,10 @@ ColumnLayout {
                     visible: page.eap === "tls"
                     label: "User private key"
                     dialogTitle: "Choose a key for User Certificate"
-                    filters: ["DER, PEM, or PKCS#12 private keys (*.der *.pem *.p12 *.key) | *.der *.pem *.p12 *.key"]
+                    filters: [{
+                        "name": "DER, PEM, or PKCS#12 private keys",
+                        "globs": ["*.der", "*.pem", "*.p12", "*.key"]
+                    }]
                 }
 
                 FormField {
@@ -562,33 +579,6 @@ ColumnLayout {
             onClicked: page.connect()
         }
 
-    }
-
-    Process {
-        id: reader
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                page.loading = false;
-                try {
-                    page.prefill(JSON.parse(text));
-                } catch (error) {
-                    page.error = "Could not read the saved settings";
-                }
-            }
-        }
-
-    }
-
-    WifiHelper {
-        id: helper
-
-        onFinished: (ok, error) => {
-            page.error = error;
-            if (ok)
-                page.finished();
-
-        }
     }
 
 }

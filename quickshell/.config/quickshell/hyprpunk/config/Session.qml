@@ -8,8 +8,8 @@ import Quickshell.Io
 // (glassctl.sh), the keyboard layout (keyboard-layoutctl.sh) and the wallpaper
 // (wallpaperctl.sh). And how the shell launches things.
 // The shell keeps the environment it started with, so after a language change anything
-// it launched itself would still speak the old one. Apps are started through Hyprland
-// instead, which follows the change, and the shell's own helpers get localeEnvironment.
+// it launched itself would still speak the old one: apps are started through Hyprland
+// instead, which follows the change.
 Singleton {
     id: session
 
@@ -27,23 +27,6 @@ Singleton {
     readonly property string regionalLocale: localeOf(regionalProfile)
     // The clocks follow the regional formats: 12 h in us, 24 h in fr.
     readonly property bool twelveHour: /a/i.test(Qt.locale(regionalLocale.split(".")[0]).timeFormat(Locale.ShortFormat))
-    // The variables locale-profilectl.sh exports, for a Process's environment.
-    readonly property var localeEnvironment: ({
-        "LANG": languageLocale,
-        "LC_MESSAGES": languageLocale,
-        "LC_CTYPE": regionalLocale,
-        "LC_NUMERIC": regionalLocale,
-        "LC_TIME": regionalLocale,
-        "LC_COLLATE": regionalLocale,
-        "LC_MONETARY": regionalLocale,
-        "LC_PAPER": regionalLocale,
-        "LC_NAME": regionalLocale,
-        "LC_ADDRESS": regionalLocale,
-        "LC_TELEPHONE": regionalLocale,
-        "LC_MEASUREMENT": regionalLocale,
-        "LC_IDENTIFICATION": regionalLocale,
-        "LC_ALL": null
-    })
     // The scripts the shell runs, linked from the dotfiles' scripts module.
     readonly property string scripts: Quickshell.env("HOME") + "/.local/lib/hyprpunk"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk"

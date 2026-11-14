@@ -24,7 +24,6 @@ Card {
     // The island's card shape, shared with its other cards.
     required property Item islandFrame
     readonly property rect contentRect: islandFrame.contentRect(popups)
-    required property var notificationServer
     // Popups currently in the card, newest first, as {id, notification}. An entry stays
     // here until its exit animation is over, so several popups can leave at the same time.
     // The id is kept apart: a dismissed notification is destroyed but lingers here as an
@@ -144,7 +143,7 @@ Card {
             popups.show(notification);
         }
 
-        target: popups.notificationServer
+        target: Notifications.server
     }
 
     // The center opening takes the popups in: their card folds back into the island

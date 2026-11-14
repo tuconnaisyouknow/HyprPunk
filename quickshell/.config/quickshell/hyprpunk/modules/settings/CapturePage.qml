@@ -4,6 +4,7 @@ import Quickshell
 import qs.components
 import qs.config
 import qs.theme
+import qs.services
 
 // The settings' screenshots and recordings page: where a screenshot goes, the folders
 // they're saved to, and what a recording hears and how smoothly it records.
@@ -11,7 +12,6 @@ ColumnLayout {
     id: page
 
     // The shell's file picker, to choose the folders.
-    required property var fileChooser
 
     // "~/Pictures/Screenshots" rather than the full path.
     function shortPath(path) {
@@ -22,7 +22,7 @@ ColumnLayout {
     // Opens in the folder holding the current one, which may not exist yet. Picking the
     // usual folder again is how you go back to it.
     function chooseFolder(key, title, current) {
-        fileChooser.ask({
+        FileChooser.ask({
             "title": title,
             "directory": true,
             "folder": current.slice(0, current.lastIndexOf("/")) || "/"

@@ -132,9 +132,31 @@ Singleton {
         if (importing)
             return ;
 
-        importError = "";
-        importing = true;
-        importProcess.running = true;
+        FileChooser.ask({
+            "title": "Import a VPN",
+            "filters": [{
+                "name": "VPN configurations",
+                "globs": ["*.conf", "*.ovpn", "*.pcf"]
+            }, {
+                "name": "All files",
+                "globs": ["*"]
+            }],
+            "filter": 0
+        }, (paths) => {
+            importError = "";
+            importing = true;
+            importProcess.command = [Session.scripts + "/vpnctl.sh", "import", paths[0]];
+            importProcess.running = true;
+        });
+    }
+
+    // onDone({serviceType, server, address}): what the profile's full listing tells,
+    // the address only while it's up.
+    function readDetails(uuid, onDone) {
+        detailsProcess.createObject(vpn, {
+            "uuid": uuid,
+            "onDone": onDone
+        });
     }
 
     // nmcli's terse fields, split on the colons it doesn't escape.
@@ -238,12 +260,62 @@ Singleton {
 
     }
 
+    // One per reading, so a page switching VPN never gets the last one's details.
+    Component {
+        id: detailsProcess
+
+        Process {
+            id: reader
+
+            property string uuid
+            property var onDone
+
+            // One "key:value" a line; the values keep their colons (an endpoint's port).
+            command: ["nmcli", "-t", "connection", "show", "uuid", uuid]
+            running: true
+
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    const values = {
+                    };
+                    for (const line of text.split("\n")) {
+                        const colon = line.indexOf(":");
+                        if (colon > 0)
+                            values[line.slice(0, colon)] = line.slice(colon + 1);
+
+                    }
+                    // "org.freedesktop.NetworkManager.openvpn" reads OpenVPN.
+                    const service = (values["vpn.service-type"] || "").split(".").pop();
+                    const names = {
+                        "openvpn": "OpenVPN",
+                        "openconnect": "OpenConnect",
+                        "vpnc": "Cisco VPNC",
+                        "l2tp": "L2TP",
+                        "pptp": "PPTP",
+                        "strongswan": "IPsec (strongSwan)",
+                        "libreswan": "IPsec (Libreswan)",
+                        "fortisslvpn": "Fortinet SSL VPN",
+                        "sstp": "SSTP"
+                    };
+                    // WireGuard's first peer, or the plugin's own setting for its server.
+                    const endpoint = /endpoint=(\S+)/.exec(values["wireguard.peers"] || "");
+                    const remote = /\b(?:remote|gateway)\s*=\s*([^,]+)/.exec(values["vpn.data"] || "");
+                    reader.onDone({
+                        "serviceType": names[service] || service,
+                        "server": endpoint !== null ? endpoint[1] : remote !== null ? remote[1].trim() : "",
+                        "address": (values["IP4.ADDRESS[1]"] || values["IP6.ADDRESS[1]"] || "").split("/")[0]
+                    });
+                    reader.destroy();
+                }
+            }
+
+        }
+
+    }
+
     Process {
         id: importProcess
 
-        // The file chooser speaks the current locale, not the shell's at startup.
-        environment: Session.localeEnvironment
-        command: ["sh", "-c", "file=$(zenity --file-selection --title='Import a VPN' --file-filter='VPN configurations | *.conf *.ovpn *.pcf' --file-filter='All files | *') || exit 0; exec \"$1\" import \"$file\"", "sh", Session.scripts + "/vpnctl.sh"]
         onExited: (code) => {
             vpn.importing = false;
             if (code !== 0)

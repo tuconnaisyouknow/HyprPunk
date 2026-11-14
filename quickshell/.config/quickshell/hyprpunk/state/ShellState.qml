@@ -5,7 +5,7 @@ import Quickshell
 import Quickshell.Hyprland
 
 // What the shell shows and asks for, shared by every screen: the panels you ask for and
-// where, the island's owners, screenshots, caffeine, the music's skips. Each screen's own
+// where, the island's owners, screenshots, caffeine. Each screen's own
 // state is a ScreenState, found with forScreen().
 Singleton {
     id: shellState
@@ -113,12 +113,6 @@ Singleton {
         caffeineUntil = minutes > 0 ? Date.now() + minutes * 60000 : 0;
         caffeine = true;
     }
-    // Which way the last skip went (1 next, -1 previous), valid until musicSkipUntil,
-    // so the bar's discs roll the right way.
-    property int musicSkipDirection: 0
-    property real musicSkipUntil: 0
-    // Counts "previous" presses, since one may just restart the track.
-    property int musicPreviousRequests: 0
     // The AirPods OSD a screen's island shows once their card folds away:
     // {screen, image (their picture, or ""), level (null when unknown), charging}.
     property var airPodsOsd: ({

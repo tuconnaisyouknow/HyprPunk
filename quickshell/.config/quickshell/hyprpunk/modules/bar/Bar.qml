@@ -2,11 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
-import Quickshell.Io
-import Quickshell.Networking
-import Quickshell.Services.Mpris
-import Quickshell.Services.Pipewire
-import Quickshell.Services.UPower
 import Quickshell.Wayland
 import qs.components
 import qs.config
@@ -15,8 +10,8 @@ import qs.modules.music
 import qs.modules.notifications
 import qs.modules.workspaces
 import qs.services
-import qs.theme
 import qs.state
+import qs.theme
 
 // The bar along the top of each screen, a row of pills: workspaces and resources on
 // the left, the dynamic island in the middle, updates, the Spotify record and the
@@ -33,13 +28,9 @@ Item {
     required property Item islandFrame
     // Every card on this screen (Card), whichever pill they grow out of.
     property var cards: []
-    required property var notificationServer
     // The notifications from before Quickshell was restarted.
-    required property var notificationHistory
-    readonly property int notificationCount: notificationServer.trackedNotifications.values.length + notificationHistory.entries.length
+    readonly property int notificationCount: Notifications.server.trackedNotifications.values.length + Notifications.history.entries.length
     readonly property var workspaceIcons: ["", "", "", "", "", "", "", "", "", "", ""]
-    readonly property var battery: UPower.displayDevice
-    readonly property bool hasBattery: battery.ready && battery.isLaptopBattery && battery.isPresent
     // Which of your other workspaces the preview card opens on.
     property var previewWorkspace: null
     readonly property var previewWorkspaces: workspaceSwitcher.workspaces.filter((workspace) => {
@@ -60,16 +51,12 @@ Item {
         const monitor = Hyprland.monitorFor(bar.screen);
         return Math.round(workspacePreviewWidth * (monitor !== null && monitor.width > 0 ? monitor.height / monitor.width : 9 / 16));
     }
-    // Only Spotify: browsers and other MPRIS players are ignored.
-    readonly property var spotifyPlayer: {
-        for (const player of Mpris.players.values) {
-            if (player.dbusName === "org.mpris.MediaPlayer2.spotify")
-                return player;
-
-        }
-        return null;
-    }
-    property bool statusOsdVisible: false
+    // This screen's OSD (Osd), null while none shows here. The last one shown stays in
+    // osdShown, so the island still draws it as it goes away.
+    readonly property var osd: Osd.current !== null && (Osd.current.screen === "" || Osd.current.screen === screen.name) ? Osd.current : null
+    readonly property bool osdVisible: osd !== null
+    property var osdShown: Osd.blank
+    readonly property string osdLabel: osdShown.label
     // While the session is locked, the lock's island shows the OSD and the bar's own one
     // stays still. It isn't drawn under the lock, so it would only catch up on its
     // animations once the lock is gone.
@@ -80,81 +67,20 @@ Item {
     // The island shows the OSD unless a card is open on it, where it shows beside the card
     // instead (sideOsd). As soon as the card closes the island takes it back, hidden, so
     // the card folds straight into the OSD's shape.
-    readonly property bool islandOsdShown: statusOsdVisible && !sessionLocked && islandFrame.owner === null
-    // The OSD is going into the island under a card folding back onto it. Its time running
-    // out then waits for the card to land, so it gets all the way in and shows there
-    // before it goes, rather than flying off halfway.
-    readonly property bool statusOsdLanding: islandOsdShown && islandCovered
-    property bool statusOsdEndHeld: false
+    readonly property bool islandOsdShown: osdVisible && !sessionLocked && islandFrame.owner === null
+    // The OSD is going into the island under a card folding back onto it: its time
+    // running out waits for the card to land (Osd.landing).
+    readonly property bool osdLanding: islandOsdShown && islandCovered
     // The island resizes at once while hidden under a card: animating it there made the
     // bar and the blur behind the card redraw every frame for nothing, and the card's own
     // animations drop frames (the calendar while a notification slides out of it).
     readonly property bool islandAnimated: !pillHidden("island")
-    // The time the OSD's delay is up, and the one it interrupted, shown again for the rest
-    // of its time afterwards (a volume change over a screenshot's thumbnail):
-    // {show: function, remaining in ms}, or null.
-    property real statusOsdEndsAt: 0
-    property var statusOsdResume: null
-    property string statusOsdIcon: ""
-    property string statusOsdLabel: ""
-    property bool statusOsdEnabled: false
-    // "airpods": a pod and its battery ring instead of an icon, label and gauge.
-    // "battery": the battery's alert, its icon, a title and the time left.
-    // "screenshot": a thumbnail of what was just captured (for a recording, its first
-    // frame), titled statusOsdTitle; a click opens statusOsdFile.
-    property string statusOsdKind: ""
-    property string statusOsdImage: ""
-    property string statusOsdTitle: ""
-    property string statusOsdFile: ""
     // Seconds since the recording started, for the island.
     property int recordingElapsed: 0
-    property var statusOsdRingLevel: null
-    property bool statusOsdRingCharging: false
-    // Level gauge shown instead of the On/Off badge when statusOsdMaxLevel > 0.
-    property int statusOsdLevel: 0
-    property int statusOsdMaxLevel: 0
-    readonly property int batteryPercent: Math.round(battery.percentage * 100)
-    // The warning given since the last time it was plugged in, at the levels set in the
-    // settings (BatterySettings): 0 none, 1 low, 2 critical. Each shows once; the
-    // critical one stays up.
-    property int batteryAlertStage: 0
-    readonly property bool batteryCritical: hasBattery && UPower.onBattery && batteryAlertStage === 2
-    // Off while the shell starts: UPower's first values aren't a plug or unplug.
-    property bool powerEventsReady: false
-    // Time left worked out from the battery's own draw, for the first seconds after
-    // unplugging when UPower has no estimate yet. 0 when there's none.
-    property real batteryDrawEstimate: 0
-    readonly property real batteryTimeLeft: battery.timeToEmpty > 0 ? battery.timeToEmpty : batteryDrawEstimate
-    readonly property bool batteryEstimating: statusOsdVisible && statusOsdKind === "battery" && statusOsdLabel === "On battery" && batteryTimeLeft <= 0
-    readonly property var micSource: Pipewire.defaultAudioSource
-    readonly property bool micMuted: micSource !== null && micSource.audio !== null && micSource.audio.muted
-    property bool micStateInitialized: false
-    readonly property var audioSink: Pipewire.defaultAudioSink
-    readonly property int audioVolume: audioSink !== null && audioSink.audio !== null ? Math.round(audioSink.audio.volume * 100) : 0
-    readonly property bool audioMuted: audioSink !== null && audioSink.audio !== null && audioSink.audio.muted
-    property bool volumeInitialized: false
-    // The output whose volume changes we show, updated whenever the output changes.
-    property var volumeSink: audioSink
     property real clockCenterOffset: bar.islandOsdShown ? 3 : -3
     // The regional formats you picked (locale-profilectl.sh). The calendar's day names
     // and first day of the week follow them, even though the shell keeps its startup locale.
     readonly property var regionalLocale: Qt.locale(Session.regionalProfile === "us" ? "en_US" : "fr_FR")
-
-    // The connected device first, else one NetworkManager is bringing up.
-    readonly property var networkDevice: {
-        let connecting = null;
-        for (const device of Networking.devices.values) {
-            if (device.connected)
-                return device;
-
-            if (connecting === null && device.state === ConnectionState.Connecting)
-                connecting = device;
-
-        }
-        return connecting;
-    }
-    readonly property bool networkConnecting: (networkDevice !== null && !networkDevice.connected) || Vpn.connecting
-    readonly property bool wiredLocked: networkDevice !== null && networkDevice.connected && networkDevice.type === DeviceType.Wired && Vpn.connection !== null
 
     // Where each pill sits on screen, so the lock screen can start from there: the ones it
     // keeps (resources, island, control pill) and the ones it lets go. Where they rest,
@@ -188,235 +114,8 @@ Item {
         };
     }
 
-    function activeWifiNetwork(device) {
-        for (const network of device.networks.values) {
-            if (network.connected)
-                return network;
-
-        }
-        return null;
-    }
-
-    function networkIcon() {
-        const device = bar.networkDevice;
-        if (device === null)
-            return "󰤮";
-
-        if (device.type === DeviceType.Wired)
-            return device.connected ? "󰈀" : "󰌚";
-
-        const network = bar.activeWifiNetwork(device);
-        return Icons.wifi(network !== null ? network.signalStrength : 0, device.connected && Vpn.connection !== null);
-    }
-
     function capitalized(text) {
         return text.charAt(0).toUpperCase() + text.slice(1);
-    }
-
-    // How long an OSD stays, its usual time stretched as the settings ask (OsdSettings).
-    function osdTime(milliseconds) {
-        return Math.round(milliseconds * OsdSettings.pace);
-    }
-
-    // With maxLevel > 0, a gauge of level / maxLevel replaces the On/Off badge.
-    function showStatusOsd(icon, label, enabled, level, maxLevel) {
-        keepInterruptedOsd("");
-        statusOsdKind = "";
-        statusOsdHideDelay.interval = osdTime(1500);
-        statusOsdIcon = icon;
-        statusOsdLabel = label;
-        statusOsdEnabled = enabled;
-        statusOsdLevel = level !== undefined ? level : 0;
-        statusOsdMaxLevel = maxLevel !== undefined ? maxLevel : 0;
-        statusOsdVisible = true;
-        restartStatusOsdDelay();
-    }
-
-    // Before another OSD replaces the one showing: a screenshot, battery or AirPods OSD
-    // with time left comes back afterwards. A level or a switch just goes, and so does an
-    // OSD replaced by a newer one of its kind.
-    function keepInterruptedOsd(kind) {
-        if (!statusOsdVisible || statusOsdKind === "" || kind === statusOsdKind || batteryCritical)
-            return ;
-
-        const remaining = statusOsdEndsAt - Date.now();
-        if (remaining < 800)
-            return ;
-
-        const shownKind = statusOsdKind;
-        const saved = {
-            "label": statusOsdLabel,
-            "image": statusOsdImage,
-            "file": statusOsdFile,
-            "title": statusOsdTitle,
-            "ringLevel": statusOsdRingLevel,
-            "ringCharging": statusOsdRingCharging
-        };
-        statusOsdResume = {
-            "remaining": Math.max(1500, remaining),
-            "show": () => {
-                bar.statusOsdKind = shownKind;
-                bar.statusOsdImage = saved.image;
-                bar.statusOsdFile = saved.file;
-                bar.statusOsdTitle = saved.title;
-                bar.statusOsdRingLevel = saved.ringLevel;
-                bar.statusOsdRingCharging = saved.ringCharging;
-                bar.statusOsdLabel = saved.label;
-            }
-        };
-    }
-
-    function restartStatusOsdDelay() {
-        statusOsdEndHeld = false;
-        statusOsdEndsAt = Date.now() + statusOsdHideDelay.interval;
-        statusOsdHideDelay.restart();
-    }
-
-    function showAirPodsOsd(osd) {
-        keepInterruptedOsd("airpods");
-        statusOsdKind = "airpods";
-        statusOsdImage = osd.image;
-        statusOsdRingLevel = osd.level;
-        statusOsdRingCharging = osd.charging;
-        // Fades the content in like a new OSD.
-        statusOsdLabel = "AirPods";
-        statusOsdHideDelay.interval = osdTime(3000);
-        statusOsdVisible = true;
-        restartStatusOsdDelay();
-    }
-
-    function updateBatteryAlert() {
-        if (!hasBattery)
-            return ;
-
-        const stage = !UPower.onBattery ? 0 : batteryPercent <= BatterySettings.critical ? 2 : batteryPercent <= BatterySettings.low ? 1 : 0;
-        // Only a deeper warning shows: one already given waits for the battery to go back
-        // above its level.
-        if (stage !== 0 && stage <= batteryAlertStage)
-            return ;
-
-        batteryAlertStage = stage;
-        if (stage > 0)
-            showBatteryOsd(stage === 2 ? "Battery critical" : "Battery low");
-
-    }
-
-    // m:ss, h:mm:ss past an hour.
-    function formatDuration(seconds) {
-        const pad = (value) => {
-            return String(value).padStart(2, "0");
-        };
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor(seconds / 60) % 60;
-        return (hours > 0 ? hours + ":" + pad(minutes) : minutes) + ":" + pad(seconds % 60);
-    }
-
-    function showScreenshotOsd(taken) {
-        keepInterruptedOsd("screenshot");
-        statusOsdKind = "screenshot";
-        statusOsdImage = taken.file;
-        statusOsdFile = taken.video || taken.file;
-        statusOsdTitle = taken.video ? "Recording" : "Screenshot";
-        statusOsdLabel = taken.video ? formatDuration(taken.duration) + " · Saved" : [taken.annotated ? "Annotated" : "", taken.copied ? "Copied" : "", taken.saved ? "Saved" : ""].filter((word) => {
-            return word !== "";
-        }).join(" · ");
-        statusOsdHideDelay.interval = osdTime(3500);
-        statusOsdVisible = true;
-        restartStatusOsdDelay();
-    }
-
-    // The calendar and notifications card, kept open until closed (Escape, a click
-    // outside, the shortcut or the clock again).
-    function toggleNotificationCard() {
-        calendarPopup.togglePinned();
-    }
-
-    // Plugging in or unplugging shows in the island, unless unplugging brings up a
-    // low-battery warning instead, or the settings leave it out.
-    function powerSourceChanged() {
-        updateBatteryAlert();
-        if (!hasBattery || !powerEventsReady || !OsdSettings.shows("power"))
-            return ;
-
-        if (!UPower.onBattery)
-            showBatteryOsd("Charging");
-        else if (batteryAlertStage === 0)
-            showBatteryOsd("On battery");
-    }
-
-    function showBatteryOsd(title) {
-        keepInterruptedOsd("battery");
-        statusOsdKind = "battery";
-        statusOsdLabel = title;
-        batteryDrawEstimate = 0;
-        // Unplugged: stays until the time left is known, then a moment to read it.
-        statusOsdHideDelay.interval = osdTime(title === "On battery" && batteryTimeLeft <= 0 ? 8000 : title === "Charging" || title === "On battery" ? 2500 : 6000);
-        statusOsdVisible = true;
-        // The critical alert stays until the computer is plugged in.
-        if (batteryCritical)
-            statusOsdHideDelay.stop();
-        else
-            restartStatusOsdDelay();
-    }
-
-    // Ends the OSD now, as its delay would. Another OSD over the critical battery alert
-    // goes back to the alert, which stays until the computer is plugged in, and one over a
-    // screenshot, battery or AirPods OSD goes back to it for the rest of its time.
-    function endStatusOsd() {
-        statusOsdHideDelay.stop();
-        statusOsdEndHeld = false;
-        if (batteryCritical) {
-            showBatteryOsd("Battery critical");
-        } else if (statusOsdResume !== null) {
-            const resume = statusOsdResume;
-            statusOsdResume = null;
-            resume.show();
-            statusOsdHideDelay.interval = resume.remaining;
-            restartStatusOsdDelay();
-        } else {
-            statusOsdVisible = false;
-        }
-    }
-
-    // Green while charging, the accent on battery, red for the alerts.
-    function batteryOsdColor() {
-        if (statusOsdLabel === "Charging")
-            return Colors.green;
-
-        return statusOsdLabel === "On battery" ? Colors.primary : Colors.red;
-    }
-
-    // "64% · 1 h 05 until full" while charging, "64% · 3 h 10 left" on battery,
-    // just the percentage until UPower has an estimate.
-    function batteryDetail() {
-        const seconds = UPower.onBattery ? batteryTimeLeft : battery.timeToFull;
-        if (!(seconds > 0))
-            return batteryPercent + (batteryEstimating ? "% · Estimating…" : UPower.onBattery ? "%" : "% · Plugged in");
-
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.round((seconds % 3600) / 60);
-        const duration = hours > 0 ? hours + " h " + String(minutes).padStart(2, "0") : minutes + " min";
-        return batteryPercent + "% · " + duration + (UPower.onBattery ? " left" : " until full");
-    }
-
-    function showVolumeOsd() {
-        // Checked here too: the volume can change (dropping to 0 as an output goes away)
-        // before the output itself does.
-        if (audioSink !== volumeSink) {
-            resetVolumeOsd();
-            return ;
-        }
-        if (OsdSettings.shows("volume") && volumeInitialized && audioSink !== null && audioSink.ready && audioSink.audio !== null)
-            // Muted, the gauge keeps its level and turns to the secondary color.
-            showStatusOsd(Icons.volume(audioVolume, audioMuted), audioMuted ? "Muted" : "Volume", !audioMuted, audioVolume, 100);
-
-    }
-
-    // Switching output (AirPods coming or going) brings its own volume, that's not a change.
-    function resetVolumeOsd() {
-        volumeSink = audioSink;
-        volumeInitialized = false;
-        volumeInitDelay.restart();
     }
 
     onActiveWorkspaceChanged: {
@@ -424,32 +123,16 @@ Item {
         shownWorkspace = activeWorkspace;
     }
     // The island's new content fades in while the pill resizes around it.
-    onStatusOsdVisibleChanged: {
+    onOsdChanged: {
+        if (osd !== null)
+            osdShown = osd;
+
+    }
+    onOsdVisibleChanged: {
         islandContentFade.restart();
         sideOsd.follow();
-        if (!statusOsdVisible)
-            statusOsdResume = null;
-
     }
-    onStatusOsdLabelChanged: islandContentFade.restart()
-    onStatusOsdLandingChanged: {
-        if (!statusOsdLanding && statusOsdEndHeld)
-            endStatusOsd();
-
-    }
-    onAudioVolumeChanged: showVolumeOsd()
-    onAudioMutedChanged: showVolumeOsd()
-    onAudioSinkChanged: resetVolumeOsd()
-    onMicSourceChanged: {
-        // Wait for the new source's state before reacting to mute changes.
-        micStateInitialized = false;
-        micInitDelay.restart();
-    }
-    onMicMutedChanged: {
-        if (micStateInitialized && OsdSettings.shows("microphone"))
-            showStatusOsd(micMuted ? "󰍭" : "󰍬", "Microphone", !micMuted);
-
-    }
+    onOsdLabelChanged: islandContentFade.restart()
     // Where its island and control pill are, for the cards growing out of them:
     // centerOffset is how far the island sits from the middle, right and top are the
     // control pill's distances from the screen's edges. spreadX and spreadY are how far
@@ -730,7 +413,7 @@ Item {
                 sideOsdEnter.stop();
                 sideOsdLeave.stop();
                 sideOsdSettle.stop();
-                if (bar.statusOsdVisible) {
+                if (bar.osdVisible) {
                     if (frame.owner !== null)
                         sideOsdEnter.restart();
                     else
@@ -750,20 +433,20 @@ Item {
             function fold() {
                 sideOsdEnter.stop();
                 sideOsdLeave.stop();
-                if (bar.statusOsdVisible)
+                if (bar.osdVisible)
                     sideOsdSettle.restart();
 
             }
 
-            x: Math.round(besideX + (insideX - besideX) * (bar.statusOsdVisible ? frame.islandShare : 0))
+            x: Math.round(besideX + (insideX - besideX) * (bar.osdVisible ? frame.islandShare : 0))
             y: Math.round(frame.islandMiddle - height / 2 - lift)
             width: sideOsdPill.width
             height: sideOsdPill.height
             // Only over a card: in the island, the island shows it.
-            visible: (bar.statusOsdVisible || lift < 60) && bar.islandCovered && !bar.sessionLocked
+            visible: (bar.osdVisible || lift < 60) && bar.islandCovered && !bar.sessionLocked
             // Over, it fades beside the card in the first half of its folding back (fold),
             // never crossing what the card still shows.
-            opacity: bar.statusOsdVisible ? 1 : Math.max(0, 1 - 2 * frame.islandShare)
+            opacity: bar.osdVisible ? 1 : Math.max(0, 1 - 2 * frame.islandShare)
             // Gone into the island or flown off: ready to come out of the island, or to
             // drop in from above for the next OSD.
             onVisibleChanged: {
@@ -773,69 +456,7 @@ Item {
                 sideOsdEnter.stop();
                 sideOsdLeave.stop();
                 sideOsdSettle.stop();
-                lift = bar.statusOsdVisible ? 0 : 60;
-            }
-
-            Binding {
-                target: sideOsdState
-                property: "batteryDetailText"
-                value: bar.batteryDetail()
-                when: bar.statusOsdVisible
-                restoreMode: Binding.RestoreNone
-            }
-
-            Binding {
-                target: sideOsdState
-                property: "batteryColor"
-                value: bar.batteryOsdColor()
-                when: bar.statusOsdVisible
-                restoreMode: Binding.RestoreNone
-            }
-
-            // What it shows, kept as it was while it flies away: the OSD is already over.
-            // Starts out following the bar, then each Binding below takes over.
-            QtObject {
-                id: sideOsdState
-
-                property var battery: bar.battery
-                property var batteryCritical: bar.batteryCritical
-                property var batteryDetailText: bar.batteryDetail()
-                property var batteryColor: bar.batteryOsdColor()
-                property var statusOsdEnabled: bar.statusOsdEnabled
-                property var statusOsdIcon: bar.statusOsdIcon
-                property var statusOsdImage: bar.statusOsdImage
-                property var statusOsdKind: bar.statusOsdKind
-                property var statusOsdLabel: bar.statusOsdLabel
-                property var statusOsdLevel: bar.statusOsdLevel
-                property var statusOsdMaxLevel: bar.statusOsdMaxLevel
-                property var statusOsdRingCharging: bar.statusOsdRingCharging
-                property var statusOsdRingLevel: bar.statusOsdRingLevel
-                property var statusOsdTitle: bar.statusOsdTitle
-                property var statusOsdVisible: bar.statusOsdVisible
-
-                function batteryDetail() {
-                    return batteryDetailText;
-                }
-
-                function batteryOsdColor() {
-                    return batteryColor;
-                }
-
-            }
-
-            Instantiator {
-                model: ["battery", "batteryCritical", "statusOsdEnabled", "statusOsdIcon", "statusOsdImage", "statusOsdKind", "statusOsdLabel", "statusOsdLevel", "statusOsdMaxLevel", "statusOsdRingCharging", "statusOsdRingLevel", "statusOsdTitle", "statusOsdVisible"]
-
-                delegate: Binding {
-                    required property string modelData
-
-                    target: sideOsdState
-                    property: modelData
-                    value: bar[modelData]
-                    when: bar.statusOsdVisible
-                    restoreMode: Binding.RestoreNone
-                }
-
+                lift = bar.osdVisible ? 0 : 60;
             }
 
             Pill {
@@ -844,8 +465,10 @@ Item {
                 horizontalPadding: 28
                 glassOpacity: 1 - sideOsd.frame.islandShare
 
+                // Still showing as it flies away: the OSD is already over.
                 IslandOsd {
-                    bar: sideOsdState
+                    shown: true
+                    content: bar.osdShown
                 }
 
             }
@@ -907,7 +530,7 @@ Item {
 
                 opacity: bar.pillHidden("island") ? 0 : 1
                 // Not under the recording chip, which answers the pointer itself.
-                clickable: (!bar.islandOsdShown || bar.statusOsdKind === "screenshot") && !islandChips.stopHovered
+                clickable: (!bar.islandOsdShown || bar.osdShown.kind === "screenshot") && !islandChips.stopHovered
 
                 // Where it rests in its row, and its zoom apart.
                 function publishGeometry() {
@@ -937,8 +560,8 @@ Item {
                     if (!bar.islandOsdShown) {
                         bar.toggleNotificationCard();
                     } else {
-                        Quickshell.execDetached(["xdg-open", bar.statusOsdFile]);
-                        bar.statusOsdVisible = false;
+                        Quickshell.execDetached(["xdg-open", bar.osdShown.file]);
+                        Osd.dismiss();
                     }
                 }
                 horizontalPadding: bar.islandOsdShown ? 36 : 20
@@ -977,7 +600,8 @@ Item {
                 }
 
                 IslandOsd {
-                    bar: bar
+                    shown: bar.osdVisible
+                    content: bar.osdShown
                     visible: bar.islandOsdShown
                 }
 
@@ -1025,18 +649,6 @@ Item {
                     easing.type: Easing.OutCubic
                 }
 
-            }
-
-            Timer {
-                id: statusOsdHideDelay
-
-                interval: 1500
-                onTriggered: {
-                    if (bar.statusOsdLanding)
-                        bar.statusOsdEndHeld = true;
-                    else
-                        bar.endStatusOsd();
-                }
             }
 
             PillPopup {
@@ -1372,8 +984,6 @@ Item {
                     anchors.bottomMargin: 18
                     anchors.rightMargin: 16
                     width: calendarPopup.notificationWidth - 32
-                    notificationServer: bar.notificationServer
-                    notificationHistory: bar.notificationHistory
                     shown: calendarPopup.expanded
                     opacity: calendarPopup.expanded ? 1 : 0
 
@@ -1494,14 +1104,14 @@ Item {
 
             // The Spotify track's cover as a spinning record. Click it to open the player.
             DropInSlot {
-                shown: bar.spotifyPlayer !== null
+                shown: Music.player !== null
 
                 MusicPill {
                     id: musicPill
 
                     opacity: bar.pillHidden("player") ? 0 : 1
 
-                    player: bar.spotifyPlayer
+                    player: Music.player
                     cardLayer: bar.cardLayer
                 }
 
@@ -1509,7 +1119,7 @@ Item {
                 // would be no player to show.
                 Connections {
                     function onPanelRequestsChanged() {
-                        if (bar.spotifyPlayer !== null)
+                        if (Music.player !== null)
                             musicPill.request(ShellState.requestedAction("player", bar.screen));
 
                     }
@@ -1551,7 +1161,6 @@ Item {
                 onClicked: ShellState.requestPanel("controlcenter", "toggle", bar.screen.name)
 
                 ControlStatus {
-                    bar: bar
                     badgeColor: controlPill.baseColor
                     showsTrayAttention: true
                 }
@@ -1578,76 +1187,6 @@ Item {
         onTriggered: bar.recordingElapsed = Math.max(0, Math.round((Date.now() - ShellState.recordingStarted) / 1000))
     }
 
-    Connections {
-        function onAirPodsOsdRequestsChanged() {
-            const osd = ShellState.airPodsOsd;
-            if (osd.screen === bar.screen.name && OsdSettings.shows("airpods"))
-                bar.showAirPodsOsd(osd);
-
-        }
-
-        target: ShellState
-    }
-
-    // The hardware's changes, in this screen's island too, those the settings show.
-    Connections {
-        function onCapsLockToggled(enabled) {
-            if (OsdSettings.shows("keys"))
-                bar.showStatusOsd("󰪛", "Caps Lock", enabled);
-
-        }
-
-        function onNumLockToggled(enabled) {
-            if (OsdSettings.shows("keys"))
-                bar.showStatusOsd("󰎤", "Num Lock", enabled);
-
-        }
-
-        function onTouchpadToggled(enabled) {
-            if (OsdSettings.shows("keys"))
-                bar.showStatusOsd("󰟸", "Touchpad", enabled);
-
-        }
-
-        function onBrightnessShown(percent) {
-            if (OsdSettings.shows("brightness"))
-                bar.showStatusOsd(Icons.brightness(percent), "Brightness", percent > 0, percent, 100);
-
-        }
-
-        function onKeyboardBacklightShown(level, max) {
-            if (OsdSettings.shows("brightness"))
-                bar.showStatusOsd("󰌌", "Keyboard light", level > 0, level, max);
-
-        }
-
-        target: Devices
-    }
-
-    PwObjectTracker {
-        objects: bar.micSource !== null ? [bar.micSource] : []
-    }
-
-    PwObjectTracker {
-        objects: bar.audioSink !== null ? [bar.audioSink] : []
-    }
-
-    Timer {
-        id: volumeInitDelay
-
-        interval: 600
-        running: true
-        onTriggered: bar.volumeInitialized = true
-    }
-
-    Timer {
-        id: micInitDelay
-
-        interval: 500
-        running: true
-        onTriggered: bar.micStateInitialized = true
-    }
-
     Behavior on clockCenterOffset {
         enabled: bar.islandAnimated
 
@@ -1658,108 +1197,9 @@ Item {
 
     }
 
-    // The battery's alerts, from UPower's changes (no polling).
-    Connections {
-        function onPercentageChanged() {
-            bar.updateBatteryAlert();
-        }
-
-        target: bar.battery
-        // Already low when the shell starts.
-        Component.onCompleted: Qt.callLater(bar.updateBatteryAlert)
-    }
-
-    // New levels count at once.
-    Connections {
-        function onLowChanged() {
-            bar.updateBatteryAlert();
-        }
-
-        function onCriticalChanged() {
-            bar.updateBatteryAlert();
-        }
-
-        target: BatterySettings
-    }
-
-    Timer {
-        running: true
-        interval: 3000
-        onTriggered: bar.powerEventsReady = true
-    }
-
-    // The time left as soon as it is known, then the usual moment to read it.
-    Connections {
-        function onBatteryEstimatingChanged() {
-            if (!bar.batteryEstimating && bar.statusOsdVisible && bar.statusOsdLabel === "On battery") {
-                statusOsdHideDelay.interval = bar.osdTime(2500);
-                bar.restartStatusOsdDelay();
-            }
-        }
-
-        target: bar
-    }
-
-    // UPower waits for a few readings first, so meanwhile the draw is read every second.
-    Timer {
-        running: bar.batteryEstimating
-        interval: 1000
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: batteryDrawProcess.running = true
-    }
-
-    Process {
-        id: batteryDrawProcess
-
-        // Each battery's energy and draw (µWh and µW). Batteries that only report charge
-        // and current get multiplied by their voltage. The draw may be negative.
-        command: ["sh", "-c", batteryDrawProcess.script]
-        readonly property string script: 'for dir in /sys/class/power_supply/*; do
-[ "$(cat "$dir/type" 2>/dev/null)" = Battery ] || continue
-[ "$(cat "$dir/scope" 2>/dev/null)" = Device ] && continue
-if [ -r "$dir/energy_now" ]; then echo "$(cat "$dir/energy_now") $(cat "$dir/power_now" 2>/dev/null || echo 0)"
-elif [ -r "$dir/charge_now" ]; then volts=$(cat "$dir/voltage_now" 2>/dev/null || echo 0); echo "$(($(cat "$dir/charge_now") / 1000 * volts / 1000)) $(($(cat "$dir/current_now" 2>/dev/null || echo 0) / 1000 * volts / 1000))"
-fi
-done'
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let energy = 0;
-                let draw = 0;
-                for (const line of text.trim().split("\n")) {
-                    const values = line.split(" ").map(Number);
-                    if (values.length === 2 && !isNaN(values[0]) && !isNaN(values[1])) {
-                        energy += values[0];
-                        draw += Math.abs(values[1]);
-                    }
-                }
-                // Hours left, in seconds.
-                if (energy > 0 && draw > 0)
-                    bar.batteryDrawEstimate = energy / draw * 3600;
-
-            }
-        }
-
-    }
-
-    Connections {
-        function onOnBatteryChanged() {
-            bar.powerSourceChanged();
-        }
-
-        target: UPower
-    }
-
-    Connections {
-        function onScreenshotTakenChanged() {
-            const taken = ShellState.screenshotTaken;
-            if (taken !== null && taken.screen === bar.screen.name && OsdSettings.shows("screenshots"))
-                bar.showScreenshotOsd(taken);
-
-        }
-
-        target: ShellState
+    ServiceRef {
+        service: Osd.landing
+        active: bar.osdLanding
     }
 
     // Caffeine, or media playing when you asked for it (Power), keeps the computer

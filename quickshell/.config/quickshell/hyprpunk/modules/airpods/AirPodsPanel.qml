@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.components
 import qs.theme
+import qs.services
 
 // Your AirPods on the sound page, a small version of their popup: the pods and the case
 // with their batteries, and once connected, noise cancellation or transparency for the
@@ -9,14 +10,13 @@ import qs.theme
 ControlBlock {
     id: panel
 
-    required property var airPods
-    // One of airPods.devices.
+    // One of AirPods.devices.
     required property var device
     readonly property var controls: device.controls || {}
     readonly property var images: device.images || null
     readonly property bool headphones: device.kind === "headphones"
     readonly property bool caseShown: !headphones && device["case"] !== undefined && device["case"].level !== null
-    readonly property bool noiseControl: airPods.hasNoiseControl(device)
+    readonly property bool noiseControl: AirPods.hasNoiseControl(device)
     readonly property var listeningModes: [{
         "value": 2,
         "icon": "󰋋",
@@ -84,7 +84,7 @@ ControlBlock {
                     spacing: 16
 
                     Repeater {
-                        model: panel.airPods.podBatteries(panel.device)
+                        model: AirPods.podBatteries(panel.device)
 
                         BatteryRing {
                             required property var modelData
@@ -124,7 +124,7 @@ ControlBlock {
             options: panel.listeningModes
             value: panel.controls.listeningMode !== undefined ? panel.controls.listeningMode : null
             onSelected: (mode) => {
-                return panel.airPods.control(panel.device.address, "listeningMode", mode);
+                return AirPods.control(panel.device.address, "listeningMode", mode);
             }
         }
 

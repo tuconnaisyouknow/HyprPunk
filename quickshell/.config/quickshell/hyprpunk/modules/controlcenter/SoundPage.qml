@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Bluetooth
-import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import qs.components
@@ -15,8 +14,7 @@ import qs.theme
 ColumnLayout {
     id: page
 
-    required property var airPods
-    // Shown in the open panel: the outputs' availability is followed only then.
+    // Shown in the open panel: the outputs' availability is followed only then (AudioPorts).
     property bool active: false
     // The most the page can take: past it, everything under the header scrolls.
     property real maxHeight: Infinity
@@ -49,10 +47,10 @@ ColumnLayout {
     readonly property var source: Pipewire.defaultAudioSource
     readonly property var sourceAudio: source !== null ? source.audio : null
     readonly property var outputs: Pipewire.nodes.values.filter((node) => {
-        return node.type === PwNodeType.AudioSink && (portInfo[node.name] === undefined || portInfo[node.name].available);
+        return node.type === PwNodeType.AudioSink && (AudioPorts.info[node.name] === undefined || AudioPorts.info[node.name].available);
     })
     readonly property var inputs: Pipewire.nodes.values.filter((node) => {
-        return node.type === PwNodeType.AudioSource && (portInfo[node.name] === undefined || portInfo[node.name].available);
+        return node.type === PwNodeType.AudioSource && (AudioPorts.info[node.name] === undefined || AudioPorts.info[node.name].available);
     })
     readonly property var streams: Pipewire.nodes.values.filter((node) => {
         return node.type === PwNodeType.AudioOutStream && node.audio !== null;
@@ -67,18 +65,13 @@ ColumnLayout {
         });
     }
     // AirPods connected or only nearby: their batteries come either way.
-    readonly property var airPodsShown: airPods.devices.filter((device) => {
+    readonly property var airPodsShown: AirPods.devices.filter((device) => {
         return device.connected || device.nearby;
     })
     // The other audio devices connected.
     readonly property var otherAudio: bluetoothAudio.filter((device) => {
-        return airPods.device(device.address) === null;
+        return AirPods.device(device.address) === null;
     })
-    // From pactl, by sink and source name: {label (the port's name, for a sound card),
-    // available (false for an HDMI output with nothing plugged in)}.
-    property var portInfo: ({
-    })
-
     signal backRequested()
     signal bluetoothDetailsRequested(var device)
 
@@ -90,7 +83,7 @@ ColumnLayout {
     }
 
     function outputLabel(node) {
-        const info = portInfo[node.name];
+        const info = AudioPorts.info[node.name];
         return info !== undefined && info.label !== "" ? info.label : (node.description || node.nickname || node.name);
     }
 
@@ -119,28 +112,6 @@ ColumnLayout {
         return /hdmi|displayport/i.test(outputLabel(node)) ? "Display" : "Built-in";
     }
 
-    // Adds the ports of pactl's sinks or sources to portInfo.
-    function readPorts(text) {
-        let devices;
-        try {
-            devices = JSON.parse(text);
-        } catch (error) {
-            return ;
-        }
-        const info = Object.assign({
-        }, portInfo);
-        for (const device of devices) {
-            const port = (device.ports || []).find((item) => {
-                return item.name === device.active_port;
-            });
-            info[device.name] = {
-                "label": port !== undefined && device.properties["device.bus"] !== "bluetooth" ? port.description : "",
-                "available": port === undefined || port.availability !== "not available"
-            };
-        }
-        portInfo = info;
-    }
-
     function appName(node) {
         const properties = node.properties;
         return properties["application.name"] || node.description || node.name;
@@ -153,13 +124,6 @@ ColumnLayout {
     }
 
     spacing: 12
-    onActiveChanged: {
-        if (active) {
-            portProbe.running = true;
-            sourceProbe.running = true;
-        }
-
-    }
 
     // One tab, side by side with the others: only the one shown is opaque and clickable,
     // the others fade as they slide away.
@@ -552,8 +516,7 @@ ColumnLayout {
                             required property var modelData
 
                             Layout.fillWidth: true
-                            airPods: page.airPods
-                            device: page.airPods.device(modelData) || {}
+                            device: AirPods.device(modelData) || {}
                         }
 
                     }
@@ -595,52 +558,9 @@ ColumnLayout {
         enabled: page.active && page.tab === "input"
     }
 
-    // Names and availability of the outputs, which PipeWire's nodes do not tell.
-    Process {
-        id: portProbe
-
-        command: ["pactl", "-f", "json", "list", "sinks"]
-
-        stdout: StdioCollector {
-            onStreamFinished: page.readPorts(text)
-        }
-
-    }
-
-    Process {
-        id: sourceProbe
-
-        command: ["pactl", "-f", "json", "list", "sources"]
-
-        stdout: StdioCollector {
-            onStreamFinished: page.readPorts(text)
-        }
-
-    }
-
-    // A screen, headphones or a microphone plugged in while the page is open.
-    TiedProcess {
-        running: page.active
-        program: ["pactl", "subscribe"]
-
-        stdout: SplitParser {
-            onRead: (line) => {
-                if (/ on (sink|source|card) /.test(line))
-                    portRefresh.restart();
-
-            }
-        }
-
-    }
-
-    Timer {
-        id: portRefresh
-
-        interval: 300
-        onTriggered: {
-            portProbe.running = true;
-            sourceProbe.running = true;
-        }
+    ServiceRef {
+        service: AudioPorts
+        active: page.active
     }
 
 }

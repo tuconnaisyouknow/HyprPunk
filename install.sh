@@ -81,7 +81,7 @@ readonly -a PACKAGES=(
 
   sddm networkmanager
   bluez bluez-utils power-profiles-daemon upower
-  python-dbus python-gobject python-cryptography zenity
+  python-dbus python-gobject python-cryptography
   pipewire-pulse wireplumber playerctl
   gnome-keyring seahorse
 

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Bluetooth
 import qs.components
+import qs.services
 import qs.theme
 
 // The control center's Bluetooth page: the devices around, a click to pair or
@@ -21,7 +22,7 @@ ColumnLayout {
         title: "Bluetooth"
         checked: page.center.bluetoothEnabled
         onBackRequested: page.backRequested()
-        onToggled: page.center.toggleBluetooth()
+        onToggled: BluetoothPower.toggle()
     }
 
     IconText {

@@ -15,7 +15,7 @@ ColumnLayout {
     property bool enterprise: false
     // The new password field is open.
     property bool editing: false
-    readonly property bool saving: helper.busy
+    readonly property bool saving: WifiProfiles.busy
     property string error: ""
     // NetworkManager's key management for its password, from the control center, ""
     // when it has none to change.
@@ -39,11 +39,17 @@ ColumnLayout {
             return ;
 
         error = "";
-        helper.send({
+        // The profile takes the new password only if it connects.
+        WifiProfiles.connect({
             "ssid": network.name,
             "keyMgmt": passwordKeyMgmt,
             "psk": newPassword.text,
             "wepKeyType": wepKeyType.value
+        }, (ok, error) => {
+            page.error = error;
+            if (ok)
+                page.reset();
+
         });
     }
 
@@ -175,18 +181,6 @@ ColumnLayout {
         onTriggered: {
             page.network.forget();
             page.forgotten();
-        }
-    }
-
-    // Replaces the profile with the new password, kept only if it connects.
-    WifiHelper {
-        id: helper
-
-        onFinished: (ok, error) => {
-            page.error = error;
-            if (ok)
-                page.reset();
-
         }
     }
 

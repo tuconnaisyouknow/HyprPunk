@@ -1,3 +1,5 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -7,7 +9,7 @@ import qs.config
 // the settings (Power): the keyboard's light goes off, the screen dims, locks and turns
 // off, then the computer sleeps. Caffeine and the apps that keep the screen on hold it
 // all back, through Wayland's idle inhibitors.
-Scope {
+Singleton {
     id: idle
 
     // The OSD stays quiet for the light and brightness changes made here.

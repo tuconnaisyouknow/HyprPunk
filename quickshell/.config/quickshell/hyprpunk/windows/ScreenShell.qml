@@ -10,6 +10,7 @@ import qs.modules.controlcenter
 import qs.modules.island
 import qs.modules.notifications
 import qs.state
+import qs.services
 
 // Everything the shell shows on one screen, in a single window: the bar and every card
 // that grows out of its pills (Card). A card and its pill drawn in the same window change
@@ -21,12 +22,6 @@ Scope {
     id: shell
 
     required property var screen
-    required property var notificationServer
-    required property var notificationHistory
-    required property var polkitAgent
-    required property var fileChooser
-    required property var screenShare
-    required property var airPods
     readonly property alias bar: bar
     readonly property var screenState: ShellState.forScreen(screen)
     // A window is fullscreen over the shell's window: nothing of the shell may take the
@@ -97,8 +92,6 @@ Scope {
             anchors.left: parent.left
             anchors.right: parent.right
             screen: shell.screen
-            notificationServer: shell.notificationServer
-            notificationHistory: shell.notificationHistory
             cardLayer: cardLayer
             islandFrame: islandFrame
             cards: window.cards
@@ -195,7 +188,6 @@ Scope {
 
                 screen: shell.screen
                 bar: bar
-                airPods: shell.airPods
             }
 
             SessionMenu {
@@ -284,7 +276,6 @@ Scope {
                 screen: shell.screen
                 bar: bar
                 islandFrame: islandFrame
-                agent: shell.polkitAgent
             }
 
             FileChooserPanel {
@@ -293,7 +284,6 @@ Scope {
                 screen: shell.screen
                 bar: bar
                 islandFrame: islandFrame
-                chooser: shell.fileChooser
             }
 
             ScreenSharePanel {
@@ -302,7 +292,6 @@ Scope {
                 screen: shell.screen
                 bar: bar
                 islandFrame: islandFrame
-                share: shell.screenShare
             }
 
             IslandNotifications {
@@ -311,7 +300,6 @@ Scope {
                 screen: shell.screen
                 bar: bar
                 islandFrame: islandFrame
-                notificationServer: shell.notificationServer
             }
 
             AirPodsPopup {
@@ -320,7 +308,6 @@ Scope {
                 screen: shell.screen
                 bar: bar
                 islandFrame: islandFrame
-                airPods: shell.airPods
             }
 
         }

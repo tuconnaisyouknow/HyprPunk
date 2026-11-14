@@ -156,7 +156,7 @@ RowLayout {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: chips.bar.formatDuration(chips.bar.recordingElapsed)
+                text: Osd.formatDuration(chips.bar.recordingElapsed)
                 color: Colors.red
                 font.family: Metrics.font
                 font.pixelSize: 12

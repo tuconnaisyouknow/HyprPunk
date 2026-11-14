@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.components
 import qs.theme
+import qs.services
 
 // What an app gets to see when it shares your screen: a screen or a window, picked on
 // their live previews, or a region you draw. Grown out of the island on the focused
@@ -14,7 +15,6 @@ import qs.theme
 IslandPanel {
     id: picker
 
-    required property var share
     // Kept from the request, so the card still reads right while it folds away.
     property var request: null
     property bool answered: false
@@ -40,7 +40,7 @@ IslandPanel {
     readonly property int rows: Math.max(1, Math.min(2, Math.ceil(entries.length / columns)))
 
     function setup() {
-        request = share.request;
+        request = ScreenShare.request;
         answered = false;
         remember = request ? request.allowToken : false;
         Hyprland.refreshToplevels();
@@ -71,13 +71,13 @@ IslandPanel {
             return ;
 
         answered = true;
-        share.answer(tab === "screens" ? "screen:" + entry.name : "window:" + entry.handle, remember);
+        ScreenShare.answer(tab === "screens" ? "screen:" + entry.name : "window:" + entry.handle, remember);
         close();
     }
 
     function drawRegion() {
         answered = true;
-        share.pickRegion(screen.name, remember);
+        ScreenShare.pickRegion(screen.name, remember);
         close();
     }
 
@@ -87,8 +87,8 @@ IslandPanel {
     cardHeight: 2 * cardPadding + headerHeight + 2 * sectionSpacing + rows * tileHeight + footerHeight
     onOpening: setup()
     onOpenedChanged: {
-        if (!opened && !answered && request && share.request === request)
-            share.cancel();
+        if (!opened && !answered && request && ScreenShare.request === request)
+            ScreenShare.cancel();
 
     }
 
@@ -109,15 +109,15 @@ IslandPanel {
             if (!picker.opened)
                 return ;
 
-            if (picker.share.request === null) {
+            if (ScreenShare.request === null) {
                 picker.answered = true;
                 picker.close();
-            } else if (picker.share.request !== picker.request) {
+            } else if (ScreenShare.request !== picker.request) {
                 picker.setup();
             }
         }
 
-        target: picker.share
+        target: ScreenShare
     }
 
     Item {

@@ -92,7 +92,7 @@ ColumnLayout {
     // Desktops have one set of delays.
     SegmentedControl {
         Layout.fillWidth: true
-        visible: Power.hasBattery
+        visible: Battery.present
         compact: true
         options: [{
             "value": "plugged",

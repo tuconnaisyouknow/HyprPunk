@@ -41,7 +41,7 @@ WlSessionLockSurface {
     // The first moments, while the island tells it locked.
     property bool locking: !lock.instant
     // The bar's OSDs (volume, brightness, battery...) show in the island too.
-    readonly property bool osdShown: bar !== null && bar.statusOsdVisible
+    readonly property bool osdShown: bar !== null && bar.osdVisible
     readonly property string islandMode: leaving || intro ? "clock" : lock.unlocking ? "unlocking" : lock.error !== "" ? "error" : locking ? "locking" : osdShown ? "osd" : ""
     // The island's states that show the padlock.
     readonly property bool padlockShown: islandMode !== "clock" && islandMode !== "osd"
@@ -195,10 +195,10 @@ WlSessionLockSurface {
                     revealOut.restart();
                 // Right away, as the desktop's settles as soon as you lock.
                 surface.waveUp = false;
-                // The lock already showed the OSD. Ended now, so the bar's island doesn't
+                // The lock already showed the OSD. Gone now, so the bar's island doesn't
                 // open for it once the lock is gone.
-                if (surface.bar !== null && surface.bar.statusOsdVisible)
-                    surface.bar.endStatusOsd();
+                if (surface.osdShown)
+                    Osd.dismiss();
 
             }
         }
@@ -519,8 +519,9 @@ WlSessionLockSurface {
                     active: surface.bar !== null
 
                     sourceComponent: IslandOsd {
-                        bar: surface.bar
-                        visible: surface.bar.statusOsdVisible
+                        shown: surface.bar.osdVisible
+                        content: surface.bar.osdShown
+                        visible: surface.bar.osdVisible
                     }
 
                 }
@@ -682,14 +683,7 @@ WlSessionLockSurface {
             y: start !== null ? start.y : 6
             visible: surface.bar !== null
 
-            // Created once the screen's bar is known.
-            Loader {
-                active: surface.bar !== null
-
-                sourceComponent: ControlStatus {
-                    bar: surface.bar
-                }
-
+            ControlStatus {
             }
 
         }
@@ -841,7 +835,7 @@ WlSessionLockSurface {
                 width: 380
                 lyricsInside: false
                 active: player !== null
-                player: LockSettings.player && surface.bar !== null ? surface.bar.spotifyPlayer : null
+                player: LockSettings.player ? Music.player : null
                 backgroundColor: Colors.alpha(Colors.base, 0.55)
             }
 

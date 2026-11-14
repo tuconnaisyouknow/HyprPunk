@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.components
 import qs.config
+import qs.services
 import qs.theme
 
 // The settings' battery page: when the island warns you the battery runs out, and what
@@ -22,7 +23,7 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         Layout.bottomMargin: 4
-        text: Power.hasBattery ? "When you're warned it runs out. The charge limit is in the control center." : "This computer has no battery: these only count on one that does."
+        text: Battery.present ? "When you're warned it runs out. The charge limit is in the control center." : "This computer has no battery: these only count on one that does."
         color: Colors.secondary
         wrapMode: Text.Wrap
         font.family: Metrics.font

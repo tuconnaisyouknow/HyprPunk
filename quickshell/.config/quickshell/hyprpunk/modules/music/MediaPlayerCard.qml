@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Widgets
 import qs.components
@@ -32,7 +31,6 @@ Rectangle {
     // position and length come from playerctl. Between two answers the position keeps
     // ticking, but only for a second or so, otherwise after sleep it would race ahead by
     // however long the computer slept.
-    readonly property string playerctlName: player !== null ? player.dbusName.replace("org.mpris.MediaPlayer2.", "") : ""
     property real polledPosition: 0
     property real polledLength: 0
     property real polledTime: 0
@@ -103,9 +101,19 @@ Rectangle {
     }
 
     function poll() {
-        if (playerctlName !== "")
-            positionProbe.running = true;
+        if (player === null)
+            return ;
 
+        Music.probe((state) => {
+            const first = !card.positionKnown;
+            card.polledPosition = state.position;
+            card.polledLength = state.length;
+            card.polledTime = Date.now();
+            card.now = card.polledTime;
+            if (first)
+                lyricsRequest.restart();
+
+        });
     }
 
     function seek(seconds) {
@@ -149,7 +157,7 @@ Rectangle {
         onTriggered: {
             // The length may still be the previous track's, in MPRIS and in playerctl's first
             // answer too, so that first answer asks once more.
-            if (!card.positionKnown && card.playerctlName !== "") {
+            if (!card.positionKnown && card.player !== null) {
                 card.poll();
                 return ;
             }
@@ -184,32 +192,6 @@ Rectangle {
     FrameAnimation {
         running: card.active && card.playing
         onTriggered: card.now = Date.now()
-    }
-
-    Process {
-        id: positionProbe
-
-        command: ["playerctl", "-p", card.playerctlName, "metadata", "--format", "{{position}} {{mpris:length}}"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const [position, length] = text.trim().split(" ").map((value) => {
-                    return parseInt(value);
-                });
-                if (isNaN(position))
-                    return ;
-
-                const first = !card.positionKnown;
-                card.polledPosition = position / 1e6;
-                card.polledLength = isNaN(length) ? 0 : length / 1e6;
-                card.polledTime = Date.now();
-                card.now = card.polledTime;
-                if (first)
-                    lyricsRequest.restart();
-
-            }
-        }
-
     }
 
     ClippingRectangle {

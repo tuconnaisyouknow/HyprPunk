@@ -12,9 +12,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import Quickshell.Networking
-import Quickshell.Services.Notifications
-import Quickshell.Services.Polkit
 import qs.config
 import qs.modules.capture
 import qs.modules.lock
@@ -23,9 +20,9 @@ import qs.services
 import qs.state
 import qs.windows
 
-// Where the shell starts. Holds the state the screens share (which panel is open
-// where, screenshots, caffeine…), answers the `qs -c hyprpunk ipc call …` commands
-// that the shortcuts and scripts send, and puts a bar, popups and panels on every screen.
+// Where the shell starts. Starts the services that can't wait for someone to look,
+// answers the `qs -c hyprpunk ipc call …` commands that the shortcuts and scripts send,
+// and puts a bar, popups and panels on every screen.
 ShellRoot {
     // The desktop's music wave runs as its own Quickshell, so the shell's stalls (building
     // the lock screen) don't freeze it. Started whenever it's wanted, it quits once it isn't
@@ -36,7 +33,22 @@ ShellRoot {
 
     }
 
-    Component.onCompleted: startWave()
+    // Singletons are only made when first used: these have work to do from the start
+    // (answering apps, the idle steps, the night light, the OSD, the battery's alerts and
+    // the captive portals).
+    Component.onCompleted: {
+        Notifications.server;
+        Polkit.agent;
+        FileChooser.request;
+        ScreenShare.request;
+        AirPods.devices;
+        Idle.objectName;
+        NightLight.objectName;
+        Osd.current;
+        Screenshot.busy;
+        NetworkStatus.device;
+        startWave();
+    }
 
     Connections {
         function onWaveChanged() {
@@ -47,24 +59,10 @@ ShellRoot {
     }
 
 
-    // Dims, locks and suspends once you're away.
-    Idle {
-    }
-
-    // Warms the screens in the evening.
-    NightLight {
-    }
-
-    // Sleeps or shuts down before the battery dies.
-    CriticalBattery {
-    }
-
     // The settings window, asked for like a panel, as "settings": Super+I through
     // `qs -c hyprpunk ipc call settings <toggle|open|close>`, and the main menu.
     SettingsWindow {
         id: settingsWindow
-
-        fileChooser: fileChooserService
     }
 
     Connections {
@@ -85,23 +83,14 @@ ShellRoot {
     }
 
     // The previous/next shortcuts go through `qs -c hyprpunk ipc call music <previous|next>`
-    // rather than playerctl, because MPRIS never says which way the track changed.
+    // rather than playerctl, so the bar knows which way the track changed.
     IpcHandler {
-        function skip(direction: int, command: string): void {
-            ShellState.musicSkipDirection = direction;
-            ShellState.musicSkipUntil = Date.now() + 2000;
-            if (direction < 0)
-                ShellState.musicPreviousRequests += 1;
-
-            Quickshell.execDetached(["playerctl", command]);
-        }
-
         function next(): void {
-            skip(1, "next");
+            Music.skip(1);
         }
 
         function previous(): void {
-            skip(-1, "previous");
+            Music.skip(-1);
         }
 
         target: "music"
@@ -137,48 +126,29 @@ ShellRoot {
 
     }
 
-    NotificationServer {
-        id: notificationService
-
-        keepOnReload: true
-        actionsSupported: true
-        actionIconsSupported: true
-        bodySupported: true
-        bodyMarkupSupported: true
-        imageSupported: true
-        persistenceSupported: true
-        onNotification: (notification) => {
-            notification.tracked = true;
-            NotificationSettings.noticed(notification);
+    // The prompts the apps wait on open in the island of the focused screen.
+    Connections {
+        function onAuthenticationRequestStarted() {
+            ShellState.requestPanel("polkit", "open");
         }
+
+        target: Polkit.agent
     }
 
-    NotificationHistory {
-        id: notificationArchive
+    Connections {
+        function onRequested() {
+            ShellState.requestPanel("filechooser", "open");
+        }
 
-        notificationServer: notificationService
+        target: FileChooser
     }
 
-    // The shell answers the password prompts itself, on the focused screen.
-    PolkitAgent {
-        id: polkitService
+    Connections {
+        function onRequested() {
+            ShellState.requestPanel("screenshare", "open");
+        }
 
-        onAuthenticationRequestStarted: ShellState.requestPanel("polkit", "open")
-    }
-
-    // The apps' Open and Save dialogs, through the portal, on the focused screen too.
-    FileChooser {
-        id: fileChooserService
-
-        onRequested: ShellState.requestPanel("filechooser", "open")
-    }
-
-    // What an app gets to see when it shares your screen, through
-    // xdg-desktop-portal-hyprland, on the focused screen too.
-    ScreenShare {
-        id: screenShareService
-
-        onRequested: ShellState.requestPanel("screenshare", "open")
+        target: ScreenShare
     }
 
     // The bar and its cards on every screen.
@@ -191,12 +161,6 @@ ShellRoot {
             required property var modelData
 
             screen: modelData
-            notificationServer: notificationService
-            notificationHistory: notificationArchive
-            polkitAgent: polkitService
-            fileChooser: fileChooserService
-            screenShare: screenShareService
-            airPods: airPodsService
         }
 
     }
@@ -205,9 +169,6 @@ ShellRoot {
         bars: screens.instances.map((shell) => {
             return shell.bar;
         })
-    }
-
-    Screenshot {
     }
 
     Variants {
@@ -220,27 +181,6 @@ ShellRoot {
             screenName: modelData.name
         }
 
-    }
-
-    AirPods {
-        id: airPodsService
-    }
-
-    // A network that wants you to sign in first: a notification takes you to its page,
-    // and asks to set a VPN aside when it hides that page (captive-portal.sh).
-    Connections {
-        function onConnectivityChanged() {
-            const step = {
-                [NetworkConnectivity.Portal]: "portal",
-                [NetworkConnectivity.Limited]: "limited",
-                [NetworkConnectivity.Full]: "online"
-            }[Networking.connectivity];
-            if (step)
-                Quickshell.execDetached([Session.scripts + "/captive-portal.sh", step]);
-
-        }
-
-        target: Networking
     }
 
 }

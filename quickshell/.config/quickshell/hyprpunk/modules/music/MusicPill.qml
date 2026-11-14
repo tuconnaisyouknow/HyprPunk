@@ -1,13 +1,12 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Io
 import Quickshell.Widgets
 import qs.components
 import qs.config
 import qs.modules.bar
+import qs.services
 import qs.theme
-import qs.state
 
 // The Spotify track's cover as a spinning record, on the right of the bar. It spins
 // while the music plays, unless the settings keep it still or leave the cover out
@@ -154,8 +153,8 @@ Rectangle {
         // in the history means backwards.
         const history = trackHistory.slice();
         let direction = skipHint;
-        if (direction === 0 && Date.now() < ShellState.musicSkipUntil)
-            direction = ShellState.musicSkipDirection;
+        if (direction === 0 && Date.now() < Music.skipUntil)
+            direction = Music.skipDirection;
 
         if (direction === 0)
             direction = history.length >= 2 && history[history.length - 2] === id ? -1 : 1;
@@ -377,33 +376,20 @@ Rectangle {
         id: restartProbeDelay
 
         interval: 350
-        onTriggered: restartProbe.running = true
-    }
+        onTriggered: Music.probe((state) => {
+            // Not yet the new track: a change that hasn't been announced isn't a restart.
+            if (musicPill.player !== null && state.track === musicPill.currentTrackId)
+                musicPill.checkRestart(state.position);
 
-    Process {
-        id: restartProbe
-
-        // Position in microseconds, plus the track it belongs to, so a track change
-        // that hasn't been announced yet doesn't look like a restart.
-        command: ["playerctl", "-p", "spotify", "metadata", "--format", "{{position}} {{mpris:trackid}}"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const [position, track] = text.trim().split(" ");
-                if (musicPill.player !== null && track === musicPill.currentTrackId && !isNaN(parseInt(position)))
-                    musicPill.checkRestart(parseInt(position) / 1e6);
-
-            }
-        }
-
+        })
     }
 
     Connections {
-        function onMusicPreviousRequestsChanged() {
+        function onPreviousRequested() {
             restartProbeDelay.restart();
         }
 
-        target: ShellState
+        target: Music
     }
 
     // Starts spinning gently, like a turntable getting up to speed.

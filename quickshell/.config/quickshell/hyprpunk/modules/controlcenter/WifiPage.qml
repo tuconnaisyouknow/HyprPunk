@@ -149,7 +149,7 @@ ColumnLayout {
                         Layout.alignment: Qt.AlignHCenter
                         Layout.topMargin: 8
                         Layout.bottomMargin: 8
-                        visible: page.center.wifiNetworks.length === 0
+                        visible: NetworkStatus.wifiNetworks.length === 0
                         icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
                         text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
                         color: Colors.secondary
@@ -160,7 +160,7 @@ ColumnLayout {
                     Item {
                         Layout.fillWidth: true
                         Layout.preferredHeight: wifiList.height
-                        visible: page.center.wifiNetworks.length > 0
+                        visible: NetworkStatus.wifiNetworks.length > 0
 
                         ListView {
                             id: wifiList
@@ -179,7 +179,7 @@ ColumnLayout {
                             // Keeps the rows that stay instead of rebuilding them all at each change,
                             // which held up the animations.
                             model: ScriptModel {
-                                values: page.center.wifiNetworks
+                                values: NetworkStatus.wifiNetworks
                             }
 
                             // The row inside: the list sets its delegates' x.
@@ -248,34 +248,43 @@ ColumnLayout {
 
                                 Layout.fillWidth: true
                                 visible: page.center.passwordNetwork !== null && page.center.passwordKeyMgmt(page.center.passwordNetwork.security) === "none"
-                                enabled: !wifiHelper.busy
+                                enabled: !WifiProfiles.busy
                             }
 
                             FormField {
                                 id: passwordField
 
                                 Layout.fillWidth: true
-                                enabled: !wifiHelper.busy
+                                enabled: !WifiProfiles.busy
                                 secret: true
                                 escapable: true
                                 placeholder: "Password, then Enter"
                                 onEscaped: page.center.passwordNetwork = null
                                 onAccepted: {
                                     const network = page.center.passwordNetwork;
+                                    // Saves the network only once the password works, and says why not.
                                     if (network !== null && text !== "")
-                                        wifiHelper.send({
+                                        WifiProfiles.connect({
                                         "ssid": network.name,
                                         "keyMgmt": page.center.passwordKeyMgmt(network.security),
                                         "psk": text,
                                         "wepKeyType": wepKeyType.value
+                                    }, (ok, error) => {
+                                        page.wifiError = error;
+                                        if (ok) {
+                                            page.center.passwordNetwork = null;
+                                            page.passwordSent();
+                                        } else {
+                                            passwordField.input.forceActiveFocus();
+                                        }
                                     });
 
                                 }
                             }
 
                             ErrorText {
-                                text: wifiHelper.busy ? "Connecting…" : page.wifiError
-                                color: wifiHelper.busy ? Colors.secondary : Colors.red
+                                text: WifiProfiles.busy ? "Connecting…" : page.wifiError
+                                color: WifiProfiles.busy ? Colors.secondary : Colors.red
                             }
 
                         }
@@ -288,21 +297,6 @@ ColumnLayout {
                         icon: "󰤫"
                         title: "Hidden network"
                         onClicked: page.hiddenRequested()
-                    }
-
-                    // Saves the network only once the password works, and says why not.
-                    WifiHelper {
-                        id: wifiHelper
-
-                        onFinished: (ok, error) => {
-                            page.wifiError = error;
-                            if (ok) {
-                                page.center.passwordNetwork = null;
-                                page.passwordSent();
-                            } else {
-                                passwordField.input.forceActiveFocus();
-                            }
-                        }
                     }
 
                 }
@@ -406,7 +400,7 @@ ColumnLayout {
                     ActionRow {
                         Layout.fillWidth: true
                         icon: Vpn.importing ? "󰔟" : "󰈔"
-                        label: Vpn.importing ? "Choosing a File…" : "Import a Configuration"
+                        label: Vpn.importing ? "Importing…" : "Import a Configuration"
                         onTriggered: Vpn.importFile()
                     }
 

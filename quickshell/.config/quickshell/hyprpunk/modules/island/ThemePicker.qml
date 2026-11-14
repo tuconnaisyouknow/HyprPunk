@@ -1,9 +1,9 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Widgets
 import qs.components
 import qs.config
+import qs.services
 import qs.theme
 
 // The theme picker: a card per theme, showing the wallpaper it would switch to (its last
@@ -13,7 +13,6 @@ import qs.theme
 IslandPanel {
     id: picker
 
-    readonly property string wallpaperctl: Session.scripts + "/wallpaperctl.sh"
     readonly property int cardPadding: 14
     readonly property int gap: 14
     readonly property int thumbWidth: 360
@@ -22,8 +21,7 @@ IslandPanel {
         "neon": "the city never sleeps",
         "daydream": "but it dreams"
     })
-    // [{ "name": theme, "wallpaper": path, "thumbnail": path }], in wallpaperctl.sh's order.
-    property var themes: []
+    readonly property var themes: Wallpapers.themes
     property int selectedIndex: 0
     // The theme in use is the one whose last wallpaper is on screen.
     readonly property int currentIndex: themes.findIndex((theme) => {
@@ -41,10 +39,9 @@ IslandPanel {
         if (!theme)
             return ;
 
-        if (index !== currentIndex) {
-            applyProcess.command = [wallpaperctl, "theme", theme.name];
-            applyProcess.running = true;
-        }
+        if (index !== currentIndex)
+            Wallpapers.setTheme(theme.name);
+
         close();
     }
 
@@ -52,44 +49,11 @@ IslandPanel {
     cardWidth: themes.length * thumbWidth + Math.max(0, themes.length - 1) * gap + 2 * cardPadding
     cardHeight: cards.height + 2 * cardPadding
     keyTargets: [keys]
-    onOpening: listProcess.running = true
+    onOpening: selectedIndex = Math.max(0, currentIndex)
 
-    Process {
-        id: listProcess
-
-        command: [picker.wallpaperctl, "themes"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                picker.themes = text.split("\n").filter((line) => {
-                    return line !== "";
-                }).map((line) => {
-                    const [name, wallpaper, thumbnail] = line.split("\t");
-                    return {
-                        "name": name,
-                        "wallpaper": wallpaper,
-                        "thumbnail": thumbnail
-                    };
-                });
-                picker.selectedIndex = Math.max(0, picker.currentIndex);
-            }
-        }
-
-    }
-
-    Process {
-        id: applyProcess
-
-        stderr: StdioCollector {
-            id: applyErrors
-        }
-
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                Quickshell.execDetached(["notify-send", "-u", "critical", "Unable to change theme", applyErrors.text.trim()]);
-
-        }
+    ServiceRef {
+        service: Wallpapers
+        active: picker.opened
     }
 
     Item {

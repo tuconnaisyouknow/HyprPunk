@@ -8,7 +8,8 @@ import qs.config
 // The pending package updates, official repos and AUR counted together, for the bar's
 // updates pill. Checked at startup, as often as the settings say (UpdateSettings), and
 // after anything pacman does, from the pill or from a terminal. Turned off there, it
-// counts nothing and the pill stays hidden.
+// counts nothing and the pill stays hidden. And the HyprPunk you have, read each time
+// someone looks (ServiceRef: the settings' updates page).
 Singleton {
     id: updates
 
@@ -16,6 +17,9 @@ Singleton {
     property int found: 0
     // Asked while a check was running: it would only see the state from before.
     property bool checkAgain: false
+    property int refCount: 0
+    // The commit you're on and its day ("2026-11-12 d48bc5d").
+    property string version: ""
 
     function check() {
         if (!UpdateSettings.packages)
@@ -31,6 +35,23 @@ Singleton {
     // pacman's log.
     function upgrade() {
         Session.launchInTerminal(["yay", "-Syu", "--removemake"]);
+    }
+
+    onRefCountChanged: {
+        if (refCount === 1)
+            versionReader.running = true;
+
+    }
+
+    Process {
+        id: versionReader
+
+        command: [Session.scripts + "/updatesctl.sh", "version"]
+
+        stdout: StdioCollector {
+            onStreamFinished: updates.version = text.trim()
+        }
+
     }
 
     // Both at once, since they ask different servers: the repos through your mirror, the

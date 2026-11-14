@@ -25,7 +25,6 @@ Card {
     required property var screen
     // Its screen's bar, whose control pill it grows out of.
     required property var bar
-    required property var airPods
     property real progress: opened ? 1 : 0
     // The pages are built once the bar has its first values, or right away if you open
     // the panel before. Kept from then on.
@@ -61,11 +60,6 @@ Card {
     property string enterpriseDonePage: "wifi"
     // The Bluetooth page, or the sound page for an audio device opened from it.
     property string bluetoothDetailReturnPage: "bluetooth"
-    property string powerProfile: "balanced"
-    property var powerProfiles: []
-    property bool bluetoothPowerPending: false
-    // Laptops and desktops alike: power-profiles-daemon always has at least saver and balanced.
-    readonly property bool powerProfilesAvailable: powerProfiles.length > 1
     // The time caffeine's countdown is shown at, ticking while the panel is open.
     property real now: Date.now()
     readonly property var caffeineDurations: [{
@@ -84,44 +78,6 @@ Card {
         "minutes": 240,
         "label": "4 hours"
     }]
-    // The battery charge limit in % (100 for none), 0 when the battery has no such thing.
-    // Changed through battery-limit (see battery/), which install.sh sets up.
-    property int chargeLimit: 0
-    property bool chargeLimitWritable: false
-    // Why the last limit didn't stick (the battery refused it), empty otherwise.
-    property string chargeLimitError: ""
-    // What switching the limit back on restores: the last one under 100.
-    property int chargeLimitOn: 80
-    readonly property var chargeLimits: [60, 70, 80, 90]
-    readonly property var audioSink: Pipewire.defaultAudioSink
-    readonly property var audio: audioSink !== null ? audioSink.audio : null
-    readonly property int volume: audio !== null ? Math.round(audio.volume * 100) : 0
-    readonly property bool muted: audio !== null && audio.muted
-    readonly property var wifiDevice: {
-        for (const device of Networking.devices.values) {
-            if (device.type === DeviceType.Wifi)
-                return device;
-
-        }
-        return null;
-    }
-    readonly property bool wiredConnected: {
-        for (const device of Networking.devices.values) {
-            if (device.type === DeviceType.Wired && device.connected)
-                return true;
-
-        }
-        return false;
-    }
-    readonly property var wifiNetworks: {
-        if (wifiDevice === null || !Networking.wifiEnabled)
-            return [];
-
-        return wifiDevice.networks.values.slice().sort((a, b) => {
-            return (b.connected - a.connected) || (b.known - a.known) || (b.signalStrength - a.signalStrength);
-        });
-    }
-    readonly property var activeWifi: wifiNetworks.length > 0 && wifiNetworks[0].connected ? wifiNetworks[0] : null
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool bluetoothEnabled: adapter !== null && adapter.enabled
     readonly property var bluetoothDevices: {
@@ -247,22 +203,10 @@ Card {
         if (!Networking.wifiEnabled)
             return "Off";
 
-        if (activeWifi !== null)
-            return activeWifi.name;
+        if (NetworkStatus.activeWifi !== null)
+            return NetworkStatus.activeWifi.name;
 
-        return wiredConnected ? "Ethernet" : "Not connected";
-    }
-
-    function toggleBluetooth() {
-        if (adapter === null)
-            return ;
-
-        // BlueZ won't power an rfkill-blocked adapter: lift the block first, and power it
-        // once it's reported unblocked.
-        if (!adapter.enabled && adapter.state === BluetoothAdapterState.Blocked)
-            rfkillUnblockProcess.running = true;
-        else
-            adapter.enabled = !adapter.enabled;
+        return NetworkStatus.wiredConnected ? "Ethernet" : "Not connected";
     }
 
     function bluetoothSubtitle() {
@@ -408,56 +352,11 @@ Card {
         return Math.floor(minutes / 60) + " h " + String(minutes % 60).padStart(2, "0") + " left";
     }
 
-    function setChargeLimit(limit) {
-        if (!chargeLimitWritable)
-            return ;
-
-        chargeLimit = limit;
-        if (limit < 100)
-            chargeLimitOn = limit;
-
-        chargeLimitError = "";
-        chargeLimitSetProcess.command = ["battery-limit", "set", String(limit)];
-        chargeLimitSetProcess.running = true;
-    }
-
-    // A battery filled up to the limit, full without one.
-    function chargeLimitIcon(limit) {
-        return limit >= 100 ? "󰁹" : String.fromCodePoint(0xf007a + Math.max(0, Math.min(8, Math.round(limit / 10) - 1)));
-    }
-
-    function toggleChargeLimit() {
-        setChargeLimit(chargeLimit < 100 ? 100 : chargeLimitOn);
-    }
-
-    function powerProfileIcon() {
-        if (powerProfile === "performance")
-            return "󰓅";
-
-        if (powerProfile === "power-saver")
-            return "󰌪";
-
-        return "󰾅";
-    }
-
-    function cyclePowerProfile() {
-        if (powerProfileSetProcess.running || powerProfiles.length < 2)
-            return ;
-
-        const next = powerProfiles[(powerProfiles.indexOf(powerProfile) + 1) % powerProfiles.length];
-        powerProfile = next;
-        powerProfileSetProcess.command = ["powerprofilesctl", "set", next];
-        powerProfileSetProcess.running = true;
-    }
-
     onOpenedChanged: {
         ShellState.controlCenterOpen = opened;
         if (opened) {
             settle.play(true, true);
             pagesWanted = true;
-            powerProfileProcess.running = true;
-            chargeLimitError = "";
-            chargeLimitProcess.running = true;
             keyboardFocus.forget();
             panel.forceActiveFocus();
         } else {
@@ -678,7 +577,7 @@ Card {
 
                                 ControlTile {
                                     Layout.fillWidth: true
-                                    icon: Networking.wifiEnabled ? (controlCenter.activeWifi !== null ? Icons.wifi(controlCenter.activeWifi.signalStrength, Vpn.connection !== null) : "󰤯") : "󰤭"
+                                    icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "󰤯") : "󰤭"
                                     title: "Wi-Fi"
                                     subtitle: controlCenter.wifiSubtitle()
                                     active: Networking.wifiEnabled
@@ -695,7 +594,7 @@ Card {
                                     subtitle: controlCenter.bluetoothSubtitle()
                                     active: controlCenter.bluetoothEnabled
                                     expandable: controlCenter.adapter !== null
-                                    onToggled: controlCenter.toggleBluetooth()
+                                    onToggled: BluetoothPower.toggle()
                                     onExpandRequested: controlCenter.page = "bluetooth"
                                 }
 
@@ -719,12 +618,12 @@ Card {
                                 ControlTile {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
-                                    visible: controlCenter.powerProfilesAvailable
-                                    icon: controlCenter.powerProfileIcon()
+                                    visible: PowerProfile.available
+                                    icon: Icons.powerProfile(PowerProfile.current)
                                     title: "Power"
-                                    subtitle: controlCenter.powerProfile === "power-saver" ? "Saver" : controlCenter.powerProfile === "performance" ? "Performance" : "Balanced"
-                                    active: controlCenter.powerProfile !== "balanced"
-                                    onToggled: controlCenter.cyclePowerProfile()
+                                    subtitle: PowerProfile.current === "power-saver" ? "Saver" : PowerProfile.current === "performance" ? "Performance" : "Balanced"
+                                    active: PowerProfile.current !== "balanced"
+                                    onToggled: PowerProfile.cycle()
                                 }
 
                             }
@@ -752,15 +651,15 @@ Card {
                             ControlTile {
                                 Layout.fillWidth: true
                                 Layout.preferredWidth: tileColumns.columnWidth
-                                visible: controlCenter.chargeLimit > 0
-                                icon: controlCenter.chargeLimitIcon(controlCenter.chargeLimit)
+                                visible: ChargeLimit.current > 0
+                                icon: Icons.chargeLimit(ChargeLimit.current)
                                 title: "Charge limit"
-                                subtitle: controlCenter.chargeLimit < 100 ? controlCenter.chargeLimit + " %" : "Off"
-                                active: controlCenter.chargeLimit < 100
+                                subtitle: ChargeLimit.current < 100 ? ChargeLimit.current + " %" : "Off"
+                                active: ChargeLimit.current < 100
                                 expandable: true
                                 onToggled: {
-                                    if (controlCenter.chargeLimitWritable)
-                                        controlCenter.toggleChargeLimit();
+                                    if (ChargeLimit.writable)
+                                        ChargeLimit.toggle();
                                     else
                                         controlCenter.page = "chargeLimit";
                                 }
@@ -865,7 +764,7 @@ Card {
                                         Layout.fillWidth: true
                                         horizontalAlignment: Text.AlignRight
                                         elide: Text.ElideRight
-                                        text: controlCenter.audioSink !== null ? (controlCenter.audioSink.description || controlCenter.audioSink.name) : "No output"
+                                        text: Audio.sink !== null ? (Audio.sink.description || Audio.sink.name) : "No output"
                                         color: Colors.secondary
                                         font.family: Metrics.font
                                         font.pixelSize: 12
@@ -891,22 +790,15 @@ Card {
                                 HorizontalSlider {
                                     Layout.fillWidth: true
                                     // Muted, the fill keeps its level and turns to the secondary color.
-                                    value: controlCenter.volume / 100
-                                    accent: controlCenter.muted ? Colors.secondary : Colors.primary
+                                    value: Audio.volume / 100
+                                    accent: Audio.muted ? Colors.secondary : Colors.primary
                                     iconButton: true
-                                    icon: Icons.volume(controlCenter.volume, controlCenter.muted)
+                                    icon: Icons.volume(Audio.volume, Audio.muted)
                                     // Up to the volume limit set in the settings.
                                     onValueRequested: (value) => {
-                                        if (controlCenter.audio !== null) {
-                                            controlCenter.audio.muted = false;
-                                            controlCenter.audio.volume = Math.min(value, (SoundSettings.limit || 100) / 100);
-                                        }
+                                        return Audio.setVolume(value);
                                     }
-                                    onIconClicked: {
-                                        if (controlCenter.audio !== null)
-                                            controlCenter.audio.muted = !controlCenter.audio.muted;
-
-                                    }
+                                    onIconClicked: Audio.toggleMute()
                                 }
 
                             }
@@ -1131,7 +1023,6 @@ Card {
                         opacity: controlCenter.pageOpacity("sound")
                         active: controlCenter.opened && controlCenter.page === "sound"
                         maxHeight: controlCenter.panelMaxHeight - 28
-                        airPods: controlCenter.airPods
                         onBackRequested: controlCenter.page = "main"
                         onBluetoothDetailsRequested: (device) => {
                             return controlCenter.showBluetoothDetails(device);
@@ -1158,7 +1049,6 @@ Card {
                         visible: controlCenter.pageVisible("chargeLimit")
                         enabled: controlCenter.page === "chargeLimit"
                         opacity: controlCenter.pageOpacity("chargeLimit")
-                        center: controlCenter
                         onBackRequested: controlCenter.page = "main"
                     }
 
@@ -1233,10 +1123,10 @@ Card {
     }
 
     Binding {
-        target: controlCenter.wifiDevice
+        target: NetworkStatus.wifiDevice
         property: "scannerEnabled"
         value: true
-        when: controlCenter.wifiDevice !== null && controlCenter.opened && controlCenter.page === "wifi"
+        when: NetworkStatus.wifiDevice !== null && controlCenter.opened && controlCenter.page === "wifi"
     }
 
     // The last background app quit from its own menu: nothing left on its page.
@@ -1265,130 +1155,15 @@ Card {
         onTriggered: controlCenter.now = Date.now()
     }
 
-    PwObjectTracker {
-        objects: controlCenter.audioSink !== null ? [controlCenter.audioSink] : []
+    // Read again each time the panel opens: another app may have changed them.
+    ServiceRef {
+        service: PowerProfile
+        active: controlCenter.opened
     }
 
-    Process {
-        id: powerProfileProcess
-
-        // Profile lines look like "* balanced:" (active) or "  performance:".
-        command: ["powerprofilesctl", "list"]
-        running: true
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                controlCenter.powerProfiles = [];
-
-        }
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const order = ["power-saver", "balanced", "performance"];
-                const profiles = [];
-                const pattern = /^([* ]) ([a-z-]+):$/gm;
-                let match;
-                while ((match = pattern.exec(text)) !== null) {
-                    profiles.push(match[2]);
-                    if (match[1] === "*")
-                        controlCenter.powerProfile = match[2];
-
-                }
-                controlCenter.powerProfiles = profiles.sort((a, b) => {
-                    return order.indexOf(a) - order.indexOf(b);
-                });
-            }
-        }
-
-    }
-
-    Process {
-        id: rfkillUnblockProcess
-
-        command: ["rfkill", "unblock", "bluetooth"]
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                return ;
-
-            controlCenter.bluetoothPowerPending = true;
-            bluetoothPowerTimeout.restart();
-            bluetoothPowerConnection.powerIfReady();
-        }
-    }
-
-    Connections {
-        id: bluetoothPowerConnection
-
-        function powerIfReady() {
-            const adapter = controlCenter.adapter;
-            // Still blocked, or BlueZ is restoring power on its own after the unblock.
-            if (!controlCenter.bluetoothPowerPending || adapter === null || adapter.state === BluetoothAdapterState.Blocked || adapter.state === BluetoothAdapterState.Enabling)
-                return ;
-
-            controlCenter.bluetoothPowerPending = false;
-            if (adapter.state === BluetoothAdapterState.Disabled)
-                adapter.enabled = true;
-
-        }
-
-        function onStateChanged() {
-            powerIfReady();
-        }
-
-        target: controlCenter.adapter
-    }
-
-    Timer {
-        id: bluetoothPowerTimeout
-
-        interval: 3000
-        onTriggered: controlCenter.bluetoothPowerPending = false
-    }
-
-    // "<limit> <writable 1|0> <saved limit>", or nothing when the battery has no limit.
-    // Read-only until battery-limit is installed.
-    Process {
-        id: chargeLimitProcess
-
-        command: ["sh", "-c", "command -v battery-limit >/dev/null && exec battery-limit get; for file in /sys/class/power_supply/*/charge_control_end_threshold; do [ -e \"$file\" ] && echo \"$(cat \"$file\") 0\"; break; done"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const fields = text.trim().split(/\s+/);
-                const limit = parseInt(fields[0]);
-                controlCenter.chargeLimit = isNaN(limit) ? 0 : limit;
-                controlCenter.chargeLimitWritable = fields[1] === "1";
-                const kept = parseInt(fields[2]);
-                if (limit > 0 && limit < 100)
-                    controlCenter.chargeLimitOn = limit;
-                else if (kept > 0 && kept < 100)
-                    controlCenter.chargeLimitOn = kept;
-            }
-        }
-
-    }
-
-    Process {
-        id: chargeLimitSetProcess
-
-        stderr: StdioCollector {
-            id: chargeLimitSetErrors
-        }
-
-        // Re-read the real state, the firmware may round or refuse it.
-        onExited: (code) => {
-            if (code !== 0)
-                controlCenter.chargeLimitError = chargeLimitSetErrors.text.trim().split("\n").pop() || "The charge limit could not be set.";
-
-            chargeLimitProcess.running = true;
-        }
-    }
-
-    Process {
-        id: powerProfileSetProcess
-
-        // Re-read the real state, the daemon may refuse or hold the profile.
-        onExited: powerProfileProcess.running = true
+    ServiceRef {
+        service: ChargeLimit
+        active: controlCenter.opened
     }
 
 }

@@ -47,7 +47,7 @@ ColumnLayout {
     readonly property bool needsPassword: security !== null && ["wpa-psk", "sae", "none"].includes(security.keyMgmt)
     // What's left to fill in, said next to the button until there's nothing.
     readonly property string missing: ssid.text === "" ? "Missing network name" : needsPassword && password.text === "" ? "Missing password" : ""
-    readonly property bool ready: missing === "" && !helper.busy
+    readonly property bool ready: missing === "" && !WifiProfiles.busy
 
     signal backRequested()
 
@@ -85,7 +85,12 @@ ColumnLayout {
             request.wepKeyType = wepKeyType.value;
         }
 
-        helper.send(request);
+        WifiProfiles.connect(request, (ok, error) => {
+            page.error = error;
+            if (ok)
+                page.backRequested();
+
+        });
     }
 
     spacing: 12
@@ -107,7 +112,7 @@ ColumnLayout {
             anchors.fill: parent
             anchors.margins: 12
             spacing: 10
-            enabled: !helper.busy
+            enabled: !WifiProfiles.busy
 
             FormField {
                 id: ssid
@@ -172,7 +177,7 @@ ColumnLayout {
         Text {
             Layout.fillWidth: true
             elide: Text.ElideRight
-            text: helper.busy ? "Connecting…" : page.missing
+            text: WifiProfiles.busy ? "Connecting…" : page.missing
             color: Colors.secondary
             font.family: Metrics.font
             font.pixelSize: 12
@@ -180,22 +185,11 @@ ColumnLayout {
 
         ConnectButton {
             label: page.enterprise ? "Next" : "Connect"
-            busy: helper.busy
+            busy: WifiProfiles.busy
             available: page.ready
             onClicked: page.submit()
         }
 
-    }
-
-    WifiHelper {
-        id: helper
-
-        onFinished: (ok, error) => {
-            page.error = error;
-            if (ok)
-                page.backRequested();
-
-        }
     }
 
 }

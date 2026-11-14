@@ -1,9 +1,8 @@
 import Qt.labs.folderlistmodel
 import QtQuick
-import Quickshell
-import Quickshell.Io
 import Quickshell.Widgets
 import qs.components
+import qs.services
 import qs.theme
 
 // The file picker the apps' Open and Save dialogs get through the portal, grown out of
@@ -16,7 +15,6 @@ import qs.theme
 IslandPanel {
     id: picker
 
-    required property var chooser
     // The app's dialog, kept while the card folds away.
     property var request: null
     property bool answered: false
@@ -40,23 +38,9 @@ IslandPanel {
     property var marked: []
     // Saving over a file that's already there takes a second Enter.
     property bool replaceArmed: false
-    // The sidebar: home, the XDG folders, your GTK bookmarks and the root, as {icon, name, path}.
-    property var userDirs: []
-    property var bookmarks: []
-    readonly property var places: [{
-        "icon": "󰋜",
-        "name": "Home",
-        "path": home
-    }].concat(userDirs, bookmarks.filter((bookmark) => {
-        return bookmark.path !== home && !userDirs.some((place) => {
-            return place.path === bookmark.path;
-        });
-    }), [{
-        "icon": "󰋊",
-        "name": "Computer",
-        "path": "/"
-    }])
-    readonly property string home: Quickshell.env("HOME")
+    // The sidebar, as {icon, name, path}.
+    readonly property var places: Places.list
+    readonly property string home: Places.home
     // A path typed from / or ~: the folder follows it, the rest filters.
     readonly property bool typingPath: /^[\/~]/.test(field.text)
     readonly property string query: saving ? "" : typingPath ? field.text.substring(field.text.lastIndexOf("/") + 1) : field.text
@@ -276,7 +260,7 @@ IslandPanel {
 
     function pick(paths) {
         answered = true;
-        chooser.answer(paths, filters.length > 0 ? filterIndex : -1);
+        FileChooser.answer(paths, filters.length > 0 ? filterIndex : -1);
         close();
     }
 
@@ -284,7 +268,7 @@ IslandPanel {
     cardWidth: 860
     cardHeight: 540
     onOpening: {
-        request = chooser.request;
+        request = FileChooser.request;
         answered = false;
         marked = [];
         replaceArmed = false;
@@ -309,8 +293,8 @@ IslandPanel {
             if (saving)
                 field.input.select(0, dot > 0 ? dot : field.text.length);
 
-        } else if (!answered && request && chooser.request && chooser.request.id === request.id) {
-            chooser.cancel();
+        } else if (!answered && request && FileChooser.request && FileChooser.request.id === request.id) {
+            FileChooser.cancel();
         }
     }
     // The selection stays on the old list until the new one replaces it.
@@ -326,13 +310,13 @@ IslandPanel {
     // still mapping: an app that quits at once closes its dialog before the first frame.
     Connections {
         function onRequestChanged() {
-            if (picker.opened && picker.request && (!picker.chooser.request || picker.chooser.request.id !== picker.request.id)) {
+            if (picker.opened && picker.request && (!FileChooser.request || FileChooser.request.id !== picker.request.id)) {
                 picker.answered = true;
                 picker.close();
             }
         }
 
-        target: picker.chooser
+        target: FileChooser
     }
 
     // A new folder's list slides in from where you're going (the right going in, the
@@ -378,56 +362,9 @@ IslandPanel {
         onCountChanged: Qt.callLater(picker.rebuild)
     }
 
-    // The XDG folders that aren't just home (xdg-user-dir falls back to it).
-    Process {
-        command: ["sh", "-c", "for name in DESKTOP DOCUMENTS DOWNLOAD PICTURES MUSIC VIDEOS; do printf '%s\\t%s\\n' \"$name\" \"$(xdg-user-dir \"$name\")\"; done"]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const icons = {
-                    "DESKTOP": "󰇄",
-                    "DOCUMENTS": "󰈙",
-                    "DOWNLOAD": "󰉍",
-                    "PICTURES": "󰉏",
-                    "MUSIC": "󱍙",
-                    "VIDEOS": "󰕧"
-                };
-                picker.userDirs = text.split("\n").filter((line) => {
-                    return line !== "";
-                }).map((line) => {
-                    const fields = line.split("\t");
-                    return {
-                        "icon": icons[fields[0]] || "󰉋",
-                        "name": fields[1].substring(fields[1].lastIndexOf("/") + 1),
-                        "path": fields[1]
-                    };
-                }).filter((place) => {
-                    return place.path !== picker.home && place.path !== "";
-                });
-            }
-        }
-
-    }
-
-    // Your GTK bookmarks, one "file:///path Name" a line.
-    FileView {
-        path: picker.home + "/.config/gtk-3.0/bookmarks"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: picker.bookmarks = text().split("\n").filter((line) => {
-            return line.startsWith("file://");
-        }).map((line) => {
-            const space = line.indexOf(" ");
-            // Nautilus writes them with a trailing slash.
-            const path = decodeURIComponent((space > 0 ? line.substring(0, space) : line).substring(7)).replace(/(.)\/+$/, "$1");
-            return {
-                "icon": "󰃀",
-                "name": space > 0 ? line.substring(space + 1) : path.substring(path.lastIndexOf("/") + 1),
-                "path": path
-            };
-        })
+    ServiceRef {
+        service: Places
+        active: picker.opened
     }
 
     // The app's title on the left, where you are on the right.

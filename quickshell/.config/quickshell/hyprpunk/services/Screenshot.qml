@@ -1,3 +1,5 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
@@ -9,7 +11,7 @@ import qs.state
 // menu (`qs -c hyprpunk ipc call screenshot …`). Screenshots go to their folder, the
 // clipboard or both, recordings to theirs, with the sound and frame rate you chose
 // (CaptureSettings).
-Scope {
+Singleton {
     id: screenshot
 
     // Busy taking, choosing or saving one: other requests wait their turn.
@@ -22,6 +24,10 @@ Scope {
     property point origin: Qt.point(0, 0)
     // The whole screen, frozen before the selection is shown over it.
     property string frozenFile: ""
+    // The windows visible on it then ({x, y, width, height} on the screen), the top one
+    // first, for the selection to pick one.
+    property var windows: []
+    property var monitorInfo: null
 
     function capture(mode, name) {
         const monitor = Hyprland.monitors.values.find((item) => {
@@ -39,6 +45,11 @@ Scope {
         if (mode === "record") {
             record(null);
             return ;
+        }
+        if (mode !== "screen") {
+            windows = [];
+            monitorInfo = monitor.lastIpcObject;
+            windowsReader.running = true;
         }
         frozenFile = Quickshell.env("XDG_RUNTIME_DIR") + "/hyprpunk-screenshot-" + Date.now() + ".png";
         grimProcess.command = ["grim", "-o", screenName, frozenFile];
@@ -172,6 +183,43 @@ Scope {
                 "annotatedFile": screenshot.frozenFile + ".annotated.png"
             };
         }
+    }
+
+    // Its workspace's windows and any open special one's, topmost first: fullscreen and
+    // floating ones, then by last focus.
+    Process {
+        id: windowsReader
+
+        command: ["hyprctl", "-j", "clients"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const info = screenshot.monitorInfo;
+                const workspaces = [info.activeWorkspace ? info.activeWorkspace.id : -1, info.specialWorkspace ? info.specialWorkspace.id : 0];
+                let clients;
+                try {
+                    clients = JSON.parse(text);
+                } catch (error) {
+                    return ;
+                }
+                screenshot.windows = clients.filter((client) => {
+                    return client.mapped && !client.hidden && workspaces.includes(client.workspace.id);
+                }).sort((a, b) => {
+                    const above = (client) => {
+                        return client.workspace.id < 0 || client.floating || client.fullscreen ? 0 : 1;
+                    };
+                    return above(a) - above(b) || a.focusHistoryID - b.focusHistoryID;
+                }).map((client) => {
+                    return {
+                        "x": client.at[0] - info.x,
+                        "y": client.at[1] - info.y,
+                        "width": client.size[0],
+                        "height": client.size[1]
+                    };
+                });
+            }
+        }
+
     }
 
     Process {

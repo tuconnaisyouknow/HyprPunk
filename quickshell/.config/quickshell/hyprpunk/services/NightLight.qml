@@ -1,3 +1,5 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -7,7 +9,7 @@ import qs.config
 // you set (NightLightSettings). The night light is hyprsunset running: started warm,
 // told a new warmth through its IPC while it runs, and stopped to give the screens
 // their colors back.
-Scope {
+Singleton {
     id: nightLight
 
     // The time the schedule is checked against, moved on every half minute.

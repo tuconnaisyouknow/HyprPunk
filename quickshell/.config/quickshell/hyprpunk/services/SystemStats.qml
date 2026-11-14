@@ -5,8 +5,10 @@ import Quickshell
 import Quickshell.Io
 
 // The CPU, memory and temperature, read once a second for the whole shell (the bar's
-// resources pill, its little btop and the lock screen). Straight from /proc and /sys,
-// so no command has to start every second.
+// resources pill, its little btop and the lock screen). Always on: the pill always shows
+// them, and the last minute's history must be there when the btop opens. Straight from
+// /proc and /sys, so no command has to start every second. The btop's details, read only
+// while it's open, are SystemDetails'.
 Singleton {
     id: stats
 
@@ -23,12 +25,8 @@ Singleton {
     property real swapTotal: 0
     property real swapUsed: 0
     property string temperature: "--°C"
-    property string frequency: ""
-    property string model: ""
     // The memory in use as the bar shows it, "5.2G".
     readonly property string memoryText: memoryTotal > 0 ? (memoryUsed / 1048576).toFixed(1) + "G" : "--"
-    // How many open cards show the frequency, which is only read while one does.
-    property int frequencyWatchers: 0
     // [idle, total] jiffies of the last sample, index 0 for the whole CPU.
     property var previousTimes: []
 
@@ -85,29 +83,6 @@ Singleton {
         memoryHistory = pushHistory(memoryHistory, memoryTotal > 0 ? memoryUsed / memoryTotal : 0);
     }
 
-    function parseCpuinfo(text) {
-        const pattern = /^cpu MHz\s*:\s*([\d.]+)/gm;
-        let sum = 0;
-        let count = 0;
-        let match;
-        while ((match = pattern.exec(text)) !== null) {
-            sum += Number(match[1]);
-            count++;
-        }
-        frequency = Math.round(count > 0 ? sum / count : 0) + " MHz";
-        if (model === "") {
-            const name = text.match(/^model name\s*:\s*(.*)$/m);
-            model = name ? name[1] : "";
-        }
-    }
-
-    // Fresh as soon as a card opens, rather than at the next second.
-    onFrequencyWatchersChanged: {
-        if (frequencyWatchers > 0)
-            cpuinfoFile.reload();
-
-    }
-
     FileView {
         id: statFile
 
@@ -120,14 +95,6 @@ Singleton {
 
         path: "/proc/meminfo"
         onLoaded: stats.parseMeminfo(text())
-    }
-
-    // Read at startup for the model name, then only while a card shows the frequency.
-    FileView {
-        id: cpuinfoFile
-
-        path: "/proc/cpuinfo"
-        onLoaded: stats.parseCpuinfo(text())
     }
 
     // Empty until the sensor is found, and when there's none.
@@ -169,9 +136,6 @@ Singleton {
             meminfoFile.reload();
             if (temperatureFile.path !== "")
                 temperatureFile.reload();
-
-            if (stats.frequencyWatchers > 0)
-                cpuinfoFile.reload();
 
         }
     }

@@ -1,7 +1,6 @@
 import QtQuick
-import Quickshell
-import Quickshell.Io
 import qs.config
+import qs.services
 import qs.theme
 
 // The wallpaper picker: a looping carousel of the current theme's wallpapers, in
@@ -11,7 +10,6 @@ import qs.theme
 IslandPanel {
     id: picker
 
-    readonly property string wallpaperctl: Session.scripts + "/wallpaperctl.sh"
     readonly property int cardPadding: 14
     readonly property var centre: carousel.centreIndex >= 0 ? carousel.items[carousel.centreIndex] : null
 
@@ -22,15 +20,24 @@ IslandPanel {
         return name.charAt(0).toUpperCase() + name.slice(1);
     }
 
+    function showList() {
+        carousel.setItems(Wallpapers.list.map((wallpaper) => {
+            return {
+                "id": wallpaper.path,
+                "image": wallpaper.thumbnail,
+                "colors": wallpaper.colors
+            };
+        }));
+    }
+
     function apply() {
         const wallpaper = carousel.centreId;
         if (wallpaper === "")
             return ;
 
-        if (wallpaper !== carousel.currentId) {
-            applyProcess.command = [wallpaperctl, "set", wallpaper];
-            applyProcess.running = true;
-        }
+        if (wallpaper !== carousel.currentId)
+            Wallpapers.set(wallpaper);
+
         close();
     }
 
@@ -38,56 +45,22 @@ IslandPanel {
     cardWidth: 820
     cardHeight: carousel.thumbHeight + caption.height + 2 * cardPadding
     keyTargets: [keys]
-    onOpening: {
-        listProcess.running = true;
-        carousel.centreOn(carousel.currentId);
+    onOpening: carousel.centreOn(carousel.currentId)
+    Component.onCompleted: showList()
+
+    ServiceRef {
+        service: Wallpapers
+        active: picker.opened
     }
 
-    // A new wallpaper may be another theme's: its list is ready, images and all, by the
-    // time the picker opens.
+    // The list is kept up to date even while the picker is closed, images and all, so
+    // it's ready by the time it opens.
     Connections {
-        function onWallpaperChanged() {
-            listProcess.running = true;
+        function onListChanged() {
+            picker.showList();
         }
 
-        target: Session
-    }
-
-    Process {
-        id: listProcess
-
-        command: [picker.wallpaperctl, "list"]
-        running: true
-
-        stdout: StdioCollector {
-            // A wallpaper, its thumbnail and its palette's accent, secondary and
-            // surface per line, a tab between them.
-            onStreamFinished: carousel.setItems(text.split("\n").filter((line) => {
-                return line !== "";
-            }).map((line) => {
-                const [path, thumbnail, ...colors] = line.split("\t");
-                return {
-                    "id": path,
-                    "image": thumbnail,
-                    "colors": colors
-                };
-            }))
-        }
-
-    }
-
-    Process {
-        id: applyProcess
-
-        stderr: StdioCollector {
-            id: applyErrors
-        }
-
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                Quickshell.execDetached(["notify-send", "-u", "critical", "Unable to change wallpaper", applyErrors.text.trim()]);
-
-        }
+        target: Wallpapers
     }
 
     CarouselKeys {

@@ -3,18 +3,17 @@ import QtQuick.Layouts
 import Quickshell
 import qs.components
 import qs.theme
+import qs.services
 
 // Every notification still waiting, newest first, with a button to clear them all.
 // It sits next to the calendar, in the card that grows out of the island.
 ColumnLayout {
     id: list
 
-    required property var notificationServer
-    required property var notificationHistory
     // The card is open: only then do closed notifications animate out.
     property bool shown: false
     // The ones from before a restart under the live ones, which come oldest first.
-    readonly property var trackedValues: notificationHistory.entries.concat(notificationServer.trackedNotifications.values)
+    readonly property var trackedValues: Notifications.history.entries.concat(Notifications.server.trackedNotifications.values)
     // The notifications listed. A closed one stays until its exit animation is over.
     property var entryIds: []
     property var notificationObjects: ({})

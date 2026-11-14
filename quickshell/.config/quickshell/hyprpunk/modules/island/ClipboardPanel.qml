@@ -1,7 +1,6 @@
 import QtQuick
-import Quickshell
-import Quickshell.Io
 import Quickshell.Widgets
+import qs.services
 import qs.theme
 
 // Your clipboard history in the dynamic island, newest first, with thumbnails for
@@ -9,13 +8,11 @@ import qs.theme
 SearchPanel {
     id: clipboard
 
-    readonly property string cacheDir: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/hyprpunk/clipboard"
     readonly property int textRowHeight: 40
     readonly property int imageRowHeight: 92
     readonly property int rowSpacing: 4
     readonly property int maxBodyHeight: 440
-    // [{ "id", "text", "image": decoded file or "" }]
-    property var entries: []
+    readonly property var entries: Clipboard.entries
     readonly property var results: {
         const words = query.toLowerCase().split(/\s+/).filter((word) => {
             return word !== "";
@@ -38,7 +35,7 @@ SearchPanel {
 
     function copy(entry) {
         close();
-        Quickshell.execDetached(["sh", "-c", "cliphist decode \"$0\" | wl-copy", entry.id]);
+        Clipboard.copy(entry);
     }
 
     panelName: "clipboard"
@@ -49,36 +46,19 @@ SearchPanel {
     view: list
     cardWidth: 640
     bodyHeight: results.length > 0 ? Math.min(list.contentHeight, maxBodyHeight) : textRowHeight
-    onOpening: listProcess.running = true
     onActivated: (index) => {
         return copy(results[index]);
     }
 
-    // One "id<TAB>preview<TAB>image" line per entry, the images decoded once into the cache.
-    Process {
-        id: listProcess
-
-        command: ["bash", "-c", "mkdir -p \"$0\"; find \"$0\" -type f -mtime +30 -delete; cliphist list | while IFS=$'\\t' read -r id preview; do image=''; if [[ $preview == '[[ binary data '* ]]; then ext=$(sed -nE 's/.* (png|jpeg|jpg|gif|bmp|webp) .*/\\1/p' <<<\"$preview\"); if [[ -n $ext ]]; then image=\"$0/$id.$ext\"; [[ -s $image ]] || cliphist decode \"$id\" >\"$image\" 2>/dev/null; fi; fi; printf '%s\\t%s\\t%s\\n' \"$id\" \"$preview\" \"$image\"; done", clipboard.cacheDir]
-
-        stdout: StdioCollector {
-            onStreamFinished: clipboard.entries = text.split("\n").filter((line) => {
-                return line !== "";
-            }).map((line) => {
-                const fields = line.split("\t");
-                return {
-                    "id": fields[0],
-                    "text": fields[1] || "",
-                    "image": fields[2] || ""
-                };
-            })
-        }
-
+    ServiceRef {
+        service: Clipboard
+        active: clipboard.opened
     }
 
     Text {
         anchors.centerIn: parent
         visible: clipboard.results.length === 0
-        text: listProcess.running && clipboard.entries.length === 0 ? "Loading…" : clipboard.entries.length === 0 ? "The clipboard is empty" : "No match"
+        text: Clipboard.loading && clipboard.entries.length === 0 ? "Loading…" : clipboard.entries.length === 0 ? "The clipboard is empty" : "No match"
         color: Colors.secondary
         font.family: Metrics.font
         font.pixelSize: 14

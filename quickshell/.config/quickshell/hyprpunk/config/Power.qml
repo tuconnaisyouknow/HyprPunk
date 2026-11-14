@@ -3,7 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Services.Mpris
-import Quickshell.Services.UPower
+import qs.services
 
 // When the computer dims, locks and sleeps once you leave it, saved by powerctl.sh.
 // Each step has a delay plugged in and one on battery; the shell's idle monitors
@@ -13,8 +13,7 @@ Singleton {
 
     // Every saved setting, as powerctl.sh writes them: "plugged.dim" → "300".
     readonly property var settings: file.values
-    readonly property bool hasBattery: UPower.displayDevice.ready && UPower.displayDevice.isLaptopBattery && UPower.displayDevice.isPresent
-    readonly property string source: hasBattery && UPower.onBattery ? "battery" : "plugged"
+    readonly property string source: Battery.present && Battery.onBattery ? "battery" : "plugged"
     readonly property bool mediaKeepsAwake: settings.media === "true"
     // Something is playing and you asked for that to keep the computer awake.
     readonly property bool awakeForMedia: mediaKeepsAwake && Mpris.players.values.some((player) => {

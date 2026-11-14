@@ -1,21 +1,21 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
+import Quickshell
 import qs.components
-import qs.config
+import qs.services
 import qs.theme
 
 // A labelled file picker for the control center's forms, like NetworkManager's
-// certificate buttons. Shows the file's name or "(None)", and opens zenity to choose.
+// certificate buttons. Shows the file's name or "(None)", and opens the shell's file
+// chooser, in the folder of the file already chosen.
 ColumnLayout {
     id: file
 
     required property string label
     property string path: ""
     property string dialogTitle: label
-    // zenity filters: "Name | *.pem *.crt".
+    // [{ "name", "globs" }], all files offered after them.
     property var filters: []
-    readonly property bool choosing: chooser.running
 
     spacing: 5
 
@@ -34,9 +34,17 @@ ColumnLayout {
         implicitHeight: 34
         function activate() {
             boxBounce.restart();
-            if (!chooser.running)
-                chooser.running = true;
-
+            FileChooser.ask({
+                "title": file.dialogTitle,
+                "folder": file.path !== "" ? file.path.slice(0, file.path.lastIndexOf("/")) || "/" : Quickshell.env("HOME"),
+                "filters": file.filters.concat([{
+                    "name": "All files",
+                    "globs": ["*"]
+                }]),
+                "filter": 0
+            }, (paths) => {
+                return file.path = paths[0];
+            });
         }
 
         function activateAlt() {
@@ -93,7 +101,7 @@ ColumnLayout {
             anchors.right: parent.right
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            text: file.choosing ? "󰔟" : "󰉋"
+            text: "󰉋"
             color: Colors.secondary
             font.family: Metrics.font
             font.pixelSize: 14
@@ -121,33 +129,6 @@ ColumnLayout {
                 duration: 120
             }
 
-        }
-
-    }
-
-    Process {
-        id: chooser
-
-        // The current locale, not the one the shell was started with.
-        environment: Session.localeEnvironment
-
-        command: {
-            const command = ["zenity", "--file-selection", "--title=" + file.dialogTitle];
-            if (file.path !== "")
-                command.push("--filename=" + file.path);
-
-            for (const filter of file.filters.concat(["All files | *"]))
-                command.push("--file-filter=" + filter);
-            return command;
-        }
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const chosen = text.trim();
-                if (chosen !== "")
-                    file.path = chosen;
-
-            }
         }
 
     }

@@ -1,12 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
-import Quickshell.Services.UPower
+import Quickshell.Networking
 import qs.components
 import qs.config
 import qs.services
-import qs.theme
 import qs.state
+import qs.theme
 
 // What the control pill shows: a dot when a background app waits for you, network (a
 // spinner while it connects), caffeine, volume and battery. The bar and the lock screen
@@ -14,11 +14,22 @@ import qs.state
 RowLayout {
     id: status
 
-    required property var bar
     // Behind the Ethernet padlock badge: the pill's own color.
     property color badgeColor: Colors.panel
     // On the bar only: the lock screen gives no way to reach the app.
     property bool showsTrayAttention: false
+
+    function networkIcon() {
+        const device = NetworkStatus.device;
+        if (device === null)
+            return "󰤮";
+
+        if (device.type === DeviceType.Wired)
+            return device.connected ? "󰈀" : "󰌚";
+
+        const network = NetworkStatus.activeWifi;
+        return Icons.wifi(network !== null ? network.signalStrength : 0, device.connected && Vpn.connection !== null);
+    }
 
     spacing: 10
 
@@ -33,14 +44,14 @@ RowLayout {
 
     // Spinner in place of the icon while NetworkManager connects (VPN included).
     Item {
-        implicitWidth: status.bar.networkConnecting ? 16 : networkLabel.implicitWidth
+        implicitWidth: NetworkStatus.connecting ? 16 : networkLabel.implicitWidth
         implicitHeight: networkLabel.implicitHeight
 
         Label {
             id: networkLabel
 
-            visible: !status.bar.networkConnecting
-            text: status.bar.networkIcon()
+            visible: !NetworkStatus.connecting
+            text: status.networkIcon()
         }
 
         Shape {
@@ -48,7 +59,7 @@ RowLayout {
 
             property real sweep: 90
 
-            visible: status.bar.networkConnecting
+            visible: NetworkStatus.connecting
             anchors.centerIn: parent
             width: 14
             height: 14
@@ -120,7 +131,7 @@ RowLayout {
 
         // No locked Ethernet glyph in Material Design: a padlock badge instead.
         Rectangle {
-            visible: status.bar.wiredLocked && !status.bar.networkConnecting
+            visible: NetworkStatus.wiredLocked && !NetworkStatus.connecting
             anchors.right: networkLabel.right
             anchors.bottom: networkLabel.bottom
             anchors.rightMargin: -4
@@ -147,23 +158,23 @@ RowLayout {
     }
 
     IconText {
-        visible: status.bar.audioSink !== null
-        icon: Icons.volume(status.bar.audioVolume, status.bar.audioMuted)
-        text: status.bar.audioVolume + "%"
+        visible: Audio.sink !== null
+        icon: Icons.volume(Audio.volume, Audio.muted)
+        text: Audio.volume + "%"
     }
 
     IconText {
         id: batteryPill
 
-        visible: status.bar.hasBattery
+        visible: Battery.present
         // Red only when it's running out (the settings' low level), not while charging.
-        color: UPower.onBattery && status.bar.batteryPercent <= BatterySettings.low ? Colors.red : Colors.primary
-        icon: Icons.battery(status.bar.battery.percentage, UPower.onBattery)
-        text: status.bar.batteryPercent + "%"
+        color: Battery.onBattery && Battery.percent <= BatterySettings.low ? Colors.red : Colors.primary
+        icon: Icons.battery(Battery.device.percentage, Battery.onBattery)
+        text: Battery.percent + "%"
 
         // Pulses once it's critical.
         SequentialAnimation on opacity {
-            running: status.bar.batteryCritical
+            running: Battery.critical
             loops: Animation.Infinite
             onRunningChanged: {
                 if (!running)

@@ -4,8 +4,7 @@ import QtQuick
 import Quickshell
 
 // The battery's warnings, saved by batteryctl.sh: the low and critical levels the island
-// warns you at (Bar.qml), and what the computer does when it stays critical
-// (CriticalBattery.qml).
+// warns you at, and what the computer does when it stays critical (Battery).
 Singleton {
     // In percent; like the critical one, null until the file is read.
     readonly property var low: file.values.low ? parseInt(file.values.low) : null

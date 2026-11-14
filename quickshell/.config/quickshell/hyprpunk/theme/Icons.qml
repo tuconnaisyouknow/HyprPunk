@@ -34,4 +34,20 @@ Singleton {
         const icons = onBattery ? ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"] : ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"];
         return icons[Math.min(icons.length - 1, Math.floor(Math.max(0, Math.min(1, charge)) * icons.length))];
     }
+
+    // A battery filled up to the charge limit in %, full without one.
+    function chargeLimit(limit) {
+        return limit >= 100 ? "󰁹" : String.fromCodePoint(0xf007a + Math.max(0, Math.min(8, Math.round(limit / 10) - 1)));
+    }
+
+    // "power-saver", "balanced" or "performance".
+    function powerProfile(profile) {
+        if (profile === "performance")
+            return "󰓅";
+
+        if (profile === "power-saver")
+            return "󰌪";
+
+        return "󰾅";
+    }
 }

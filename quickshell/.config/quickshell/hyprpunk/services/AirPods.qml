@@ -1,3 +1,5 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -5,7 +7,7 @@ import qs.config
 
 // Talks to airpodsd.py: your paired AirPods with their batteries and
 // settings, AirPods nearby waiting to pair, and when to pop their card up.
-Scope {
+Singleton {
     id: airPods
 
     // Paired AirPods: {address, name, model, kind ("buds" or "headphones"), connected,

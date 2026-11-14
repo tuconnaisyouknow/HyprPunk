@@ -1,24 +1,22 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Io
 import qs.components
 import qs.services
 import qs.theme
 
 // A little btop for the resources pill: CPU and memory over the last minute, each
 // core's load and the busiest processes. Just the content, the bar draws the card,
-// and the numbers come from SystemStats.
+// and the numbers come from SystemStats and, while it's shown, SystemDetails.
 Item {
     id: monitor
 
-    // Off while the card is not shown: stops listing the processes.
+    // Shown: the details are only measured meanwhile.
     property bool active: false
     // "Intel(R) Core(TM) i7-1065G7 CPU @ 1.30GHz" -> "Intel Core i7-1065G7".
-    readonly property string shortModel: SystemStats.model.replace(/\((R|TM)\)/g, "").replace(/\s+(CPU|Processor)\b.*$/i, "").replace(/\s+\d+-Core.*$/i, "").replace(/\s+/g, " ").trim()
+    readonly property string shortModel: SystemDetails.model.replace(/\((R|TM)\)/g, "").replace(/\s+(CPU|Processor)\b.*$/i, "").replace(/\s+\d+-Core.*$/i, "").replace(/\s+/g, " ").trim()
     property string processSort: "cpu"
-    // Every process of the last sample, sorted here so switching the sort is instant.
-    property var allProcesses: []
-    readonly property var processes: allProcesses.slice().sort((a, b) => {
+    // Sorted here so switching the sort is instant.
+    readonly property var processes: SystemDetails.processes.slice().sort((a, b) => {
         return b[processSort] - a[processSort];
     }).slice(0, 5)
 
@@ -27,53 +25,11 @@ Item {
         return gib >= 1 ? gib.toFixed(1) + "G" : Math.round(kib / 1024) + "M";
     }
 
-    function parseProcesses(text) {
-        const list = [];
-        for (const line of text.trim().split("\n")) {
-            const parts = line.trim().split(/\s+/);
-            if (parts.length >= 3)
-                list.push({
-                "cpu": Number(parts[0]),
-                "memory": Number(parts[1]),
-                "name": parts.slice(2).join(" ")
-            });
-
-        }
-        allProcesses = list;
-    }
-
     implicitWidth: 380
     implicitHeight: column.implicitHeight + 28
-    // The frequency is only read while a card shows it.
-    onActiveChanged: SystemStats.frequencyWatchers += active ? 1 : -1
-    Component.onDestruction: {
-        if (active)
-            SystemStats.frequencyWatchers -= 1;
-
-    }
-
-    // top runs twice because its first pass only knows lifetime averages, and waits a
-    // whole second in between, since a shorter wait makes the numbers jump in 2% steps.
-    // top itself is left out (it only shows up because it's measuring). Also run once at
-    // startup, so the first opening has something to show while it refreshes.
-    Process {
-        id: processProcess
-
-        running: true
-        command: ["sh", "-c", "LC_ALL=C top -b -n 2 -d 1 -e k -w 512 | awk '/^top -/ {n++} n == 2 && /^ *[0-9]+ / && $12 != \"top\" {print $9, $6, $12}'"]
-
-        stdout: StdioCollector {
-            onStreamFinished: monitor.parseProcesses(text)
-        }
-
-    }
-
-    Timer {
-        interval: 2000
-        running: monitor.active
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: processProcess.running = true
+    ServiceRef {
+        service: SystemDetails
+        active: monitor.active
     }
 
     component SectionTitle: Text {
@@ -254,7 +210,7 @@ Item {
 
                 IconDetail {
                     icon: String.fromCodePoint(0xf04c5)
-                    text: SystemStats.frequency
+                    text: SystemDetails.frequency
                 }
 
             }

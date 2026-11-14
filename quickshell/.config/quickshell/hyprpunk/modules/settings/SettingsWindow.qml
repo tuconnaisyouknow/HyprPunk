@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.components
 import qs.theme
+import qs.services
 
 // The settings, in a window of their own that floats in the middle of the screen you're
 // on (rules.lua): a section per subject on the left, its page on the right. Super+I
@@ -14,7 +15,6 @@ Scope {
     id: settings
 
     // The shell's file picker, for the pages that ask for a folder.
-    required property var fileChooser
     // In the sidebar's order, each with its page (DisplaysPage.qml).
     readonly property var sections: [{
         "name": "displays",
@@ -417,7 +417,6 @@ Scope {
                     id: capturePage
 
                     CapturePage {
-                        fileChooser: settings.fileChooser
                     }
 
                 }

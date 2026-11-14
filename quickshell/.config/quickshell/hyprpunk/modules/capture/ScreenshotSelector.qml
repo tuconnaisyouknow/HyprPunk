@@ -1,11 +1,10 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
-import Quickshell.Io
 import Quickshell.Wayland
 import qs.components
-import qs.theme
+import qs.services
 import qs.state
+import qs.theme
 
 // Picking what to capture, over the frozen screen. Drag out a region, or click a
 // window (it lights up as you hover), or click elsewhere for the whole screen.
@@ -19,7 +18,7 @@ PanelWindow {
     readonly property var request: ShellState.screenshotSelection
     readonly property bool active: request !== null && request.screen === screenName
     // The visible windows ({x, y, width, height} on this screen), the top one first.
-    property var windows: []
+    readonly property var windows: Screenshot.windows
     property point pressPoint: Qt.point(0, 0)
     property bool dragging: false
     property var dragRect: null
@@ -55,10 +54,6 @@ PanelWindow {
         dragRect = null;
         hoveredWindow = null;
         annotatedRegion = null;
-        windows = [];
-        if (active)
-            windowsProcess.running = true;
-
     }
 
     anchors {
@@ -267,47 +262,6 @@ PanelWindow {
                 });
             }
             onCancelled: selector.finish(null)
-        }
-
-    }
-
-    // The windows visible on this screen (its workspace and any open special one),
-    // topmost first: fullscreen and floating ones, then by last focus.
-    Process {
-        id: windowsProcess
-
-        command: ["hyprctl", "-j", "clients"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const monitor = Hyprland.monitorFor(selector.screen);
-                if (monitor === null)
-                    return ;
-
-                const info = monitor.lastIpcObject;
-                const workspaces = [info.activeWorkspace ? info.activeWorkspace.id : -1, info.specialWorkspace ? info.specialWorkspace.id : 0];
-                let clients;
-                try {
-                    clients = JSON.parse(text);
-                } catch (error) {
-                    return ;
-                }
-                selector.windows = clients.filter((client) => {
-                    return client.mapped && !client.hidden && workspaces.includes(client.workspace.id);
-                }).sort((a, b) => {
-                    const above = (client) => {
-                        return client.workspace.id < 0 || client.floating || client.fullscreen ? 0 : 1;
-                    };
-                    return above(a) - above(b) || a.focusHistoryID - b.focusHistoryID;
-                }).map((client) => {
-                    return {
-                        "x": client.at[0] - info.x,
-                        "y": client.at[1] - info.y,
-                        "width": client.size[0],
-                        "height": client.size[1]
-                    };
-                });
-            }
         }
 
     }

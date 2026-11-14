@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Services.Polkit
 import qs.components
 import qs.theme
+import qs.services
 
 // The password prompt for polkit (pkexec, systemctl, the apps asking for admin rights),
 // grown out of the island on the focused screen. shell.qml holds the agent and opens it.
@@ -11,8 +12,7 @@ import qs.theme
 IslandPanel {
     id: prompt
 
-    required property var agent
-    readonly property var flow: agent.flow
+    readonly property var flow: Polkit.agent.flow
     // Kept from the request, so the card still reads right while it folds away.
     property string message: ""
     property string actionId: ""

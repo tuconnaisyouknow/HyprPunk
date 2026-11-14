@@ -1,3 +1,5 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -6,7 +8,7 @@ import qs.config
 // Talks to filechooser-portal.py, the portal backend the apps' file dialogs
 // go to: holds the dialog an app is asking for, and sends back what you picked. The
 // shell asks through it too (the settings' folders), answered here instead.
-Scope {
+Singleton {
     id: chooser
 
     // The dialog being asked for (the "open" message in the script's header), null

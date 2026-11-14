@@ -1,9 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
-import Quickshell.Io
 import qs.components
-import qs.config
+import qs.services
 import qs.theme
 
 // The settings' displays page: your screens drawn to scale, dragged where they go, then
@@ -13,27 +11,15 @@ import qs.theme
 ColumnLayout {
     id: page
 
-    readonly property string displayctl: Session.scripts + "/displayctl.sh"
-    readonly property string stateFile: Session.stateDir + "/monitor-state.conf"
-    readonly property string backupFile: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/hyprpunk/monitor-state.backup"
-    readonly property int revertSeconds: 15
-    // From displayctl info: { layout, default_scale, outputs: [...] }.
-    property var info: ({
-        "layout": "auto",
-        "default_scale": "auto",
-        "outputs": []
-    })
+    readonly property var info: Displays.info
     property string selectedName: ""
     // The screens' names, only replaced when one comes or goes, so the drawing keeps its
     // screens (and the keyboard on one) when the layout changes.
     property var names: []
-    // Seconds left before the last resolution, refresh rate or scale change reverts, 0 when none.
-    property int revertCountdown: 0
     readonly property var outputs: info.outputs
     readonly property var selected: outputs.find((output) => {
         return output.name === selectedName;
     }) || outputs[0] || null
-    readonly property bool busy: applyProcess.running || infoProcess.running
     // Largest first.
     readonly property var resolutions: {
         if (!selected)
@@ -75,34 +61,23 @@ ColumnLayout {
     readonly property string frequency: selected ? frequencies.find((rate) => {
         return Math.abs(Number(rate) - selected.refresh_rate) < 0.01;
     }) || "" : ""
-    function refresh() {
-        infoProcess.running = true;
-    }
-
-    // guarded: a resolution, refresh rate or scale change, which can undo itself.
-    function apply(args, guarded) {
-        if (busy)
-            return ;
-
-        if (guarded) {
-            applyProcess.command = ["bash", "-c", "mkdir -p \"$(dirname \"$1\")\"; if [[ -f $0 ]]; then cp -f \"$0\" \"$1\"; else rm -f \"$1\"; fi; shift; exec \"$@\"", stateFile, backupFile, displayctl].concat(args);
-            revertCountdown = revertSeconds;
-            revertTimer.restart();
-        } else {
-            applyProcess.command = [displayctl].concat(args);
+    // The screen you're on is picked before the screens are shown, or the first one
+    // would be, for a moment.
+    function follow() {
+        if (selectedName === "" || !outputs.some((output) => {
+            return output.name === selectedName;
+        })) {
+            const focused = outputs.find((output) => {
+                return output.focused;
+            });
+            selectedName = focused ? focused.name : outputs.length > 0 ? outputs[0].name : "";
         }
-        applyProcess.running = true;
-    }
+        const list = outputs.map((output) => {
+            return output.name;
+        });
+        if (JSON.stringify(list) !== JSON.stringify(names))
+            names = list;
 
-    function keep() {
-        revertCountdown = 0;
-        revertTimer.stop();
-    }
-
-    function revert() {
-        keep();
-        Quickshell.execDetached(["bash", "-c", "flock -w 10 \"$0.lock\" bash -c 'if [[ -f $1 ]]; then cp -f \"$1\" \"$0\"; else rm -f \"$0\"; fi' \"$0\" \"$1\" && \"$2\" reload", stateFile, backupFile, displayctl]);
-        revertRefresh.restart();
     }
 
     function rateLabel(rate) {
@@ -128,7 +103,7 @@ ColumnLayout {
         }) : current.concat([workspace]).sort((a, b) => {
             return Number(a) - Number(b);
         });
-        apply(["workspace-set", selected.name, list.length > 0 ? list.join(",") : "none"], false);
+        Displays.apply(["workspace-set", selected.name, list.length > 0 ? list.join(",") : "none"], false);
     }
 
     // Where a screen can go, as displayctl.sh places it: against a side of another,
@@ -190,12 +165,12 @@ ColumnLayout {
     function place(name, spot) {
         const moved = preview.rectOf(name);
         if (spot !== null && (spot.x !== moved.x || spot.y !== moved.y))
-            apply(["position", name, spot.direction, spot.reference], false);
+            Displays.apply(["position", name, spot.direction, spot.reference], false);
 
     }
 
     spacing: 12
-    Component.onCompleted: refresh()
+    onOutputsChanged: follow()
 
     Text {
         text: "Displays"
@@ -330,7 +305,7 @@ ColumnLayout {
         Text {
             anchors.centerIn: parent
             visible: page.outputs.length === 0
-            text: page.busy ? "Loading…" : "No screen found"
+            text: Displays.busy ? "Loading…" : "No screen found"
             color: Colors.secondary
             font.family: Metrics.font
             font.pixelSize: 14
@@ -442,7 +417,7 @@ ColumnLayout {
                     id: drag
 
                     target: null
-                    enabled: page.names.length > 1 && !page.busy
+                    enabled: page.names.length > 1 && !Displays.busy
                     onCentroidChanged: {
                         if (!active)
                             return ;
@@ -479,10 +454,10 @@ ColumnLayout {
     // A change that undoes itself unless you keep it.
     SettingRow {
         Layout.fillWidth: true
-        visible: page.revertCountdown > 0
+        visible: Displays.revertCountdown > 0
         icon: "󰔛"
         title: "Keep these settings?"
-        description: "They go back as they were in " + page.revertCountdown + " s."
+        description: "They go back as they were in " + Displays.revertCountdown + " s."
 
         RowLayout {
             width: parent.width
@@ -492,14 +467,14 @@ ColumnLayout {
                 Layout.fillWidth: true
                 icon: "󰄬"
                 label: "Keep"
-                onTriggered: page.keep()
+                onTriggered: Displays.keep()
             }
 
             ActionRow {
                 Layout.fillWidth: true
                 icon: "󰕌"
                 label: "Revert"
-                onTriggered: page.revert()
+                onTriggered: Displays.revert()
             }
 
         }
@@ -542,7 +517,7 @@ ColumnLayout {
                 return size === "auto" ? "Auto" : size.replace("x", " × ");
             }
             onSelected: (value) => {
-                return page.apply(value === "auto" ? ["auto", page.selected.name] : ["resolution", page.selected.name, value], true);
+                return Displays.apply(value === "auto" ? ["auto", page.selected.name] : ["resolution", page.selected.name, value], true);
             }
         }
 
@@ -560,7 +535,7 @@ ColumnLayout {
             value: page.frequency
             label: page.rateLabel
             onSelected: (value) => {
-                return page.apply(["refresh", page.selected.name, value], true);
+                return Displays.apply(["refresh", page.selected.name, value], true);
             }
         }
 
@@ -582,7 +557,7 @@ ColumnLayout {
                 return scale === "auto" ? "Auto" : scale + "×";
             }
             onSelected: (value) => {
-                return page.apply(["scale", page.selected.name, value], true);
+                return Displays.apply(["scale", page.selected.name, value], true);
             }
         }
 
@@ -600,7 +575,7 @@ ColumnLayout {
             values: page.selected ? ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] : []
             value: page.selected ? page.selected.slot : null
             onSelected: (value) => {
-                return page.apply(["slot", page.selected.name, value], false);
+                return Displays.apply(["slot", page.selected.name, value], false);
             }
         }
 
@@ -697,7 +672,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 icon: "󰕮"
                 label: "Lay them out on their own"
-                onTriggered: page.apply(["auto-layout"], false)
+                onTriggered: Displays.apply(["auto-layout"], false)
             }
 
             ActionRow {
@@ -705,82 +680,16 @@ ColumnLayout {
                 icon: "󰑓"
                 label: "Reset every screen's settings"
                 destructive: true
-                onTriggered: page.apply(["reset"], false)
+                onTriggered: Displays.apply(["reset"], false)
             }
 
         }
 
     }
 
-    Process {
-        id: infoProcess
-
-        command: [page.displayctl, "info"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const info = JSON.parse(text);
-                    // The screen you're on is picked before the screens are shown, or
-                    // the first one would be, for a moment.
-                    if (page.selectedName === "" || !info.outputs.some((output) => {
-                        return output.name === page.selectedName;
-                    })) {
-                        const focused = info.outputs.find((output) => {
-                            return output.focused;
-                        });
-                        page.selectedName = focused ? focused.name : info.outputs.length > 0 ? info.outputs[0].name : "";
-                    }
-                    page.info = info;
-                    const names = info.outputs.map((output) => {
-                        return output.name;
-                    });
-                    if (JSON.stringify(names) !== JSON.stringify(page.names))
-                        page.names = names;
-                } catch (error) {
-                    console.warn("displayctl info:", error);
-                }
-            }
-        }
-
-    }
-
-    Process {
-        id: applyProcess
-
-        onExited: (exitCode) => {
-            if (exitCode !== 0) {
-                page.keep();
-                Quickshell.execDetached(["notify-send", "-u", "normal", "Unable to change the display settings", applyErrors.text.trim().split("\n").pop() || ""]);
-            }
-            page.refresh();
-        }
-
-        stderr: StdioCollector {
-            id: applyErrors
-        }
-
-    }
-
-    Timer {
-        id: revertTimer
-
-        interval: 1000
-        repeat: true
-        onTriggered: {
-            page.revertCountdown -= 1;
-            if (page.revertCountdown <= 0)
-                page.revert();
-
-        }
-    }
-
-    // Hyprland takes a moment to apply the restored state.
-    Timer {
-        id: revertRefresh
-
-        interval: 600
-        onTriggered: page.refresh()
+    ServiceRef {
+        service: Displays
+        active: true
     }
 
 }
