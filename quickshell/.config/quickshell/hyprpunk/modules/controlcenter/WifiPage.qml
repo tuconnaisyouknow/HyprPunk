@@ -10,12 +10,14 @@ import qs.theme
 // around, a click to connect, the password prompt for a new one, and a way to a hidden
 // one. VPN: your VPNs, a click to bring one up or down, and the import of a new one.
 // Saved networks and VPNs open their details.
-ColumnLayout {
+ControlPage {
     id: page
 
-    required property var center
-    // The password prompt, which the control center focuses when a network asks for one.
-    readonly property Item password: passwordField
+    // The network asking for its password, null when none is.
+    property var passwordNetwork: null
+    // The network you just connected to from here: only its failures ask for secrets,
+    // not NetworkManager's own reconnections in the background.
+    property var requestedWifi: null
     property string tab: "wifi"
     readonly property var tabs: [{
         "value": "wifi",
@@ -34,27 +36,81 @@ ColumnLayout {
     // Why the last password didn't connect, until another network asks.
     property string wifiError: ""
 
-    signal backRequested()
     // A password went out, so the prompt can hand the keyboard back to the panel.
     signal passwordSent()
+    signal detailsRequested(var network)
+    // An enterprise network: its sign-in has a page of its own.
+    signal enterpriseRequested(var network)
     signal vpnDetailsRequested(string uuid)
     signal hiddenRequested()
 
+    // Disconnects, or connects a saved network or one that needs no secret (open,
+    // Enhanced Open, or a kind NetworkManager works out alone). The others ask first.
+    function select(network) {
+        if (network.connected) {
+            network.disconnect();
+        } else if (network.known || !WifiProfiles.needsSecrets(network)) {
+            passwordNetwork = null;
+            requestedWifi = network;
+            network.connect();
+        } else {
+            askSecrets(network);
+        }
+    }
+
+    // Asks for what NetworkManager lacks. A network with no secret to ask for (a kind
+    // it doesn't know) is left to fail.
+    function askSecrets(network) {
+        if (WifiProfiles.enterprise(network.security)) {
+            passwordNetwork = null;
+            enterpriseRequested(network);
+        } else if (WifiProfiles.keyMgmt(network.security) !== "") {
+            passwordNetwork = network;
+            passwordField.text = "";
+            passwordField.input.forceActiveFocus();
+        }
+    }
+
+    pageName: "wifi"
     spacing: 12
 
+    onPasswordNetworkChanged: {
+        wifiError = "";
+        wepKeyType.reset();
+    }
+    // Leaving the page drops its password prompts: coming back shows the networks, not
+    // a password half typed.
+    onCurrentChanged: {
+        if (current)
+            return ;
+
+        passwordNetwork = null;
+        Vpn.passwordUuid = "";
+    }
+
+    // The panel closed: what you asked for is behind you.
     Connections {
-        function onPasswordNetworkChanged() {
-            page.wifiError = "";
-            wepKeyType.reset();
+        function onOpenedChanged() {
+            if (!page.stack.opened)
+                page.requestedWifi = null;
+
         }
 
-        target: page.center
+        target: page.stack
+    }
+
+    // Looks for networks while you're on the page.
+    Binding {
+        target: NetworkStatus.wifiDevice
+        property: "scannerEnabled"
+        value: true
+        when: NetworkStatus.wifiDevice !== null && page.active
     }
 
     // A VPN wants a password: its tab comes up with the prompt ready.
     Connections {
         function onPasswordUuidChanged() {
-            if (Vpn.passwordUuid === "" || !page.center.opened)
+            if (Vpn.passwordUuid === "" || !page.stack.opened)
                 return ;
 
             page.tab = "vpn";
@@ -102,7 +158,7 @@ ColumnLayout {
         // Wi-Fi's own switch: the VPNs each have theirs in the list.
         toggleVisible: page.tab === "wifi"
         checked: Networking.wifiEnabled
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
         onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
     }
 
@@ -197,16 +253,16 @@ ColumnLayout {
                                     icon: Icons.wifi(modelData.signalStrength, false)
                                     title: modelData.name
                                     subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
-                                    trailing: page.center.needsSecrets(modelData) ? "󰌾" : ""
+                                    trailing: WifiProfiles.needsSecrets(modelData) ? "󰌾" : ""
                                     highlighted: modelData.connected
                                     detailsAvailable: modelData.known
-                                    onClicked: page.center.selectWifi(modelData)
-                                    onDetailsRequested: page.center.showWifiDetails(modelData)
+                                    onClicked: page.select(modelData)
+                                    onDetailsRequested: page.detailsRequested(modelData)
 
                                     Connections {
                                         function onConnectionFailed(reason) {
-                                            if (reason === ConnectionFailReason.NoSecrets && page.center.opened && page.center.requestedWifi === modelData)
-                                                page.center.askWifiSecrets(modelData);
+                                            if (reason === ConnectionFailReason.NoSecrets && page.stack.opened && page.requestedWifi === modelData)
+                                                page.askSecrets(modelData);
 
                                         }
 
@@ -224,7 +280,7 @@ ColumnLayout {
                     ControlBlock {
                         Layout.fillWidth: true
                         implicitHeight: passwordColumn.implicitHeight + 24
-                        visible: page.center.passwordNetwork !== null
+                        visible: page.passwordNetwork !== null
 
                         ColumnLayout {
                             id: passwordColumn
@@ -237,7 +293,7 @@ ColumnLayout {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 icon: "󰌾"
-                                text: (page.center.passwordNetwork !== null ? page.center.passwordNetwork.name : "")
+                                text: (page.passwordNetwork !== null ? page.passwordNetwork.name : "")
                                 color: Colors.primary
                                 font.pixelSize: 14
                                 font.weight: Font.Bold
@@ -247,7 +303,7 @@ ColumnLayout {
                                 id: wepKeyType
 
                                 Layout.fillWidth: true
-                                visible: page.center.passwordNetwork !== null && page.center.passwordKeyMgmt(page.center.passwordNetwork.security) === "none"
+                                visible: page.passwordNetwork !== null && WifiProfiles.keyMgmt(page.passwordNetwork.security) === "none"
                                 enabled: !WifiProfiles.busy
                             }
 
@@ -259,20 +315,20 @@ ColumnLayout {
                                 secret: true
                                 escapable: true
                                 placeholder: "Password, then Enter"
-                                onEscaped: page.center.passwordNetwork = null
+                                onEscaped: page.passwordNetwork = null
                                 onAccepted: {
-                                    const network = page.center.passwordNetwork;
+                                    const network = page.passwordNetwork;
                                     // Saves the network only once the password works, and says why not.
                                     if (network !== null && text !== "")
                                         WifiProfiles.connect({
                                         "ssid": network.name,
-                                        "keyMgmt": page.center.passwordKeyMgmt(network.security),
+                                        "keyMgmt": WifiProfiles.keyMgmt(network.security),
                                         "psk": text,
                                         "wepKeyType": wepKeyType.value
                                     }, (ok, error) => {
                                         page.wifiError = error;
                                         if (ok) {
-                                            page.center.passwordNetwork = null;
+                                            page.passwordNetwork = null;
                                             page.passwordSent();
                                         } else {
                                             passwordField.input.forceActiveFocus();

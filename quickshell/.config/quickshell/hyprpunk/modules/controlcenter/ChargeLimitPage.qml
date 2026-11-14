@@ -5,11 +5,10 @@ import qs.theme
 
 // The control center's charge limit page: where the battery stops charging, read only
 // until battery-limit is installed.
-ColumnLayout {
+ControlPage {
     id: page
 
-    signal backRequested()
-
+    pageName: "chargeLimit"
     spacing: 6
 
     PageHeader {
@@ -18,7 +17,7 @@ ColumnLayout {
         checked: ChargeLimit.current < 100
         toggleVisible: ChargeLimit.writable
         onToggled: ChargeLimit.toggle()
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     Text {

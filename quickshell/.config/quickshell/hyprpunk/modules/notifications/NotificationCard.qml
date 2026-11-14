@@ -187,8 +187,8 @@ Rectangle {
         id: content
 
         anchors.fill: parent
-        anchors.margins: 12
-        spacing: 12
+        anchors.margins: Metrics.spacing.large
+        spacing: Metrics.spacing.large
 
         IconImage {
             Layout.alignment: Qt.AlignTop
@@ -198,18 +198,19 @@ Rectangle {
 
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: Metrics.spacing.small
 
             RowLayout {
                 Layout.fillWidth: true
 
                 Text {
                     Layout.fillWidth: true
-                    Layout.rightMargin: 16
+                    // Clear of the close cross.
+                    Layout.rightMargin: Metrics.spacing.huge
                     text: card.summary || card.appName
                     color: card.critical ? Colors.red : Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: 18
+                    font.pixelSize: Metrics.text.title
                     font.weight: Font.Bold
                     elide: Text.ElideRight
                 }
@@ -221,16 +222,16 @@ Rectangle {
                 Layout.fillWidth: true
                 text: card.styledBody(card.body)
                 textFormat: Text.StyledText
-                color: card.critical ? Colors.red : Colors.primary
+                color: card.critical ? Colors.red : Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 16
+                font.pixelSize: Metrics.text.emphasis
                 wrapMode: Text.Wrap
             }
 
             RowLayout {
                 visible: card.buttonActions.length > 0
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: Metrics.spacing.normal
 
                 Repeater {
                     model: card.buttonActions
@@ -255,7 +256,7 @@ Rectangle {
                             text: parent.modelData.text
                             color: Colors.base
                             font.family: Metrics.font
-                            font.pixelSize: 14
+                            font.pixelSize: Metrics.text.emphasis
                             font.weight: Font.Bold
                         }
 
@@ -283,7 +284,7 @@ Rectangle {
     Rectangle {
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.margins: 8
+        anchors.margins: Metrics.spacing.normal
         width: 22
         height: 22
         radius: 11
@@ -296,8 +297,8 @@ Rectangle {
             opacity: closeArea.containsMouse ? 1 : 0
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: 120
+                Anim {
+                    token: Motion.color.small
                 }
 
             }
@@ -309,7 +310,7 @@ Rectangle {
             text: ""
             color: closeArea.containsMouse ? Colors.primary : Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
         MouseArea {

@@ -9,22 +9,37 @@ import qs.theme
 
 // The control center's background apps page: each app by its name, its menu unfolding
 // under it, and a button to bring it back.
-ColumnLayout {
+ControlPage {
     id: page
 
-    required property var center
+    // The app whose menu is unfolded.
+    property var expandedApp: null
 
-    // The panel's height: past it, the apps scroll under the header.
-    property real maxHeight: Infinity
-
-    signal backRequested()
+    // Opens with this app's menu already unfolded (or none).
+    function show(app) {
+        expandedApp = app;
+        stack.push(pageName);
+    }
 
     // Scrolls the list so an app whose menu just unfolded starts at the top.
     function reveal(app) {
         flickable.contentY = Math.max(0, Math.min(app.y, flickable.contentHeight - flickable.height));
     }
 
+    pageName: "tray"
     spacing: 6
+
+    // The last app quit from its own menu: nothing left here.
+    Connections {
+        function onItemsChanged() {
+            if (page.current && Tray.items.length === 0)
+                page.back();
+
+        }
+
+        target: Tray
+    }
+
     onVisibleChanged: {
         if (!visible)
             flickable.contentY = 0;
@@ -37,7 +52,7 @@ ColumnLayout {
         Layout.fillWidth: true
         title: "Background apps"
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     Text {
@@ -57,7 +72,7 @@ ColumnLayout {
     // top, where the list would scroll under the description.
     Item {
         Layout.fillWidth: true
-        Layout.preferredHeight: Math.min(appList.implicitHeight, page.maxHeight - header.implicitHeight - description.implicitHeight - description.Layout.bottomMargin - 2 * page.spacing)
+        Layout.preferredHeight: Math.min(appList.implicitHeight, page.stack.maxHeight - header.implicitHeight - description.implicitHeight - description.Layout.bottomMargin - 2 * page.spacing)
 
         Flickable {
             id: flickable
@@ -83,7 +98,7 @@ ColumnLayout {
                         id: app
 
                         required property var modelData
-                        readonly property bool expanded: page.center.trayExpanded === modelData
+                        readonly property bool expanded: page.expandedApp === modelData
 
                         Layout.fillWidth: true
                         spacing: 4
@@ -102,7 +117,7 @@ ColumnLayout {
                             function activate() {
                                 bounce();
                                 if (app.modelData.hasMenu)
-                                    page.center.trayExpanded = app.expanded ? null : app.modelData;
+                                    page.expandedApp = app.expanded ? null : app.modelData;
                                 else
                                     app.modelData.activate();
                             }
@@ -247,7 +262,7 @@ ColumnLayout {
                             visible: app.expanded
                             shown: app.expanded
                             handle: app.modelData.menu
-                            onTriggered: page.center.close()
+                            onTriggered: page.stack.closeRequested()
                         }
 
                     }

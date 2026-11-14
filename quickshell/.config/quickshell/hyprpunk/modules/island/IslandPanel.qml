@@ -193,7 +193,7 @@ Card {
         y: Math.round(panel.island.top + panel.island.height / 2 - height / 2)
         camera: Privacy.cameraInUse
         microphone: Privacy.microphoneInUse
-        recording: ShellState.recording
+        recording: Screenshot.recording
         opacity: active ? panel.progress : 0
         visible: opacity > 0
     }

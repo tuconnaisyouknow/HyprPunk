@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import qs.config
-import qs.state
 import qs.theme
 
 // What the island briefly shows as things happen: a level (volume, brightness), an on/off
@@ -48,6 +47,24 @@ Singleton {
     // How long an OSD stays, its usual time stretched as the settings ask (OsdSettings).
     function time(milliseconds) {
         return Math.round(milliseconds * OsdSettings.pace);
+    }
+
+    // The AirPods put in your ears: the island turns into their OSD as their card folds
+    // away. pods: {screen, image (their picture, or ""), level (null when unknown),
+    // charging}.
+    function showAirPods(pods) {
+        if (!OsdSettings.shows("airpods"))
+            return ;
+
+        // The label fades the content in like a new OSD.
+        osd.show({
+            "kind": "airpods",
+            "screen": pods.screen,
+            "image": pods.image,
+            "ringLevel": pods.level,
+            "ringCharging": pods.charging,
+            "label": "AirPods"
+        }, osd.time(3000));
     }
 
     // m:ss, h:mm:ss past an hour.
@@ -253,10 +270,10 @@ Singleton {
         target: Devices
     }
 
-    // The screenshot or recording just taken, and the AirPods, on their own screen.
+    // The screenshot or recording just taken, on its own screen.
     Connections {
-        function onScreenshotTakenChanged() {
-            const taken = ShellState.screenshotTaken;
+        function onTakenChanged() {
+            const taken = Screenshot.taken;
             if (taken === null || !OsdSettings.shows("screenshots"))
                 return ;
 
@@ -272,23 +289,7 @@ Singleton {
             }, osd.time(3500));
         }
 
-        function onAirPodsOsdRequestsChanged() {
-            const pods = ShellState.airPodsOsd;
-            if (!OsdSettings.shows("airpods"))
-                return ;
-
-            // The label fades the content in like a new OSD.
-            osd.show({
-                "kind": "airpods",
-                "screen": pods.screen,
-                "image": pods.image,
-                "ringLevel": pods.level,
-                "ringCharging": pods.charging,
-                "label": "AirPods"
-            }, osd.time(3000));
-        }
-
-        target: ShellState
+        target: Screenshot
     }
 
 }

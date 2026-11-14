@@ -40,6 +40,29 @@ Singleton {
         return limit >= 100 ? "󰁹" : String.fromCodePoint(0xf007a + Math.max(0, Math.min(8, Math.round(limit / 10) - 1)));
     }
 
+    // A Bluetooth device by the icon name BlueZ gives it.
+    function bluetoothDevice(icon) {
+        if (icon.startsWith("audio-headset") || icon.startsWith("audio-headphones"))
+            return "󰋋";
+
+        if (icon.startsWith("audio"))
+            return "󰓃";
+
+        if (icon.startsWith("input-mouse"))
+            return "󰍽";
+
+        if (icon.startsWith("input-keyboard"))
+            return "󰌌";
+
+        if (icon.startsWith("input-gaming"))
+            return "󰊴";
+
+        if (icon.startsWith("phone"))
+            return "󰏲";
+
+        return "󰂯";
+    }
+
     // "power-saver", "balanced" or "performance".
     function powerProfile(profile) {
         if (profile === "performance")

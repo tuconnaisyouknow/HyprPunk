@@ -78,6 +78,55 @@ ShellRoot {
         target: "music"
     }
 
+    // `qs -c hyprpunk ipc call screenshot <screen|region|annotate|record|recordRegion|stop|menu>`:
+    // the capture shortcuts. Asking to record while recording stops it.
+    IpcHandler {
+        function screen(): void {
+            Screenshot.request("screen");
+        }
+
+        function region(): void {
+            Screenshot.request("region");
+        }
+
+        function annotate(): void {
+            Screenshot.request("annotate");
+        }
+
+        function record(): void {
+            Screenshot.request("record");
+        }
+
+        function recordRegion(): void {
+            Screenshot.request("record-region");
+        }
+
+        function stop(): void {
+            Screenshot.request("stop");
+        }
+
+        // The menu of the screenshots and recordings, in the island.
+        function menu(): void {
+            ShellState.focused()?.toggle("screenshot");
+        }
+
+        target: "screenshot"
+    }
+
+    // `qs -c hyprpunk ipc call lock <lock|lockInstantly>`: the shortcut, the session menu
+    // and hypridle lock this way, and lockInstantly skips the animation before sleep.
+    IpcHandler {
+        function lock(): void {
+            Lock.engage(false);
+        }
+
+        function lockInstantly(): void {
+            Lock.engage(true);
+        }
+
+        target: "lock"
+    }
+
     // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
     Variants {
         model: ["controlcenter", "notifications", "session", "wallpaper", "theme", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "workspaces", "systemmonitor", "player", "settings"]
@@ -126,8 +175,8 @@ ShellRoot {
     }
 
     Connections {
-        function onRequested() {
-            ShellState.focused()?.open("screenshare");
+        function onRequested(screen) {
+            (screen !== "" ? ShellState.forScreen(screen) : ShellState.focused())?.open("screenshare");
         }
 
         target: ScreenShare
@@ -147,10 +196,7 @@ ShellRoot {
 
     }
 
-    Lock {
-        bars: screens.instances.map((shell) => {
-            return shell.bar;
-        })
+    LockScreens {
     }
 
     Variants {

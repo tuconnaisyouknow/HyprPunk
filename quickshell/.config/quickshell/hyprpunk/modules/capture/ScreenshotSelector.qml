@@ -15,7 +15,7 @@ PanelWindow {
 
     // Fixed once: the window's own screen property shifts while it maps.
     required property string screenName
-    readonly property var request: ShellState.screenshotSelection
+    readonly property var request: Screenshot.selection
     readonly property bool active: request !== null && request.screen === screenName
     // The visible windows ({x, y, width, height} on this screen), the top one first.
     readonly property var windows: Screenshot.windows
@@ -33,8 +33,7 @@ PanelWindow {
             annotatedRegion = rect;
             return ;
         }
-        ShellState.screenshotSelection = null;
-        ShellState.screenshotSelected(rect);
+        Screenshot.select(rect);
     }
 
     function windowAt(x, y) {
@@ -252,8 +251,7 @@ PanelWindow {
             outputFile: selector.request.annotatedFile
             onFinished: (file) => {
                 const region = selector.annotatedRegion;
-                ShellState.screenshotSelection = null;
-                ShellState.screenshotSelected({
+                Screenshot.select({
                     "x": region.x,
                     "y": region.y,
                     "width": region.width,

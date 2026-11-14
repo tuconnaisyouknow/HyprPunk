@@ -83,7 +83,7 @@ RowLayout {
     Item {
         id: recordingChip
 
-        readonly property bool shown: chips.shown && ShellState.recording
+        readonly property bool shown: chips.shown && Screenshot.recording
 
         visible: Layout.preferredWidth > 0
         Layout.preferredWidth: shown ? recordingRow.implicitWidth + 16 : 0
@@ -179,7 +179,7 @@ RowLayout {
         TapHandler {
             gesturePolicy: TapHandler.ReleaseWithinBounds
             enabled: chips.interactive
-            onTapped: ShellState.requestScreenshot("stop", "", 0)
+            onTapped: Screenshot.request("stop", "", 0)
         }
 
         Behavior on Layout.preferredWidth {

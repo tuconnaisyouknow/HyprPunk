@@ -51,6 +51,15 @@ Singleton {
         readonly property int riseEasing: Easing.InBack
     }
 
+    // Going from one page of a panel to another, like on iOS: the new page slides in
+    // over the old one backing off, and the old one is nearly gone before the new one
+    // shows, so they never mush together (PageStack).
+    readonly property QtObject page: QtObject {
+        readonly property int duration: 320
+        // How far each page slides, as a share of the page's width.
+        readonly property real slideIn: 0.3
+        readonly property real backOff: 0.15
+    }
     // Something breathing on its own while a state lasts (a recording, a wait).
     readonly property QtObject pulse: QtObject {
         readonly property int duration: 700
@@ -61,6 +70,9 @@ Singleton {
     // across the bar doesn't flash it), and how long the card waits once it has left.
     readonly property int hoverOpenDelay: 350
     readonly property int hoverCloseDelay: 220
+    // Between items going one after another (clearing the notifications), so you see
+    // them go in order without waiting on each.
+    readonly property int stagger: 70
     // How long the music wave takes to settle into the floor or rise from it, around the
     // lock screen.
     readonly property int waveSettle: 450

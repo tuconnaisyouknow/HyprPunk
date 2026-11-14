@@ -4,21 +4,24 @@ import Quickshell.Bluetooth
 import qs.components
 
 // A paired Bluetooth device: how it's doing, connect or disconnect, or forget it altogether.
-ColumnLayout {
+ControlPage {
     id: page
 
     property var device: null
 
-    signal backRequested()
-    signal forgotten()
+    function show(device) {
+        page.device = device;
+        stack.push(pageName);
+    }
 
+    pageName: "bluetoothDetail"
     spacing: 12
 
     PageHeader {
         Layout.fillWidth: true
         title: page.device !== null ? page.device.deviceName : ""
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     InfoBlock {
@@ -55,7 +58,7 @@ ColumnLayout {
         destructive: true
         onTriggered: {
             page.device.forget();
-            page.forgotten();
+            page.back();
         }
     }
 

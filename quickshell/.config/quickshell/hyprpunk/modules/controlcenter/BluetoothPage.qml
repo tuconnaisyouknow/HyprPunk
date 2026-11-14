@@ -8,41 +8,47 @@ import qs.theme
 
 // The control center's Bluetooth page: the devices around, a click to pair or
 // connect, and the paired ones open their details.
-ColumnLayout {
+ControlPage {
     id: page
 
-    required property var center
+    signal detailsRequested(var device)
 
-    signal backRequested()
-
+    pageName: "bluetooth"
     spacing: 12
+
+    // Looks for devices around while you're on the page.
+    Binding {
+        target: BluetoothStatus.adapter
+        property: "discovering"
+        value: true
+        when: BluetoothStatus.enabled && page.active
+    }
 
     PageHeader {
         Layout.fillWidth: true
         title: "Bluetooth"
-        checked: page.center.bluetoothEnabled
-        onBackRequested: page.backRequested()
-        onToggled: BluetoothPower.toggle()
+        checked: BluetoothStatus.enabled
+        onBackRequested: page.back()
+        onToggled: BluetoothStatus.toggle()
     }
 
     IconText {
         Layout.alignment: Qt.AlignHCenter
         Layout.topMargin: 8
         Layout.bottomMargin: 8
-        visible: page.center.bluetoothDevices.length === 0
-        icon: page.center.bluetoothEnabled ? "󰂰" : "󰂲"
-        text: page.center.bluetoothEnabled ? "Searching for devices…" : "Bluetooth is off"
+        visible: BluetoothStatus.devices.length === 0
+        icon: BluetoothStatus.enabled ? "󰂰" : "󰂲"
+        text: BluetoothStatus.enabled ? "Searching for devices…" : "Bluetooth is off"
         color: Colors.secondary
         font.pixelSize: 14
         font.weight: Font.Normal
-
 
     }
 
     Item {
         Layout.fillWidth: true
         Layout.preferredHeight: bluetoothList.height
-        visible: page.center.bluetoothDevices.length > 0
+        visible: BluetoothStatus.devices.length > 0
 
         ListView {
             id: bluetoothList
@@ -61,7 +67,7 @@ ColumnLayout {
             // Keeps the rows that stay instead of rebuilding them all at each change,
             // which held up the animations.
             model: ScriptModel {
-                values: page.center.bluetoothDevices
+                values: BluetoothStatus.devices
             }
 
             // The row inside: the list sets its delegates' x.
@@ -76,7 +82,7 @@ ColumnLayout {
 
                     x: 6
                     width: parent.width - 12
-                    icon: page.center.bluetoothDeviceIcon(modelData.icon)
+                    icon: Icons.bluetoothDevice(modelData.icon)
                     title: modelData.deviceName
                     subtitle: {
                         if (modelData.pairing)
@@ -95,8 +101,8 @@ ColumnLayout {
                     }
                     highlighted: modelData.connected
                     detailsAvailable: modelData.paired
-                    onClicked: page.center.selectBluetooth(modelData)
-                    onDetailsRequested: page.center.showBluetoothDetails(modelData)
+                    onClicked: BluetoothStatus.select(modelData)
+                    onDetailsRequested: page.detailsRequested(modelData)
                 }
 
             }

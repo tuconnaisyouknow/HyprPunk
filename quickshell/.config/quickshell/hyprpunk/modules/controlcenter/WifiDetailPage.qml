@@ -8,24 +8,27 @@ import qs.theme
 
 // A saved Wi-Fi network: how it's doing, connect or disconnect, change its password
 // (or its enterprise sign-in), or forget it.
-ColumnLayout {
+ControlPage {
     id: page
 
     property var network: null
-    property bool enterprise: false
+    readonly property bool enterprise: network !== null && WifiProfiles.enterprise(network.security)
     // The new password field is open.
     property bool editing: false
     readonly property bool saving: WifiProfiles.busy
     property string error: ""
-    // NetworkManager's key management for its password, from the control center, ""
-    // when it has none to change.
-    property string passwordKeyMgmt: ""
+    // NetworkManager's key management for its password, "" when it has none to change.
+    readonly property string passwordKeyMgmt: network !== null ? WifiProfiles.keyMgmt(network.security) : ""
 
-    signal backRequested()
     signal connectRequested()
     // The enterprise form, filled with the saved settings.
     signal modifyRequested()
-    signal forgotten()
+
+    function show(network) {
+        page.network = network;
+        reset();
+        stack.push(pageName);
+    }
 
     function reset() {
         editing = false;
@@ -53,13 +56,14 @@ ColumnLayout {
         });
     }
 
+    pageName: "wifiDetail"
     spacing: 12
 
     PageHeader {
         Layout.fillWidth: true
         title: page.network !== null ? page.network.name : ""
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     InfoBlock {
@@ -180,7 +184,7 @@ ColumnLayout {
         destructive: true
         onTriggered: {
             page.network.forget();
-            page.forgotten();
+            page.back();
         }
     }
 

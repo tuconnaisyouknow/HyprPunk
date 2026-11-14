@@ -1,8 +1,9 @@
 import QtQuick
 import qs.components
+import qs.theme
 
 // An island card with a search field over a list or grid of results, shared by the
-// clipboard, emoji, keybindings and config panels. You keep typing in the field while
+// launcher and the clipboard, emoji, keybindings and config panels. You keep typing in the field while
 // the arrows, Tab or Ctrl + the Vim keys move the selection; Enter picks (activated).
 // Once the field is empty, Backspace goes back, and in a list right picks and left goes
 // back too: while you type, they edit what you typed.
@@ -11,6 +12,9 @@ IslandPanel {
 
     property string searchIcon: ""
     property string placeholder: "Search"
+    property alias placeholderColor: field.placeholderColor
+    // Nothing to type, the field only names what's listed (the launcher's app actions).
+    property alias readOnly: field.readOnly
     // Shown at the right of the field, e.g. the name of the selected item.
     property string hint: ""
     property string query: ""
@@ -18,27 +22,45 @@ IslandPanel {
     property int count: 0
     property int columns: 1
     property int selectedIndex: 0
+    // Where the selection starts as you type, and the highest it goes: -1 when a row
+    // sits above the results (the launcher's calculation).
+    property int defaultIndex: 0
+    property int firstIndex: 0
     // ListView or GridView of the results, kept scrolled to the selection.
     property var view: null
     property real bodyHeight: 0
-    readonly property int cardPadding: 14
+    readonly property int cardPadding: Metrics.spacing.large
     readonly property int fieldHeight: 44
-    readonly property int sectionSpacing: 12
+    readonly property int sectionSpacing: Metrics.spacing.large
     readonly property real bodyWidth: cardWidth - 2 * cardPadding
     default property alias body: bodyArea.data
 
     signal activated(int index, bool shift)
+    // Every key, before the panel's own: accept it to take it.
+    signal keyPressed(var event)
 
+    // Through the results in cells (dx, dy), up to the row above them if there's one.
     function move(dx, dy) {
-        if (count > 0)
-            selectedIndex = Math.max(0, Math.min(count - 1, selectedIndex + dx + dy * columns));
+        if (count === 0)
+            return ;
 
+        if (selectedIndex < 0) {
+            if (dy > 0 || dx > 0)
+                selectedIndex = 0;
+
+            return ;
+        }
+        if (dy < 0 && selectedIndex < columns) {
+            selectedIndex = firstIndex;
+            return ;
+        }
+        selectedIndex = Math.max(firstIndex < 0 && dx < 0 && selectedIndex === 0 ? -1 : 0, Math.min(count - 1, selectedIndex + dx + dy * columns));
     }
 
     cardHeight: 2 * cardPadding + fieldHeight + (bodyHeight > 0 ? sectionSpacing + bodyHeight : 0)
     onOpening: {
         field.text = "";
-        selectedIndex = 0;
+        selectedIndex = defaultIndex;
         if (view)
             view.positionViewAtBeginning();
 
@@ -49,7 +71,7 @@ IslandPanel {
 
     }
     onQueryChanged: {
-        selectedIndex = 0;
+        selectedIndex = defaultIndex;
         if (view)
             view.positionViewAtBeginning();
 
@@ -63,9 +85,8 @@ IslandPanel {
     Behavior on cardHeight {
         enabled: panel.opened
 
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.normal
         }
 
     }
@@ -82,6 +103,10 @@ IslandPanel {
         hint: panel.hint
         onTextChanged: panel.query = text
         onKeyPressed: (event) => {
+            panel.keyPressed(event);
+            if (event.accepted)
+                return ;
+
             const move = panel.controlMove(event);
             const grid = panel.columns > 1;
             if (move)

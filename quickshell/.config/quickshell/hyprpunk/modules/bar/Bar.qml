@@ -26,8 +26,8 @@ Item {
     required property Item islandFrame
     // Every card on this screen (Card), whichever pill they grow out of.
     property var cards: []
-    // The notifications from before Quickshell was restarted.
-    readonly property int notificationCount: Notifications.server.trackedNotifications.values.length + Notifications.history.entries.length
+    // The notifications waiting, from before a restart too.
+    readonly property int notificationCount: Notifications.count
     // This screen's OSD (Osd), null while none shows here. The last one shown stays in
     // osdShown, so the island still draws it as it goes away.
     readonly property var osd: Osd.current !== null && (Osd.current.screen === "" || Osd.current.screen === screen.name) ? Osd.current : null
@@ -37,7 +37,7 @@ Item {
     // While the session is locked, the lock's island shows the OSD and the bar's own one
     // stays still. It isn't drawn under the lock, so it would only catch up on its
     // animations once the lock is gone.
-    property bool sessionLocked: false
+    readonly property bool sessionLocked: Lock.locked
     // A card is drawn over the island (the calendar, an island panel, the notifications,
     // the AirPods), opening or folding back.
     readonly property bool islandCovered: pillHidden("island")
@@ -106,6 +106,16 @@ Item {
         sideOsd.follow();
     }
     onOsdLabelChanged: island.fadeContent()
+    Component.onCompleted: {
+        if (screenState !== null)
+            screenState.bar = bar;
+
+    }
+    Component.onDestruction: {
+        if (screenState !== null && screenState.bar === bar)
+            screenState.bar = null;
+
+    }
     // Where its island and control pill are, for the cards growing out of them:
     // centerOffset is how far the island sits from the middle, right and top are the
     // control pill's distances from the screen's edges. spreadX and spreadY are how far
@@ -170,7 +180,7 @@ Item {
             y: Math.round(centerGroup.y + island.y + island.height / 2 - height / 2)
             camera: Privacy.cameraInUse
             microphone: Privacy.microphoneInUse
-            recording: ShellState.recording
+            recording: Screenshot.recording
             opacity: active && bar.islandOsdShown && !calendar.mapped ? 1 : 0
             visible: opacity > 0
 
@@ -284,10 +294,10 @@ Item {
     // The time recorded, for the island.
     Timer {
         interval: 1000
-        running: ShellState.recording
+        running: Screenshot.recording
         repeat: true
         triggeredOnStart: true
-        onTriggered: bar.recordingElapsed = Math.max(0, Math.round((Date.now() - ShellState.recordingStarted) / 1000))
+        onTriggered: bar.recordingElapsed = Math.max(0, Math.round((Date.now() - Screenshot.recordingStarted) / 1000))
     }
 
     ServiceRef {

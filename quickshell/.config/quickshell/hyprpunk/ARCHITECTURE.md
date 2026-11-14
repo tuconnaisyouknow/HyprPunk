@@ -106,6 +106,12 @@ in that surface (a card's preview, its pinned state, the page shown).
 - **A surface is a view.** It binds to services and state, and holds only presentation
   state of its own: the selected entry, the scroll, the page.
 
+- **Pages go in and back out the way you came.** A panel with pages (the control
+  center) keeps the pages you went through as a history (`PageStack`): back is always
+  the page before, never a rule written per page. A page with a subject (a network, a
+  device) takes it in its own `show()`, and runs what it follows (a scan) only while
+  it's shown in an open panel.
+
 ## Motion
 
 - **Every animation takes its timing from `Motion`.** No duration or easing is written

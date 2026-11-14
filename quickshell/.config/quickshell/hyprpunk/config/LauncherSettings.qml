@@ -5,7 +5,7 @@ import Quickshell
 
 // The launcher's pinned and hidden apps, by desktop entry, saved by launcherctl.sh. The
 // pinned ones come first while nothing is typed, in the order you pinned them; the
-// hidden ones never show (AppLauncher.qml).
+// hidden ones never show (Apps).
 Singleton {
     readonly property var pinned: file.entries.filter((entry) => {
         return entry[0] === "pinned";

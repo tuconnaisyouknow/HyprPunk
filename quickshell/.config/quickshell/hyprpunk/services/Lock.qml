@@ -1,22 +1,21 @@
+pragma Singleton
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pam
-import Quickshell.Wayland
 import qs.config
-import qs.services
 
-// The lock screen. It's a real session lock: if the shell crashes, the screens stay
-// locked. Every screen gets the bar's look, and the password is checked by PAM like
-// any login. `qs -c hyprpunk ipc call lock lock` locks it (the shortcut, the session
-// menu and hypridle, for logind, do that), `lock lockInstantly` skips the animation before sleep.
+// Locking the session: the way in (the desktop's wave lying flat, the screens' snapshots,
+// then the lock) and out (the password checked by PAM like any login, then the lock
+// screens playing their way out). The lock screens themselves are LockScreens's.
+// `qs -c hyprpunk ipc call lock lock` locks (the shortcut, the session menu and
+// hypridle, for logind, do that), `lock lockInstantly` skips the animation before sleep.
 // Without the animation in the settings (LockSettings), the lock covers the screen and
 // leaves it at once, and only its island plays its padlock.
-Scope {
+Singleton {
     id: locker
 
-    // The bars, for their state (resources, network, sound, battery, player).
-    required property var bars
     // Typed on any screen, shown on all of them.
     property string password: ""
     property bool authenticating: false
@@ -29,7 +28,8 @@ Scope {
     // The animation turned off in the settings, as it was when locking: no blur, no pills
     // moving, so no snapshot or wave to wait for either.
     property bool still: false
-    readonly property bool locked: sessionLock.locked
+    // The session lock is up (WlSessionLock): the bars keep still under it.
+    property bool locked: false
     // Snapshots of the screens just before locking, so the lock can blur out of them
     // and back. Uncompressed, since a PNG takes grim most of a second.
     readonly property string snapshotDir: Quickshell.env("XDG_RUNTIME_DIR")
@@ -46,7 +46,7 @@ Scope {
     signal settled()
 
     function engage(instant) {
-        if (sessionLock.locked) {
+        if (locked) {
             if (instant)
                 settled();
 
@@ -93,9 +93,8 @@ Scope {
         if (!unlocking)
             return ;
 
-        sessionLock.locked = false;
+        locked = false;
         covering = false;
-        tellBars(false);
         unlocking = false;
         cleanup.running = true;
     }
@@ -103,10 +102,7 @@ Scope {
     function lockNow() {
         deadline.stop();
         waitingForWave = false;
-        if (!sessionLock.locked) {
-            tellBars(true);
-            sessionLock.locked = true;
-        }
+        locked = true;
 
     }
 
@@ -133,21 +129,7 @@ Scope {
         failed();
     }
 
-    function barFor(screen) {
-        if (!screen)
-            return null;
 
-        return bars.find((bar) => {
-            return bar.screen.name === screen.name;
-        }) || bars[0] || null;
-    }
-
-    // Tells the bars when the session locks, so their islands keep still under the lock.
-    function tellBars(sessionLocked) {
-        for (const bar of bars)
-            bar.sessionLocked = sessionLocked;
-
-    }
 
     PamContext {
         id: pam
@@ -223,45 +205,6 @@ wait'
 
         interval: 2200
         onTriggered: locker.error = ""
-    }
-
-    // Decode each screen's wallpaper ahead of time (a 4K one takes a good part of a
-    // second), so the lock finds it in the cache and can fade it in straight away.
-    Variants {
-        model: locker.bars
-
-        Image {
-            required property var modelData
-
-            source: Session.wallpaper !== "" ? "file://" + Session.wallpaper : ""
-            sourceSize.width: modelData.screen.width
-            sourceSize.height: modelData.screen.height
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true
-            visible: false
-        }
-
-    }
-
-    WlSessionLock {
-        id: sessionLock
-
-        LockSurface {
-            lock: locker
-        }
-
-    }
-
-    IpcHandler {
-        function lock(): void {
-            locker.engage(false);
-        }
-
-        function lockInstantly(): void {
-            locker.engage(true);
-        }
-
-        target: "lock"
     }
 
 }

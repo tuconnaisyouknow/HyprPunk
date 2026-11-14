@@ -12,79 +12,69 @@ ColumnLayout {
 
     // The card is open: only then do closed notifications animate out.
     property bool shown: false
-    // The ones from before a restart under the live ones, which come oldest first.
-    readonly property var trackedValues: Notifications.history.entries.concat(Notifications.server.trackedNotifications.values)
-    // The notifications listed. A closed one stays until its exit animation is over.
-    property var entryIds: []
-    property var notificationObjects: ({})
-    property var leavingIds: []
+    // The notifications listed, newest first.
+    readonly property ExitingEntries listed: ExitingEntries {
+    }
     property var clearQueue: []
     // Waiting, not counting the ones on their way out.
-    readonly property int count: entryIds.length - leavingIds.length
+    readonly property int count: listed.staying
     // The ones already slid out of sight, their gap still closing.
     property var slidOutIds: []
     // Still in sight, those sliding out included: the card only narrows once the last one
     // has slid out, or the calendar would come sliding in under it.
-    readonly property int shownCount: entryIds.length - slidOutIds.length
+    readonly property int shownCount: listed.entries.length - slidOutIds.length
 
     // Dismisses the notifications one after another, from top to bottom.
     function clearAll() {
-        clearQueue = entryIds.filter((id) => {
-            return !leavingIds.includes(id);
+        clearQueue = listed.entries.filter((entry) => {
+            return !listed.leaving(entry.id);
         });
         clearStep.restart();
     }
 
-    function syncEntries() {
-        const tracked = trackedValues;
-        const trackedIds = tracked.map((notification) => {
+    function sync() {
+        const waiting = Notifications.waiting;
+        const ids = waiting.map((notification) => {
             return notification.id;
         });
-        const fresh = tracked.filter((notification) => {
-            return !entryIds.includes(notification.id);
-        });
-        if (fresh.length > 0) {
-            const objects = Object.assign({}, notificationObjects);
-            for (const notification of fresh) objects[notification.id] = notification
-            notificationObjects = objects;
-            entryIds = fresh.map((notification) => {
-                return notification.id;
-            }).reverse().concat(entryIds);
-        }
-        const gone = entryIds.filter((id) => {
-            return !trackedIds.includes(id) && !leavingIds.includes(id);
+        listed.add(waiting.filter((notification) => {
+            return !listed.includes(notification.id);
+        }).reverse());
+        const gone = listed.entries.filter((entry) => {
+            return !ids.includes(entry.id) && !listed.leaving(entry.id);
+        }).map((entry) => {
+            return entry.id;
         });
         // Hidden, the card draws no frames and its animations stand still: they would
         // all play at once the next time it opens. The ones closed meanwhile just go.
         if (!shown)
             for (const id of gone) drop(id)
-        else if (gone.length > 0)
-            leavingIds = leavingIds.concat(gone);
+        else
+            listed.leave(gone);
     }
 
     function drop(id) {
-        entryIds = entryIds.filter((entryId) => {
-            return entryId !== id;
-        });
-        leavingIds = leavingIds.filter((leavingId) => {
-            return leavingId !== id;
-        });
+        listed.drop(id);
         slidOutIds = slidOutIds.filter((slidId) => {
             return slidId !== id;
         });
-        const objects = Object.assign({}, notificationObjects);
-        delete objects[id];
-        notificationObjects = objects;
     }
 
-    onTrackedValuesChanged: syncEntries()
     // Closing the card: the ones still leaving go at once, for the same reason.
     onShownChanged: {
         if (!shown)
-            for (const id of leavingIds.slice()) drop(id)
+            for (const id of listed.leavingIds.slice()) drop(id)
     }
-    Component.onCompleted: syncEntries()
-    spacing: 12
+    Component.onCompleted: sync()
+    spacing: Metrics.spacing.large
+
+    Connections {
+        function onWaitingChanged() {
+            list.sync();
+        }
+
+        target: Notifications
+    }
 
     RowLayout {
         Layout.fillWidth: true
@@ -94,7 +84,7 @@ ColumnLayout {
             icon: "󰂚"
             text: "Notifications"
             color: Colors.primary
-            font.pixelSize: 16
+            font.pixelSize: Metrics.text.title
             font.weight: Font.Bold
         }
 
@@ -146,22 +136,21 @@ ColumnLayout {
         boundsBehavior: Flickable.StopAtBounds
 
         model: ScriptModel {
-            values: list.entryIds
+            values: list.listed.entries
         }
 
         delegate: Item {
             id: entry
 
-            required property int modelData
-            required property int index
-            readonly property int notificationId: modelData
-            readonly property bool leaving: list.leavingIds.includes(notificationId)
+            required property var modelData
+            readonly property int notificationId: modelData.id
+            readonly property bool leaving: list.listed.leaving(notificationId)
             // Card offset from its resting place, and share of its slot in the list.
             property real slide: 0
             property real slot: 1
 
             width: ListView.view.width
-            height: (card.implicitHeight + 10) * slot
+            height: (card.implicitHeight + Metrics.spacing.normal) * slot
             Component.onCompleted: {
                 if (leaving)
                     exitAnimation.start();
@@ -187,32 +176,31 @@ ColumnLayout {
 
                 x: entry.slide
                 width: parent.width
-                // Looked up once: the object is destroyed while the card leaves.
-                notification: list.notificationObjects[entry.notificationId] ?? null
+                // Let go as it leaves, before it's destroyed: the card keeps what it showed.
+                notification: entry.leaving ? null : entry.modelData.notification
             }
 
             // Slides out to the right, then closes the gap.
             SequentialAnimation {
                 id: exitAnimation
 
-                NumberAnimation {
+                // Past the list's edge, its glass's glow with it.
+                Anim {
                     target: entry
                     property: "slide"
-                    to: entry.width + 24
-                    duration: 200
-                    easing.type: Easing.InCubic
+                    to: entry.width + Metrics.spacing.section
+                    token: Motion.leave.normal
                 }
 
                 ScriptAction {
                     script: list.slidOutIds = list.slidOutIds.concat([entry.notificationId])
                 }
 
-                NumberAnimation {
+                Anim {
                     target: entry
                     property: "slot"
                     to: 0
-                    duration: 180
-                    easing.type: Easing.OutCubic
+                    token: Motion.resize.normal
                 }
 
                 ScriptAction {
@@ -228,7 +216,7 @@ ColumnLayout {
     Timer {
         id: clearStep
 
-        interval: 70
+        interval: Motion.stagger
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -236,11 +224,11 @@ ColumnLayout {
                 stop();
                 return ;
             }
-            const id = list.clearQueue[0];
+            const entry = list.clearQueue[0];
             list.clearQueue = list.clearQueue.slice(1);
-            const notification = list.notificationObjects[id];
-            if (notification)
-                notification.dismiss();
+            // Still there: not closed by its app meanwhile.
+            if (entry.notification && !list.listed.leaving(entry.id))
+                entry.notification.dismiss();
 
         }
     }

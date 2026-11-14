@@ -6,7 +6,7 @@ import qs.theme
 
 // A VPN from the VPN tab: how it's doing, where it goes, connect or disconnect, whether
 // it comes up on its own, or delete it.
-ColumnLayout {
+ControlPage {
     id: page
 
     property string uuid: ""
@@ -16,8 +16,10 @@ ColumnLayout {
     property var details: ({
     })
 
-    signal backRequested()
-    signal deleted()
+    function show(uuid) {
+        page.uuid = uuid;
+        stack.push(pageName);
+    }
 
     // Read again on each change: the address only exists while it's up.
     function readDetails() {
@@ -32,6 +34,7 @@ ColumnLayout {
         });
     }
 
+    pageName: "vpnDetail"
     spacing: 12
     onUuidChanged: {
         details = {
@@ -44,7 +47,7 @@ ColumnLayout {
         Layout.fillWidth: true
         title: page.profile !== null ? page.profile.name : ""
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     InfoBlock {
@@ -127,7 +130,7 @@ ColumnLayout {
         destructive: true
         onTriggered: {
             Vpn.remove(page.uuid);
-            page.deleted();
+            page.back();
         }
     }
 

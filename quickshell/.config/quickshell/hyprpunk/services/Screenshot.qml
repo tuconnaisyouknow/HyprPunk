@@ -5,12 +5,12 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
-import qs.state
 
-// Screenshots and screen recordings, asked for by the shortcuts and the screenshot
-// menu (`qs -c hyprpunk ipc call screenshot …`). Screenshots go to their folder, the
-// clipboard or both, recordings to theirs, with the sound and frame rate you chose
-// (CaptureSettings).
+// Screenshots and screen recordings, asked for (request) by the shortcuts, the screenshot
+// menu and the island. Screenshots go to their folder, the clipboard or both, recordings
+// to theirs, with the sound and frame rate you chose (CaptureSettings). It holds what the
+// shell shows of them: the recording under way, the region being chosen and the last
+// capture.
 Singleton {
     id: screenshot
 
@@ -28,6 +28,65 @@ Singleton {
     // first, for the selection to pick one.
     property var windows: []
     property var monitorInfo: null
+    // The screen being recorded, since recordingStarted (ms since epoch).
+    property bool recording: false
+    property string recordingScreen: ""
+    property real recordingStarted: 0
+    // The region being chosen, for the selector: {screen, file, scale, mode,
+    // annotatedFile}, null otherwise.
+    property var selection: null
+    // The last capture, for the island: {screen, file, annotated, copied, saved}, or for a
+    // recording {screen, file (its first frame), video, duration in s}.
+    property var taken: null
+
+    // The region chosen ({x, y, width, height} on the screen), null when cancelled.
+    signal selected(var rect)
+
+    // mode: "screen", "region", "annotate", "record", "record-region", "share-region" or
+    // "stop"; screen: its name, empty for the focused one; delay in ms, so a menu can
+    // fold away first. Asking to record while a recording runs stops it.
+    function request(mode, screen, delay) {
+        if (mode === "stop" || (recording && mode.startsWith("record"))) {
+            stopRecording();
+            return ;
+        }
+        if (busy)
+            return ;
+
+        requestDelay.mode = mode;
+        requestDelay.screen = screen || "";
+        requestDelay.interval = Math.max(1, delay || 0);
+        requestDelay.restart();
+    }
+
+    // The selector's answer: the region, null when cancelled.
+    function select(rect) {
+        selection = null;
+        selected(rect);
+        if (!busy)
+            return ;
+
+        if (rect === null) {
+            cleanup.command = ["rm", "-f", frozenFile, frozenFile + ".annotated.png"];
+            cleanup.running = true;
+            busy = false;
+            return ;
+        }
+        if (mode === "record-region") {
+            cleanup.command = ["rm", "-f", frozenFile];
+            cleanup.running = true;
+            record(rect);
+            return ;
+        }
+        // The region an app gets to share: ScreenShare takes it from here.
+        if (mode === "share-region") {
+            cleanup.command = ["rm", "-f", frozenFile];
+            cleanup.running = true;
+            busy = false;
+            return ;
+        }
+        save(rect);
+    }
 
     function capture(mode, name) {
         const monitor = Hyprland.monitors.values.find((item) => {
@@ -94,54 +153,6 @@ Singleton {
 
     }
 
-    // The shortcuts and the menu come with a delay, so the menu can fold away first.
-    // Asking to record while a recording runs stops it.
-    Connections {
-        function onScreenshotRequestsChanged() {
-            const request = ShellState.screenshotRequest;
-            if (request.mode === "stop" || (ShellState.recording && request.mode.startsWith("record"))) {
-                screenshot.stopRecording();
-                return ;
-            }
-            if (screenshot.busy)
-                return ;
-
-            requestDelay.mode = request.mode;
-            requestDelay.screen = request.screen;
-            requestDelay.interval = Math.max(1, request.delay);
-            requestDelay.restart();
-        }
-
-        function onScreenshotSelected(rect) {
-            if (!screenshot.busy)
-                return ;
-
-            if (rect === null) {
-                // Cancelled.
-                cleanup.command = ["rm", "-f", screenshot.frozenFile, screenshot.frozenFile + ".annotated.png"];
-                cleanup.running = true;
-                screenshot.busy = false;
-                return ;
-            }
-            if (screenshot.mode === "record-region") {
-                cleanup.command = ["rm", "-f", screenshot.frozenFile];
-                cleanup.running = true;
-                screenshot.record(rect);
-                return ;
-            }
-            // The region an app gets to share: ScreenShare takes it from here.
-            if (screenshot.mode === "share-region") {
-                cleanup.command = ["rm", "-f", screenshot.frozenFile];
-                cleanup.running = true;
-                screenshot.busy = false;
-                return ;
-            }
-            screenshot.save(rect);
-        }
-
-        target: ShellState
-    }
-
     Timer {
         id: requestDelay
 
@@ -158,9 +169,9 @@ Singleton {
         onTriggered: {
             recorder.running = true;
             screenshot.busy = false;
-            ShellState.recordingScreen = screenshot.screenName;
-            ShellState.recordingStarted = Date.now();
-            ShellState.recording = true;
+            screenshot.recordingScreen = screenshot.screenName;
+            screenshot.recordingStarted = Date.now();
+            screenshot.recording = true;
         }
     }
 
@@ -175,7 +186,7 @@ Singleton {
             if (screenshot.mode === "screen")
                 screenshot.save(null);
             else
-                ShellState.screenshotSelection = {
+                screenshot.selection = {
                 "screen": screenshot.screenName,
                 "file": screenshot.frozenFile,
                 "scale": screenshot.scale,
@@ -243,7 +254,7 @@ rm -f "$1"
         onExited: (code) => {
             screenshot.busy = false;
             if (code === 0)
-                ShellState.screenshotTaken = {
+                screenshot.taken = {
                 "screen": screenshot.screenName,
                 "file": file,
                 "annotated": screenshot.mode === "annotate",
@@ -265,8 +276,8 @@ rm -f "$1"
         }
 
         onExited: (code) => {
-            const seconds = Math.round((Date.now() - ShellState.recordingStarted) / 1000);
-            ShellState.recording = false;
+            const seconds = Math.round((Date.now() - screenshot.recordingStarted) / 1000);
+            screenshot.recording = false;
             posterProcess.duration = seconds;
             posterProcess.poster = Quickshell.env("XDG_RUNTIME_DIR") + "/hyprpunk-recording-" + Date.now() + ".jpg";
             posterProcess.command = ["sh", "-c", posterProcess.script, "sh", file, posterProcess.poster];
@@ -287,7 +298,7 @@ ffmpeg -loglevel error -y -i "$1" -frames:v 1 -vf scale=-2:180 "$2"'
 
         onExited: (code) => {
             if (code === 0) {
-                ShellState.screenshotTaken = {
+                screenshot.taken = {
                     "screen": screenshot.screenName,
                     "file": poster,
                     "video": recorder.file,
@@ -302,41 +313,6 @@ ffmpeg -loglevel error -y -i "$1" -frames:v 1 -vf scale=-2:180 "$2"'
 
     Process {
         id: cleanup
-    }
-
-    IpcHandler {
-        function screen(): void {
-            ShellState.requestScreenshot("screen", "", 0);
-        }
-
-        function region(): void {
-            ShellState.requestScreenshot("region", "", 0);
-        }
-
-        function annotate(): void {
-            ShellState.requestScreenshot("annotate", "", 0);
-        }
-
-        // Starts recording the screen, or stops the recording.
-        function record(): void {
-            ShellState.requestScreenshot("record", "", 0);
-        }
-
-        // Starts recording a region, or stops the recording.
-        function recordRegion(): void {
-            ShellState.requestScreenshot("record-region", "", 0);
-        }
-
-        function stop(): void {
-            ShellState.requestScreenshot("stop", "", 0);
-        }
-
-        // The menu of the screenshots and recordings, in the island.
-        function menu(): void {
-            ShellState.focused()?.toggle("screenshot");
-        }
-
-        target: "screenshot"
     }
 
 }

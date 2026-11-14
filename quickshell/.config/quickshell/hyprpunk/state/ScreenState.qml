@@ -34,6 +34,8 @@ QtObject {
         const owner = first(1) ?? first(2) ?? first(3);
         return owner !== undefined ? owner.name : "";
     }
+    // Its bar (Bar), for the lock screen to start from where its pills are.
+    property Item bar: null
     // The surfaces you can open on this screen, by name (the IPC's panel names).
     property var surfaces: ({
     })

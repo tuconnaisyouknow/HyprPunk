@@ -168,13 +168,12 @@ Card {
         // The island turns into the AirPods OSD and the card folds back onto it.
         const left = device.left.level;
         const right = device.right.level;
-        ShellState.airPodsOsd = {
+        Osd.showAirPods({
             "screen": screen.name,
             "image": images !== null ? images.buds : "",
             "level": left === null ? right : right === null ? left : Math.min(left, right),
             "charging": device.left.charging && device.right.charging
-        };
-        ShellState.airPodsOsdRequests += 1;
+        });
         close();
     }
     // Paired: the card of the AirPods follows. Ignored or gone: nothing left to show.

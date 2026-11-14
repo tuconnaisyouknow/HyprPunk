@@ -8,10 +8,9 @@ import qs.theme
 // A network that doesn't announce its name, so it's never in the list: you type its
 // name and pick its security. A password or none connects from here, through
 // wifi-connection.py; an enterprise network goes on to the enterprise form.
-ColumnLayout {
+ControlPage {
     id: page
 
-    required property var center
     property string error: ""
     // The common ones first. keyMgmt is NetworkManager's, for those sent from here.
     readonly property var securityOptions: [{
@@ -49,7 +48,13 @@ ColumnLayout {
     readonly property string missing: ssid.text === "" ? "Missing network name" : needsPassword && password.text === "" ? "Missing password" : ""
     readonly property bool ready: missing === "" && !WifiProfiles.busy
 
-    signal backRequested()
+    // An enterprise network: its sign-in has a page of its own.
+    signal enterpriseRequested(var network)
+
+    function show() {
+        stack.push(pageName);
+        reset();
+    }
 
     function reset() {
         error = "";
@@ -68,11 +73,11 @@ ColumnLayout {
 
         error = "";
         if (enterprise) {
-            center.askEnterprise({
+            page.enterpriseRequested({
                 "name": ssid.text,
                 "security": security.security,
                 "hidden": true
-            }, "hidden");
+            });
             return ;
         }
         const request = {
@@ -88,18 +93,19 @@ ColumnLayout {
         WifiProfiles.connect(request, (ok, error) => {
             page.error = error;
             if (ok)
-                page.backRequested();
+                page.back();
 
         });
     }
 
+    pageName: "hidden"
     spacing: 12
 
     PageHeader {
         Layout.fillWidth: true
         title: "Hidden Network"
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     ControlBlock {

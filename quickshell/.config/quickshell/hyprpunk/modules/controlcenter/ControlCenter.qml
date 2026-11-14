@@ -1,17 +1,10 @@
 import QtQuick
-import QtQuick.Layouts
-import Quickshell
-import Quickshell.Bluetooth
-import Quickshell.Io
-import Quickshell.Networking
-import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import qs.components
-import qs.config
 import qs.services
+import qs.state
 import qs.theme
 import qs.windows
-import qs.state
 
 // The control center, growing out of the bar's right-most pill. Click the pill or
 // press Super+C; Escape, a click outside or the pill again closes it.
@@ -19,6 +12,7 @@ import qs.state
 // on, Shift+Enter its small second button (a tile's icon, a row's details), Backspace or
 // Escape goes back a page. The main page is a grid the arrows move around; on the other
 // pages, where you only go up and down, right clicks and left goes back.
+// The pages and how you go through them are the PageStack's.
 Card {
     id: controlCenter
 
@@ -29,163 +23,32 @@ Card {
     // The pages are built once the bar has its first values, or right away if you open
     // the panel before. Kept from then on.
     property bool pagesWanted: false
-    readonly property int panelWidth: 452
+    readonly property int padding: Metrics.spacing.large
+    readonly property int pageWidth: 424
+    readonly property int panelWidth: pageWidth + 2 * padding
     // The panel's tallest: a page taller than that scrolls.
     readonly property int panelMaxHeight: 680
     // Where that pill is.
     readonly property var pill: bar.controlPill
-    property string page: "main"
-    // Pages move like on iOS: a sub-page slides in from the right while the main page
-    // backs off to the left, and the other way round going back.
-    property string shownPage: "main"
-    property string previousPage: "main"
-    property real pageProgress: 1
-    property var passwordNetwork: null
-    // Enterprise network whose credentials are asked on the "enterprise" page.
-    property var enterpriseNetwork: null
-    // The network you just connected to from here: only its failures ask for credentials,
-    // not NetworkManager's own reconnections in the background.
-    property var requestedWifi: null
-    // Saved network and paired device of the detail pages.
-    property var detailNetwork: null
-    property var detailDevice: null
-    // The VPN of its detail page, by uuid.
-    property string detailVpn: ""
-    // The background app whose menu is unfolded on its page.
-    property var trayExpanded: null
-    // Where the enterprise form goes back to (the list, the network's details or the
-    // hidden network's page), and where it lands once connected: back where it came
-    // from, but a hidden network shows up in the list.
-    property string enterpriseReturnPage: "wifi"
-    property string enterpriseDonePage: "wifi"
-    // The Bluetooth page, or the sound page for an audio device opened from it.
-    property string bluetoothDetailReturnPage: "bluetooth"
-    // The time caffeine's countdown is shown at, ticking while the panel is open.
-    property real now: Date.now()
-    readonly property var caffeineDurations: [{
-        "minutes": 0,
-        "label": "Until turned off"
-    }, {
-        "minutes": 30,
-        "label": "30 minutes"
-    }, {
-        "minutes": 60,
-        "label": "1 hour"
-    }, {
-        "minutes": 120,
-        "label": "2 hours"
-    }, {
-        "minutes": 240,
-        "label": "4 hours"
-    }]
-    readonly property var adapter: Bluetooth.defaultAdapter
-    readonly property bool bluetoothEnabled: adapter !== null && adapter.enabled
-    readonly property var bluetoothDevices: {
-        if (adapter === null || !adapter.enabled)
-            return [];
-
-        return adapter.devices.values.filter((device) => {
-            return device.paired || (device.deviceName !== "" && !/^([0-9A-F]{2}[-:]){5}[0-9A-F]{2}$/i.test(device.deviceName));
-        }).sort((a, b) => {
-            return (b.connected - a.connected) || (b.paired - a.paired) || a.deviceName.localeCompare(b.deviceName);
-        });
-    }
-    readonly property var connectedBluetooth: bluetoothDevices.filter((device) => {
-        return device.connected;
-    })
+    readonly property Item stack: pagesLoader.item
 
     function lerp(from, to) {
         return from + (to - from) * progress;
-    }
-
-    function pageVisible(name) {
-        return page === name || (pageProgress < 1 && previousPage === name);
-    }
-
-    function pageDepth(name) {
-        if (name === "main")
-            return 0;
-
-        if (name === "wifiDetail" || name === "vpnDetail" || name === "bluetoothDetail" || name === "hidden")
-            return 2;
-
-        return name === "enterprise" ? 3 : 1;
-    }
-
-    // The page a page goes back to (Escape and the back buttons).
-    function parentPage(name) {
-        if (name === "enterprise")
-            return enterpriseReturnPage;
-
-        if (name === "wifiDetail" || name === "vpnDetail" || name === "hidden")
-            return "wifi";
-
-        if (name === "bluetoothDetail")
-            return bluetoothDetailReturnPage;
-
-        return "main";
-    }
-
-    function showWifiDetails(network) {
-        detailNetwork = network;
-        pagesLoader.item.wifiDetail.reset();
-        page = "wifiDetail";
-    }
-
-    function showVpnDetails(uuid) {
-        detailVpn = uuid;
-        page = "vpnDetail";
-    }
-
-    function showBluetoothDetails(device) {
-        bluetoothDetailReturnPage = page === "sound" ? "sound" : "bluetooth";
-        detailDevice = device;
-        page = "bluetoothDetail";
-    }
-
-    // The background apps page, with this app's menu already unfolded (or none).
-    function showTray(item) {
-        trayExpanded = item;
-        page = "tray";
-    }
-
-    function pageX(name) {
-        // Back towards the main page: the other way round.
-        const direction = pageDepth(page) < pageDepth(previousPage) ? -1 : 1;
-        const width = panelWidth - 28;
-        // pageProgress runs linearly: the slide eases out, the fades below don't.
-        const slide = 1 - Math.pow(1 - pageProgress, 3);
-        if (name === page)
-            return (1 - slide) * direction * width * 0.3;
-
-        return -slide * direction * width * 0.15;
-    }
-
-    function pageOpacity(name) {
-        // The old page is nearly gone before the new one shows, so they never mush together.
-        if (name === page)
-            return Math.max(0, Math.min(1, (pageProgress - 0.2) / 0.6));
-
-        return Math.max(0, 1 - pageProgress / 0.35);
     }
 
     function close() {
         opened = false;
     }
 
-    function back() {
-        if (page !== "main")
-            page = parentPage(page);
-        else
-            close();
-    }
-
     // Keys no control kept for itself (a field its letters, a slider its arrows).
     function keyPressed(event) {
+        if (stack === null)
+            return ;
+
         const direction = Navigation.direction(event);
-        const grid = page === "main";
+        const grid = stack.current === "main";
         if (event.key === Qt.Key_Escape || Navigation.backs(event) || (!grid && direction !== null && direction[0] < 0))
-            back();
+            stack.back();
         else if (Navigation.accepts(event))
             keyboardFocus.activate((event.modifiers & Qt.ShiftModifier) !== 0);
         else if (!grid && direction !== null && direction[0] > 0 && keyboardFocus.current !== null)
@@ -199,199 +62,6 @@ Card {
         event.accepted = true;
     }
 
-    function wifiSubtitle() {
-        if (!Networking.wifiEnabled)
-            return "Off";
-
-        if (NetworkStatus.activeWifi !== null)
-            return NetworkStatus.activeWifi.name;
-
-        return NetworkStatus.wiredConnected ? "Ethernet" : "Not connected";
-    }
-
-    function bluetoothSubtitle() {
-        if (adapter === null)
-            return "Unavailable";
-
-        if (!adapter.enabled)
-            return "Off";
-
-        if (connectedBluetooth.length === 1)
-            return connectedBluetooth[0].deviceName;
-
-        if (connectedBluetooth.length > 1)
-            return connectedBluetooth.length + " devices";
-
-        return "On";
-    }
-
-    function bluetoothDeviceIcon(icon) {
-        if (icon.startsWith("audio-headset") || icon.startsWith("audio-headphones"))
-            return "󰋋";
-
-        if (icon.startsWith("audio"))
-            return "󰓃";
-
-        if (icon.startsWith("input-mouse"))
-            return "󰍽";
-
-        if (icon.startsWith("input-keyboard"))
-            return "󰌌";
-
-        if (icon.startsWith("input-gaming"))
-            return "󰊴";
-
-        if (icon.startsWith("phone"))
-            return "󰏲";
-
-        return "󰂯";
-    }
-
-    // A saved network, or one that needs no secret (open, Enhanced Open, or a kind
-    // NetworkManager works out alone), connects at once. The others ask first.
-    function selectWifi(network) {
-        if (network.connected) {
-            network.disconnect();
-        } else if (network.known || !needsSecrets(network)) {
-            passwordNetwork = null;
-            requestedWifi = network;
-            network.connect();
-        } else {
-            askWifiSecrets(network);
-        }
-    }
-
-    // Enterprise networks get the full form, the others just a password.
-    function isEnterprise(security) {
-        return [WifiSecurityType.WpaEap, WifiSecurityType.Wpa2Eap, WifiSecurityType.Wpa3SuiteB192, WifiSecurityType.DynamicWep, WifiSecurityType.Leap].includes(security);
-    }
-
-    // NetworkManager's key management for a network's password, "" when it takes none.
-    function passwordKeyMgmt(security) {
-        if (security === WifiSecurityType.Sae)
-            return "sae";
-
-        if (security === WifiSecurityType.WpaPsk || security === WifiSecurityType.Wpa2Psk)
-            return "wpa-psk";
-
-        if (security === WifiSecurityType.StaticWep)
-            return "none";
-
-        return "";
-    }
-
-    function needsSecrets(network) {
-        return isEnterprise(network.security) || passwordKeyMgmt(network.security) !== "";
-    }
-
-    // A network NetworkManager can't connect to alone asks for what it lacks. One with
-    // no secret to ask for (a kind it doesn't know) is left to fail.
-    function askWifiSecrets(network) {
-        if (isEnterprise(network.security)) {
-            askEnterprise(network, "wifi");
-        } else if (passwordKeyMgmt(network.security) !== "") {
-            passwordNetwork = network;
-            pagesLoader.item.password.text = "";
-            pagesLoader.item.password.input.forceActiveFocus();
-        }
-    }
-
-    // The enterprise form, for a network of the list or a hidden one ({ name, security,
-    // hidden }), on to the networks once connected.
-    function askEnterprise(network, returnPage) {
-        passwordNetwork = null;
-        enterpriseNetwork = network;
-        enterpriseReturnPage = returnPage;
-        enterpriseDonePage = "wifi";
-        pagesLoader.item.enterprise.reset();
-        page = "enterprise";
-    }
-
-    function showHiddenWifi() {
-        passwordNetwork = null;
-        page = "hidden";
-        pagesLoader.item.hidden.reset();
-    }
-
-    function selectBluetooth(device) {
-        if (device.connected) {
-            device.disconnect();
-        } else if (device.paired) {
-            device.connect();
-        } else {
-            device.trusted = true;
-            device.pair();
-        }
-    }
-
-    function toggleCaffeine() {
-        if (ShellState.caffeine)
-            ShellState.caffeine = false;
-        else
-            ShellState.setCaffeine(0);
-        now = Date.now();
-    }
-
-    function chooseCaffeine(minutes) {
-        ShellState.setCaffeine(minutes);
-        now = Date.now();
-    }
-
-    // "Off", "On" until turned off, or the time left: "45 min left", "1 h 30 left".
-    function caffeineSubtitle() {
-        if (!ShellState.caffeine)
-            return "Off";
-
-        if (ShellState.caffeineUntil <= 0)
-            return "On";
-
-        const minutes = Math.max(1, Math.ceil((ShellState.caffeineUntil - now) / 60000));
-        if (minutes < 60)
-            return minutes + " min left";
-
-        return Math.floor(minutes / 60) + " h " + String(minutes % 60).padStart(2, "0") + " left";
-    }
-
-    onOpenedChanged: {
-        if (opened) {
-            settle.play(true, true);
-            pagesWanted = true;
-            keyboardFocus.forget();
-            panel.forceActiveFocus();
-        } else {
-            page = "main";
-            // Folds back without the page transition.
-            pageAnimation.complete();
-            passwordNetwork = null;
-            enterpriseNetwork = null;
-            requestedWifi = null;
-            detailNetwork = null;
-            detailDevice = null;
-            detailVpn = "";
-            Vpn.passwordUuid = "";
-            trayExpanded = null;
-        }
-    }
-    onPageChanged: {
-        previousPage = shownPage;
-        shownPage = page;
-        pageAnimation.restart();
-        Qt.callLater(keyboardFocus.settle);
-        // Leaving the network page drops its password prompts: coming back shows the
-        // networks, not a password half typed.
-        if (page !== "wifi") {
-            passwordNetwork = null;
-            Vpn.passwordUuid = "";
-        }
-    }
-    anchors.fill: parent
-    pillName: "control"
-    covering: progress > 0
-    cardRect: Qt.rect(panelSpot.x + panel.x, panelSpot.y + panel.y, panel.width, panel.height)
-    cardRadius: panel.radius
-    takesKeyboard: opened
-    dismissable: opened
-
     function clickedOutside() {
         close();
     }
@@ -404,6 +74,23 @@ Card {
             close();
     }
 
+    onOpenedChanged: {
+        if (opened) {
+            settle.play(true, true);
+            pagesWanted = true;
+            keyboardFocus.forget();
+            panel.forceActiveFocus();
+        } else if (stack !== null) {
+            stack.reset();
+        }
+    }
+    anchors.fill: parent
+    pillName: "control"
+    covering: progress > 0
+    cardRect: Qt.rect(panelSpot.x + panel.x, panelSpot.y + panel.y, panel.width, panel.height)
+    cardRadius: panel.radius
+    takesKeyboard: opened
+    dismissable: opened
     Component.onCompleted: ShellState.forScreen(screen)?.register("controlcenter", controlCenter)
     Component.onDestruction: ShellState.forScreen(screen)?.unregister("controlcenter", controlCenter)
 
@@ -422,7 +109,7 @@ Card {
         ClippingRectangle {
             id: panel
 
-            property real fullHeight: (pagesLoader.item !== null ? pagesLoader.item.implicitHeight : 0) + 28
+            property real fullHeight: (controlCenter.stack !== null ? controlCenter.stack.implicitHeight : 0) + 2 * controlCenter.padding
             // Off until the pages are built, so the panel starts at its real height instead
             // of growing from an empty one.
             property bool heightAnimated: false
@@ -499,565 +186,103 @@ Card {
                 active: controlCenter.pagesWanted
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.rightMargin: 14 + panel.startX
-                anchors.topMargin: 14 + panel.startY
+                anchors.rightMargin: controlCenter.padding + panel.startX
+                anchors.topMargin: controlCenter.padding + panel.startY
                 // The pages take this width, and give the Loader their height.
-                width: controlCenter.panelWidth - 28
+                width: controlCenter.pageWidth
                 asynchronous: !controlCenter.opened
                 onStatusChanged: panel.heightAnimated = status === Loader.Ready
 
-                // Laid out at full size, only uncovered while the panel grows.
-                sourceComponent: Item {
-                    id: pages
-
-                    // For the functions up top, which can't see inside the Loader.
-                    readonly property Item wifiDetail: wifiDetailPage
-                    readonly property Item enterprise: enterprisePage
-                    readonly property Item hidden: hiddenPage
-                    readonly property Item password: wifiPage.password
+                // Laid out at full size, only uncovered while the panel grows. Each page
+                // opens the ones it leads to, with their subject.
+                sourceComponent: PageStack {
                     // Starts hidden even when built with the panel already opening (Super+C),
                     // so the pages still fade in.
                     property bool built: false
 
-                    implicitHeight: (byName[controlCenter.page] || mainPage).implicitHeight
+                    opened: controlCenter.opened
+                    maxHeight: controlCenter.panelMaxHeight - 2 * controlCenter.padding
                     opacity: built && controlCenter.opened ? 1 : 0
                     Component.onCompleted: built = true
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutCubic
-                        }
-
-                    }
-
-                    // Each page by its name: the panel takes the height of the one shown.
-                    readonly property var byName: ({
-                        "main": mainPage,
-                        "wifi": wifiPage,
-                        "vpnDetail": vpnDetailPage,
-                        "bluetooth": bluetoothPage,
-                        "enterprise": enterprisePage,
-                        "hidden": hiddenPage,
-                        "wifiDetail": wifiDetailPage,
-                        "bluetoothDetail": bluetoothDetailPage,
-                        "sound": soundPage,
-                        "caffeine": caffeinePage,
-                        "chargeLimit": chargeLimitPage,
-                        "tray": trayPage
-                    })
-
-                    ColumnLayout {
-                        id: mainPage
-
-                        width: parent.width
-                        x: controlCenter.pageX("main")
-                        visible: controlCenter.pageVisible("main")
-                        enabled: controlCenter.page === "main"
-                        opacity: controlCenter.pageOpacity("main")
-                        spacing: 12
-
-                        // Two columns of tiles, of the same width.
-                        RowLayout {
-                            id: tileColumns
-
-                            readonly property real columnWidth: (width - spacing) / 2
-
-                            Layout.fillWidth: true
-                            spacing: 12
-
-                            ColumnLayout {
-                                Layout.preferredWidth: tileColumns.columnWidth
-                                Layout.alignment: Qt.AlignTop
-                                spacing: 12
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "󰤯") : "󰤭"
-                                    title: "Wi-Fi"
-                                    subtitle: controlCenter.wifiSubtitle()
-                                    active: Networking.wifiEnabled
-                                    // Its page also holds the VPNs, Wi-Fi or not.
-                                    expandable: true
-                                    onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-                                    onExpandRequested: controlCenter.page = "wifi"
-                                }
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    icon: controlCenter.bluetoothEnabled ? (controlCenter.connectedBluetooth.length > 0 ? "󰂱" : "󰂯") : "󰂲"
-                                    title: "Bluetooth"
-                                    subtitle: controlCenter.bluetoothSubtitle()
-                                    active: controlCenter.bluetoothEnabled
-                                    expandable: controlCenter.adapter !== null
-                                    onToggled: BluetoothPower.toggle()
-                                    onExpandRequested: controlCenter.page = "bluetooth"
-                                }
-
-                            }
-
-                            ColumnLayout {
-                                Layout.preferredWidth: tileColumns.columnWidth
-                                Layout.fillHeight: true
-                                spacing: 12
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    icon: "󰂛"
-                                    title: "Focus"
-                                    subtitle: ShellState.doNotDisturb ? "On" : "Off"
-                                    active: ShellState.doNotDisturb
-                                    onToggled: ShellState.doNotDisturb = !ShellState.doNotDisturb
-                                }
-
-                                ControlTile {
-                                    Layout.fillWidth: true
-                                    Layout.fillHeight: true
-                                    visible: PowerProfile.available
-                                    icon: Icons.powerProfile(PowerProfile.current)
-                                    title: "Power"
-                                    subtitle: PowerProfile.current === "power-saver" ? "Saver" : PowerProfile.current === "performance" ? "Performance" : "Balanced"
-                                    active: PowerProfile.current !== "balanced"
-                                    onToggled: PowerProfile.cycle()
-                                }
-
-                            }
-
-                        }
-
-                        // Below the two columns. Without a charge limit, caffeine spans both
-                        // so the grid stays even.
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: tileColumns.spacing
-
-                            ControlTile {
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: tileColumns.columnWidth
-                                icon: ShellState.caffeine ? "󰅶" : "󰾪"
-                                title: "Caffeine"
-                                subtitle: controlCenter.caffeineSubtitle()
-                                active: ShellState.caffeine
-                                expandable: true
-                                onToggled: controlCenter.toggleCaffeine()
-                                onExpandRequested: controlCenter.page = "caffeine"
-                            }
-
-                            ControlTile {
-                                Layout.fillWidth: true
-                                Layout.preferredWidth: tileColumns.columnWidth
-                                visible: ChargeLimit.current > 0
-                                icon: Icons.chargeLimit(ChargeLimit.current)
-                                title: "Charge limit"
-                                subtitle: ChargeLimit.current < 100 ? ChargeLimit.current + " %" : "Off"
-                                active: ChargeLimit.current < 100
-                                expandable: true
-                                onToggled: {
-                                    if (ChargeLimit.writable)
-                                        ChargeLimit.toggle();
-                                    else
-                                        controlCenter.page = "chargeLimit";
-                                }
-                                onExpandRequested: controlCenter.page = "chargeLimit"
-                            }
-
-                        }
-
-                        // The brightness when the screen has a backlight, and the glass style.
-                        ControlBlock {
-                            Layout.fillWidth: true
-                            implicitHeight: brightnessColumn.implicitHeight + 24
-
-                            ColumnLayout {
-                                id: brightnessColumn
-
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 8
-
-                                Text {
-                                    text: "Display"
-                                    color: Colors.primary
-                                    font.family: Metrics.font
-                                    font.pixelSize: 14
-                                    font.weight: Font.Bold
-                                }
-
-                                HorizontalSlider {
-                                    Layout.fillWidth: true
-                                    visible: Devices.hasBacklight
-                                    value: Devices.brightness / 100
-                                    icon: Icons.brightness(Devices.brightness)
-                                    onValueRequested: (value) => {
-                                        return Devices.setBrightness(Math.max(1, Math.round(value * 100)));
-                                    }
-                                }
-
-                                SegmentedControl {
-                                    Layout.fillWidth: true
-                                    compact: true
-                                    value: Session.glassStyle
-                                    options: [{
-                                        "value": "classic",
-                                        "icon": "󰆧",
-                                        "label": "Classic"
-                                    }, {
-                                        "value": "liquid",
-                                        "icon": "󰖌",
-                                        "label": "Liquid"
-                                    }]
-                                    onSelected: (value) => {
-                                        return Quickshell.execDetached([Session.scripts + "/glassctl.sh", "set", value]);
-                                    }
-                                }
-
-                            }
-
-                        }
-
-                        ControlBlock {
-                            id: soundBlock
-
-                            Layout.fillWidth: true
-                            implicitHeight: soundColumn.implicitHeight + 24
-
-                            // Under the content: the slider keeps its own clicks.
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: soundHeader.activate()
-                            }
-
-                            ColumnLayout {
-                                id: soundColumn
-
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 8
-
-                                // Its page's way in from the keyboard, the slider being the other.
-                                RowLayout {
-                                    id: soundHeader
-
-                                    function activate() {
-                                        soundBlock.bounce();
-                                        controlCenter.page = "sound";
-                                    }
-
-                                    Layout.fillWidth: true
-                                    activeFocusOnTab: true
-
-                                    Text {
-                                        text: "Sound"
-                                        color: Colors.primary
-                                        font.family: Metrics.font
-                                        font.pixelSize: 14
-                                        font.weight: Font.Bold
-                                    }
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        horizontalAlignment: Text.AlignRight
-                                        elide: Text.ElideRight
-                                        text: Audio.sink !== null ? (Audio.sink.description || Audio.sink.name) : "No output"
-                                        color: Colors.secondary
-                                        font.family: Metrics.font
-                                        font.pixelSize: 12
-                                    }
-
-                                    Text {
-                                        text: "󰅂"
-                                        color: soundBlock.hovered ? Colors.primary : Colors.secondary
-                                        font.family: Metrics.font
-                                        font.pixelSize: 14
-
-                                        Behavior on color {
-                                            ColorAnimation {
-                                                duration: 160
-                                            }
-
-                                        }
-
-                                    }
-
-                                }
-
-                                HorizontalSlider {
-                                    Layout.fillWidth: true
-                                    // Muted, the fill keeps its level and turns to the secondary color.
-                                    value: Audio.volume / 100
-                                    accent: Audio.muted ? Colors.secondary : Colors.primary
-                                    iconButton: true
-                                    icon: Icons.volume(Audio.volume, Audio.muted)
-                                    // Up to the volume limit set in the settings.
-                                    onValueRequested: (value) => {
-                                        return Audio.setVolume(value);
-                                    }
-                                    onIconClicked: Audio.toggleMute()
-                                }
-
-                            }
-
-                        }
-
-                        // Last, since it changes size with the apps running: an icon brings
-                        // its app back, the rest of the block opens their page.
-                        ControlBlock {
-                            id: trayBlock
-
-                            // Named in the header while hovered, in place of a tooltip.
-                            property var hoveredItem: null
-
-                            Layout.fillWidth: true
-                            visible: Tray.items.length > 0
-                            implicitHeight: trayColumn.implicitHeight + 24
-
-                            // Under the content: the icons keep their own clicks.
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: trayHeader.activate()
-                            }
-
-                            ColumnLayout {
-                                id: trayColumn
-
-                                anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 6
-
-                                // Its page's way in from the keyboard, the icons being the others.
-                                RowLayout {
-                                    id: trayHeader
-
-                                    function activate() {
-                                        trayBlock.bounce();
-                                        controlCenter.showTray(null);
-                                    }
-
-                                    Layout.fillWidth: true
-                                    activeFocusOnTab: true
-
-                                    Text {
-                                        text: "Background apps"
-                                        color: Colors.primary
-                                        font.family: Metrics.font
-                                        font.pixelSize: 14
-                                        font.weight: Font.Bold
-                                    }
-
-                                    Text {
-                                        Layout.fillWidth: true
-                                        horizontalAlignment: Text.AlignRight
-                                        elide: Text.ElideRight
-                                        text: trayBlock.hoveredItem !== null ? Tray.name(trayBlock.hoveredItem) : Tray.items.length + (Tray.items.length === 1 ? " app" : " apps")
-                                        color: Colors.secondary
-                                        font.family: Metrics.font
-                                        font.pixelSize: 12
-                                    }
-
-                                    Text {
-                                        text: "󰅂"
-                                        color: trayBlock.hovered ? Colors.primary : Colors.secondary
-                                        font.family: Metrics.font
-                                        font.pixelSize: 14
-
-                                        Behavior on color {
-                                            ColorAnimation {
-                                                duration: 160
-                                            }
-
-                                        }
-
-                                    }
-
-                                }
-
-                                // The icons' halo is wider than the icon: pulled left so the
-                                // first icon lines up with the title.
-                                Flow {
-                                    Layout.fillWidth: true
-                                    Layout.leftMargin: -6
-                                    spacing: 4
-
-                                    Repeater {
-                                        model: Tray.items
-
-                                        TrayItem {
-                                            required property var modelData
-
-                                            item: modelData
-                                            onHoveredChanged: {
-                                                if (hovered)
-                                                    trayBlock.hoveredItem = modelData;
-                                                else if (trayBlock.hoveredItem === modelData)
-                                                    trayBlock.hoveredItem = null;
-                                            }
-                                            onMenuRequested: controlCenter.showTray(modelData)
-                                        }
-
-                                    }
-
-                                }
-
-                            }
-
+                    onCloseRequested: controlCenter.close()
+                    onCurrentChanged: Qt.callLater(keyboardFocus.settle)
+
+                    MainPage {
+                        onTrayRequested: (item) => {
+                            return trayPage.show(item);
                         }
                     }
 
                     WifiPage {
                         id: wifiPage
 
-                        width: parent.width
-                        x: controlCenter.pageX("wifi")
-                        visible: controlCenter.pageVisible("wifi")
-                        enabled: controlCenter.page === "wifi"
-                        opacity: controlCenter.pageOpacity("wifi")
-                        center: controlCenter
-                        onBackRequested: controlCenter.page = "main"
                         onPasswordSent: panel.forceActiveFocus()
-                        onHiddenRequested: controlCenter.showHiddenWifi()
+                        onHiddenRequested: hiddenPage.show()
+                        onDetailsRequested: (network) => {
+                            return wifiDetailPage.show(network);
+                        }
+                        onEnterpriseRequested: (network) => {
+                            return enterprisePage.ask(network);
+                        }
                         onVpnDetailsRequested: (uuid) => {
-                            return controlCenter.showVpnDetails(uuid);
+                            return vpnDetailPage.show(uuid);
                         }
                     }
 
                     VpnDetailPage {
                         id: vpnDetailPage
-
-                        width: parent.width
-                        x: controlCenter.pageX("vpnDetail")
-                        visible: controlCenter.pageVisible("vpnDetail")
-                        enabled: controlCenter.page === "vpnDetail"
-                        opacity: controlCenter.pageOpacity("vpnDetail")
-                        uuid: controlCenter.detailVpn
-                        onBackRequested: controlCenter.page = "wifi"
-                        onDeleted: controlCenter.page = "wifi"
                     }
 
                     BluetoothPage {
-                        id: bluetoothPage
-
-                        width: parent.width
-                        x: controlCenter.pageX("bluetooth")
-                        visible: controlCenter.pageVisible("bluetooth")
-                        enabled: controlCenter.page === "bluetooth"
-                        opacity: controlCenter.pageOpacity("bluetooth")
-                        center: controlCenter
-                        onBackRequested: controlCenter.page = "main"
+                        onDetailsRequested: (device) => {
+                            return bluetoothDetailPage.show(device);
+                        }
                     }
 
                     EnterpriseWifiPage {
                         id: enterprisePage
-
-                        width: parent.width
-                        x: controlCenter.pageX("enterprise")
-                        visible: controlCenter.pageVisible("enterprise")
-                        enabled: controlCenter.page === "enterprise"
-                        opacity: controlCenter.pageOpacity("enterprise")
-                        network: controlCenter.enterpriseNetwork
-                        onBackRequested: controlCenter.page = controlCenter.enterpriseReturnPage
-                        onFinished: controlCenter.page = controlCenter.enterpriseDonePage
                     }
 
                     HiddenWifiPage {
                         id: hiddenPage
 
-                        width: parent.width
-                        x: controlCenter.pageX("hidden")
-                        visible: controlCenter.pageVisible("hidden")
-                        enabled: controlCenter.page === "hidden"
-                        opacity: controlCenter.pageOpacity("hidden")
-                        center: controlCenter
-                        onBackRequested: controlCenter.page = "wifi"
+                        onEnterpriseRequested: (network) => {
+                            return enterprisePage.ask(network);
+                        }
                     }
 
                     WifiDetailPage {
                         id: wifiDetailPage
 
-                        width: parent.width
-                        x: controlCenter.pageX("wifiDetail")
-                        visible: controlCenter.pageVisible("wifiDetail")
-                        enabled: controlCenter.page === "wifiDetail"
-                        opacity: controlCenter.pageOpacity("wifiDetail")
-                        network: controlCenter.detailNetwork
-                        enterprise: controlCenter.detailNetwork !== null && controlCenter.isEnterprise(controlCenter.detailNetwork.security)
-                        passwordKeyMgmt: controlCenter.detailNetwork !== null ? controlCenter.passwordKeyMgmt(controlCenter.detailNetwork.security) : ""
-                        onBackRequested: controlCenter.page = "wifi"
-                        onConnectRequested: controlCenter.selectWifi(controlCenter.detailNetwork)
-                        onModifyRequested: {
-                            controlCenter.enterpriseNetwork = controlCenter.detailNetwork;
-                            controlCenter.enterpriseReturnPage = "wifiDetail";
-                            controlCenter.enterpriseDonePage = "wifiDetail";
-                            enterprisePage.edit();
-                            controlCenter.page = "enterprise";
-                        }
-                        onForgotten: controlCenter.page = "wifi"
+                        onConnectRequested: wifiPage.select(network)
+                        onModifyRequested: enterprisePage.edit(network)
                     }
 
                     BluetoothDetailPage {
                         id: bluetoothDetailPage
-
-                        width: parent.width
-                        x: controlCenter.pageX("bluetoothDetail")
-                        visible: controlCenter.pageVisible("bluetoothDetail")
-                        enabled: controlCenter.page === "bluetoothDetail"
-                        opacity: controlCenter.pageOpacity("bluetoothDetail")
-                        device: controlCenter.detailDevice
-                        onBackRequested: controlCenter.page = controlCenter.bluetoothDetailReturnPage
-                        onForgotten: controlCenter.page = controlCenter.bluetoothDetailReturnPage
                     }
 
                     SoundPage {
-                        id: soundPage
-
-                        width: parent.width
-                        x: controlCenter.pageX("sound")
-                        visible: controlCenter.pageVisible("sound")
-                        enabled: controlCenter.page === "sound"
-                        opacity: controlCenter.pageOpacity("sound")
-                        active: controlCenter.opened && controlCenter.page === "sound"
-                        maxHeight: controlCenter.panelMaxHeight - 28
-                        onBackRequested: controlCenter.page = "main"
                         onBluetoothDetailsRequested: (device) => {
-                            return controlCenter.showBluetoothDetails(device);
+                            return bluetoothDetailPage.show(device);
                         }
                     }
 
                     CaffeinePage {
-                        id: caffeinePage
-
-                        width: parent.width
-                        x: controlCenter.pageX("caffeine")
-                        visible: controlCenter.pageVisible("caffeine")
-                        enabled: controlCenter.page === "caffeine"
-                        opacity: controlCenter.pageOpacity("caffeine")
-                        center: controlCenter
-                        onBackRequested: controlCenter.page = "main"
                     }
 
                     ChargeLimitPage {
-                        id: chargeLimitPage
-
-                        width: parent.width
-                        x: controlCenter.pageX("chargeLimit")
-                        visible: controlCenter.pageVisible("chargeLimit")
-                        enabled: controlCenter.page === "chargeLimit"
-                        opacity: controlCenter.pageOpacity("chargeLimit")
-                        onBackRequested: controlCenter.page = "main"
                     }
 
                     TrayPage {
                         id: trayPage
+                    }
 
-                        width: parent.width
-                        x: controlCenter.pageX("tray")
-                        visible: controlCenter.pageVisible("tray")
-                        enabled: controlCenter.page === "tray"
-                        opacity: controlCenter.pageOpacity("tray")
-                        maxHeight: controlCenter.panelMaxHeight - 28
-                        center: controlCenter
-                        onBackRequested: controlCenter.page = "main"
+                    Behavior on opacity {
+                        Anim {
+                            token: Motion.color.small
+                        }
+
                     }
 
                 }
@@ -1069,16 +294,15 @@ Card {
                 id: keyboardFocus
 
                 anchors.fill: parent
-                page: pagesLoader.item !== null ? pagesLoader.item.byName[controlCenter.page] || null : null
+                page: controlCenter.stack !== null ? controlCenter.stack.currentPage : null
                 home: panel
             }
 
             Behavior on fullHeight {
                 enabled: panel.heightAnimated
 
-                NumberAnimation {
-                    duration: 200
-                    easing.type: Easing.OutCubic
+                Anim {
+                    token: Motion.resize.normal
                 }
 
             }
@@ -1100,65 +324,10 @@ Card {
     }
 
     Behavior on progress {
-        NumberAnimation {
-            duration: Motion.resize.large.duration
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.large
         }
 
-    }
-
-    NumberAnimation {
-        id: pageAnimation
-
-        target: controlCenter
-        property: "pageProgress"
-        from: 0
-        to: 1
-        duration: 320
-    }
-
-    Binding {
-        target: NetworkStatus.wifiDevice
-        property: "scannerEnabled"
-        value: true
-        when: NetworkStatus.wifiDevice !== null && controlCenter.opened && controlCenter.page === "wifi"
-    }
-
-    // The last background app quit from its own menu: nothing left on its page.
-    Connections {
-        function onItemsChanged() {
-            if (controlCenter.page === "tray" && Tray.items.length === 0)
-                controlCenter.page = "main";
-
-        }
-
-        target: Tray
-    }
-
-    Binding {
-        target: controlCenter.adapter
-        property: "discovering"
-        value: true
-        when: controlCenter.bluetoothEnabled && controlCenter.opened && controlCenter.page === "bluetooth"
-    }
-
-    Timer {
-        running: controlCenter.opened && ShellState.caffeine && ShellState.caffeineUntil > 0
-        interval: 15000
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: controlCenter.now = Date.now()
-    }
-
-    // Read again each time the panel opens: another app may have changed them.
-    ServiceRef {
-        service: PowerProfile
-        active: controlCenter.opened
-    }
-
-    ServiceRef {
-        service: ChargeLimit
-        active: controlCenter.opened
     }
 
 }

@@ -10,7 +10,7 @@ import qs.theme
 // NetworkManager's own dialog. wifi-connection.py saves it and connects.
 // Through edit(), the form opens on the saved settings and replaces them. A hidden
 // network comes from its own page, as just a name, a security type and hidden.
-ColumnLayout {
+ControlPage {
     id: page
 
     property var network: null
@@ -114,9 +114,6 @@ ColumnLayout {
         return "";
     }
 
-    signal backRequested()
-    signal finished()
-
     function reset() {
         error = "";
         editing = false;
@@ -140,8 +137,19 @@ ColumnLayout {
             select.expanded = false;
     }
 
-    // Starts from the saved profile of the network (wifi-connection.py --read).
-    function edit() {
+    // A new network to sign in to, from the list or a hidden one ({ name, security,
+    // hidden }). Once connected, you land on the networks.
+    function ask(network) {
+        page.network = network;
+        reset();
+        stack.push(pageName);
+    }
+
+    // A saved network, from the saved profile (wifi-connection.py --read). Once
+    // connected, you're back on its details.
+    function edit(network) {
+        page.network = network;
+        stack.push(pageName);
         reset();
         editing = true;
         loading = true;
@@ -242,19 +250,22 @@ ColumnLayout {
         error = "";
         WifiProfiles.connect(request(), (ok, error) => {
             page.error = error;
-            if (ok)
-                page.finished();
+            if (ok && page.editing)
+                page.back();
+            else if (ok)
+                page.stack.backTo("wifi");
 
         });
     }
 
+    pageName: "enterprise"
     spacing: 12
 
     PageHeader {
         Layout.fillWidth: true
         title: page.network !== null ? page.network.name : ""
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     // Scrolls past 470px, the control center being 680px tall.

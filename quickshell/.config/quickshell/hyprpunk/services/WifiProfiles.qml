@@ -3,10 +3,11 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Networking
 import qs.config
 
 // Creates and reads Wi-Fi profiles through wifi-connection.py, for every page that sends
-// a secret or a hidden network's name. A request goes on the script's input, so no
+// a secret or a hidden network's name, and knows what each kind of security asks for. A request goes on the script's input, so no
 // secret shows in the process list. One connection at a time: the script answers once.
 Singleton {
     id: profiles
@@ -16,6 +17,30 @@ Singleton {
     property var onConnected: null
     property string pending: ""
     property var onRead: null
+
+    // Enterprise networks get the full form, the others just a password.
+    function enterprise(security) {
+        return [WifiSecurityType.WpaEap, WifiSecurityType.Wpa2Eap, WifiSecurityType.Wpa3SuiteB192, WifiSecurityType.DynamicWep, WifiSecurityType.Leap].includes(security);
+    }
+
+    // NetworkManager's key management for a network's password, "" when it takes none.
+    function keyMgmt(security) {
+        if (security === WifiSecurityType.Sae)
+            return "sae";
+
+        if (security === WifiSecurityType.WpaPsk || security === WifiSecurityType.Wpa2Psk)
+            return "wpa-psk";
+
+        if (security === WifiSecurityType.StaticWep)
+            return "none";
+
+        return "";
+    }
+
+    // NetworkManager can't connect to it without asking you something.
+    function needsSecrets(network) {
+        return enterprise(network.security) || keyMgmt(network.security) !== "";
+    }
 
     // onDone(ok, error): saved and connected, or why not.
     function connect(request, onDone) {

@@ -4,8 +4,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 
-// What the shell shows and asks for, shared by every screen: do not disturb, screenshots,
-// caffeine, the AirPods OSD. Each screen's own state (its island, its surfaces) is a
+// What the shell shows and asks for, shared by every screen: do not disturb and
+// caffeine. Each screen's own state (its island, its surfaces) is a
 // ScreenState, found with forScreen() or focused().
 Singleton {
     id: shellState
@@ -26,55 +26,35 @@ Singleton {
     }
 
     property bool doNotDisturb: false
-    // Screenshots. A request has a mode ("screen", "region", "annotate", "record",
-    // "record-region", "share-region" or "stop"), a screen (empty for the focused one) and a delay in ms.
-    // Then the region being chosen ({screen, file, scale}), and the last capture for the
-    // island: {screen, file, annotated, copied, saved}, or for a recording {screen, file
-    // (its first frame), video, duration in s}.
-    property var screenshotRequest: ({
-        "mode": "",
-        "screen": "",
-        "delay": 0
-    })
-    property int screenshotRequests: 0
-    property var screenshotSelection: null
-    property var screenshotTaken: null
-    // The screen being recorded, since recordingStarted (ms since epoch).
-    property bool recording: false
-    property string recordingScreen: ""
-    property real recordingStarted: 0
-
-    // The region chosen ({x, y, width, height} on the screen), null when cancelled.
-    signal screenshotSelected(var rect)
-
-    function requestScreenshot(mode, screen, delay) {
-        screenshotRequest = {
-            "mode": mode,
-            "screen": screen || "",
-            "delay": delay || 0
-        };
-        screenshotRequests += 1;
-    }
 
     // Caffeine keeps the computer awake (no dimming, locking or sleep) for caffeineMinutes,
     // until caffeineUntil (ms since epoch). 0 minutes means until you turn it off.
     property bool caffeine: false
     property int caffeineMinutes: 0
     property real caffeineUntil: 0
+    // Whole minutes left, rounded up, while caffeine has a time.
+    property int caffeineMinutesLeft: 0
 
     function setCaffeine(minutes) {
         caffeineMinutes = minutes;
         caffeineUntil = minutes > 0 ? Date.now() + minutes * 60000 : 0;
+        caffeineMinutesLeft = minutes;
         caffeine = true;
     }
-    // The AirPods OSD a screen's island shows once their card folds away:
-    // {screen, image (their picture, or ""), level (null when unknown), charging}.
-    property var airPodsOsd: ({
-    })
-    property int airPodsOsdRequests: 0
+
+    // On until you turn it off, or off.
+    function toggleCaffeine() {
+        if (caffeine)
+            caffeine = false;
+        else
+            setCaffeine(0);
+    }
 
     // The state of a screen, by its name or the screen itself, or null if it's gone.
     function forScreen(screen) {
+        if (!screen)
+            return null;
+
         const name = typeof screen === "string" ? screen : screen.name;
         return screens.instances.find((state) => {
             return state.screen.name === name;
@@ -91,14 +71,16 @@ Singleton {
 
     }
 
-    // Turns caffeine off once its time is up.
+    // Counts caffeine's time down, and turns it off once it's up.
     Timer {
         running: shellState.caffeine && shellState.caffeineUntil > 0
         interval: 10000
         repeat: true
         triggeredOnStart: true
         onTriggered: {
-            if (Date.now() >= shellState.caffeineUntil)
+            const left = shellState.caffeineUntil - Date.now();
+            shellState.caffeineMinutesLeft = Math.max(0, Math.ceil(left / 60000));
+            if (left <= 0)
                 shellState.caffeine = false;
 
         }

@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs.modules.island
+import qs.services
 import qs.state
 
 // The screenshot menu, laid out like the main menu: capture the screen, a region,
@@ -22,7 +23,7 @@ IconMenu {
         "icon": "󰏫",
         "name": "Region and annotate",
         "mode": "annotate"
-    }].concat(ShellState.recording ? [{
+    }].concat(Screenshot.recording ? [{
         "icon": "󰓛",
         "name": "Stop recording",
         "mode": "stop"
@@ -42,6 +43,6 @@ IconMenu {
     // Waits for the card to fold away, so it isn't in the picture.
     onChosen: (entry) => {
         close();
-        ShellState.requestScreenshot(entry.mode, screen.name, entry.mode === "stop" ? 0 : 380);
+        Screenshot.request(entry.mode, screen.name, entry.mode === "stop" ? 0 : 380);
     }
 }

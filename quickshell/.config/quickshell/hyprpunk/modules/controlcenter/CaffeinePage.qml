@@ -6,21 +6,35 @@ import qs.state
 
 // The control center's caffeine page: how long the screen stays on, from half an
 // hour to until you turn it off.
-ColumnLayout {
+ControlPage {
     id: page
 
-    required property var center
+    readonly property var durations: [{
+        "minutes": 0,
+        "label": "Until turned off"
+    }, {
+        "minutes": 30,
+        "label": "30 minutes"
+    }, {
+        "minutes": 60,
+        "label": "1 hour"
+    }, {
+        "minutes": 120,
+        "label": "2 hours"
+    }, {
+        "minutes": 240,
+        "label": "4 hours"
+    }]
 
-    signal backRequested()
-
+    pageName: "caffeine"
     spacing: 6
 
     PageHeader {
         Layout.fillWidth: true
         title: "Caffeine"
         checked: ShellState.caffeine
-        onToggled: page.center.toggleCaffeine()
-        onBackRequested: page.backRequested()
+        onToggled: ShellState.toggleCaffeine()
+        onBackRequested: page.back()
     }
 
     Text {
@@ -34,7 +48,7 @@ ColumnLayout {
     }
 
     Repeater {
-        model: page.center.caffeineDurations
+        model: page.durations
 
         ListRow {
             required property var modelData
@@ -47,7 +61,7 @@ ColumnLayout {
             subtitle: chosen && ShellState.caffeineUntil > 0 ? "Until " + Session.shortTime(new Date(ShellState.caffeineUntil)) : ""
             trailing: chosen ? "\uf00c" : ""
             highlighted: chosen
-            onClicked: page.center.chooseCaffeine(modelData.minutes)
+            onClicked: ShellState.setCaffeine(modelData.minutes)
         }
 
     }

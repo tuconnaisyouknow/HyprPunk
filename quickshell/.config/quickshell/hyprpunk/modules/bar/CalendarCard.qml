@@ -421,7 +421,7 @@ PillPopup {
         y: Math.round(calendarPopup.bar.islandPill.top + calendarPopup.bar.islandPill.height / 2 - height / 2)
         camera: Privacy.cameraInUse
         microphone: Privacy.microphoneInUse
-        recording: ShellState.recording
+        recording: Screenshot.recording
         opacity: active ? calendarPopup.progress : 0
         visible: calendarPopup.mapped && opacity > 0
     }

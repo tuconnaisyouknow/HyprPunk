@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.state
 
 // Talks to screenshare-picker.sh, which xdg-desktop-portal-hyprland runs when
 // an app asks to share your screen: holds the request, and sends back the screen, window
@@ -18,8 +17,9 @@ Singleton {
     // Whether the region's answer may come with a restore token.
     property bool regionRemember: false
 
-    // A request came in, for shell.qml to open the picker.
-    signal requested()
+    // A request came in, or the region was cancelled: shell.qml opens the picker on that
+    // screen (empty for the focused one).
+    signal requested(string screen)
 
     // selection: xdph's "screen:…", "window:…" or "region:…", empty to cancel. remember
     // lets the app share the same thing again later without asking.
@@ -43,7 +43,7 @@ Singleton {
         regionScreen = screenName;
         regionRemember = remember;
         // Once the card is gone, or it'd be in the frozen screen.
-        ShellState.requestScreenshot("share-region", screenName, 350);
+        Screenshot.request("share-region", screenName, 350);
     }
 
     // xdph's window list: <handle>[HC>]<class>[HT>]<title>[HE>]<address in decimal>[HA>]…
@@ -66,23 +66,25 @@ Singleton {
     }
 
     Connections {
-        function onScreenshotSelected(rect) {
+        function onSelected(rect) {
             if (share.regionScreen === "")
                 return ;
 
             if (rect === null) {
                 // Changed your mind about the region: back to the picker.
-                ShellState.forScreen(share.regionScreen)?.open("screenshare");
+                const screen = share.regionScreen;
                 share.regionScreen = "";
+                share.requested(screen);
                 return ;
             }
             const values = [rect.x, rect.y, rect.width, rect.height].map(Math.round).join(",");
             share.answer("region:" + share.regionScreen + "@" + values, share.regionRemember);
         }
 
-        target: ShellState
+        target: Screenshot
     }
 
+    // The portal's script talking to the shell, not a shortcut: it lives with the request.
     IpcHandler {
         // Called by the script. allowToken: whether remembering starts on.
         function pick(fifo: string, allowToken: bool, windows: string): void {
@@ -93,7 +95,7 @@ Singleton {
                 "allowToken": allowToken,
                 "windows": share.parseWindows(windows)
             };
-            share.requested();
+            share.requested("");
         }
 
         target: "screenshare"

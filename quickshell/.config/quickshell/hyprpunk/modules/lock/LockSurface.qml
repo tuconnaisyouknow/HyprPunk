@@ -10,6 +10,7 @@ import qs.modules.bar
 import qs.modules.island
 import qs.modules.music
 import qs.services
+import qs.state
 import qs.theme
 
 // The lock screen on one display: a slimmed-down bar, the clock with the player, and a
@@ -22,27 +23,27 @@ import qs.theme
 WlSessionLockSurface {
     id: surface
 
-    required property var lock
-    readonly property var bar: lock.barFor(screen)
-    readonly property bool promptShown: lock.password !== "" || lock.authenticating
+    // This screen's bar, for where its pills were and the OSD it shows.
+    readonly property var bar: ShellState.forScreen(screen)?.bar ?? null
+    readonly property bool promptShown: Lock.password !== "" || Lock.authenticating
     // Where the bar's pills were when locking (Bar.lockGeometry), null until known.
     property var from: null
     // 0 is the screen as it was, 1 the lock fully in place.
-    property real reveal: lock.instant || lock.still ? 1 : 0
+    property real reveal: Lock.instant || Lock.still ? 1 : 0
     // 0 = the pills where the bar has them, 1 = where the lock has them.
-    property real morph: lock.instant || lock.still ? 1 : 0
+    property real morph: Lock.instant || Lock.still ? 1 : 0
     // Showing the time like the bar's island, before growing and after unlocking.
-    property bool intro: !lock.instant
+    property bool intro: !Lock.instant
     property bool leaving: false
     // The music wave stands: it rises as the lock comes in and settles as it goes.
-    property bool waveUp: lock.instant || lock.still
+    property bool waveUp: Lock.instant || Lock.still
     // The padlock closes once the island has grown, and stays shut until unlocked.
-    property bool padlockClosed: lock.instant
+    property bool padlockClosed: Lock.instant
     // The first moments, while the island tells it locked.
-    property bool locking: !lock.instant
+    property bool locking: !Lock.instant
     // The bar's OSDs (volume, brightness, battery...) show in the island too.
     readonly property bool osdShown: bar !== null && bar.osdVisible
-    readonly property string islandMode: leaving || intro ? "clock" : lock.unlocking ? "unlocking" : lock.error !== "" ? "error" : locking ? "locking" : osdShown ? "osd" : ""
+    readonly property string islandMode: leaving || intro ? "clock" : Lock.unlocking ? "unlocking" : Lock.error !== "" ? "error" : locking ? "locking" : osdShown ? "osd" : ""
     // The island's states that show the padlock.
     readonly property bool padlockShown: islandMode !== "clock" && islandMode !== "osd"
 
@@ -156,7 +157,7 @@ WlSessionLockSurface {
         }
 
         ScriptAction {
-            script: surface.lock.unlockNow()
+            script: Lock.unlockNow()
         }
 
     }
@@ -179,17 +180,17 @@ WlSessionLockSurface {
         }
 
         ScriptAction {
-            script: surface.lock.unlockNow()
+            script: Lock.unlockNow()
         }
 
     }
 
     Connections {
         function onUnlockingChanged() {
-            if (surface.lock.unlocking) {
+            if (Lock.unlocking) {
                 revealIn.stop();
                 morphIn.stop();
-                if (surface.lock.still)
+                if (Lock.still)
                     stillOut.restart();
                 else
                     revealOut.restart();
@@ -204,12 +205,12 @@ WlSessionLockSurface {
         }
 
         function onSettled() {
-            if (!surface.lock.unlocking)
+            if (!Lock.unlocking)
                 surface.settle();
 
         }
 
-        target: surface.lock
+        target: Lock
     }
 
     // The island shows the time for a moment, like the bar's, and the rest of the lock
@@ -218,10 +219,10 @@ WlSessionLockSurface {
         id: introDelay
 
         interval: 120
-        running: !surface.lock.instant
+        running: !Lock.instant
         onTriggered: {
             surface.intro = false;
-            if (!surface.lock.unlocking && !surface.lock.still) {
+            if (!Lock.unlocking && !Lock.still) {
                 revealIn.start();
                 morphIn.start();
                 surface.waveUp = true;
@@ -233,7 +234,7 @@ WlSessionLockSurface {
         id: padlockDelay
 
         interval: 380
-        running: !surface.lock.instant
+        running: !Lock.instant
         onTriggered: surface.padlockClosed = true
     }
 
@@ -242,7 +243,7 @@ WlSessionLockSurface {
         id: lockingDelay
 
         interval: 1700
-        running: !surface.lock.instant
+        running: !Lock.instant
         onTriggered: surface.locking = false
     }
 
@@ -251,7 +252,7 @@ WlSessionLockSurface {
         id: snapshot
 
         anchors.fill: parent
-        source: !surface.lock.still && surface.lock.snapshotFor(surface.screen) !== "" ? "file://" + surface.lock.snapshotFor(surface.screen) : ""
+        source: !Lock.still && Lock.snapshotFor(surface.screen) !== "" ? "file://" + Lock.snapshotFor(surface.screen) : ""
         cache: false
         visible: false
     }
@@ -331,7 +332,7 @@ WlSessionLockSurface {
         width: Math.round(parent.width * 0.5)
         height: 110
         visible: MusicSettings.wave
-        music: surface.lock.music
+        music: Lock.music
         presence: surface.waveUp ? 1 : 0
 
         Behavior on presence {
@@ -408,8 +409,6 @@ WlSessionLockSurface {
 
             readonly property bool expanded: surface.islandMode !== "" && surface.islandMode !== "clock"
             readonly property real startCenter: surface.from !== null ? surface.from.island.x + surface.from.island.width / 2 : surface.width / 2
-            // The bar's island sits 3px higher, and 3px lower while it shows an OSD.
-            property real centerY: expanded ? 31 : 25
             property real shake: 0
             // The last state, for the fade between two states.
             property string previousMode: "clock"
@@ -417,7 +416,8 @@ WlSessionLockSurface {
             x: surface.between(startCenter, surface.width / 2) - width / 2 + shake
             // Locked for sleep, it starts on the padlock.
             Component.onCompleted: previousMode = surface.islandMode
-            y: centerY - height / 2
+            // Hung from the bar's line, like the bar's island: it grows downwards.
+            y: Metrics.barTop
             spacing: 0
             horizontalPadding: expanded ? Metrics.islandOsdPadding : Metrics.pillPadding
             implicitHeight: expanded ? Metrics.islandOsdHeight : Metrics.pillHeight
@@ -459,7 +459,7 @@ WlSessionLockSurface {
                 visible: Layout.preferredWidth > 0
                 opacity: surface.padlockShown ? 1 : 0
                 Layout.preferredWidth: surface.padlockShown ? implicitWidth : 0
-                closed: surface.padlockClosed && !surface.lock.unlocking
+                closed: surface.padlockClosed && !Lock.unlocking
 
                 Behavior on Layout.preferredWidth {
                     NumberAnimation {
@@ -478,7 +478,7 @@ WlSessionLockSurface {
                 Layout.preferredWidth: island.expanded && surface.padlockShown ? implicitWidth : 0
                 Layout.leftMargin: island.expanded && surface.padlockShown ? 10 : 0
                 clip: true
-                text: surface.islandMode === "unlocking" ? "Unlocked" : surface.islandMode === "locking" ? "Locked" : surface.lock.error
+                text: surface.islandMode === "unlocking" ? "Unlocked" : surface.islandMode === "locking" ? "Locked" : Lock.error
                 color: surface.islandMode === "error" ? Colors.red : Colors.primary
                 font.family: Metrics.font
                 font.pixelSize: 15
@@ -538,7 +538,7 @@ WlSessionLockSurface {
 
             // Another OSD over the one shown: its content fades in like in the bar.
             Connections {
-                function onStatusOsdLabelChanged() {
+                function onOsdLabelChanged() {
                     if (surface.islandMode === "osd")
                         islandFade.restart();
 
@@ -552,7 +552,7 @@ WlSessionLockSurface {
                     shakeAnimation.restart();
                 }
 
-                target: surface.lock
+                target: Lock
             }
 
             // Like the bar's OSDs, new content fades in once the island is ~90% open so the
@@ -658,14 +658,6 @@ WlSessionLockSurface {
             }
 
             Behavior on implicitHeight {
-                NumberAnimation {
-                    duration: 220
-                    easing.type: Easing.OutCubic
-                }
-
-            }
-
-            Behavior on centerY {
                 NumberAnimation {
                     duration: 220
                     easing.type: Easing.OutCubic
@@ -911,7 +903,7 @@ WlSessionLockSurface {
                 anchors.left: parent.left
                 anchors.leftMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
-                text: surface.lock.authenticating ? "󰔟" : "󰌾"
+                text: Lock.authenticating ? "󰔟" : "󰌾"
                 color: Colors.primary
                 font.family: Metrics.font
                 font.pixelSize: 16
@@ -929,7 +921,7 @@ WlSessionLockSurface {
                 focus: true
                 // The surface gets the keyboard once it is shown: the input takes it then.
                 Component.onCompleted: forceActiveFocus()
-                readOnly: surface.lock.authenticating || surface.lock.unlocking
+                readOnly: Lock.authenticating || Lock.unlocking
                 // Spaced filled squares and a blinking block cursor, like the login screen.
                 echoMode: TextInput.Password
                 passwordCharacter: "■"
@@ -941,12 +933,12 @@ WlSessionLockSurface {
                 clip: true
                 cursorDelegate: Item {
                 }
-                onTextEdited: surface.lock.password = text
+                onTextEdited: Lock.password = text
                 Keys.onPressed: (event) => {
                     if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                        surface.lock.submit();
+                        Lock.submit();
                     else if (event.key === Qt.Key_Escape)
-                        surface.lock.password = "";
+                        Lock.password = "";
                     else
                         return ;
                     event.accepted = true;
@@ -955,12 +947,12 @@ WlSessionLockSurface {
                 // Typed on another screen, or cleared after a try.
                 Connections {
                     function onPasswordChanged() {
-                        if (input.text !== surface.lock.password)
-                            input.text = surface.lock.password;
+                        if (input.text !== Lock.password)
+                            input.text = Lock.password;
 
                     }
 
-                    target: surface.lock
+                    target: Lock
                 }
 
                 BlockCursor {

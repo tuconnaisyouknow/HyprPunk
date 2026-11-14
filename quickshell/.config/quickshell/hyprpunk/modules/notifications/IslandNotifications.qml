@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
+import qs.components
 import qs.config
 import qs.modules.island
 import qs.theme
@@ -10,10 +11,9 @@ import qs.services
 import qs.state
 import qs.windows
 
-// New notifications, in a card that grows out of the dynamic island of the screen you're
-// on when they arrive. They leave after the time set in the settings unless hovered or
-// critical, Focus keeps all but the critical ones away, so do the apps muted in the
-// settings. They claim the island like a card that comes on its own (ScreenState), so
+// New notifications (Notifications.arrived), in a card that grows out of the dynamic
+// island of the screen you're on when they arrive. They leave after the time set in the
+// settings unless hovered or critical. They claim the island like a card that comes on its own (ScreenState), so
 // they wait while a panel or a prompt holds it, and they fold back into it when the
 // notification center opens.
 Card {
@@ -25,19 +25,13 @@ Card {
     // The island's card shape, shared with its other cards.
     required property Item islandFrame
     readonly property rect contentRect: islandFrame.contentRect(popups)
-    // Popups currently in the card, newest first, as {id, notification}. An entry stays
-    // here until its exit animation is over, so several popups can leave at the same time.
-    // The id is kept apart: a dismissed notification is destroyed but lingers here as an
-    // empty object, with no id to tell it by.
-    property var notifications: []
-    // Ids of the popups playing their exit animation.
-    property var leavingIds: []
+    // The popups in the card.
+    readonly property ExitingEntries popupList: ExitingEntries {
+    }
     // The card's margin around the notifications.
-    readonly property int cardPadding: 6
+    readonly property int cardPadding: Metrics.spacing.small
     readonly property int maxVisible: 3
-    readonly property int stayingCount: notifications.filter((entry) => {
-        return !leavingIds.includes(entry.id);
-    }).length
+    readonly property int stayingCount: popupList.staying
     readonly property var screenState: ShellState.forScreen(screen)
     property real progress: opened ? 1 : 0
     // The card's full height, kept while it folds: shrinking with the last popup's gap,
@@ -47,17 +41,6 @@ Card {
     readonly property var island: bar.islandPill
 
     function show(notification) {
-        // Notifications carried over by a config reload are not new.
-        if (notification.lastGeneration)
-            return ;
-
-        if (ShellState.doNotDisturb && notification.urgency !== NotificationUrgency.Critical)
-            return ;
-
-        // Muted in the settings: it waits in the center without popping up.
-        if (NotificationSettings.muted(NotificationSettings.identity(notification)))
-            return ;
-
         // Another screen's: each one shows those that arrive while you're on it.
         const focused = Hyprland.focusedMonitor;
         if (focused === null ? screen !== Quickshell.screens[0] : focused.name !== screen.name)
@@ -68,42 +51,23 @@ Card {
             return ;
 
         const id = notification.id;
-        notifications = [{
-            "id": id,
-            "notification": notification
-        }].concat(notifications);
+        popupList.add([notification]);
         notification.closed.connect(() => {
-            return popups.hide(id);
+            return popupList.leave([id]);
         });
         // Overflowing popups leave with the regular animation instead of vanishing.
-        const staying = notifications.filter((entry) => {
-            return !leavingIds.includes(entry.id);
-        });
-        for (const extra of staying.slice(maxVisible)) hide(extra.id)
-    }
-
-    // Starts the exit animation; the entry is dropped once it is finished.
-    function hide(id) {
-        if (leavingIds.includes(id))
-            return ;
-
-        leavingIds = leavingIds.concat([id]);
+        popupList.leave(popupList.entries.filter((entry) => {
+            return !popupList.leaving(entry.id);
+        }).slice(maxVisible).map((entry) => {
+            return entry.id;
+        }));
     }
 
     // Every popup at once, critical ones too: they're all listed in the open center.
-    function hideAll() {
-        leavingIds = notifications.map((entry) => {
+    function leaveAll() {
+        popupList.leave(popupList.entries.map((entry) => {
             return entry.id;
-        });
-    }
-
-    function drop(id) {
-        notifications = notifications.filter((entry) => {
-            return entry.id !== id;
-        });
-        leavingIds = leavingIds.filter((leavingId) => {
-            return leavingId !== id;
-        });
+        }));
     }
 
     anchors.fill: parent
@@ -129,10 +93,9 @@ Card {
     // Folded with nothing left to show: drops whatever is still leaving, so no stray
     // entry keeps its folded card over the island.
     onProgressChanged: {
-        if (progress === 0 && stayingCount === 0) {
-            notifications = [];
-            leavingIds = [];
-        }
+        if (progress === 0 && stayingCount === 0)
+            popupList.clear();
+
     }
 
     // The last popup's gap below it is the card's bottom padding.
@@ -145,11 +108,11 @@ Card {
     }
 
     Connections {
-        function onNotification(notification) {
+        function onArrived(notification) {
             popups.show(notification);
         }
 
-        target: Notifications.server
+        target: Notifications
     }
 
     // The center opening takes the popups in: their card folds back into the island
@@ -157,8 +120,11 @@ Card {
     // over it once the center closes.
     Connections {
         function onIslandOwnerChanged() {
+            // Once the island has its new owner: giving up their claim while the owner
+            // is still changing would change it again from inside the change.
             if (popups.screenState.islandOwner === "notifications")
-                popups.hideAll();
+                Qt.callLater(popups.leaveAll);
+
 
         }
 
@@ -193,14 +159,14 @@ Card {
 
             Repeater {
                 model: ScriptModel {
-                    values: popups.notifications
+                    values: popups.popupList.entries
                 }
 
                 delegate: Item {
                     id: popup
 
                     required property var modelData
-                    readonly property bool leaving: popups.leavingIds.includes(modelData.id)
+                    readonly property bool leaving: popups.popupList.leaving(modelData.id)
                     // Let go as soon as it leaves, before it's destroyed: the card keeps the
                     // last content it saw instead of emptying.
                     readonly property var notification: leaving ? null : modelData.notification
@@ -223,6 +189,8 @@ Card {
                         id: notificationCard
 
                         width: parent.width
+                        // Inside the card's padding, its corners parallel to the card's.
+                        radius: Metrics.inner(Metrics.cardRadius, popups.cardPadding)
                         notification: popup.notification
                     }
 
@@ -232,27 +200,25 @@ Card {
 
                         interval: expireTimeout > 0 ? expireTimeout : NotificationSettings.duration * 1000
                         running: interval > 0 && expireTimeout !== 0 && popups.opened && !cardHover.hovered && !popup.critical
-                        onTriggered: popups.hide(popup.modelData.id)
+                        onTriggered: popups.popupList.leave([popup.modelData.id])
                     }
 
                     // Makes room first, then fades in once the card has opened around it.
                     SequentialAnimation {
                         id: enterAnimation
 
-                        NumberAnimation {
+                        Anim {
                             target: popup
                             property: "slot"
                             to: 1
-                            duration: 220
-                            easing.type: Easing.OutCubic
+                            token: Motion.resize.normal
                         }
 
-                        NumberAnimation {
+                        Anim {
                             target: popup
                             property: "opacity"
                             to: 1
-                            duration: 160
-                            easing.type: Easing.OutCubic
+                            token: Motion.enter.small
                         }
 
                     }
@@ -260,25 +226,23 @@ Card {
                     SequentialAnimation {
                         id: exitAnimation
 
-                        NumberAnimation {
+                        Anim {
                             target: popup
                             property: "opacity"
                             to: 0
-                            duration: 180
-                            easing.type: Easing.InCubic
+                            token: Motion.leave.normal
                         }
 
                         // Then close the gap so the card shrinks around the others.
-                        NumberAnimation {
+                        Anim {
                             target: popup
                             property: "slot"
                             to: 0
-                            duration: 200
-                            easing.type: Easing.OutCubic
+                            token: Motion.resize.normal
                         }
 
                         ScriptAction {
-                            script: popups.drop(popup.modelData.id)
+                            script: popups.popupList.drop(popup.modelData.id)
                         }
 
                     }
@@ -288,9 +252,8 @@ Card {
             }
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
+                Anim {
+                    token: Motion.color.small
                 }
 
             }
@@ -302,19 +265,18 @@ Card {
     // The card covers the island, so the privacy and recording dots move to its right,
     // following its edge as it grows.
     PrivacyDot {
-        x: Math.round(card.x + card.width + 8)
+        x: Math.round(card.x + card.width + Metrics.spacing.normal)
         y: Math.round(popups.island.top + popups.island.height / 2 - height / 2)
         camera: Privacy.cameraInUse
         microphone: Privacy.microphoneInUse
-        recording: ShellState.recording
+        recording: Screenshot.recording
         opacity: active ? popups.progress : 0
         visible: opacity > 0
     }
 
     Behavior on progress {
-        NumberAnimation {
-            duration: Motion.resize.large.duration
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.large
         }
 
     }

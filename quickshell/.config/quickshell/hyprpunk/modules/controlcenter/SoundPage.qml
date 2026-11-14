@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Bluetooth
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import qs.components
@@ -11,13 +10,9 @@ import qs.theme
 
 // The control center's sound page, in tabs: output, input, the apps playing and
 // Bluetooth audio. A tab taller than the panel scrolls.
-ColumnLayout {
+ControlPage {
     id: page
 
-    // Shown in the open panel: the outputs' availability is followed only then (AudioPorts).
-    property bool active: false
-    // The most the page can take: past it, everything under the header scrolls.
-    property real maxHeight: Infinity
     // Kept while the shell runs: the page opens on the last tab seen.
     property string tab: "output"
     readonly property var tabs: [{
@@ -56,12 +51,8 @@ ColumnLayout {
         return node.type === PwNodeType.AudioOutStream && node.audio !== null;
     })
     readonly property var bluetoothAudio: {
-        const adapter = Bluetooth.defaultAdapter;
-        if (adapter === null)
-            return [];
-
-        return adapter.devices.values.filter((device) => {
-            return device.connected && device.icon.startsWith("audio");
+        return BluetoothStatus.connected.filter((device) => {
+            return device.icon.startsWith("audio");
         });
     }
     // AirPods connected or only nearby: their batteries come either way.
@@ -72,7 +63,6 @@ ColumnLayout {
     readonly property var otherAudio: bluetoothAudio.filter((device) => {
         return AirPods.device(device.address) === null;
     })
-    signal backRequested()
     signal bluetoothDetailsRequested(var device)
 
     function volumeIcon(volume, muted) {
@@ -123,6 +113,7 @@ ColumnLayout {
         return Quickshell.iconPath(properties["application.icon-name"] || (entry !== null ? entry.icon : ""), true);
     }
 
+    pageName: "sound"
     spacing: 12
 
     // One tab, side by side with the others: only the one shown is opaque and clickable,
@@ -288,7 +279,7 @@ ColumnLayout {
         Layout.fillWidth: true
         title: "Sound"
         toggleVisible: false
-        onBackRequested: page.backRequested()
+        onBackRequested: page.back()
     }
 
     SegmentedControl {
@@ -307,7 +298,7 @@ ColumnLayout {
     // margins on every side so a hovered block's zoom and bounce aren't clipped.
     Item {
         Layout.fillWidth: true
-        Layout.preferredHeight: Math.min(page.currentTab.implicitHeight, page.maxHeight - header.implicitHeight - tabBar.implicitHeight - 2 * page.spacing)
+        Layout.preferredHeight: Math.min(page.currentTab.implicitHeight, page.stack.maxHeight - header.implicitHeight - tabBar.implicitHeight - 2 * page.spacing)
 
         Flickable {
             id: flickable
