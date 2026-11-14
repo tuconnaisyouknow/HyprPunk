@@ -1,0 +1,155 @@
+import QtQuick
+import QtQuick.Layouts
+import Quickshell.Io
+import qs.components
+import qs.config
+import qs.theme
+
+// A labelled file picker for the control center's forms, like NetworkManager's
+// certificate buttons. Shows the file's name or "(None)", and opens zenity to choose.
+ColumnLayout {
+    id: file
+
+    required property string label
+    property string path: ""
+    property string dialogTitle: label
+    // zenity filters: "Name | *.pem *.crt".
+    property var filters: []
+    readonly property bool choosing: chooser.running
+
+    spacing: 5
+
+    Text {
+        text: file.label
+        color: Colors.secondary
+        font.family: Metrics.font
+        font.pixelSize: 12
+        font.weight: Font.Bold
+    }
+
+    Rectangle {
+        id: box
+
+        Layout.fillWidth: true
+        implicitHeight: 34
+        function activate() {
+            boxBounce.restart();
+            if (!chooser.running)
+                chooser.running = true;
+
+        }
+
+        function activateAlt() {
+            file.path = "";
+        }
+
+        radius: 12
+        color: Colors.alpha(Colors.crust, boxHover.hovered ? 0.6 : 0.45)
+        opacity: file.enabled ? 1 : 0.45
+        activeFocusOnTab: true
+
+        Text {
+            anchors.left: parent.left
+            anchors.right: clear.visible ? clear.left : icon.left
+            anchors.leftMargin: 12
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            elide: Text.ElideMiddle
+            text: file.path !== "" ? file.path.split("/").pop() : "(None)"
+            color: file.path !== "" ? Colors.primary : Colors.alpha(Colors.secondary, 0.5)
+            font.family: Metrics.font
+            font.pixelSize: 14
+        }
+
+        // Back to "(None)".
+        Text {
+            id: clear
+
+            anchors.right: icon.left
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            visible: file.path !== ""
+            text: ""
+            color: clearHover.hovered ? Colors.primary : Colors.secondary
+            font.family: Metrics.font
+            font.pixelSize: 12
+
+            HoverHandler {
+                id: clearHover
+
+                cursorShape: Qt.PointingHandCursor
+            }
+
+            TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
+                onTapped: box.activateAlt()
+            }
+
+        }
+
+        Text {
+            id: icon
+
+            anchors.right: parent.right
+            anchors.rightMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            text: file.choosing ? "󰔟" : "󰉋"
+            color: Colors.secondary
+            font.family: Metrics.font
+            font.pixelSize: 14
+        }
+
+        HoverHandler {
+            id: boxHover
+
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
+            onTapped: box.activate()
+        }
+
+        BounceAnimation {
+            id: boxBounce
+
+            target: box
+        }
+
+        Behavior on color {
+            ColorAnimation {
+                duration: 120
+            }
+
+        }
+
+    }
+
+    Process {
+        id: chooser
+
+        // The current locale, not the one the shell was started with.
+        environment: Session.localeEnvironment
+
+        command: {
+            const command = ["zenity", "--file-selection", "--title=" + file.dialogTitle];
+            if (file.path !== "")
+                command.push("--filename=" + file.path);
+
+            for (const filter of file.filters.concat(["All files | *"]))
+                command.push("--file-filter=" + filter);
+            return command;
+        }
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const chosen = text.trim();
+                if (chosen !== "")
+                    file.path = chosen;
+
+            }
+        }
+
+    }
+
+}

@@ -1,0 +1,29 @@
+import QtQuick
+import qs.components
+
+// The keys of the carousel panels (the wallpapers): arrows, Tab or the Vim keys turn
+// the carousel, Enter or Space picks the one in the middle. Give it to the panel's
+// keyTargets.
+Item {
+    id: keys
+
+    required property IslandPanel panel
+    required property ImageCarousel carousel
+
+    signal picked()
+
+    Keys.onPressed: (event) => {
+        const direction = keys.panel.horizontalKey(event);
+        if (direction !== 0)
+            keys.carousel.step(direction);
+        else if (Navigation.accepts(event))
+            keys.picked();
+        else
+            return ;
+        event.accepted = true;
+    }
+    Keys.onLeftPressed: carousel.step(-1)
+    Keys.onRightPressed: carousel.step(1)
+    Keys.onTabPressed: carousel.step(1)
+    Keys.onBacktabPressed: carousel.step(-1)
+}

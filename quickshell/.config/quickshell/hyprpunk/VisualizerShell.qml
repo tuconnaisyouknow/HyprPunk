@@ -1,6 +1,10 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
+import qs.config
+import qs.modules.music
+import qs.services
+import qs.theme
 
 // The music wave at the bottom of the desktop, under the windows, run as its own small
 // Quickshell (shell.qml starts it with `qs -n -p …/VisualizerShell.qml`): in the shell,
@@ -81,7 +85,7 @@ ShellRoot {
                             cava.tell("flat");
                             return ;
                         }
-                        const step = Math.min(frameTime, 1 / 30) * 1000 / Theme.waveSettle;
+                        const step = Math.min(frameTime, 1 / 30) * 1000 / Motion.waveSettle;
                         wave.raised = target > wave.raised ? Math.min(target, wave.raised + step) : Math.max(target, wave.raised - step);
                     }
                 }
