@@ -40,6 +40,17 @@ Singleton {
         readonly property int backEasing: Easing.InOutQuad
     }
 
+    // A pill that comes and goes from above the bar (DropInSlot, the OSD beside a card):
+    // it falls into place and bounces, and flies back up when it's over.
+    readonly property QtObject drop: QtObject {
+        // High enough to be off screen.
+        readonly property int height: 60
+        readonly property int fallDuration: 700
+        readonly property int fallEasing: Easing.OutBounce
+        readonly property int riseDuration: 300
+        readonly property int riseEasing: Easing.InBack
+    }
+
     // Something breathing on its own while a state lasts (a recording, a wait).
     readonly property QtObject pulse: QtObject {
         readonly property int duration: 700

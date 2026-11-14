@@ -85,8 +85,9 @@ in that surface (a card's preview, its pinned state, the page shown).
 
   `islandOwner` is the first prompt, else the panel, else the first card. An island
   panel is open exactly while it owns the island, so it can't disagree with the state.
-  `IslandFrame` follows the open card. The OSD and the chips at rest still follow the
-  bar's own rules, until the bar's rewrite gives them their place.
+  `IslandFrame` follows the open card. The OSD and the chips aren't claims: they never
+  wait their turn, they're the island at rest. The OSD shows in the island while nobody
+  holds it, and beside the card that does otherwise.
 
 ## Surfaces and windows
 
@@ -119,11 +120,13 @@ in that surface (a card's preview, its pinned state, the page shown).
   | `color` | a color or an opacity changing |
   | `bounce` | an answer to a press (`BounceAnimation`) |
   | `settle` | a card's shape going a little past its size, then back (`CardSettle`) |
+  | `drop` | a pill that comes and goes from above the bar: it falls in and bounces, then flies back up |
   | `pulse` | something breathing on its own while a state lasts |
 
   The first five come in `small`, `normal` and `large`, by the distance travelled, and
   are played with `Anim` and `ColorAnim` (`Anim { token: Motion.leave.small }`).
-  `bounce`, `settle` and `pulse` are gestures of their own, each with its components.
+  `bounce`, `settle`, `drop` and `pulse` are gestures of their own, each with its
+  components.
 - **Springs for what follows a moving target.** A value that can change while it
   animates (a drag, a size that changes mid-animation) follows it with a spring, which
   keeps its speed when the target moves. A transition between two fixed states uses a

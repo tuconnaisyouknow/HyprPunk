@@ -27,13 +27,14 @@ Rectangle {
     // How far its zoom draws it past its place in the row (PillZoom).
     readonly property real spreadX: pillZoom.spreadX
     readonly property real spreadY: pillZoom.spreadY
-    property int spacing: 10
-    property int horizontalPadding: 20
+    property int spacing: Metrics.spacing.normal
+    // On each side.
+    property int horizontalPadding: Metrics.pillPadding
     // The panels' card: base at 0.9, blurred by the shell's layer rule. Drawn by the glass
     // rather than the pill, so the liquid style can make it see-through.
     readonly property color baseColor: Colors.panel
 
-    implicitWidth: contentRow.implicitWidth + horizontalPadding
+    implicitWidth: contentRow.implicitWidth + 2 * horizontalPadding
     implicitHeight: Metrics.pillHeight
     radius: height / 2
     color: "transparent"

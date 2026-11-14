@@ -419,8 +419,8 @@ WlSessionLockSurface {
             Component.onCompleted: previousMode = surface.islandMode
             y: centerY - height / 2
             spacing: 0
-            horizontalPadding: expanded ? 36 : 20
-            implicitHeight: expanded ? 50 : 38
+            horizontalPadding: expanded ? Metrics.islandOsdPadding : Metrics.pillPadding
+            implicitHeight: expanded ? Metrics.islandOsdHeight : Metrics.pillHeight
 
             // Each part opens and closes its own width and the island follows, so nothing
             // pokes out of its edges while it grows or shrinks.
@@ -714,8 +714,7 @@ WlSessionLockSurface {
             Text {
                 id: dateText
 
-                readonly property var locale: surface.bar !== null ? surface.bar.regionalLocale : Qt.locale()
-                readonly property string day: locale.toString(clock.date, "dddd d MMMM")
+                readonly property string day: Session.regionalFormats.toString(clock.date, "dddd d MMMM")
 
                 width: parent.width
                 text: day.charAt(0).toUpperCase() + day.slice(1)

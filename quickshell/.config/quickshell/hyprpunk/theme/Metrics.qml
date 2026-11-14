@@ -11,8 +11,18 @@ Singleton {
     // How far the bar's pills sit from the screen's sides, in line with the windows'
     // edges (Hyprland's gaps_out), so it isn't on the spacing grid.
     readonly property int barMargin: 10
+    // The strip the bar keeps free of windows (ScreenShell), its pills centred in it:
+    // Hyprland's gaps_out then sets the windows apart from it like from any edge.
+    readonly property int barHeight: 50
+    readonly property int barTop: (barHeight - pillHeight) / 2
     // The bar's pills. Every card keeps its pill's round ends as it grows.
     readonly property int pillHeight: 38
+    // Room on each side of a pill's content.
+    readonly property int pillPadding: spacing.large
+    // The island grows while an OSD takes it over, so you notice it. The lock's island
+    // takes the same shape, to take over from the bar's without a jump.
+    readonly property int islandOsdHeight: pillHeight + spacing.large
+    readonly property int islandOsdPadding: spacing.huge
     readonly property real cardRadius: pillHeight / 2
 
     // The text, from the smallest detail to a page's heading.
@@ -33,6 +43,9 @@ Singleton {
         readonly property int huge: 16
         readonly property int section: 24
     }
+
+    // Lines that separate or outline.
+    readonly property int stroke: 1
 
     // Corners. What sits inside a rounded shape takes inner(), so the curves stay
     // parallel instead of pinching or bulging at the corners.

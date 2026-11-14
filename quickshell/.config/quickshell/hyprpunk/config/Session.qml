@@ -25,8 +25,11 @@ Singleton {
     property string wallpaper: ""
     readonly property string languageLocale: localeOf(languageProfile)
     readonly property string regionalLocale: localeOf(regionalProfile)
+    // The regional formats as Qt knows them (day and month names, the first day of the
+    // week), though the shell keeps the locale it started with.
+    readonly property var regionalFormats: Qt.locale(regionalLocale.split(".")[0])
     // The clocks follow the regional formats: 12 h in us, 24 h in fr.
-    readonly property bool twelveHour: /a/i.test(Qt.locale(regionalLocale.split(".")[0]).timeFormat(Locale.ShortFormat))
+    readonly property bool twelveHour: /a/i.test(regionalFormats.timeFormat(Locale.ShortFormat))
     // The scripts the shell runs, linked from the dotfiles' scripts module.
     readonly property string scripts: Quickshell.env("HOME") + "/.local/lib/hyprpunk"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk"
@@ -48,8 +51,7 @@ Singleton {
         if (!twelveHour)
             return "";
 
-        const locale = Qt.locale(regionalLocale.split(".")[0]);
-        return date.getHours() < 12 ? locale.amText : locale.pmText;
+        return date.getHours() < 12 ? regionalFormats.amText : regionalFormats.pmText;
     }
 
     // "3:07 PM" in us, "15:07" in fr, for the islands and the calendar card.
@@ -60,7 +62,7 @@ Singleton {
 
     // A time in a sentence ("Until 3:30 PM"), with AM/PM when the formats have it.
     function shortTime(date) {
-        return date.toLocaleTimeString(Qt.locale(regionalLocale.split(".")[0]), Locale.ShortFormat);
+        return date.toLocaleTimeString(regionalFormats, Locale.ShortFormat);
     }
 
     function quoted(argument) {

@@ -11,6 +11,7 @@ import qs.modules.island
 import qs.modules.notifications
 import qs.state
 import qs.services
+import qs.theme
 
 // Everything the shell shows on one screen, in a single window: the bar and every card
 // that grows out of its pills (Card). A card and its pill drawn in the same window change
@@ -44,7 +45,7 @@ Scope {
     PanelWindow {
         screen: shell.screen
         implicitHeight: 1
-        exclusiveZone: 50
+        exclusiveZone: Metrics.barHeight
         color: "transparent"
         WlrLayershell.namespace: "hyprpunk-exclusion"
 

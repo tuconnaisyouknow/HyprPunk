@@ -1,4 +1,6 @@
 import QtQuick
+import qs.components
+import qs.theme
 
 // A spot in the bar for a pill that comes and goes, like the player or the updates.
 // Room opens up, the pill drops in from above and bounces into place; when it leaves,
@@ -10,8 +12,8 @@ Item {
     readonly property Item pill: children.length > 0 ? children[0] : null
     // 0 = no room in the row, 1 = the pill's width.
     property real room: 0
-    // How far above its place the pill is, 0 in place: high enough to be off screen.
-    property real lift: 60
+    // How far above its place the pill is, 0 in place.
+    property real lift: Motion.drop.height
 
     function show() {
         leave.stop();
@@ -44,20 +46,19 @@ Item {
     SequentialAnimation {
         id: enter
 
-        NumberAnimation {
+        Anim {
             target: slot
             property: "room"
             to: 1
-            duration: 220
-            easing.type: Easing.OutCubic
+            token: Motion.resize.normal
         }
 
         NumberAnimation {
             target: slot
             property: "lift"
             to: 0
-            duration: 700
-            easing.type: Easing.OutBounce
+            duration: Motion.drop.fallDuration
+            easing.type: Motion.drop.fallEasing
         }
 
     }
@@ -68,17 +69,16 @@ Item {
         NumberAnimation {
             target: slot
             property: "lift"
-            to: 60
-            duration: 300
-            easing.type: Easing.InBack
+            to: Motion.drop.height
+            duration: Motion.drop.riseDuration
+            easing.type: Motion.drop.riseEasing
         }
 
-        NumberAnimation {
+        Anim {
             target: slot
             property: "room"
             to: 0
-            duration: 220
-            easing.type: Easing.InOutCubic
+            token: Motion.resize.normal
         }
 
     }

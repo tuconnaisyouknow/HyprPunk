@@ -17,8 +17,7 @@ ColumnLayout {
             return "";
 
         const [year, month, date] = day.split("-").map(Number);
-        const locale = Qt.locale(Session.regionalLocale.split(".")[0]);
-        return commit + ", from " + new Date(year, month - 1, date).toLocaleDateString(locale, Locale.ShortFormat);
+        return commit + ", from " + new Date(year, month - 1, date).toLocaleDateString(Session.regionalFormats, Locale.ShortFormat);
     }
 
     spacing: 12
