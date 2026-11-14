@@ -4,10 +4,10 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Widgets
 import qs.components
+import qs.services
+import qs.state
 import qs.theme
 import qs.windows
-import qs.state
-import qs.services
 
 // The AirPods card that grows out of the island when you open the case or they
 // connect, like on an iPhone. AirPods waiting to pair get a Connect button instead.
@@ -50,31 +50,50 @@ Card {
     readonly property bool shown: opened || progress > 0
     // Where the island is.
     readonly property var island: bar.islandPill
-    // Asked for while the island was taken: {address, reason, at (ms)}, shown once it's
-    // free if it still matters.
+    // What's asked for, until the island is free to show it: {address, reason, at (ms),
+    // waited}. It claims the island like a card that comes on its own (ScreenState).
     property var pending: null
-    readonly property string islandKey: "airpods@" + screen.name
-    readonly property bool islandTaken: ShellState.islandPanels.some((key) => {
-        return key !== islandKey && key.endsWith("@" + screen.name);
-    })
+    readonly property var screenState: ShellState.forScreen(screen)
+    readonly property bool owns: screenState !== null && screenState.islandOwner === "airpods"
 
     function inEars(device) {
         return device !== null && device.kind === "buds" && device.left.inEar && device.right.inEar;
     }
 
     function open(address, reason) {
-        if (islandTaken) {
-            pending = {
-                "address": address,
-                "reason": reason,
-                "at": Date.now()
-            };
+        pending = {
+            "address": address,
+            "reason": reason,
+            "at": Date.now(),
+            "waited": false
+        };
+        if (owns) {
+            showPending();
             return ;
         }
+        screenState?.claim("airpods", 3);
+        // Not shown right away: something else holds the island.
+        if (pending !== null)
+            pending.waited = true;
+
+    }
+
+    // What was asked, once the island is free: unless it no longer matters after waiting
+    // (the case shut, the pairing over, or a connection from a while ago).
+    function showPending() {
+        const asked = pending;
         pending = null;
-        popup.address = address;
-        popup.reason = reason;
-        dismissDelay.interval = reason === "pairing" ? 45000 : 8000;
+        const device = asked !== null ? AirPods.device(asked.address) : null;
+        const stillThere = asked !== null && (!asked.waited || (asked.reason === "pairing" ? AirPods.pairing !== null && AirPods.pairing.address === asked.address : asked.reason === "lid" ? device !== null && device.lidOpen : Date.now() - asked.at < 8000));
+        if (!stillThere) {
+            if (!opened)
+                close();
+
+            return ;
+        }
+        popup.address = asked.address;
+        popup.reason = asked.reason;
+        dismissDelay.interval = asked.reason === "pairing" ? 45000 : 8000;
         restartDismiss();
         opened = true;
     }
@@ -87,10 +106,12 @@ Card {
             dismissDelay.restart();
     }
 
-    // Folds back onto the island.
+    // Folds back onto the island, and gives it back.
     function close() {
         dismissDelay.stop();
+        pending = null;
         opened = false;
+        screenState?.release("airpods");
     }
 
     // The cross and "Not now": AirPods in pairing mode stay quiet for a while.
@@ -118,34 +139,23 @@ Card {
     covering: shown
     cardRect: Qt.rect(card.x, card.y, card.width, card.height)
     cardRadius: card.radius
-    // Free again: what was asked meanwhile, unless it no longer matters (the case shut,
-    // the pairing over, or a connection from a while ago).
-    onIslandTakenChanged: {
-        if (islandTaken || pending === null)
-            return ;
-
-        const asked = pending;
-        pending = null;
-        const device = AirPods.device(asked.address);
-        const stillThere = asked.reason === "pairing" ? AirPods.pairing !== null && AirPods.pairing.address === asked.address : asked.reason === "lid" ? device !== null && device.lidOpen : Date.now() - asked.at < 8000;
-        if (stillThere)
-            open(asked.address, asked.reason);
-
+    // Given the island, or no longer: a panel or a prompt took it, and the card comes back
+    // once they're done if it still matters then.
+    onOwnsChanged: {
+        if (owns) {
+            showPending();
+        } else if (opened) {
+            dismissDelay.stop();
+            opened = false;
+            pending = {
+                "address": address,
+                "reason": reason,
+                "at": Date.now(),
+                "waited": true
+            };
+        }
     }
-    // The notifications wait while it's open.
-    onOpenedChanged: {
-        const others = ShellState.islandPanels.filter((item) => {
-            return item !== islandKey;
-        });
-        ShellState.islandPanels = opened ? others.concat([islandKey]) : others;
-    }
-    Component.onDestruction: {
-        if (opened)
-            ShellState.islandPanels = ShellState.islandPanels.filter((item) => {
-            return item !== islandKey;
-        });
-
-    }
+    Component.onDestruction: screenState?.release("airpods")
     onHeldChanged: {
         if (opened)
             restartDismiss();
@@ -192,8 +202,8 @@ Card {
         }
 
         function onLidClosed(address) {
-            if (popup.pending !== null && popup.pending.address === address)
-                popup.pending = null;
+            if (popup.pending !== null && popup.pending.address === address && !popup.opened)
+                popup.close();
 
             if (popup.opened && popup.address === address && (popup.reason === "lid" || popup.reason === "connected"))
                 popup.close();

@@ -82,6 +82,7 @@ IslandPanel {
     }
 
     panelName: "screenshare"
+    isPrompt: true
     keyTargets: [keys]
     cardWidth: columns * tileWidth + 2 * cardPadding
     cardHeight: 2 * cardPadding + headerHeight + 2 * sectionSpacing + rows * tileHeight + footerHeight

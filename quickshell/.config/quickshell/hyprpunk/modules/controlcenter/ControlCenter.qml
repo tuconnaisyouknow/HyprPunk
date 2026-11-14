@@ -353,7 +353,6 @@ Card {
     }
 
     onOpenedChanged: {
-        ShellState.controlCenterOpen = opened;
         if (opened) {
             settle.play(true, true);
             pagesWanted = true;
@@ -397,20 +396,16 @@ Card {
         close();
     }
 
-    Connections {
-        function onPanelRequestsChanged() {
-            const action = ShellState.requestedAction("controlcenter", controlCenter.screen);
-            if (action === "")
-                return ;
-
-            if (action === "open" || action === "toggle" && !controlCenter.opened)
-                controlCenter.opened = true;
-            else
-                controlCenter.close();
-        }
-
-        target: ShellState
+    // Its shortcut, through its screen's state.
+    function requestAction(action) {
+        if (action === "open" || action === "toggle" && !opened)
+            opened = true;
+        else
+            close();
     }
+
+    Component.onCompleted: ShellState.forScreen(screen)?.register("controlcenter", controlCenter)
+    Component.onDestruction: ShellState.forScreen(screen)?.unregister("controlcenter", controlCenter)
 
     // Pinned to the pill's top right corner, where the panel grows from.
     Item {

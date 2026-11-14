@@ -265,6 +265,7 @@ IslandPanel {
     }
 
     panelName: "filechooser"
+    isPrompt: true
     cardWidth: 860
     cardHeight: 540
     onOpening: {

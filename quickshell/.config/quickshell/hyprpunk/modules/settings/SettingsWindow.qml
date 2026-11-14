@@ -2,8 +2,9 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs.components
-import qs.theme
 import qs.services
+import qs.state
+import qs.theme
 
 // The settings, in a window of their own that floats in the middle of the screen you're
 // on (rules.lua): a section per subject on the left, its page on the right. Super+I
@@ -14,7 +15,6 @@ import qs.services
 Scope {
     id: settings
 
-    // The shell's file picker, for the pages that ask for a folder.
     // In the sidebar's order, each with its page (DisplaysPage.qml).
     readonly property var sections: [{
         "name": "displays",
@@ -106,6 +106,18 @@ Scope {
         else
             open();
     }
+
+    // Asked for like a panel, as "settings" (ScreenState.request).
+    function requestAction(action) {
+        if (action === "toggle")
+            toggle();
+        else if (action === "open")
+            open();
+        else
+            close();
+    }
+
+    Component.onCompleted: ShellState.register("settings", settings)
 
     LazyLoader {
         id: loader

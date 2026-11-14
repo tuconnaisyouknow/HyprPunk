@@ -6,15 +6,16 @@ import Quickshell.Widgets
 import qs.config
 import qs.modules.island
 import qs.theme
-import qs.windows
-import qs.state
 import qs.services
+import qs.state
+import qs.windows
 
 // New notifications, in a card that grows out of the dynamic island of the screen you're
 // on when they arrive. They leave after the time set in the settings unless hovered or
 // critical, Focus keeps all but the critical ones away, so do the apps muted in the
-// settings, they wait while an island panel takes the island, and they fold back into
-// it when the notification center opens.
+// settings. They claim the island like a card that comes on its own (ScreenState), so
+// they wait while a panel or a prompt holds it, and they fold back into it when the
+// notification center opens.
 Card {
     id: popups
 
@@ -37,10 +38,7 @@ Card {
     readonly property int stayingCount: notifications.filter((entry) => {
         return !leavingIds.includes(entry.id);
     }).length
-    // A session menu or a picker grown out of the island: the popups wait their turn.
-    readonly property bool islandTaken: ShellState.islandPanels.some((key) => {
-        return key.endsWith("@" + screen.name);
-    })
+    readonly property var screenState: ShellState.forScreen(screen)
     property real progress: opened ? 1 : 0
     // The card's full height, kept while it folds: shrinking with the last popup's gap,
     // it would flatten into a long empty pill before narrowing.
@@ -66,7 +64,7 @@ Card {
             return ;
 
         // The notification lands straight in the open center, no need for a popup.
-        if (ShellState.notificationCenterOpen && ShellState.notificationScreen === screen)
+        if (screenState?.islandOwner === "notifications")
             return ;
 
         const id = notification.id;
@@ -109,7 +107,7 @@ Card {
     }
 
     anchors.fill: parent
-    opened: stayingCount > 0 && !islandTaken
+    opened: stayingCount > 0 && screenState !== null && screenState.islandOwner === "popups"
     cardWidth: 400
     cardHeight: openHeight
     openRadius: Metrics.cardRadius
@@ -120,6 +118,14 @@ Card {
     cardRect: Qt.rect(card.x, card.y, card.width, card.height)
     cardRadius: card.radius
 
+    // Wants the island while something stays to show, and gives it back once it's gone.
+    onStayingCountChanged: {
+        if (stayingCount > 0)
+            screenState?.claim("popups", 3);
+        else
+            screenState?.release("popups");
+    }
+    Component.onDestruction: screenState?.release("popups")
     // Folded with nothing left to show: drops whatever is still leaving, so no stray
     // entry keeps its folded card over the island.
     onProgressChanged: {
@@ -150,13 +156,13 @@ Card {
     // as the center grows out of it, where they're listed anyway, and nothing is left
     // over it once the center closes.
     Connections {
-        function onNotificationCenterOpenChanged() {
-            if (ShellState.notificationCenterOpen)
+        function onIslandOwnerChanged() {
+            if (popups.screenState.islandOwner === "notifications")
                 popups.hideAll();
 
         }
 
-        target: ShellState
+        target: popups.screenState
     }
 
     ClippingRectangle {

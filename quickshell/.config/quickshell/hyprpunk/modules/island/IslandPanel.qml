@@ -2,17 +2,17 @@ import QtQuick
 import Quickshell.Widgets
 import qs.components
 import qs.config
+import qs.services
+import qs.state
 import qs.theme
 import qs.windows
-import qs.state
-import qs.services
 
 // The card that grows out of the dynamic island, behind every island panel (session
 // menu, wallpaper picker…), drawn in the island's shape (IslandFrame). While open it has
 // the keyboard: Escape or Backspace closes it and other keys go to keyTargets. Clicking anywhere
 // outside closes it too.
-// One panel at a time on the island: opening one takes the shape from the others and the
-// calendar, which close.
+// It's open while it holds its screen's island (ScreenState's claims): one panel at a
+// time, so opening one takes the shape from the others and the calendar, which close.
 // The prompts (a password, a file, a screen to share) can't be pushed away: the other
 // panels don't open over them, and a second prompt waits for the first one to be done.
 Card {
@@ -23,7 +23,7 @@ Card {
     required property var bar
     // The island's card shape, shared with its other cards.
     required property Item islandFrame
-    // Name used by the panel requests (ipc), e.g. "session".
+    // Its name on its screen (ScreenState), the IPC's, e.g. "session".
     required property string panelName
     // Items with Keys handlers for the panel's own keys.
     property var keyTargets: []
@@ -39,31 +39,34 @@ Card {
     readonly property string keyboardLayout: Session.keyboardLayout
     // Panel whose request opened this one ("menu" from the main menu), read on opening.
     property string openedFrom: ""
-    // It answers an app, see ShellState.promptPanels.
-    readonly property bool isPrompt: ShellState.promptPanels.includes(panelName)
-    // A prompt asked for while another one holds the island: it opens once that one is done.
-    property bool queued: false
+    // It answers an app (a password, a file, a screen to share).
+    property bool isPrompt: false
+    readonly property var screenState: ShellState.forScreen(screen)
+    // It holds its screen's island.
+    readonly property bool owns: screenState !== null && screenState.islandOwner === panelName
 
     // Emitted before the card grows, to reset the panel's state.
     signal opening()
 
+    // Asks for the island: a panel doesn't get it while a prompt holds it, a prompt
+    // waits its turn.
     function open() {
-        if (ShellState.promptShown(screen.name, panelName)) {
-            queued = isPrompt;
-            return ;
-        }
-        queued = false;
-        opening();
-        // Before opened: the panel may hand the keyboard on to a field of its own then.
-        card.forceActiveFocus();
-        opened = true;
-        ShellState.islandClaimed(screen.name, panelName);
+        screenState?.claim(panelName, isPrompt ? 1 : 2);
     }
 
-    // Folds back onto the island.
+    // Folds back onto the island, or no longer waits for it.
     function close() {
-        queued = false;
-        opened = false;
+        screenState?.release(panelName);
+    }
+
+    // What you asked for by name (ScreenState.request).
+    function requestAction(action, origin) {
+        if (action === "close" || (action === "toggle" && opened)) {
+            close();
+            return ;
+        }
+        openedFrom = origin;
+        open();
     }
 
     function clickedOutside() {
@@ -74,7 +77,7 @@ Card {
     function back() {
         close();
         if (openedFrom === "menu")
-            ShellState.requestPanel("menu", "open", screen.name, panelName);
+            screenState?.open("menu", panelName);
 
     }
 
@@ -105,21 +108,19 @@ Card {
         card.forceActiveFocus();
     }
 
-    // Tells the island's notifications to wait while the card is open. Not until it has
-    // folded back: they take the island's shape from it as it closes.
-    onOpenedChanged: {
-        const key = panelName + "@" + screen.name;
-        const others = ShellState.islandPanels.filter((item) => {
-            return item !== key;
-        });
-        ShellState.islandPanels = opened ? others.concat([key]) : others;
+    // Given the island, or no longer: the panel sets itself up before the card grows,
+    // and may hand the keyboard on to a field of its own then.
+    onOwnsChanged: {
+        if (owns) {
+            opening();
+            card.forceActiveFocus();
+        }
+        opened = owns;
     }
+    Component.onCompleted: screenState?.register(panelName, panel)
     Component.onDestruction: {
-        if (opened)
-            ShellState.islandPanels = ShellState.islandPanels.filter((item) => {
-            return item !== panelName + "@" + screen.name;
-        });
-
+        screenState?.release(panelName);
+        screenState?.unregister(panelName, panel);
     }
     anchors.fill: parent
     cardWidth: 300
@@ -135,37 +136,6 @@ Card {
     takesKeyboard: opened
     dismissable: opened
     keptUnderFullscreen: isPrompt
-
-    Connections {
-        // Another panel or the calendar takes the island. Not a prompt, which is waiting
-        // for an answer.
-        function onIslandClaimed(screenName, owner) {
-            if (screenName === panel.screen.name && owner !== panel.panelName && !panel.isPrompt && panel.opened)
-                panel.close();
-
-        }
-
-        // The prompt holding the island is done: this one's turn.
-        function onIslandPanelsChanged() {
-            if (panel.queued && !ShellState.promptShown(panel.screen.name, panel.panelName))
-                panel.open();
-
-        }
-
-        function onPanelRequestsChanged() {
-            const action = ShellState.requestedAction(panel.panelName, panel.screen);
-            if (action === "")
-                return ;
-
-            if (action === "open" || (action === "toggle" && !panel.opened)) {
-                panel.openedFrom = ShellState.panelRequest.origin;
-                panel.open();
-            } else
-                panel.close();
-        }
-
-        target: ShellState
-    }
 
     ClippingRectangle {
         id: card

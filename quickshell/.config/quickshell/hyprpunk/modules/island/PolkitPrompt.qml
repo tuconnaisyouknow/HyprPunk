@@ -31,6 +31,7 @@ IslandPanel {
     }
 
     panelName: "polkit"
+    isPrompt: true
     cardWidth: 400
     cardHeight: content.implicitHeight + 2 * cardPadding
     onOpening: {

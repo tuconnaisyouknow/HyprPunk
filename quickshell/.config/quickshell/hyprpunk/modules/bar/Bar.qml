@@ -22,6 +22,7 @@ Item {
     id: bar
 
     required property var screen
+    readonly property var screenState: ShellState.forScreen(screen)
     // Where the screen draws its cards: the bar's own ones go there (PillPopup).
     required property Item cardLayer
     // The shape the island's cards share (IslandFrame).
@@ -208,6 +209,10 @@ Item {
                     cardLayer: bar.cardLayer
                     pill: workspacePill
                     pillName: "workspaces"
+                    panelName: "workspaces"
+                    screenState: bar.screenState
+                    // Nothing to preview while your other workspaces are all empty.
+                    requestable: bar.previewWorkspaces.length > 0
                     opensOnHover: true
                     openable: workspaceSwitcher.hoveredWorkspace !== null
                     // The preview inside the control center's padding.
@@ -239,20 +244,6 @@ Item {
                             card.step(1);
                         else if (key === Qt.Key_Return || key === Qt.Key_Enter || key === Qt.Key_Space)
                             card.choose();
-                    }
-
-                    // Its shortcut, which does nothing while your other workspaces are
-                    // all empty: there would be nothing to preview.
-                    Connections {
-                        function onPanelRequestsChanged() {
-                            if (bar.previewWorkspaces.length === 0 && !workspacePopup.expanded)
-                                return ;
-
-                            workspacePopup.request(ShellState.requestedAction("workspaces", bar.screen));
-
-                        }
-
-                        target: ShellState
                     }
 
                     // Rebuilt on every opening, so the windows are captured fresh.
@@ -318,19 +309,12 @@ Item {
                     cardLayer: bar.cardLayer
                     pill: monitorPill
                     pillName: "monitor"
+                    panelName: "systemmonitor"
+                    screenState: bar.screenState
+                    // Nothing to open from on a bar too narrow for its pill.
+                    requestable: monitorPill.visible
                     implicitWidth: monitorContent.implicitWidth
                     implicitHeight: monitorContent.implicitHeight
-
-                    // Its shortcut, with nothing to open from on a bar too narrow for its pill.
-                    Connections {
-                        function onPanelRequestsChanged() {
-                            if (monitorPill.visible)
-                                monitorPopup.request(ShellState.requestedAction("systemmonitor", bar.screen));
-
-                        }
-
-                        target: ShellState
-                    }
 
                     SystemMonitorCard {
                         id: monitorContent
@@ -688,8 +672,10 @@ Item {
                 pill: clockPill
                 pillName: "island"
                 frame: bar.islandFrame
+                panelName: "notifications"
+                screenState: bar.screenState
                 // A password, a file or a screen to share is being asked for on the island.
-                blocked: ShellState.promptShown(bar.screen.name, "")
+                blocked: bar.screenState.prompting()
                 align: Qt.AlignHCenter
                 cardHeight: animatedHeight
                 cardWidth: animatedWidth
@@ -698,45 +684,29 @@ Item {
                 // from weekRows: the layout updates a frame late, and the popup would resize twice
                 // (everything shakes).
                 implicitHeight: calendarColumn.y + calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + 18
-                // It takes the island: an island panel open there folds back.
+                // It takes the island: an island panel open there folds back. While it
+                // holds it, new notifications land in it instead of popping out of the
+                // island, and the AirPods card waits.
                 onOpening: {
                     monthOffset = 0;
-                    ShellState.islandClaimed(bar.screen.name, "calendar");
+                    bar.screenState.claim("notifications", 2);
                 }
-                // While it's open, new notifications land in it instead of popping out of
-                // the island, and the AirPods card waits.
                 onExpandedChanged: {
-                    if (expanded) {
-                        ShellState.notificationScreen = bar.screen;
-                        ShellState.notificationCenterOpen = true;
-                    } else if (ShellState.notificationScreen === bar.screen) {
-                        ShellState.notificationCenterOpen = false;
-                    }
-                    const key = "calendar@" + bar.screen.name;
-                    const others = ShellState.islandPanels.filter((item) => {
-                        return item !== key;
-                    });
-                    ShellState.islandPanels = expanded ? others.concat([key]) : others;
+                    if (!expanded)
+                        bar.screenState.release("notifications");
+
                 }
 
-                // An island panel takes the island: the calendar folds back.
+                // Something else takes the island (a panel, a prompt): the calendar folds
+                // back.
                 Connections {
-                    function onIslandClaimed(screenName, owner) {
-                        if (screenName === bar.screen.name && owner !== "calendar" && calendarPopup.mapped)
+                    function onIslandOwnerChanged() {
+                        if (calendarPopup.expanded && bar.screenState.islandOwner !== "notifications")
                             calendarPopup.close();
 
                     }
 
-                    target: ShellState
-                }
-
-                Connections {
-                    function onPanelRequestsChanged() {
-                        calendarPopup.request(ShellState.requestedAction("notifications", bar.screen));
-
-                    }
-
-                    target: ShellState
+                    target: bar.screenState
                 }
 
                 Item {
@@ -1113,19 +1083,9 @@ Item {
 
                     player: Music.player
                     cardLayer: bar.cardLayer
+                    screenState: bar.screenState
                 }
 
-                // Its shortcut, which does nothing while Spotify isn't running: there
-                // would be no player to show.
-                Connections {
-                    function onPanelRequestsChanged() {
-                        if (Music.player !== null)
-                            musicPill.request(ShellState.requestedAction("player", bar.screen));
-
-                    }
-
-                    target: ShellState
-                }
 
             }
 
@@ -1158,7 +1118,7 @@ Item {
                 onWidthChanged: publishGeometry()
                 onHeightChanged: publishGeometry()
                 Component.onCompleted: publishGeometry()
-                onClicked: ShellState.requestPanel("controlcenter", "toggle", bar.screen.name)
+                onClicked: bar.screenState.toggle("controlcenter")
 
                 ControlStatus {
                     badgeColor: controlPill.baseColor

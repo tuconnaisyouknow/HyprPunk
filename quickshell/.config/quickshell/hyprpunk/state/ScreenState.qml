@@ -3,8 +3,10 @@ import Quickshell
 import Quickshell.Hyprland
 
 // What belongs to one screen, made by ShellState for each of them and found with
-// ShellState.forScreen().
+// ShellState.forScreen(): who holds its island, and the way to its surfaces.
 QtObject {
+    id: screenState
+
     required property ShellScreen modelData
     readonly property ShellScreen screen: modelData
     // A window is fullscreen on the screen, over the shell's window (which stays in the
@@ -18,4 +20,94 @@ QtObject {
             return toplevel.wayland !== null && toplevel.wayland.fullscreen;
         });
     }
+    // The island's claims, in the order they came: [{ name, rank }]. Rank 1 is a prompt
+    // an app waits on, 2 a panel you open, 3 a card that comes on its own.
+    property var claims: []
+    // Who the island shows: the first prompt, which can't be pushed away; else the panel;
+    // else the first card. The others wait their turn.
+    readonly property string islandOwner: {
+        const first = (rank) => {
+            return claims.find((claim) => {
+                return claim.rank === rank;
+            });
+        };
+        const owner = first(1) ?? first(2) ?? first(3);
+        return owner !== undefined ? owner.name : "";
+    }
+    // The surfaces you can open on this screen, by name (the IPC's panel names).
+    property var surfaces: ({
+    })
+
+    // False when the island won't have it: a panel while a prompt waits for an answer.
+    // A prompt or a panel takes the island from the panel there, which closes.
+    function claim(name, rank) {
+        if (claims.some((claim) => {
+            return claim.name === name;
+        }))
+            return true;
+
+        if (rank === 2 && claims.some((claim) => {
+            return claim.rank === 1;
+        }))
+            return false;
+
+        claims = claims.filter((claim) => {
+            return rank === 3 || claim.rank !== 2;
+        }).concat([{
+            "name": name,
+            "rank": rank
+        }]);
+        return true;
+    }
+
+    function release(name) {
+        if (claims.some((claim) => {
+            return claim.name === name;
+        }))
+            claims = claims.filter((claim) => {
+            return claim.name !== name;
+        });
+
+    }
+
+    // A prompt holds the island: the panels and the calendar stay shut.
+    function prompting() {
+        return claims.some((claim) => {
+            return claim.rank === 1;
+        });
+    }
+
+    // A surface answers open(), close() and toggle() through requestAction(action, origin).
+    function register(name, surface) {
+        surfaces[name] = surface;
+    }
+
+    function unregister(name, surface) {
+        if (surfaces[name] === surface)
+            delete surfaces[name];
+
+    }
+
+    // origin: the surface asking (the main menu for its entries). Only the prompts open
+    // over a fullscreen window. The settings window isn't a screen's: ShellState has it.
+    function request(name, action, origin) {
+        const surface = surfaces[name] ?? ShellState.surfaces[name];
+        if (surface === undefined || (action !== "close" && fullscreen && surface.keptUnderFullscreen === false))
+            return ;
+
+        surface.requestAction(action, origin ?? "");
+    }
+
+    function open(name, origin) {
+        request(name, "open", origin);
+    }
+
+    function close(name) {
+        request(name, "close");
+    }
+
+    function toggle(name) {
+        request(name, "toggle");
+    }
+
 }

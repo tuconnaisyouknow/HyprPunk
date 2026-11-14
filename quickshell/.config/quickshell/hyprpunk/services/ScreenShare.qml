@@ -72,7 +72,7 @@ Singleton {
 
             if (rect === null) {
                 // Changed your mind about the region: back to the picker.
-                ShellState.requestPanel("screenshare", "open", share.regionScreen);
+                ShellState.forScreen(share.regionScreen)?.open("screenshare");
                 share.regionScreen = "";
                 return ;
             }

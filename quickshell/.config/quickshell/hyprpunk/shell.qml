@@ -58,28 +58,10 @@ ShellRoot {
         target: MusicSettings
     }
 
-
     // The settings window, asked for like a panel, as "settings": Super+I through
     // `qs -c hyprpunk ipc call settings <toggle|open|close>`, and the main menu.
     SettingsWindow {
         id: settingsWindow
-    }
-
-    Connections {
-        function onPanelRequestsChanged() {
-            const request = ShellState.panelRequest;
-            if (request.panel !== "settings")
-                return ;
-
-            if (request.action === "toggle")
-                settingsWindow.toggle();
-            else if (request.action === "open")
-                settingsWindow.open();
-            else
-                settingsWindow.close();
-        }
-
-        target: ShellState
     }
 
     // The previous/next shortcuts go through `qs -c hyprpunk ipc call music <previous|next>`
@@ -108,15 +90,15 @@ ShellRoot {
 
             IpcHandler {
                 function toggle(): void {
-                    ShellState.requestPanel(panelIpc.modelData, "toggle");
+                    ShellState.focused()?.toggle(panelIpc.modelData);
                 }
 
                 function open(): void {
-                    ShellState.requestPanel(panelIpc.modelData, "open");
+                    ShellState.focused()?.open(panelIpc.modelData);
                 }
 
                 function close(): void {
-                    ShellState.requestPanel(panelIpc.modelData, "close");
+                    ShellState.focused()?.close(panelIpc.modelData);
                 }
 
                 target: panelIpc.modelData
@@ -129,7 +111,7 @@ ShellRoot {
     // The prompts the apps wait on open in the island of the focused screen.
     Connections {
         function onAuthenticationRequestStarted() {
-            ShellState.requestPanel("polkit", "open");
+            ShellState.focused()?.open("polkit");
         }
 
         target: Polkit.agent
@@ -137,7 +119,7 @@ ShellRoot {
 
     Connections {
         function onRequested() {
-            ShellState.requestPanel("filechooser", "open");
+            ShellState.focused()?.open("filechooser");
         }
 
         target: FileChooser
@@ -145,7 +127,7 @@ ShellRoot {
 
     Connections {
         function onRequested() {
-            ShellState.requestPanel("screenshare", "open");
+            ShellState.focused()?.open("screenshare");
         }
 
         target: ScreenShare

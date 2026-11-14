@@ -19,6 +19,8 @@ Rectangle {
     required property var player
     // Where the screen draws its cards (ScreenShell), the player among them.
     required property Item cardLayer
+    // Its screen's state, where the player answers its shortcut.
+    required property var screenState
     readonly property alias popup: musicPopup
     // Under the pointer, or its spot in the player, and how far that draws it past its
     // place (like Pill).
@@ -57,11 +59,6 @@ Rectangle {
     property real knownPositionTime: 0
     property bool knownPositionPlaying: false
     property real trackChangeTime: 0
-
-    // From the player's shortcut: "toggle", "open" or "close".
-    function request(action) {
-        musicPopup.request(action);
-    }
 
     // A little pop on play, pause and track changes. Not while the player is
     // open though: the pill sits under the card and would poke out of it.
@@ -468,6 +465,10 @@ Rectangle {
         cardLayer: musicPill.cardLayer
         pill: musicPill
         pillName: "player"
+        panelName: "player"
+        screenState: musicPill.screenState
+        // No player to show while Spotify isn't running.
+        requestable: musicPill.player !== null
         align: Qt.AlignRight
         available: musicPill.player !== null
         implicitWidth: 380

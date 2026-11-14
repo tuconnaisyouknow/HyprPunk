@@ -37,6 +37,12 @@ Card {
     property bool openable: true
     // True and it doesn't open at all, however asked (a prompt holds the island).
     property bool blocked: false
+    // Its name on its screen (ScreenState), the IPC's, for its shortcut.
+    property string panelName: ""
+    property var screenState: null
+    // False and its shortcut doesn't open it, only closes it: nothing to show (no other
+    // workspace to preview, no player) or no pill to open from.
+    property bool requestable: true
     // Unfolded, or unfolding.
     property bool expanded: false
     // Out, from the opening until folded back.
@@ -88,9 +94,13 @@ Card {
         pillHovered = false;
     }
 
-    // What its shortcut asks ("toggle", "open" or "close"). Open, however it was opened
-    // (a click, a preview, the shortcut), the shortcut closes it; closed, it opens it kept.
-    function request(action) {
+    // What its shortcut asks ("toggle", "open" or "close"), through ScreenState. Open,
+    // however it was opened (a click, a preview, the shortcut), the shortcut closes it;
+    // closed, it opens it kept.
+    function requestAction(action) {
+        if (!requestable && !expanded)
+            return ;
+
         if (action === "close" || action === "toggle" && expanded) {
             if (!expanded)
                 return ;
@@ -184,6 +194,16 @@ Card {
     onMappedChanged: {
         if (!mapped)
             closedOnPurpose = false;
+
+    }
+    Component.onCompleted: {
+        if (panelName !== "")
+            screenState?.register(panelName, popup);
+
+    }
+    Component.onDestruction: {
+        if (panelName !== "")
+            screenState?.unregister(panelName, popup);
 
     }
     onPointerInsideChanged: {

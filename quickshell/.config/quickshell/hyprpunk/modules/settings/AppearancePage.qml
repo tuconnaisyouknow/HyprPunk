@@ -111,14 +111,14 @@ ColumnLayout {
                 Layout.fillWidth: true
                 icon: "󰸉"
                 label: "Choose a wallpaper"
-                onTriggered: ShellState.requestPanel("wallpaper", "open")
+                onTriggered: ShellState.focused()?.open("wallpaper")
             }
 
             ActionRow {
                 Layout.fillWidth: true
                 icon: "󰏘"
                 label: "Choose a theme"
-                onTriggered: ShellState.requestPanel("theme", "open")
+                onTriggered: ShellState.focused()?.open("theme")
             }
 
         }

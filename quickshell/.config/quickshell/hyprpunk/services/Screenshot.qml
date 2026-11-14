@@ -333,7 +333,7 @@ ffmpeg -loglevel error -y -i "$1" -frames:v 1 -vf scale=-2:180 "$2"'
 
         // The menu of the screenshots and recordings, in the island.
         function menu(): void {
-            ShellState.requestPanel("screenshot", "toggle", "");
+            ShellState.focused()?.toggle("screenshot");
         }
 
         target: "screenshot"

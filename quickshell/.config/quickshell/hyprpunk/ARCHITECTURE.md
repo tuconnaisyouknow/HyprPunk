@@ -61,24 +61,32 @@ shaders/, data/  the shaders and the data files, found with Quickshell.shellPath
 
 ## Shell state
 
-- **`ShellState`** holds what spans screens: do not disturb, caffeine, the screens
-  covered by a fullscreen window, the last capture.
-- **`ScreenState`**, one per screen (a `Variants` in `ShellState`), holds what's open on
-  that screen. `ShellState.forScreen(screen)` and `ShellState.focused()` find it.
-- **Opening is a call, not a signal.** `screenState.open("launcher")`, `close` and
-  `toggle` change the state, and the surfaces bind to it. The IPC commands make the same
-  calls. No request counters, no broadcast that every panel filters.
-- **The island has one owner at a time, by claim.** A surface that wants the island on a
-  screen claims it with a priority:
-  1. the prompts an app waits on (polkit, file chooser, screen share);
-  2. the panels you open;
-  3. the cards that arrive on their own (notifications, AirPods);
-  4. the OSD;
-  5. the chips at rest.
+State that more than one surface needs lives here; state only one surface needs stays
+in that surface (a card's preview, its pinned state, the page shown).
 
-  The highest claim owns the island, the others wait and get it back in order.
-  `IslandFrame` follows the owner. That's the one mechanism for everything the island
-  shows; it replaces the `"panel@screen"` lists, `promptShown` and `islandClaimed`.
+- **`ShellState`** holds what spans screens: do not disturb, caffeine, screenshots, the
+  AirPods OSD, and the surfaces that belong to no screen (the settings window).
+- **`ScreenState`**, one per screen (a `Variants` in `ShellState`), holds that screen's
+  island and the way to its surfaces. `ShellState.forScreen(screen)` and
+  `ShellState.focused()` find it.
+- **Opening is a call, not a broadcast.** A surface registers under its name on its
+  screen (`register`), and `screenState.open(name)`, `close` and `toggle` reach it
+  through its `requestAction(action, origin)`. The IPC commands, the main menu and the
+  services make the same calls. No request counters, no signal every panel filters.
+  Only the prompts open over a fullscreen window.
+- **The island has one owner at a time, by claim.** A surface that wants the island on a
+  screen claims it with a rank:
+  1. the prompts an app waits on (polkit, file chooser, screen share): first come,
+     never pushed away;
+  2. the panels you open, and the calendar: the last one takes the island, and the one
+     it takes it from closes. None opens while a prompt holds it;
+  3. the cards that come on their own (notifications, AirPods): first come, and they
+     wait while anything else holds it.
+
+  `islandOwner` is the first prompt, else the panel, else the first card. An island
+  panel is open exactly while it owns the island, so it can't disagree with the state.
+  `IslandFrame` follows the open card. The OSD and the chips at rest still follow the
+  bar's own rules, until the bar's rewrite gives them their place.
 
 ## Surfaces and windows
 

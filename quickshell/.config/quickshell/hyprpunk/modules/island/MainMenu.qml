@@ -1,6 +1,4 @@
 import QtQuick
-import Quickshell
-import qs.state
 
 // The main menu: a glass square per panel, with the selected one's name underneath.
 // Picking one opens that panel, and Escape there comes back here. Settings opens the
@@ -58,6 +56,6 @@ IconMenu {
     }))
     onChosen: (entry) => {
         close();
-        ShellState.requestPanel(entry.panel, "open", screen.name, panelName);
+        screenState.open(entry.panel, panelName);
     }
 }
