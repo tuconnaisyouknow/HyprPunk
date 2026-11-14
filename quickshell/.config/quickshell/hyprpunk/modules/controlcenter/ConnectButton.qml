@@ -23,7 +23,7 @@ Rectangle {
 
     implicitWidth: labelText.implicitWidth + 32
     implicitHeight: 34
-    radius: 17
+    radius: height / 2
     color: "transparent"
     opacity: available ? 1 : 0.45
     activeFocusOnTab: true
@@ -41,7 +41,7 @@ Rectangle {
         text: (button.busy ? "󰔟  " : "") + button.label
         color: Colors.base
         font.family: Metrics.font
-        font.pixelSize: 13
+        font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Bold
     }
 

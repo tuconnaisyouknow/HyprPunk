@@ -9,7 +9,7 @@ ControlPage {
     id: page
 
     pageName: "chargeLimit"
-    spacing: 6
+    spacing: Metrics.spacing.normal
 
     PageHeader {
         Layout.fillWidth: true
@@ -22,12 +22,12 @@ ControlPage {
 
     Text {
         Layout.fillWidth: true
-        Layout.bottomMargin: 6
+        Layout.bottomMargin: Metrics.spacing.normal
         text: !ChargeLimit.writable ? "Read only: install battery-limit (battery/ in the dotfiles) to change it." : ChargeLimit.error !== "" ? ChargeLimit.error : "Stops charging at the limit, easier on the battery over the years. Kept after a restart."
         color: !ChargeLimit.writable || ChargeLimit.error !== "" ? Colors.peach : Colors.secondary
         wrapMode: Text.Wrap
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     Repeater {

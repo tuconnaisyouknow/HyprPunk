@@ -8,28 +8,11 @@ import qs.theme
 
 // The settings' mouse and touchpad page: the pointer's speed and how it scrolls, and the
 // touchpad's taps. Hyprland takes each change at once (inputctl.sh).
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Mouse and touchpad"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Your personal/input.lua still wins over these."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Mouse and touchpad"
+    description: "Your personal/input.lua still wins over these."
 
     SettingRow {
         Layout.fillWidth: true
@@ -105,12 +88,12 @@ ColumnLayout {
 
     // The touchpad's own, once touchpadctl.sh has found one.
     Text {
-        Layout.topMargin: 8
+        Layout.topMargin: Metrics.spacing.normal
         visible: Devices.hasTouchpad
         text: "Touchpad"
         color: Colors.primary
         font.family: Metrics.font
-        font.pixelSize: 16
+        font.pixelSize: Metrics.text.title
         font.weight: Font.Bold
     }
 

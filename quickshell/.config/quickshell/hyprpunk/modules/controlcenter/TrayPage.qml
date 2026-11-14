@@ -27,7 +27,7 @@ ControlPage {
     }
 
     pageName: "tray"
-    spacing: 6
+    spacing: Metrics.spacing.normal
 
     // The last app quit from its own menu: nothing left here.
     Connections {
@@ -59,12 +59,12 @@ ControlPage {
         id: description
 
         Layout.fillWidth: true
-        Layout.bottomMargin: 6
+        Layout.bottomMargin: Metrics.spacing.normal
         text: "What keeps running once its window is closed."
         color: Colors.secondary
         wrapMode: Text.Wrap
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     // As tall as the apps and their menus, up to the panel's height. It spills a few
@@ -89,7 +89,7 @@ ControlPage {
 
                 x: 6
                 width: page.width
-                spacing: 6
+                spacing: Metrics.spacing.normal
 
                 Repeater {
                     model: Tray.items
@@ -101,7 +101,7 @@ ControlPage {
                         readonly property bool expanded: page.expandedApp === modelData
 
                         Layout.fillWidth: true
-                        spacing: 4
+                        spacing: Metrics.spacing.small
                         // After the menu has had a frame to unfold.
                         onExpandedChanged: {
                             if (expanded)
@@ -130,14 +130,14 @@ ControlPage {
 
                             Layout.fillWidth: true
                             implicitHeight: 48
-                            radius: 14
+                            radius: Metrics.radius.normal
                             activeFocusOnTab: true
 
                             RowLayout {
                                 anchors.fill: parent
-                                anchors.leftMargin: 12
-                                anchors.rightMargin: 8
-                                spacing: 12
+                                anchors.leftMargin: Metrics.spacing.large
+                                anchors.rightMargin: Metrics.spacing.normal
+                                spacing: Metrics.spacing.large
 
                                 IconImage {
                                     Layout.preferredWidth: 22
@@ -156,7 +156,7 @@ ControlPage {
                                         color: Colors.primary
                                         elide: Text.ElideRight
                                         font.family: Metrics.font
-                                        font.pixelSize: 14
+                                        font.pixelSize: Metrics.text.emphasis
                                         font.weight: app.expanded ? Font.Bold : Font.Medium
                                     }
 
@@ -167,7 +167,7 @@ ControlPage {
                                         color: Colors.secondary
                                         elide: Text.ElideRight
                                         font.family: Metrics.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Metrics.text.body
                                     }
 
                                 }
@@ -195,8 +195,8 @@ ControlPage {
                                         opacity: openArea.containsMouse ? 1 : 0
 
                                         Behavior on opacity {
-                                            NumberAnimation {
-                                                duration: 120
+                                            Anim {
+                                                token: Motion.color.small
                                             }
 
                                         }
@@ -208,7 +208,7 @@ ControlPage {
                                         text: "󰏌"
                                         color: openArea.containsMouse ? Colors.primary : Colors.secondary
                                         font.family: Metrics.font
-                                        font.pixelSize: 16
+                                        font.pixelSize: Metrics.text.title
                                     }
 
                                     // A MouseArea takes the click from the row.
@@ -230,12 +230,11 @@ ControlPage {
                                     rotation: app.expanded ? 90 : 0
                                     color: row.hovered || app.expanded ? Colors.primary : Colors.secondary
                                     font.family: Metrics.font
-                                    font.pixelSize: 14
+                                    font.pixelSize: Metrics.text.emphasis
 
                                     Behavior on rotation {
-                                        NumberAnimation {
-                                            duration: 160
-                                            easing.type: Easing.OutCubic
+                                        Anim {
+                                            token: Motion.move.small
                                         }
 
                                     }
@@ -257,8 +256,8 @@ ControlPage {
 
                         TrayMenu {
                             Layout.fillWidth: true
-                            Layout.leftMargin: 8
-                            Layout.bottomMargin: 4
+                            Layout.leftMargin: Metrics.spacing.normal
+                            Layout.bottomMargin: Metrics.spacing.small
                             visible: app.expanded
                             shown: app.expanded
                             handle: app.modelData.menu

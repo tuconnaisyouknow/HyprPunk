@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Widgets
 import qs.components
 import qs.services
@@ -23,9 +22,6 @@ Card {
     // The island's card shape, shared with its other cards.
     required property Item islandFrame
     readonly property rect contentRect: islandFrame.contentRect(popup)
-    property color base: Colors.base
-    property color secondary: Colors.secondary
-    property color primary: Colors.primary
     // BR/EDR address of the AirPods shown, and why: "lid", "connected", "pairing" or
     // "manual" (ipc).
     property string address: ""
@@ -42,7 +38,7 @@ Card {
     // The case is left out while its battery is unknown (pods out of it, lid shut).
     readonly property bool caseShown: !headphones && images !== null && (pairingView || (device !== null && device["case"].level !== null))
     // Both pods worn: the card has done its job.
-    readonly property bool worn: inEars(device)
+    readonly property bool worn: AirPods.inEars(device)
     // No timeout while the case is open; both pods worn still fold it back (onWornChanged).
     readonly property bool held: (reason === "lid" || reason === "connected") && device !== null && device.lidOpen
     property real progress: opened ? 1 : 0
@@ -55,10 +51,6 @@ Card {
     property var pending: null
     readonly property var screenState: ShellState.forScreen(screen)
     readonly property bool owns: screenState !== null && screenState.islandOwner === "airpods"
-
-    function inEars(device) {
-        return device !== null && device.kind === "buds" && device.left.inEar && device.right.inEar;
-    }
 
     function open(address, reason) {
         pending = {
@@ -131,7 +123,7 @@ Card {
 
     anchors.fill: parent
     cardWidth: 420
-    cardHeight: layout.implicitHeight + 28 + 26
+    cardHeight: layout.implicitHeight + 2 * Metrics.spacing.section
     // The island's corners: rounder ones would let the island's show under the card.
     openRadius: island.height / 2
     visible: shown
@@ -166,14 +158,10 @@ Card {
             return ;
 
         // The island turns into the AirPods OSD and the card folds back onto it.
-        const left = device.left.level;
-        const right = device.right.level;
-        Osd.showAirPods({
+        Osd.showAirPods(Object.assign({
             "screen": screen.name,
-            "image": images !== null ? images.buds : "",
-            "level": left === null ? right : right === null ? left : Math.min(left, right),
-            "charging": device.left.charging && device.right.charging
-        });
+            "image": images !== null ? images.buds : ""
+        }, AirPods.budsBattery(device)));
         close();
     }
     // Paired: the card of the AirPods follows. Ignored or gone: nothing left to show.
@@ -188,16 +176,11 @@ Card {
     }
 
     Connections {
+        // On the screen you're on.
         function onPopupRequested(address, reason) {
-            const focused = Hyprland.focusedMonitor;
-            if (focused === null || focused.name !== popup.screen.name)
-                return ;
+            if (ShellState.focused() === popup.screenState)
+                popup.open(address, reason);
 
-            // They connected because they went in your ears: nothing to show, unless asked for ("manual").
-            if ((reason === "lid" || reason === "connected") && popup.inEars(AirPods.device(address)))
-                return ;
-
-            popup.open(address, reason);
         }
 
         function onLidClosed(address) {
@@ -247,35 +230,37 @@ Card {
                 id: layout
 
                 anchors.top: parent.top
-                anchors.topMargin: 28
+                anchors.topMargin: Metrics.spacing.section
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width - 48
+                width: parent.width - 2 * Metrics.spacing.section
                 spacing: 0
 
                 Text {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: 300
+                    // Clear of the cross on both sides, so it stays centred.
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Metrics.spacing.section
+                    Layout.rightMargin: Metrics.spacing.section
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
                     maximumLineCount: 2
                     elide: Text.ElideRight
                     lineHeight: 0.95
                     text: popup.shownAirPods !== null ? popup.shownAirPods.name : ""
-                    color: popup.primary
+                    color: Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: 24
+                    font.pixelSize: Metrics.text.heading
                     font.weight: Font.Bold
                 }
 
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
-                    Layout.topMargin: 22
-                    spacing: 36
+                    Layout.topMargin: Metrics.spacing.section
+                    spacing: Metrics.spacing.section
 
                     // The pods (or the headphones), their rings below.
                     ColumnLayout {
                         Layout.alignment: Qt.AlignTop
-                        spacing: 16
+                        spacing: Metrics.spacing.huge
 
                         AirPodsImage {
                             source: popup.images !== null ? "file://" + popup.images.buds : ""
@@ -285,7 +270,7 @@ Card {
                         Row {
                             visible: !popup.pairingView
                             Layout.alignment: Qt.AlignHCenter
-                            spacing: 18
+                            spacing: Metrics.spacing.huge
 
                             Repeater {
                                 model: popup.podBatteries
@@ -305,7 +290,7 @@ Card {
                     ColumnLayout {
                         visible: popup.caseShown
                         Layout.alignment: Qt.AlignTop
-                        spacing: 16
+                        spacing: Metrics.spacing.huge
 
                         AirPodsImage {
                             source: popup.images !== null ? "file://" + popup.images["case"] : ""
@@ -321,10 +306,12 @@ Card {
 
                 }
 
-                CardButton {
+                GlassButton {
                     visible: popup.pairingView
-                    Layout.topMargin: 22
-                    text: popup.pairingView ? popup.pairingButtonText() : ""
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: 240
+                    Layout.topMargin: Metrics.spacing.section
+                    label: popup.pairingView ? popup.pairingButtonText() : ""
                     enabled: popup.pairingView && popup.candidate.state !== "pairing"
                     onClicked: AirPods.pair(popup.address)
                 }
@@ -332,11 +319,11 @@ Card {
                 Text {
                     visible: popup.pairingView
                     Layout.alignment: Qt.AlignHCenter
-                    Layout.topMargin: 10
+                    Layout.topMargin: Metrics.spacing.normal
                     text: "Not now"
-                    color: notNowArea.containsMouse ? popup.primary : popup.secondary
+                    color: notNowArea.containsMouse ? Colors.primary : Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 12
+                    font.pixelSize: Metrics.text.body
 
                     MouseArea {
                         id: notNowArea
@@ -352,54 +339,18 @@ Card {
 
             }
 
-            // Small neutral close cross in the top-right corner, as on the notifications.
-            Rectangle {
+            // Closes the card.
+            IconButton {
+                icon: ""
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.margins: 14
-                width: 22
-                height: 22
-                radius: 11
-                color: "transparent"
-
-                // Glass halo on hover only, so the cross stays discreet.
-                GlassSurface {
-                    radius: parent.radius
-                    hovered: true
-                    opacity: closeArea.containsMouse ? 1 : 0
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 120
-                        }
-
-                    }
-
-                }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: ""
-                    color: closeArea.containsMouse ? popup.primary : popup.secondary
-                    font.family: Metrics.font
-                    font.pixelSize: 12
-                }
-
-                MouseArea {
-                    id: closeArea
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: popup.dismiss()
-                }
-
+                anchors.margins: Metrics.spacing.normal
+                onClicked: popup.dismiss()
             }
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
+                Anim {
+                    token: Motion.color.small
                 }
 
             }
@@ -415,59 +366,15 @@ Card {
     }
 
     Behavior on progress {
-        NumberAnimation {
-            duration: Motion.resize.large.duration
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.large
         }
 
     }
 
     Behavior on cardHeight {
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
-        }
-
-    }
-
-    // Accent glass button, like the notification actions.
-    component CardButton: Rectangle {
-        id: button
-
-        property string text
-
-        signal clicked()
-
-        Layout.alignment: Qt.AlignHCenter
-        implicitWidth: 240
-        implicitHeight: 38
-        radius: 12
-        color: "transparent"
-        opacity: enabled ? 1 : 0.6
-
-        GlassSurface {
-            radius: button.radius
-            hovered: buttonArea.containsMouse
-            backgroundColor: Colors.alpha(Colors.primary, buttonArea.containsMouse ? 0.95 : 0.8)
-        }
-
-        Text {
-            anchors.centerIn: parent
-            text: button.text
-            color: popup.base
-            font.family: Metrics.font
-            font.pixelSize: 14
-            font.weight: Font.Bold
-        }
-
-        MouseArea {
-            id: buttonArea
-
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            enabled: button.enabled
-            onClicked: button.clicked()
+        Anim {
+            token: Motion.resize.normal
         }
 
     }

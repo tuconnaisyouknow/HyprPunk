@@ -8,8 +8,11 @@ import qs.theme
 
 // The settings' launcher page: the apps pinned first in the launcher, and the ones it
 // never shows. Every app is listed, narrowed down by what you type.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Launcher"
+    description: "Super+Space opens it. Pinned apps come first, in the order you pinned them, then the ones you use most. Hidden ones never show, even when you search."
 
     // Your apps by name, then the ones matching what's typed. The list stays the same
     // while you pin or hide, so the row you're on keeps the keyboard.
@@ -23,26 +26,6 @@ ColumnLayout {
         return entry.name.toLowerCase().includes(needle) || entry.id.toLowerCase().includes(needle);
     })
 
-    spacing: 12
-
-    Text {
-        text: "Launcher"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Super+Space opens it. Pinned apps come first, in the order you pinned them, then the ones you use most. Hidden ones never show, even when you search."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
-
     SettingRow {
         Layout.fillWidth: true
         icon: "󰀻"
@@ -51,13 +34,13 @@ ColumnLayout {
 
         ColumnLayout {
             width: parent.width
-            spacing: 4
+            spacing: Metrics.spacing.small
 
             FormField {
                 id: filter
 
                 Layout.fillWidth: true
-                Layout.bottomMargin: 6
+                Layout.bottomMargin: Metrics.spacing.normal
                 placeholder: "Find an app"
             }
 
@@ -74,7 +57,7 @@ ColumnLayout {
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
-                    spacing: 12
+                    spacing: Metrics.spacing.large
 
                     Item {
                         Layout.preferredWidth: 24
@@ -94,7 +77,7 @@ ColumnLayout {
                             text: "󰀻"
                             color: Colors.secondary
                             font.family: Metrics.font
-                            font.pixelSize: 18
+                            font.pixelSize: Metrics.text.title
                         }
 
                     }
@@ -105,21 +88,23 @@ ColumnLayout {
                         color: app.pinned ? Colors.primary : Colors.alpha(Colors.secondary, app.hidden ? 0.5 : 1)
                         elide: Text.ElideRight
                         font.family: Metrics.font
-                        font.pixelSize: 13
+                        font.pixelSize: Metrics.text.emphasis
                         font.weight: app.pinned ? Font.Bold : Font.Normal
                     }
 
-                    SettingChip {
+                    GlassButton {
                         icon: "󰐃"
                         label: "Pin"
-                        chosen: app.pinned
+                        accent: app.pinned
+                        activeFocusOnTab: true
                         onClicked: LauncherSettings.setPinned(app.modelData.id, !app.pinned)
                     }
 
-                    SettingChip {
+                    GlassButton {
                         icon: "󰈉"
                         label: "Hide"
-                        chosen: app.hidden
+                        accent: app.hidden
+                        activeFocusOnTab: true
                         onClicked: LauncherSettings.setHidden(app.modelData.id, !app.hidden)
                     }
 
@@ -132,7 +117,7 @@ ColumnLayout {
                 text: "No app matches."
                 color: Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
             }
 
         }

@@ -1,5 +1,6 @@
 import QtQuick
 import qs.components
+import qs.theme
 
 // The glass under the selected entry of the island panels' lists and grids, given to
 // the view as its highlight. One per list, jumping to the selection, rather than one
@@ -9,7 +10,7 @@ Item {
 
     // The list or grid it belongs to.
     required property Item view
-    property real radius: 14
+    property real radius: Metrics.radius.normal
     // Space around it inside a grid's cell.
     property real inset: 0
 

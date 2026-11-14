@@ -7,28 +7,11 @@ import qs.theme
 
 // The settings' battery page: when the island warns you the battery runs out, and what
 // the computer does once it's critical. The charge limit stays in the control center.
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Battery"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: Battery.present ? "When you're warned it runs out. The charge limit is in the control center." : "This computer has no battery: these only count on one that does."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Battery"
+    description: Battery.present ? "When you're warned it runs out. The charge limit is in the control center." : "This computer has no battery: these only count on one that does."
 
     SettingRow {
         Layout.fillWidth: true

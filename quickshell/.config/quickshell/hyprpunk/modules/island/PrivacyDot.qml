@@ -26,7 +26,7 @@ Item {
         id: dots
 
         anchors.centerIn: parent
-        spacing: 4
+        spacing: Metrics.spacing.small
 
         Rectangle {
             visible: dot.privacy
@@ -36,8 +36,8 @@ Item {
             color: dot.camera ? Colors.green : Colors.peach
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 200
+                ColorAnim {
+                    token: Motion.color.normal
                 }
 
             }
@@ -64,14 +64,14 @@ Item {
 
                 NumberAnimation {
                     to: 0.3
-                    duration: 700
-                    easing.type: Easing.InOutSine
+                    duration: Motion.pulse.duration
+                    easing.type: Motion.pulse.easing
                 }
 
                 NumberAnimation {
                     to: 1
-                    duration: 700
-                    easing.type: Easing.InOutSine
+                    duration: Motion.pulse.duration
+                    easing.type: Motion.pulse.easing
                 }
 
             }

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import qs.components
 import qs.theme
 
 // Lyrics the Apple Music way: the line being sung lit up near the top, the rest dimmer
@@ -129,9 +130,9 @@ Item {
             id: column
 
             width: flickable.width
-            topPadding: view.shownSynced ? view.height * view.anchorRatio : 12
+            topPadding: view.shownSynced ? view.height * view.anchorRatio : Metrics.spacing.large
             bottomPadding: view.height * (1 - view.anchorRatio)
-            spacing: 14
+            spacing: Metrics.spacing.large
 
             // Slides up and fades as the old lines leave.
             property real leave: 0
@@ -139,7 +140,7 @@ Item {
             opacity: 1 - leave
 
             transform: Translate {
-                y: -20 * column.leave
+                y: -Metrics.spacing.huge * column.leave
             }
 
             Repeater {
@@ -154,23 +155,22 @@ Item {
 
             Text {
                 width: column.width
-                topPadding: 10
+                topPadding: Metrics.spacing.normal
                 // Not alone while the lines are looked for.
                 visible: view.shownLines.length > 0
                 text: view.shownSynced ? "Lyrics from LRCLIB" : "Not synced · Lyrics from LRCLIB"
                 color: view.creditColor
                 font.family: Metrics.font
-                font.pixelSize: 11
+                font.pixelSize: Metrics.text.small
             }
 
         }
 
-        NumberAnimation on contentY {
+        Anim on contentY {
             id: followAnimation
 
             running: false
-            duration: 560
-            easing.type: Easing.OutCubic
+            token: Motion.lyrics.follow
         }
 
         layer.effect: MultiEffect {
@@ -185,12 +185,11 @@ Item {
     SequentialAnimation {
         id: leaveAnimation
 
-        NumberAnimation {
+        Anim {
             target: column
             property: "leave"
             to: 1
-            duration: 260
-            easing.type: Easing.InCubic
+            token: Motion.lyrics.leave
         }
 
         ScriptAction {
@@ -280,7 +279,7 @@ Item {
         text: pause ? "• • •" : (modelData.text || " ")
         color: lit ? Colors.primary : Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: view.shownSynced ? 19 : 16
+        font.pixelSize: view.shownSynced ? Metrics.text.heading : Metrics.text.title
         font.weight: Font.Bold
         lineHeight: 1.1
         transformOrigin: Item.Left
@@ -301,7 +300,7 @@ Item {
         }
 
         transform: Translate {
-            y: 18 * (1 - line.arrive)
+            y: Metrics.spacing.huge * (1 - line.arrive)
         }
 
         // The line being sung first, then the others the further they are.
@@ -309,15 +308,14 @@ Item {
             id: arrival
 
             PauseAnimation {
-                duration: Math.min(8, view.shownSynced ? line.distance : line.index) * 45
+                duration: Math.min(8, view.shownSynced ? line.distance : line.index) * Motion.lyrics.arriveStagger
             }
 
-            NumberAnimation {
+            Anim {
                 target: line
                 property: "arrive"
                 to: 1
-                duration: 420
-                easing.type: Easing.OutCubic
+                token: Motion.lyrics.arrive
             }
 
         }
@@ -337,23 +335,22 @@ Item {
         Behavior on opacity {
             enabled: line.arrive === 1
 
-            NumberAnimation {
-                duration: 300
+            Anim {
+                token: Motion.color.large
             }
 
         }
 
         Behavior on scale {
-            NumberAnimation {
-                duration: 360
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.lyrics.line
             }
 
         }
 
         Behavior on color {
-            ColorAnimation {
-                duration: 300
+            ColorAnim {
+                token: Motion.color.large
             }
 
         }

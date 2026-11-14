@@ -9,7 +9,7 @@ import qs.services
 
 // What an app gets to see when it shares your screen: a screen or a window, picked on
 // their live previews, or a region you draw. Grown out of the island on the focused
-// screen; shell.qml holds the request (ScreenShare) and opens it. The arrows or the Vim
+// screen; ScreenShare holds the request and shell.qml opens it. The arrows or the Vim
 // keys move, Tab switches between screens and windows, Enter or Space shares, Escape or
 // Backspace cancels.
 IslandPanel {
@@ -23,19 +23,19 @@ IslandPanel {
     // The windows the app may share, each with its Hyprland window for the preview.
     property var windows: []
     readonly property var entries: tab === "screens" ? Quickshell.screens : windows
-    readonly property int cardPadding: 18
-    readonly property int sectionSpacing: 14
-    readonly property int headerHeight: 38
-    readonly property int footerHeight: 38
+    readonly property int cardPadding: Metrics.spacing.large
+    readonly property int sectionSpacing: Metrics.spacing.large
+    readonly property int headerHeight: Metrics.buttonHeight
+    readonly property int footerHeight: Metrics.buttonHeight
     readonly property int columns: 3
     readonly property int tileWidth: 236
     readonly property int tileHeight: 170
     // The selection's glass in its cell, and the preview inside it.
-    readonly property int highlightInset: 4
-    readonly property int highlightRadius: 18
+    readonly property int highlightInset: Metrics.spacing.small
+    readonly property real highlightRadius: Metrics.radius.card
     // The same room above the preview and on its sides.
-    readonly property int previewInset: 14
-    readonly property int labelSpacing: 8
+    readonly property int previewInset: Metrics.spacing.large
+    readonly property int labelSpacing: Metrics.spacing.normal
     // One row, or two with a scroll past them.
     readonly property int rows: Math.max(1, Math.min(2, Math.ceil(entries.length / columns)))
 
@@ -97,9 +97,8 @@ IslandPanel {
     Behavior on cardHeight {
         enabled: picker.opened
 
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.normal
         }
 
     }
@@ -155,22 +154,22 @@ IslandPanel {
 
         Row {
             anchors.left: parent.left
-            anchors.leftMargin: 6
+            anchors.leftMargin: Metrics.spacing.small
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 10
+            spacing: Metrics.spacing.normal
 
             Text {
                 text: "󰹑"
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 14
+                font.pixelSize: Metrics.text.emphasis
             }
 
             Text {
                 text: "Share your screen"
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 14
+                font.pixelSize: Metrics.text.emphasis
                 font.weight: Font.DemiBold
             }
 
@@ -238,8 +237,8 @@ IslandPanel {
                 opacity: tileHover.hovered && grid.currentIndex !== tile.index ? 1 : 0
 
                 Behavior on opacity {
-                    NumberAnimation {
-                        duration: 120
+                    Anim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -264,9 +263,9 @@ IslandPanel {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: capture.hasContent ? capture.implicitWidth : parent.width
                     height: capture.hasContent ? capture.implicitHeight : parent.height
-                    radius: picker.highlightRadius - (picker.previewInset - picker.highlightInset)
+                    radius: Metrics.inner(picker.highlightRadius, picker.previewInset - picker.highlightInset)
                     color: Colors.alpha(Colors.crust, 0.6)
-                    border.width: 1
+                    border.width: Metrics.stroke
                     border.color: grid.currentIndex === tile.index ? Colors.primary : Colors.alpha(Colors.secondary, 0.25)
 
                     // Before the first frame, or for a window that can't be captured.
@@ -311,7 +310,7 @@ IslandPanel {
                 text: tile.isScreen ? tile.modelData.name : tile.modelData.title || tile.modelData.class
                 color: grid.currentIndex === tile.index ? Colors.primary : Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
             }
 
             HoverHandler {
@@ -338,7 +337,7 @@ IslandPanel {
         text: "No window to share"
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 13
+        font.pixelSize: Metrics.text.emphasis
     }
 
     // Remembering and the region on the left, Cancel and Share on the right.
@@ -352,88 +351,17 @@ IslandPanel {
         Row {
             anchors.left: parent.left
             height: parent.height
-            spacing: 8
+            spacing: Metrics.spacing.normal
 
             // The app can share the same thing again next time without asking.
-            Rectangle {
-                id: rememberChip
-
-                // The switch sits as far from the right edge as from the top and bottom.
-                readonly property real inset: (height - 24) / 2
-
-                implicitWidth: 16 + rememberRow.implicitWidth + inset
-                height: parent.height
-                radius: height / 2
-                color: "transparent"
-
-                GlassSurface {
-                    radius: parent.radius
-                    hovered: rememberHover.hovered
-                    backgroundColor: picker.remember ? Colors.alpha(Colors.primary, 0.14) : "transparent"
-
-                    Behavior on backgroundColor {
-                        ColorAnimation {
-                            duration: 160
-                        }
-
-                    }
-
-                }
-
-                Row {
-                    id: rememberRow
-
-                    x: 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 10
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "󰁯  Remember"
-                        color: picker.remember ? Colors.primary : Colors.secondary
-                        font.family: Metrics.font
-                        font.pixelSize: 13
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 160
-                            }
-
-                        }
-
-                    }
-
-                    // Only shows the state: the whole pill takes the click.
-                    ToggleSwitch {
-                        anchors.verticalCenter: parent.verticalCenter
-                        enabled: false
-                        checked: picker.remember
-                    }
-
-                }
-
-                HoverHandler {
-                    id: rememberHover
-
-                    cursorShape: Qt.PointingHandCursor
-                }
-
-                TapHandler {
-                    onTapped: {
-                        rememberBounce.restart();
-                        picker.remember = !picker.remember;
-                    }
-                }
-
-                BounceAnimation {
-                    id: rememberBounce
-
-                    target: rememberChip
-                }
-
+            GlassButton {
+                icon: "󰁯"
+                label: "Remember"
+                active: picker.remember
+                onClicked: picker.remember = !picker.remember
             }
 
-            Chip {
+            GlassButton {
                 icon: "󰩭"
                 label: "Region"
                 onClicked: picker.drawRegion()
@@ -444,72 +372,19 @@ IslandPanel {
         Row {
             anchors.right: parent.right
             height: parent.height
-            spacing: 8
+            spacing: Metrics.spacing.normal
 
-            Chip {
+            GlassButton {
                 label: "Cancel"
                 onClicked: picker.close()
             }
 
-            Chip {
+            GlassButton {
                 label: "Share"
                 accent: true
                 onClicked: picker.accept()
             }
 
-        }
-
-    }
-
-    // The footer's pill buttons: glass with words in the secondary color, or the accent for Share.
-    component Chip: Rectangle {
-        id: chip
-
-        property string icon: ""
-        property string label: ""
-        property bool accent: false
-
-        signal clicked()
-
-        implicitWidth: chipLabel.implicitWidth + 32
-        height: parent.height
-        radius: height / 2
-        color: "transparent"
-
-        GlassSurface {
-            radius: parent.radius
-            hovered: chipHover.hovered
-            backgroundColor: chip.accent ? Colors.alpha(Colors.primary, chipHover.hovered ? 0.95 : 0.8) : "transparent"
-        }
-
-        Text {
-            id: chipLabel
-
-            anchors.centerIn: parent
-            text: (chip.icon !== "" ? chip.icon + "  " : "") + chip.label
-            color: chip.accent ? Colors.base : Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: 13
-            font.weight: chip.accent ? Font.Bold : Font.Normal
-        }
-
-        HoverHandler {
-            id: chipHover
-
-            cursorShape: Qt.PointingHandCursor
-        }
-
-        TapHandler {
-            onTapped: {
-                chipBounce.restart();
-                chip.clicked();
-            }
-        }
-
-        BounceAnimation {
-            id: chipBounce
-
-            target: chip
         }
 
     }

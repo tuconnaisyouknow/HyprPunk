@@ -72,7 +72,7 @@ ControlPage {
     }
 
     pageName: "wifi"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     onPasswordNetworkChanged: {
         wifiError = "";
@@ -129,14 +129,13 @@ ControlPage {
 
         x: index * (page.width + page.tabGap)
         width: page.width
-        spacing: 12
+        spacing: Metrics.spacing.large
         enabled: current
         opacity: current ? 1 : 0
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 240
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.color.normal
             }
 
         }
@@ -149,7 +148,7 @@ ControlPage {
         wrapMode: Text.WordWrap
         color: Colors.red
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     PageHeader {
@@ -189,9 +188,8 @@ ControlPage {
                 width: page.width
 
                 Behavior on x {
-                    NumberAnimation {
-                        duration: 340
-                        easing.type: Easing.OutCubic
+                    Anim {
+                        token: Motion.move.large
                     }
 
                 }
@@ -203,13 +201,13 @@ ControlPage {
 
                     IconText {
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: 8
-                        Layout.bottomMargin: 8
+                        Layout.topMargin: Metrics.spacing.normal
+                        Layout.bottomMargin: Metrics.spacing.normal
                         visible: NetworkStatus.wifiNetworks.length === 0
                         icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
                         text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
                         color: Colors.secondary
-                        font.pixelSize: 14
+                        font.pixelSize: Metrics.text.emphasis
                         font.weight: Font.Normal
                     }
 
@@ -231,7 +229,7 @@ ControlPage {
                             clip: true
                             // The control center moves through the rows itself.
                             keyNavigationEnabled: false
-                            spacing: 4
+                            spacing: Metrics.spacing.small
                             // Keeps the rows that stay instead of rebuilding them all at each change,
                             // which held up the animations.
                             model: ScriptModel {
@@ -286,8 +284,8 @@ ControlPage {
                             id: passwordColumn
 
                             anchors.fill: parent
-                            anchors.margins: 12
-                            spacing: 8
+                            anchors.margins: Metrics.spacing.large
+                            spacing: Metrics.spacing.normal
 
                             IconText {
                                 Layout.fillWidth: true
@@ -295,7 +293,7 @@ ControlPage {
                                 icon: "󰌾"
                                 text: (page.passwordNetwork !== null ? page.passwordNetwork.name : "")
                                 color: Colors.primary
-                                font.pixelSize: 14
+                                font.pixelSize: Metrics.text.emphasis
                                 font.weight: Font.Bold
                             }
 
@@ -364,13 +362,13 @@ ControlPage {
 
                     IconText {
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.topMargin: 8
-                        Layout.bottomMargin: 8
+                        Layout.topMargin: Metrics.spacing.normal
+                        Layout.bottomMargin: Metrics.spacing.normal
                         visible: Vpn.profiles.length === 0
                         icon: "󰖂"
                         text: "No VPN yet"
                         color: Colors.secondary
-                        font.pixelSize: 14
+                        font.pixelSize: Metrics.text.emphasis
                         font.weight: Font.Normal
                     }
 
@@ -378,7 +376,7 @@ ControlPage {
                     ColumnLayout {
                         Layout.fillWidth: true
                         visible: Vpn.profiles.length > 0
-                        spacing: 4
+                        spacing: Metrics.spacing.small
 
                         Repeater {
                             model: Vpn.profiles
@@ -419,8 +417,8 @@ ControlPage {
                             id: vpnPasswordColumn
 
                             anchors.fill: parent
-                            anchors.margins: 12
-                            spacing: 8
+                            anchors.margins: Metrics.spacing.large
+                            spacing: Metrics.spacing.normal
 
                             IconText {
                                 Layout.fillWidth: true
@@ -428,7 +426,7 @@ ControlPage {
                                 icon: "󰌾"
                                 text: page.vpnAsking !== null ? page.vpnAsking.name : ""
                                 color: Colors.primary
-                                font.pixelSize: 14
+                                font.pixelSize: Metrics.text.emphasis
                                 font.weight: Font.Bold
                             }
 

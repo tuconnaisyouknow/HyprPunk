@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Widgets
+import qs.components
 import qs.theme
 
 // A peek at your other workspaces, one at a time. Swipe through them with the arrows,
@@ -81,7 +82,7 @@ ClippingRectangle {
 
     SwipeArrow {
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: Metrics.spacing.normal
         icon: "󰅁"
         shown: list.currentIndex > 0
         onTriggered: list.decrementCurrentIndex()
@@ -89,7 +90,7 @@ ClippingRectangle {
 
     SwipeArrow {
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: Metrics.spacing.normal
         icon: "󰅂"
         shown: list.currentIndex < list.count - 1
         onTriggered: list.incrementCurrentIndex()
@@ -99,7 +100,7 @@ ClippingRectangle {
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
+        anchors.bottomMargin: Metrics.spacing.normal
         visible: list.count > 1
         width: dots.implicitWidth + 16
         height: 16
@@ -110,7 +111,7 @@ ClippingRectangle {
             id: dots
 
             anchors.centerIn: parent
-            spacing: 6
+            spacing: Metrics.spacing.normal
 
             Repeater {
                 model: list.count
@@ -125,16 +126,15 @@ ClippingRectangle {
                     color: index === list.currentIndex ? Colors.primary : Colors.secondary
 
                     Behavior on width {
-                        NumberAnimation {
-                            duration: 200
-                            easing.type: Easing.OutCubic
+                        Anim {
+                            token: Motion.resize.normal
                         }
 
                     }
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: 200
+                        ColorAnim {
+                            token: Motion.color.normal
                         }
 
                     }
@@ -158,7 +158,7 @@ ClippingRectangle {
         anchors.verticalCenter: parent.verticalCenter
         width: 30
         height: 30
-        radius: 15
+        radius: height / 2
         color: Colors.alpha(Colors.crust, arrowMouse.containsMouse ? 0.85 : 0.65)
         opacity: shown ? 1 : 0
         visible: opacity > 0
@@ -169,7 +169,7 @@ ClippingRectangle {
             text: arrow.icon
             color: Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 18
+            font.pixelSize: Metrics.text.title
         }
 
         // A MouseArea keeps the click to itself; with a TapHandler the preview
@@ -185,23 +185,22 @@ ClippingRectangle {
         }
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 150
+            Anim {
+                token: Motion.color.small
             }
 
         }
 
         Behavior on scale {
-            NumberAnimation {
-                duration: 160
-                easing.type: Easing.OutBack
+            Anim {
+                token: Motion.pop
             }
 
         }
 
         Behavior on color {
-            ColorAnimation {
-                duration: 120
+            ColorAnim {
+                token: Motion.color.small
             }
 
         }

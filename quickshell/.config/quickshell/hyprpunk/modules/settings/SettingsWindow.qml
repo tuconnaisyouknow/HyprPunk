@@ -15,74 +15,93 @@ import qs.theme
 Scope {
     id: settings
 
-    // In the sidebar's order, each with its page (DisplaysPage.qml).
+    // In the sidebar's order, each with the file of its page.
     readonly property var sections: [{
         "name": "displays",
+        "page": "DisplaysPage.qml",
         "icon": "󰍹",
         "label": "Displays"
     }, {
         "name": "input",
+        "page": "InputPage.qml",
         "icon": "󰍽",
         "label": "Mouse and touchpad"
     }, {
         "name": "language",
+        "page": "LanguagePage.qml",
         "icon": "󰌌",
         "label": "Keyboard and language"
     }, {
         "name": "sound",
+        "page": "VolumePage.qml",
         "icon": "󰕾",
         "label": "Sound"
     }, {
         "name": "battery",
+        "page": "BatteryPage.qml",
         "icon": "󰁹",
         "label": "Battery"
     }, {
         "name": "power",
+        "page": "PowerPage.qml",
         "icon": "󰒲",
         "label": "Idle and sleep"
     }, {
         "name": "lock",
+        "page": "LockPage.qml",
         "icon": "󰌾",
         "label": "Lock screen"
     }, {
         "name": "nightlight",
+        "page": "NightLightPage.qml",
         "icon": "󰖔",
         "label": "Night light"
     }, {
         "name": "appearance",
+        "page": "AppearancePage.qml",
         "icon": "󰏘",
         "label": "Appearance"
     }, {
         "name": "notifications",
+        "page": "NotificationsPage.qml",
         "icon": "󰂚",
         "label": "Notifications"
     }, {
         "name": "island",
+        "page": "IslandPage.qml",
         "icon": "󰍡",
         "label": "Island"
     }, {
         "name": "apps",
+        "page": "AppsPage.qml",
         "icon": "󰀻",
         "label": "Default apps"
     }, {
         "name": "launcher",
+        "page": "LauncherPage.qml",
         "icon": "󱓞",
         "label": "Launcher"
     }, {
         "name": "capture",
+        "page": "CapturePage.qml",
         "icon": "󰹑",
         "label": "Screenshots"
     }, {
         "name": "history",
+        "page": "HistoryPage.qml",
         "icon": "󰅌",
         "label": "Clipboard and history"
     }, {
         "name": "updates",
+        "page": "UpdatesPage.qml",
         "icon": "󰚰",
         "label": "Updates"
     }]
     // Kept between openings.
     property string section: "displays"
+    readonly property var current: sections.find((item) => {
+        return item.name === section;
+    })
 
     // Built again rather than raised: a new window opens where you are.
     function open() {
@@ -161,23 +180,23 @@ Scope {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 20
-                    spacing: 20
+                    anchors.margins: Metrics.spacing.section
+                    spacing: Metrics.spacing.section
 
                     // Its rows fill it, which would make it share the width with the page.
                     ColumnLayout {
                         Layout.preferredWidth: 250
                         Layout.fillWidth: false
                         Layout.fillHeight: true
-                        spacing: 4
+                        spacing: Metrics.spacing.small
 
                         Text {
-                            Layout.leftMargin: 8
-                            Layout.bottomMargin: 12
+                            Layout.leftMargin: Metrics.spacing.normal
+                            Layout.bottomMargin: Metrics.spacing.large
                             text: "Settings"
                             color: Colors.primary
                             font.family: Metrics.font
-                            font.pixelSize: 22
+                            font.pixelSize: Metrics.text.heading
                             font.weight: Font.Bold
                         }
 
@@ -191,7 +210,7 @@ Scope {
 
                                 required property var modelData
                                 readonly property bool chosen: settings.section === modelData.name
-                                readonly property real radius: 14
+                                readonly property real radius: Metrics.radius.normal
 
                                 function activate() {
                                     tabBounce.restart();
@@ -209,8 +228,8 @@ Scope {
                                     opacity: tab.chosen || tabHover.hovered ? 1 : 0
 
                                     Behavior on opacity {
-                                        NumberAnimation {
-                                            duration: 120
+                                        Anim {
+                                            token: Motion.color.small
                                         }
 
                                     }
@@ -221,9 +240,9 @@ Scope {
                                     id: tabContent
 
                                     anchors.fill: parent
-                                    anchors.leftMargin: 12
-                                    anchors.rightMargin: 12
-                                    spacing: 12
+                                    anchors.leftMargin: Metrics.spacing.large
+                                    anchors.rightMargin: Metrics.spacing.large
+                                    spacing: Metrics.spacing.large
 
                                     Text {
                                         Layout.preferredWidth: 24
@@ -231,7 +250,7 @@ Scope {
                                         text: tab.modelData.icon
                                         color: tab.chosen ? Colors.base : Colors.secondary
                                         font.family: Metrics.font
-                                        font.pixelSize: 18
+                                        font.pixelSize: Metrics.text.title
                                     }
 
                                     Text {
@@ -240,7 +259,7 @@ Scope {
                                         color: tab.chosen ? Colors.base : Colors.secondary
                                         elide: Text.ElideRight
                                         font.family: Metrics.font
-                                        font.pixelSize: 14
+                                        font.pixelSize: Metrics.text.emphasis
                                         font.weight: tab.chosen ? Font.Bold : Font.Medium
                                     }
 
@@ -297,154 +316,9 @@ Scope {
                             id: page
 
                             width: scroller.width
-                            sourceComponent: ({
-                                "displays": displaysPage,
-                                "input": inputPage,
-                                "language": languagePage,
-                                "sound": soundPage,
-                                "battery": batteryPage,
-                                "power": powerPage,
-                                "lock": lockPage,
-                                "nightlight": nightLightPage,
-                                "appearance": appearancePage,
-                                "notifications": notificationsPage,
-                                "island": islandPage,
-                                "apps": appsPage,
-                                "launcher": launcherPage,
-                                "capture": capturePage,
-                                "history": historyPage,
-                                "updates": updatesPage
-                            })[settings.section] || null
+                            source: settings.current.page
                         }
 
-                    }
-
-                }
-
-                Component {
-                    id: displaysPage
-
-                    DisplaysPage {
-                    }
-
-                }
-
-                Component {
-                    id: inputPage
-
-                    InputPage {
-                    }
-
-                }
-
-                Component {
-                    id: languagePage
-
-                    LanguagePage {
-                    }
-
-                }
-
-                Component {
-                    id: soundPage
-
-                    VolumePage {
-                    }
-
-                }
-
-                Component {
-                    id: batteryPage
-
-                    BatteryPage {
-                    }
-
-                }
-
-                Component {
-                    id: powerPage
-
-                    PowerPage {
-                    }
-
-                }
-
-                Component {
-                    id: lockPage
-
-                    LockPage {
-                    }
-
-                }
-
-                Component {
-                    id: nightLightPage
-
-                    NightLightPage {
-                    }
-
-                }
-
-                Component {
-                    id: appearancePage
-
-                    AppearancePage {
-                    }
-
-                }
-
-                Component {
-                    id: notificationsPage
-
-                    NotificationsPage {
-                    }
-
-                }
-
-                Component {
-                    id: islandPage
-
-                    IslandPage {
-                    }
-
-                }
-
-                Component {
-                    id: appsPage
-
-                    AppsPage {
-                    }
-
-                }
-
-                Component {
-                    id: launcherPage
-
-                    LauncherPage {
-                    }
-
-                }
-
-                Component {
-                    id: capturePage
-
-                    CapturePage {
-                    }
-
-                }
-
-                Component {
-                    id: historyPage
-
-                    HistoryPage {
-                    }
-
-                }
-
-                Component {
-                    id: updatesPage
-
-                    UpdatesPage {
                     }
 
                 }

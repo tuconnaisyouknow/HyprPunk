@@ -52,7 +52,7 @@ SearchPanel {
         text: Keybindings.loading && keybindings.binds.length === 0 ? "Loading…" : "No keybinding"
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
     }
 
     ListView {
@@ -80,20 +80,20 @@ SearchPanel {
 
             width: ListView.view.width
             height: keybindings.rowHeight
-            radius: 14
+            radius: Metrics.radius.normal
             color: "transparent"
 
             Text {
                 anchors.left: parent.left
-                anchors.leftMargin: 14
+                anchors.leftMargin: Metrics.spacing.large
                 anchors.right: keys.left
-                anchors.rightMargin: 14
+                anchors.rightMargin: Metrics.spacing.large
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 text: row.modelData.description
                 color: row.selected ? Colors.primary : Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 13
+                font.pixelSize: Metrics.text.emphasis
             }
 
             // One glass keycap per key.
@@ -101,9 +101,9 @@ SearchPanel {
                 id: keys
 
                 anchors.right: parent.right
-                anchors.rightMargin: 8
+                anchors.rightMargin: Metrics.spacing.normal
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 4
+                spacing: Metrics.spacing.small
 
                 Repeater {
                     model: row.modelData.keys
@@ -127,7 +127,7 @@ SearchPanel {
                             text: parent.modelData
                             color: Colors.primary
                             font.family: Metrics.font
-                            font.pixelSize: 12
+                            font.pixelSize: Metrics.text.body
                             font.weight: Font.Bold
                         }
 

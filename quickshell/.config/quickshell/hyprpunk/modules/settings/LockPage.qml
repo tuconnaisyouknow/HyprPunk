@@ -5,28 +5,11 @@ import qs.theme
 
 // The settings' lock screen page: what it shows anyone at the screen, and whether it
 // blurs in and out. When it locks is in Idle and sleep.
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Lock screen"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Super+Ctrl+L locks it. When it locks on its own is in Idle and sleep."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Lock screen"
+    description: "Super+Ctrl+L locks it. When it locks on its own is in Idle and sleep."
 
     SettingRow {
         Layout.fillWidth: true

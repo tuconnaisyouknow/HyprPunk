@@ -19,10 +19,10 @@ Item {
 
     signal toggled()
 
-    implicitHeight: layout.implicitHeight + 32
+    implicitHeight: layout.implicitHeight + 2 * Metrics.spacing.huge
 
     GlassSurface {
-        radius: 18
+        radius: Metrics.radius.card
     }
 
     ColumnLayout {
@@ -31,12 +31,12 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 16
-        spacing: 14
+        anchors.margins: Metrics.spacing.huge
+        spacing: Metrics.spacing.large
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 14
+            spacing: Metrics.spacing.large
 
             // As wide for every icon, so the titles line up.
             Text {
@@ -46,12 +46,12 @@ Item {
                 text: row.icon
                 color: Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 20
+                font.pixelSize: Metrics.text.heading
             }
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 2
+                spacing: Metrics.spacing.hairline
 
                 Text {
                     Layout.fillWidth: true
@@ -59,7 +59,7 @@ Item {
                     color: Colors.primary
                     elide: Text.ElideRight
                     font.family: Metrics.font
-                    font.pixelSize: 14
+                    font.pixelSize: Metrics.text.emphasis
                     font.weight: Font.Medium
                 }
 
@@ -70,7 +70,7 @@ Item {
                     color: Colors.secondary
                     wrapMode: Text.Wrap
                     font.family: Metrics.font
-                    font.pixelSize: 12
+                    font.pixelSize: Metrics.text.body
                 }
 
             }

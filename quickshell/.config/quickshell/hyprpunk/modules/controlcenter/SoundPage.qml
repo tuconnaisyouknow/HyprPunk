@@ -114,7 +114,7 @@ ControlPage {
     }
 
     pageName: "sound"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     // One tab, side by side with the others: only the one shown is opaque and clickable,
     // the others fade as they slide away.
@@ -124,14 +124,13 @@ ControlPage {
 
         x: index * (page.width + page.tabGap)
         width: page.width
-        spacing: 12
+        spacing: Metrics.spacing.large
         enabled: current
         opacity: current ? 1 : 0
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 240
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.color.normal
             }
 
         }
@@ -141,7 +140,7 @@ ControlPage {
     component EmptyText: Text {
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     // A list at full height (the page scrolls, not the list). Rows fade in as they come,
@@ -149,7 +148,7 @@ ControlPage {
     component AnimatedList: ListView {
         implicitHeight: contentHeight
         interactive: false
-        spacing: 6
+        spacing: Metrics.spacing.normal
 
         add: Transition {
             NumberAnimation {
@@ -159,12 +158,11 @@ ControlPage {
                 duration: 220
             }
 
-            NumberAnimation {
+            Anim {
                 property: "scale"
                 from: 0.92
                 to: 1
-                duration: 260
-                easing.type: Easing.OutBack
+                token: Motion.pop
             }
 
         }
@@ -224,7 +222,7 @@ ControlPage {
 
         RowLayout {
             anchors.fill: parent
-            spacing: 10
+            spacing: Metrics.spacing.normal
 
             Item {
                 Layout.preferredWidth: 26
@@ -244,7 +242,7 @@ ControlPage {
                     text: "󰎆"
                     color: Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: 18
+                    font.pixelSize: Metrics.text.title
                 }
 
             }
@@ -326,9 +324,8 @@ ControlPage {
                 width: page.width
 
                 Behavior on x {
-                    NumberAnimation {
-                        duration: 340
-                        easing.type: Easing.OutCubic
+                    Anim {
+                        token: Motion.move.large
                     }
 
                 }
@@ -364,8 +361,8 @@ ControlPage {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.top: parent.top
-                            anchors.margins: 12
-                            spacing: 10
+                            anchors.margins: Metrics.spacing.large
+                            spacing: Metrics.spacing.normal
 
                             HorizontalSlider {
                                 Layout.fillWidth: true
@@ -391,8 +388,8 @@ ControlPage {
                             // once, falls back slowly.
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.leftMargin: 4
-                                Layout.rightMargin: 4
+                                Layout.leftMargin: Metrics.spacing.small
+                                Layout.rightMargin: Metrics.spacing.small
                                 implicitHeight: 6
                                 radius: 3
                                 color: Colors.alpha(Colors.light, 0.12)
@@ -410,9 +407,8 @@ ControlPage {
                                     }
 
                                     Behavior on level {
-                                        NumberAnimation {
-                                            duration: 160
-                                            easing.type: Easing.OutCubic
+                                        Anim {
+                                            token: Motion.move.small
                                         }
 
                                     }
@@ -451,8 +447,8 @@ ControlPage {
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.top: parent.top
-                            anchors.margins: 12
-                            spacing: 10
+                            anchors.margins: Metrics.spacing.large
+                            spacing: Metrics.spacing.normal
 
                             EmptyText {
                                 visible: page.streams.length === 0
@@ -461,7 +457,7 @@ ControlPage {
 
                             AnimatedList {
                                 Layout.fillWidth: true
-                                spacing: 10
+                                spacing: Metrics.spacing.normal
                                 model: page.streams
 
                                 delegate: AppRow {
@@ -487,7 +483,7 @@ ControlPage {
 
                         EmptyText {
                             anchors.left: parent.left
-                            anchors.leftMargin: 12
+                            anchors.leftMargin: Metrics.spacing.large
                             anchors.verticalCenter: parent.verticalCenter
                             text: "No audio device connected"
                         }

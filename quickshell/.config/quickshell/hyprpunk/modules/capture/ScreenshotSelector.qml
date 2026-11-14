@@ -135,7 +135,7 @@ PanelWindow {
             y: dim.rect.y + dim.rect.height + 10 + height < parent.height ? dim.rect.y + dim.rect.height + 10 : dim.rect.y + dim.rect.height - height - 10
             width: sizeLabel.implicitWidth + 20
             height: 26
-            radius: 13
+            radius: height / 2
             color: Colors.panel
 
             Text {
@@ -147,7 +147,7 @@ PanelWindow {
                 text: Math.round(dim.rect.width * scale) + " × " + Math.round(dim.rect.height * scale)
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
                 font.weight: Font.Bold
             }
 
@@ -159,10 +159,10 @@ PanelWindow {
     Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 24
+        anchors.bottomMargin: Metrics.spacing.section
         width: hint.implicitWidth + 32
         height: 34
-        radius: 17
+        radius: height / 2
         color: Colors.panel
         opacity: selector.dragging || selector.annotatedRegion !== null ? 0 : 1
 
@@ -178,12 +178,12 @@ PanelWindow {
             text: "Drag a region · Click a window · Esc to cancel"
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 160
+            Anim {
+                token: Motion.color.small
             }
 
         }

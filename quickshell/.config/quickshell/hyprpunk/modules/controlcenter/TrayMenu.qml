@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
+import qs.components
 import qs.theme
 
 // A background app's menu, unfolded inside the control center's page rather than in a
@@ -68,7 +69,7 @@ Column {
                     menu.triggered();
                 }
 
-                readonly property real radius: 10
+                readonly property real radius: Metrics.radius.normal
 
                 visible: !entry.modelData.isSeparator
                 width: parent.width
@@ -77,12 +78,12 @@ Column {
 
                 Rectangle {
                     anchors.fill: parent
-                    radius: 10
+                    radius: Metrics.radius.normal
                     color: entry.current ? Colors.alpha(Colors.primary, 0.16) : "transparent"
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: 100
+                        ColorAnim {
+                            token: Motion.color.small
                         }
 
                     }
@@ -91,9 +92,9 @@ Column {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 10
-                    spacing: 8
+                    anchors.leftMargin: Metrics.spacing.large
+                    anchors.rightMargin: Metrics.spacing.normal
+                    spacing: Metrics.spacing.normal
                     opacity: entry.modelData.enabled ? 1 : 0.5
 
                     // Check boxes and radio buttons, in the shell's colors.
@@ -111,7 +112,7 @@ Column {
                         }
                         color: entry.modelData.checkState === Qt.Checked ? Colors.primary : Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: 15
+                        font.pixelSize: Metrics.text.emphasis
                     }
 
                     IconImage {
@@ -128,7 +129,7 @@ Column {
                         text: entry.modelData.text
                         color: entry.current ? Colors.primary : Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: 13
+                        font.pixelSize: Metrics.text.emphasis
                         font.weight: entry.current ? Font.Medium : Font.Normal
                     }
 
@@ -139,12 +140,11 @@ Column {
                         rotation: entry.open ? 90 : 0
                         color: entry.current ? Colors.primary : Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: 14
+                        font.pixelSize: Metrics.text.emphasis
 
                         Behavior on rotation {
-                            NumberAnimation {
-                                duration: 160
-                                easing.type: Easing.OutCubic
+                            Anim {
+                                token: Motion.move.small
                             }
 
                         }

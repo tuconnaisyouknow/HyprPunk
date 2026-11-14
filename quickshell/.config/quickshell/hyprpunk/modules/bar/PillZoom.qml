@@ -1,4 +1,6 @@
 import QtQuick
+import qs.components
+import qs.theme
 
 // How a pill you can click answers the pointer, like the control center's blocks: it
 // grows a few pixels under it, and squeezes while pressed, springing back a touch too far
@@ -25,18 +27,17 @@ Scale {
     readonly property real spreadY: pill.height * (yScale - 1) / 2
 
     Behavior on grown {
-        NumberAnimation {
-            duration: 160
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.move.small
         }
 
     }
 
     Behavior on squeezed {
         NumberAnimation {
-            duration: zoom.pressed ? 90 : 450
-            easing.type: zoom.pressed ? Easing.OutQuad : Easing.OutBack
-            easing.overshoot: 4
+            duration: zoom.pressed ? Motion.bounce.pressDuration : Motion.bounce.releaseDuration
+            easing.type: zoom.pressed ? Motion.bounce.pressEasing : Motion.bounce.releaseEasing
+            easing.overshoot: Motion.bounce.overshoot
         }
 
     }

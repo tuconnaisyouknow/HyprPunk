@@ -19,7 +19,7 @@ IslandPanel {
     property bool labelShown: true
     // Hovering selects, and the pointer leaving takes the selection with it.
     property bool hoverOnly: false
-    readonly property int cardPadding: 14
+    readonly property int cardPadding: Metrics.spacing.large
     readonly property int entrySize: 64
     readonly property int entrySpacing: 10
     readonly property int labelHeight: 26
@@ -89,7 +89,7 @@ IslandPanel {
 
                         width: menu.entrySize
                         height: menu.entrySize
-                        radius: 18
+                        radius: Metrics.radius.card
                         color: "transparent"
                         scale: entryTap.pressed ? 0.92 : 1
 
@@ -100,8 +100,8 @@ IslandPanel {
                             backgroundColor: entryCard.armed ? Colors.alpha(Colors.red, 0.9) : entryCard.selected ? Colors.alpha(Colors.primary, 0.9) : "transparent"
 
                             Behavior on backgroundColor {
-                                ColorAnimation {
-                                    duration: 140
+                                ColorAnim {
+                                    token: Motion.color.small
                                 }
 
                             }
@@ -119,8 +119,8 @@ IslandPanel {
                             font.weight: Font.Bold
 
                             Behavior on color {
-                                ColorAnimation {
-                                    duration: 140
+                                ColorAnim {
+                                    token: Motion.color.small
                                 }
 
                             }
@@ -137,7 +137,7 @@ IslandPanel {
                             style: Text.Outline
                             styleColor: entryCard.selected ? Colors.primary : Qt.tint(Colors.base, Colors.alpha(Colors.surface0, 0.6))
                             font.family: Metrics.font
-                            font.pixelSize: 13
+                            font.pixelSize: Metrics.text.emphasis
                             font.weight: Font.Bold
                         }
 
@@ -158,9 +158,8 @@ IslandPanel {
                         }
 
                         Behavior on scale {
-                            NumberAnimation {
-                                duration: 160
-                                easing.type: Easing.OutBack
+                            Anim {
+                                token: Motion.pop
                             }
 
                         }
@@ -180,7 +179,7 @@ IslandPanel {
                 text: menu.selectedIndex >= 0 ? menu.entries[menu.selectedIndex].name || "" : ""
                 color: Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 13
+                font.pixelSize: Metrics.text.emphasis
                 font.weight: Font.Bold
             }
 

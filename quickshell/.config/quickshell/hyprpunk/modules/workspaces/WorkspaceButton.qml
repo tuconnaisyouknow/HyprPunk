@@ -1,4 +1,5 @@
 import QtQuick
+import qs.components
 import qs.theme
 
 // One workspace in the bar, shown by its icon. A few icons come from Font Awesome's
@@ -41,12 +42,11 @@ Rectangle {
         color: button.activeForeground ? Colors.base : Colors.primary
         font.family: button.iconFont
         font.weight: Font.Normal
-        font.pixelSize: 16
+        font.pixelSize: Metrics.text.title
 
         Behavior on color {
-            ColorAnimation {
-                duration: 60
-                easing.type: Easing.OutCubic
+            ColorAnim {
+                token: Motion.color.small
             }
 
         }
@@ -74,33 +74,29 @@ Rectangle {
     }
 
     Behavior on implicitWidth {
-        NumberAnimation {
-            duration: 180
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.normal
         }
 
     }
 
     Behavior on color {
-        ColorAnimation {
-            duration: 180
-            easing.type: Easing.OutCubic
+        ColorAnim {
+            token: Motion.color.normal
         }
 
     }
 
     Behavior on opacity {
-        NumberAnimation {
-            duration: 150
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.color.small
         }
 
     }
 
     Behavior on scale {
-        NumberAnimation {
-            duration: 190
-            easing.type: Easing.OutBack
+        Anim {
+            token: Motion.pop
         }
 
     }

@@ -24,6 +24,9 @@ Singleton {
     readonly property int islandOsdHeight: pillHeight + spacing.large
     readonly property int islandOsdPadding: spacing.huge
     readonly property real cardRadius: pillHeight / 2
+    // A button in a card (GlassButton): shorter than the bar's pills, so a card's
+    // buttons never read as more pills.
+    readonly property int buttonHeight: 34
 
     // The text, from the smallest detail to a page's heading.
     readonly property QtObject text: QtObject {

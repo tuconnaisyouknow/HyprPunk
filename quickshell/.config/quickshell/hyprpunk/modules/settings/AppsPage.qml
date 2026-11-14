@@ -5,28 +5,11 @@ import qs.theme
 
 // The settings' default apps page: the terminal, browser, file manager and music app
 // HyprPunk opens, each picked among the installed apps that can take its role.
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Default apps"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "What the shortcuts open. The browser and the file manager also open the links and folders other apps hand on. Your personal/keybindings.lua still wins over these."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Default apps"
+    description: "What the shortcuts open. The browser and the file manager also open the links and folders other apps hand on. Your personal/keybindings.lua still wins over these."
 
     Repeater {
         model: AppSettings.roles
@@ -45,7 +28,7 @@ ColumnLayout {
 
             Column {
                 width: parent.width
-                spacing: 6
+                spacing: Metrics.spacing.normal
 
                 SettingChoices {
                     width: parent.width
@@ -76,7 +59,7 @@ ColumnLayout {
                     color: Colors.secondary
                     wrapMode: Text.Wrap
                     font.family: Metrics.font
-                    font.pixelSize: 12
+                    font.pixelSize: Metrics.text.body
                 }
 
             }

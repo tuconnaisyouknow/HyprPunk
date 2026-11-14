@@ -618,35 +618,12 @@ WlSessionLockSurface {
 
             }
 
-            SequentialAnimation {
+            // Wrong password: the island shakes its head, like a field would.
+            Shake {
                 id: shakeAnimation
 
-                loops: 2
-
-                NumberAnimation {
-                    target: island
-                    property: "shake"
-                    to: -9
-                    duration: 50
-                    easing.type: Easing.OutQuad
-                }
-
-                NumberAnimation {
-                    target: island
-                    property: "shake"
-                    to: 9
-                    duration: 90
-                    easing.type: Easing.InOutQuad
-                }
-
-                NumberAnimation {
-                    target: island
-                    property: "shake"
-                    to: 0
-                    duration: 50
-                    easing.type: Easing.InQuad
-                }
-
+                target: island
+                offsetProperty: "shake"
             }
 
             Behavior on horizontalPadding {
@@ -789,7 +766,7 @@ WlSessionLockSurface {
             // Waits to know where the track is: a fresh card starts at 0:00 with its lyrics
             // at the top until playerctl answers, which would jump right after waking.
             // Never there when the settings keep what you listen to private.
-            visible: LockSettings.player && lockPlayer.player !== null && lockPlayer.positionKnown
+            visible: LockSettings.player && lockPlayer.player !== null && Music.positionKnown
             opacity: surface.stage(0.45, 1)
             scale: 0.96 + 0.04 * surface.stage(0.45, 1)
 
@@ -799,7 +776,7 @@ WlSessionLockSurface {
 
                 interval: 100
                 onTriggered: {
-                    if (!lockPlayer.lyricsFound && !lockPlayer.lyricsLoading)
+                    if (!lockPlayer.lyricsFound && !Music.lyricsLoading)
                         playerBlock.lyricsShown = false;
 
                 }
@@ -813,11 +790,15 @@ WlSessionLockSurface {
                         lyricsGone.restart();
                 }
 
+                target: lockPlayer
+            }
+
+            Connections {
                 function onLyricsLoadingChanged() {
                     lyricsGone.restart();
                 }
 
-                target: lockPlayer
+                target: Music
             }
 
             MediaPlayerCard {
@@ -843,15 +824,13 @@ WlSessionLockSurface {
                 // next ones, keeping its place.
                 opacity: lockPlayer.lyricsFound || lockLyrics.leaving ? 1 : 0
                 active: lockPlayer.active && playerBlock.lyricsShown
-                ready: lockPlayer.positionKnown
+                ready: Music.positionKnown
                 lines: lockPlayer.lyricsFound ? Lyrics.lines : []
                 synced: Lyrics.synced
                 current: lockPlayer.lyricsLine
                 creditColor: Colors.secondary
                 onSeekRequested: (seconds) => {
-                    if (lockPlayer.player !== null && lockPlayer.player.canSeek)
-                        lockPlayer.seek(seconds);
-
+                    return Music.seek(seconds);
                 }
 
                 Behavior on opacity {

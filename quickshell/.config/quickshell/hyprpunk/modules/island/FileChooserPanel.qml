@@ -1,6 +1,4 @@
-import Qt.labs.folderlistmodel
 import QtQuick
-import Quickshell.Widgets
 import qs.components
 import qs.services
 import qs.theme
@@ -12,6 +10,7 @@ import qs.theme
 // empty, where left and Backspace go up a folder. Shift+Enter picks the folder itself
 // when the app wants one. Ctrl+Space marks several files when the app takes them,
 // Ctrl+F switches the file type, Ctrl+. shows the hidden files.
+// The list is FolderList's; the panel answers the app (FileChooser).
 IslandPanel {
     id: picker
 
@@ -25,163 +24,26 @@ IslandPanel {
     readonly property var filters: request && !pickingFolder ? request.filters : []
     property int filterIndex: 0
     property string folder: ""
-    // The folder the list shows, behind folder while the new one is being read.
-    property string shownFolder: ""
-    // Which way the list slides in: 1 into a folder, -1 back up, 0 elsewhere.
-    property int folderStep: 0
     property bool showHidden: false
-    // The folder's entries, filtered: {name, path, isDir, size, modified}.
-    property var entries: []
-    property int selectedIndex: -1
-    readonly property var selected: selectedIndex >= 0 && selectedIndex < entries.length ? entries[selectedIndex] : null
+    readonly property var selected: folderList.selected
     // The files marked with Ctrl+Space or Ctrl+click.
     property var marked: []
     // Saving over a file that's already there takes a second Enter.
     property bool replaceArmed: false
-    // The sidebar, as {icon, name, path}.
-    readonly property var places: Places.list
-    readonly property string home: Places.home
     // A path typed from / or ~: the folder follows it, the rest filters.
     readonly property bool typingPath: /^[\/~]/.test(field.text)
     readonly property string query: saving ? "" : typingPath ? field.text.substring(field.text.lastIndexOf("/") + 1) : field.text
-    readonly property int cardPadding: 14
-    readonly property int sectionSpacing: 12
-    readonly property int headerHeight: 22
-    readonly property int footerHeight: 34
+    readonly property int cardPadding: Metrics.spacing.large
+    readonly property int sectionSpacing: Metrics.spacing.large
+    readonly property int contentWidth: cardWidth - 2 * cardPadding
     readonly property int sidebarWidth: 170
     readonly property int previewWidth: 210
-    readonly property int rowHeight: 36
-    readonly property real bodyHeight: cardHeight - 2 * cardPadding - headerHeight - field.height - footerHeight - 3 * sectionSpacing
     readonly property string acceptLabel: request && request.acceptLabel !== "" ? request.acceptLabel : saving ? "Save" : pickingFolder ? "Choose" : "Open"
-
-    function expand(path) {
-        return path === "~" || path.startsWith("~/") ? home + path.substring(1) : path;
-    }
-
-    function collapse(path) {
-        return path === home || path.startsWith(home + "/") ? "~" + path.substring(home.length) : path;
-    }
-
-    function join(directory, name) {
-        return directory === "/" ? "/" + name : directory + "/" + name;
-    }
-
-    function fileUrl(path) {
-        return "file://" + path.split("/").map(encodeURIComponent).join("/");
-    }
-
-    function globRegex(glob) {
-        return new RegExp("^" + glob.replace(/[.+^${}()|\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".") + "$", "i");
-    }
-
-    function formatSize(bytes) {
-        const units = ["B", "KB", "MB", "GB", "TB"];
-        let size = bytes;
-        let unit = 0;
-        while (size >= 1024 && unit < units.length - 1) {
-            size /= 1024;
-            unit += 1;
-        }
-        return (unit === 0 ? size : size.toFixed(size < 10 ? 1 : 0)) + " " + units[unit];
-    }
-
-    function isImage(name) {
-        return /\.(png|jpe?g|gif|webp|bmp|svg|avif|tiff?)$/i.test(name);
-    }
-
-    function iconFor(entry) {
-        if (entry.isDir)
-            return "󰉋";
-
-        const name = entry.name.toLowerCase();
-        if (isImage(name))
-            return "󰋩";
-
-        if (/\.(mp4|mkv|webm|mov|avi)$/.test(name))
-            return "󰈫";
-
-        if (/\.(mp3|flac|ogg|opus|wav|m4a)$/.test(name))
-            return "󰈣";
-
-        if (/\.pdf$/.test(name))
-            return "󰈦";
-
-        if (/\.(zip|tar|gz|xz|zst|bz2|7z|rar)$/.test(name))
-            return "󰗄";
-
-        if (/\.(txt|md|odt|docx?|rtf)$/.test(name))
-            return "󰈙";
-
-        return "󰈔";
-    }
-
-    // Read again whenever the folder, the filter or what you type changes, keeping the
-    // selection on the same file when it's still there. A new folder's list only
-    // replaces the old one once it's read, so nothing empties or blinks meanwhile.
-    function rebuild() {
-        if (folderModel.status !== FolderListModel.Ready || decodeURIComponent(String(folderModel.folder)) !== "file://" + folder)
-            return ;
-
-        const previous = shownFolder;
-        const fresh = previous !== folder;
-        const inside = (parent, path) => {
-            return path.startsWith(parent === "/" ? "/" : parent + "/");
-        };
-        // Back up a folder: the one you came out of is selected, unless Enter means
-        // here (saving, picking a folder).
-        const cameFrom = fresh && inside(folder, previous) && !saving && !pickingFolder ? join(folder, previous.substring(folder === "/" ? 1 : folder.length + 1).split("/")[0]) : "";
-        const filter = filters.length > 0 ? filters[filterIndex] : null;
-        const patterns = filter ? filter.globs.map(globRegex) : [];
-        const search = query.toLowerCase();
-        const keep = fresh ? cameFrom : selected ? selected.path : "";
-        const list = [];
-        for (let index = 0; index < folderModel.count; index++) {
-            const name = folderModel.get(index, "fileName");
-            const isDir = folderModel.get(index, "fileIsDir");
-            if (search !== "" && name.toLowerCase().indexOf(search) < 0)
-                continue;
-
-            if (!isDir && patterns.length > 0 && !patterns.some((pattern) => {
-                return pattern.test(name);
-            }))
-                continue;
-
-            list.push({
-                "name": name,
-                "path": folderModel.get(index, "filePath"),
-                "isDir": isDir,
-                "size": folderModel.get(index, "fileSize"),
-                "modified": folderModel.get(index, "fileModified")
-            });
-        }
-        entries = list;
-        const kept = list.findIndex((entry) => {
-            return entry.path === keep;
-        });
-        // Nothing selected at first when saving or picking a folder: Enter then means
-        // here, not the first entry.
-        selectedIndex = kept >= 0 ? kept : saving || pickingFolder || list.length === 0 ? -1 : 0;
-        syncList();
-        if (fresh) {
-            shownFolder = folder;
-            // Not on opening: the card grows already.
-            if (previous !== "") {
-                folderStep = inside(previous, folder) ? 1 : inside(folder, previous) ? -1 : 0;
-                folderIn.restart();
-            }
-        }
-    }
-
-    // Set by hand: the list puts itself back on its first entry whenever it's refilled.
-    function syncList() {
-        list.currentIndex = selectedIndex;
-        if (selectedIndex >= 0)
-            list.positionViewAtIndex(selectedIndex, ListView.Contain);
-
-    }
+    // What the button and Enter will do.
+    readonly property string answerLabel: replaceArmed ? "Replace" : multiple && marked.length > 0 ? acceptLabel + " " + marked.length : acceptLabel
 
     function select(index) {
-        selectedIndex = index;
+        folderList.selectedIndex = index;
         replaceArmed = false;
         // Picking a file while saving takes its name, to save over it.
         if (saving && selected && !selected.isDir)
@@ -190,14 +52,15 @@ IslandPanel {
     }
 
     function move(delta) {
-        if (entries.length > 0)
-            select(Math.max(0, Math.min(entries.length - 1, selectedIndex + delta)));
+        const count = folderList.entries.length;
+        if (count > 0)
+            select(Math.max(0, Math.min(count - 1, folderList.selectedIndex + delta)));
 
     }
 
     function enter(path) {
         if (typingPath) {
-            field.text = collapse(path) + "/";
+            field.text = Files.collapse(path) + "/";
         } else {
             if (!saving)
                 field.text = "";
@@ -208,7 +71,7 @@ IslandPanel {
 
     function up() {
         if (folder !== "/")
-            enter(folder.substring(0, folder.lastIndexOf("/")) || "/");
+            enter(Files.parent(folder));
 
     }
 
@@ -220,6 +83,12 @@ IslandPanel {
         marked = marked.indexOf(path) >= 0 ? marked.filter((item) => {
             return item !== path;
         }) : marked.concat([path]);
+    }
+
+    function nextFilter() {
+        if (filters.length > 1)
+            filterIndex = (filterIndex + 1) % filters.length;
+
     }
 
     // The footer's button, and Shift+Enter.
@@ -250,8 +119,8 @@ IslandPanel {
             shake.restart();
             return ;
         }
-        const path = typingPath ? expand(name) : join(folder, name);
-        if (folderModel.indexOf(fileUrl(path)) >= 0 && !replaceArmed) {
+        const path = typingPath ? Files.expand(name) : Files.join(folder, name);
+        if (folderList.contains(path) && !replaceArmed) {
             replaceArmed = true;
             return ;
         }
@@ -274,17 +143,12 @@ IslandPanel {
         marked = [];
         replaceArmed = false;
         showHidden = false;
-        filterIndex = request ? request.filter : 0;
-        // Last time's list goes: the new one comes with the card. A slide cut short by
-        // closing would stand still while hidden, so it ends here.
-        shownFolder = "";
-        entries = [];
-        folderIn.stop();
-        listShift.x = 0;
-        list.opacity = 1;
-        folder = request ? request.folder : home;
+        filterIndex = request ? Math.max(0, request.filter) : 0;
+        // Last time's list goes: the new one comes with the card.
+        folderList.reset();
+        folder = request ? request.folder : Files.home;
         field.text = saving ? request.name : "";
-        rebuild();
+        Qt.callLater(folderList.rebuild);
     }
     onOpenedChanged: {
         if (opened) {
@@ -303,9 +167,6 @@ IslandPanel {
         marked = [];
         replaceArmed = false;
     }
-    onQueryChanged: Qt.callLater(rebuild)
-    onFilterIndexChanged: Qt.callLater(rebuild)
-    onSelectedIndexChanged: syncList()
 
     // The app gave up on its dialog, or another one replaced it. Also while the card is
     // still mapping: an app that quits at once closes its dialog before the first frame.
@@ -320,49 +181,6 @@ IslandPanel {
         target: FileChooser
     }
 
-    // A new folder's list slides in from where you're going (the right going in, the
-    // left going back up) as it fades in, so changing folder feels like a move.
-    ParallelAnimation {
-        id: folderIn
-
-        NumberAnimation {
-            target: listShift
-            property: "x"
-            from: 16 * picker.folderStep
-            to: 0
-            duration: 220
-            easing.type: Easing.OutCubic
-        }
-
-        NumberAnimation {
-            target: list
-            property: "opacity"
-            from: 0
-            to: 1
-            duration: 180
-            easing.type: Easing.OutCubic
-        }
-
-    }
-
-    FolderListModel {
-        id: folderModel
-
-        // Only reads the folder while the card is shown.
-        folder: picker.shown && picker.folder !== "" ? picker.fileUrl(picker.folder) : ""
-        showDirsFirst: true
-        showDotAndDotDot: false
-        showHidden: picker.showHidden
-        showFiles: !picker.pickingFolder
-        sortCaseSensitive: false
-        onStatusChanged: {
-            if (status === FolderListModel.Ready)
-                Qt.callLater(picker.rebuild);
-
-        }
-        onCountChanged: Qt.callLater(picker.rebuild)
-    }
-
     ServiceRef {
         service: Places
         active: picker.opened
@@ -374,36 +192,35 @@ IslandPanel {
 
         x: picker.cardPadding
         y: picker.cardPadding
-        width: picker.cardWidth - 2 * picker.cardPadding
-        height: picker.headerHeight
+        width: picker.contentWidth
+        height: titleLabel.implicitHeight
 
         Text {
             id: titleLabel
 
             anchors.left: parent.left
-            anchors.leftMargin: 6
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: Metrics.spacing.small
             width: Math.min(implicitWidth, parent.width / 2)
             elide: Text.ElideRight
             text: picker.request && picker.request.title !== "" ? picker.request.title : picker.saving ? "Save" : "Open"
             color: Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.DemiBold
         }
 
         Text {
             anchors.left: titleLabel.right
-            anchors.leftMargin: 16
+            anchors.leftMargin: Metrics.spacing.huge
             anchors.right: parent.right
-            anchors.rightMargin: 6
+            anchors.rightMargin: Metrics.spacing.small
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignRight
             elide: Text.ElideLeft
-            text: picker.collapse(picker.folder)
+            text: Files.collapse(picker.folder)
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
     }
@@ -416,18 +233,18 @@ IslandPanel {
         x: picker.cardPadding + shakeOffset
         anchors.top: header.bottom
         anchors.topMargin: picker.sectionSpacing
-        width: picker.cardWidth - 2 * picker.cardPadding
+        width: picker.contentWidth
         icon: picker.saving ? "󰆓" : "󰍉"
         placeholder: picker.saving ? "File name" : "Filter, or a path from / or ~"
         // What Enter will do.
-        hint: picker.replaceArmed ? "Enter again to replace" : picker.selected && picker.selected.isDir ? "Open folder" : picker.multiple && picker.marked.length > 0 ? picker.acceptLabel + " " + picker.marked.length : picker.selected || picker.saving || picker.pickingFolder ? picker.acceptLabel : ""
+        hint: picker.replaceArmed ? "Enter again to replace" : picker.selected && picker.selected.isDir ? "Open folder" : picker.selected || picker.saving || picker.pickingFolder || picker.marked.length > 0 ? picker.answerLabel : ""
         onTextChanged: {
             // The folder follows the path typed, up to its last slash.
             if (!picker.typingPath)
                 return ;
 
             const cut = text.lastIndexOf("/");
-            const directory = cut < 0 ? picker.home : picker.expand(text.substring(0, cut + 1));
+            const directory = cut < 0 ? Files.home : Files.expand(text.substring(0, cut + 1));
             picker.folder = directory.length > 1 ? directory.replace(/\/+$/, "") : directory;
         }
         onKeyPressed: (event) => {
@@ -454,8 +271,8 @@ IslandPanel {
                 picker.up();
             else if (control && event.key === Qt.Key_Space)
                 picker.toggleMark();
-            else if (control && event.key === Qt.Key_F && picker.filters.length > 1)
-                picker.filterIndex = (picker.filterIndex + 1) % picker.filters.length;
+            else if (control && event.key === Qt.Key_F)
+                picker.nextFilter();
             else if (control && event.key === Qt.Key_Period)
                 picker.showHidden = !picker.showHidden;
             else
@@ -469,11 +286,18 @@ IslandPanel {
         function onTextEdited() {
             picker.replaceArmed = false;
             if (picker.saving)
-                picker.selectedIndex = -1;
+                folderList.selectedIndex = -1;
 
         }
 
         target: field.input
+    }
+
+    // Wrong name to save under (empty): the field shakes.
+    Shake {
+        id: shake
+
+        target: field
     }
 
     Item {
@@ -482,60 +306,61 @@ IslandPanel {
         x: picker.cardPadding
         anchors.top: field.bottom
         anchors.topMargin: picker.sectionSpacing
-        width: picker.cardWidth - 2 * picker.cardPadding
-        height: picker.bodyHeight
+        anchors.bottom: footer.top
+        anchors.bottomMargin: picker.sectionSpacing
+        width: picker.contentWidth
 
+        // Your places: home, the XDG folders, your bookmarks and the root.
         ListView {
             id: placeList
 
             width: picker.sidebarWidth
             height: parent.height
             clip: true
-            spacing: 2
+            spacing: Metrics.spacing.hairline
             boundsBehavior: Flickable.StopAtBounds
-            model: picker.places
+            model: Places.list
 
-            delegate: Rectangle {
+            delegate: Item {
                 id: place
 
                 required property var modelData
                 readonly property bool current: picker.folder === modelData.path
 
                 width: ListView.view.width
-                height: 32
-                radius: 12
-                color: "transparent"
+                height: Metrics.buttonHeight
 
                 GlassSurface {
                     visible: place.current || placeHover.hovered
-                    radius: parent.radius
+                    radius: Metrics.radius.normal
                     hovered: true
                 }
 
+                // An icon column, so the names line up like the files'.
                 Text {
                     id: placeIcon
 
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: Metrics.spacing.large
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 18
+                    width: Metrics.spacing.section
                     text: place.modelData.icon
                     color: place.current ? Colors.primary : Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 14
+                    font.pixelSize: Metrics.text.emphasis
                 }
 
                 Text {
                     anchors.left: placeIcon.right
-                    anchors.leftMargin: 8
+                    anchors.leftMargin: Metrics.spacing.small
                     anchors.right: parent.right
-                    anchors.rightMargin: 10
+                    anchors.rightMargin: Metrics.spacing.large
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight
                     text: place.modelData.name
                     color: place.current ? Colors.primary : Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.text.emphasis
                 }
 
                 HoverHandler {
@@ -546,7 +371,9 @@ IslandPanel {
 
                 TapHandler {
                     onTapped: {
-                        field.text = picker.saving && !picker.typingPath ? field.text : "";
+                        if (!picker.saving || picker.typingPath)
+                            field.text = "";
+
                         picker.folder = place.modelData.path;
                     }
                 }
@@ -555,196 +382,43 @@ IslandPanel {
 
         }
 
-        ListView {
-            id: list
+        FolderList {
+            id: folderList
 
             anchors.left: placeList.right
             anchors.leftMargin: picker.sectionSpacing
             anchors.right: preview.left
             anchors.rightMargin: picker.sectionSpacing
             height: parent.height
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            model: picker.entries
-            highlightFollowsCurrentItem: true
-            highlightMoveDuration: 0
-            highlightResizeDuration: 0
+            folder: picker.folder
+            reading: picker.shown
+            query: picker.query
+            globs: picker.filters.length > 0 ? picker.filters[picker.filterIndex].globs : []
+            showHidden: picker.showHidden
+            showFiles: !picker.pickingFolder
+            // Nothing selected at first when saving or picking a folder: Enter then means
+            // here, not the first entry.
+            selectsEntry: !picker.saving && !picker.pickingFolder
+            marked: picker.marked
+            onClicked: (index, modifiers) => {
+                picker.select(index);
+                if (modifiers & Qt.ControlModifier)
+                    picker.toggleMark();
 
-            transform: Translate {
-                id: listShift
+                field.input.forceActiveFocus();
             }
-            // Inset like the hover's glass, so the two never touch on rows side by side.
-            highlight: SelectionHighlight {
-                view: list
-                radius: 12
-                inset: 1
-            }
-
-            delegate: Item {
-                id: row
-
-                required property var modelData
-                required property int index
-                readonly property bool isMarked: picker.marked.indexOf(modelData.path) >= 0
-                readonly property bool selected: ListView.isCurrentItem
-
-                width: ListView.view.width
-                height: picker.rowHeight
-
-                // Fainter than the selection's glass: hovering a file doesn't pick it,
-                // since picking changes the preview and, when saving, the name.
-                GlassSurface {
-                    anchors.margins: 1
-                    radius: 12
-                    opacity: rowHover.hovered && !row.selected ? 1 : 0
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 120
-                        }
-
-                    }
-
-                }
-
-                HoverHandler {
-                    id: rowHover
-
-                    cursorShape: Qt.PointingHandCursor
-                }
-
-                Text {
-                    id: rowIcon
-
-                    anchors.left: parent.left
-                    anchors.leftMargin: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 20
-                    text: row.isMarked ? "󰄲" : picker.iconFor(row.modelData)
-                    color: row.isMarked || row.selected ? Colors.primary : Colors.secondary
-                    font.family: Metrics.font
-                    font.pixelSize: 15
-                }
-
-                Text {
-                    anchors.left: rowIcon.right
-                    anchors.leftMargin: 8
-                    anchors.right: sizeLabel.left
-                    anchors.rightMargin: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    elide: Text.ElideMiddle
-                    text: row.modelData.name
-                    color: row.isMarked || row.selected ? Colors.primary : Colors.secondary
-                    font.family: Metrics.font
-                    font.pixelSize: 13
-                }
-
-                Text {
-                    id: sizeLabel
-
-                    anchors.right: parent.right
-                    anchors.rightMargin: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: row.modelData.isDir ? "" : picker.formatSize(row.modelData.size)
-                    color: Colors.secondary
-                    font.family: Metrics.font
-                    font.pixelSize: 11
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: (mouse) => {
-                        picker.select(row.index);
-                        if (mouse.modifiers & Qt.ControlModifier)
-                            picker.toggleMark();
-
-                        field.input.forceActiveFocus();
-                    }
-                    onDoubleClicked: picker.activate()
-                }
-
-            }
-
+            onDoubleClicked: picker.activate()
         }
 
-        Text {
-            anchors.centerIn: list
-            // The folder shown, even while the next one is read: no flash in between.
-            visible: picker.entries.length === 0 && picker.shownFolder !== ""
-            opacity: list.opacity
-            text: picker.query !== "" ? "Nothing matches" : "Empty folder"
-            color: Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: 13
-        }
-
-        // The selected file, or the folder itself when nothing is: a picture's preview,
-        // otherwise its icon, with its size and date.
-        Column {
+        FilePreview {
             id: preview
-
-            readonly property var entry: picker.selected
-            readonly property bool showsImage: entry !== null && !entry.isDir && picker.isImage(entry.name)
 
             anchors.right: parent.right
             width: picker.previewWidth
             height: parent.height
-            spacing: 10
-
-            ClippingRectangle {
-                width: parent.width
-                height: parent.width
-                radius: 14
-                color: "transparent"
-
-                GlassSurface {
-                    radius: 14
-                }
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 6
-                    visible: preview.showsImage
-                    source: preview.showsImage ? picker.fileUrl(preview.entry.path) : ""
-                    sourceSize: Qt.size(420, 420)
-                    fillMode: Image.PreserveAspectFit
-                    asynchronous: true
-                    smooth: true
-                }
-
-                Text {
-                    anchors.centerIn: parent
-                    visible: !preview.showsImage
-                    text: preview.entry ? picker.iconFor(preview.entry) : "󰉋"
-                    color: Colors.primary
-                    font.family: Metrics.font
-                    font.pixelSize: 64
-                }
-
-            }
-
-            Text {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WrapAnywhere
-                maximumLineCount: 3
-                elide: Text.ElideRight
-                text: preview.entry ? preview.entry.name : picker.folder === "/" ? "/" : picker.folder.substring(picker.folder.lastIndexOf("/") + 1)
-                color: Colors.primary
-                font.family: Metrics.font
-                font.pixelSize: 13
-            }
-
-            Text {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                visible: text !== ""
-                text: !preview.entry ? picker.entries.length + (picker.entries.length === 1 ? " item" : " items") : (preview.entry.isDir ? "Folder" : picker.formatSize(preview.entry.size)) + " · " + preview.entry.modified.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
-                color: Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: 11
-            }
-
+            entry: picker.selected
+            folder: picker.folder
+            count: folderList.entries.length
         }
 
     }
@@ -754,24 +428,25 @@ IslandPanel {
         id: footer
 
         x: picker.cardPadding
-        anchors.top: body.bottom
-        anchors.topMargin: picker.sectionSpacing
-        width: picker.cardWidth - 2 * picker.cardPadding
-        height: picker.footerHeight
+        y: picker.cardHeight - picker.cardPadding - height
+        width: picker.contentWidth
+        height: Metrics.buttonHeight
 
         Row {
             anchors.left: parent.left
             height: parent.height
-            spacing: 8
+            spacing: Metrics.spacing.normal
 
-            Chip {
+            GlassButton {
                 visible: picker.filters.length > 0
+                height: parent.height
                 icon: "󰈲"
                 label: picker.filters.length > 0 ? picker.filters[picker.filterIndex].name : ""
-                onClicked: picker.filterIndex = (picker.filterIndex + 1) % picker.filters.length
+                onClicked: picker.nextFilter()
             }
 
-            Chip {
+            GlassButton {
+                height: parent.height
                 icon: picker.showHidden ? "󰈈" : "󰈉"
                 label: "Hidden"
                 active: picker.showHidden
@@ -783,107 +458,21 @@ IslandPanel {
         Row {
             anchors.right: parent.right
             height: parent.height
-            spacing: 8
+            spacing: Metrics.spacing.normal
 
-            Chip {
+            GlassButton {
+                height: parent.height
                 label: "Cancel"
                 onClicked: picker.close()
             }
 
-            Chip {
-                label: picker.replaceArmed ? "Replace" : picker.multiple && picker.marked.length > 0 ? picker.acceptLabel + " " + picker.marked.length : picker.acceptLabel
+            GlassButton {
+                height: parent.height
+                label: picker.answerLabel
                 accent: true
                 onClicked: picker.accept()
             }
 
-        }
-
-    }
-
-    // Wrong name to save under (empty): the field shakes.
-    SequentialAnimation {
-        id: shake
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: -12
-            duration: 50
-        }
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: 10
-            duration: 70
-        }
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: -6
-            duration: 60
-        }
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: 0
-            duration: 60
-        }
-
-    }
-
-    // The footer's pill buttons: glass, or the accent for the one that answers the app.
-    component Chip: Rectangle {
-        id: chip
-
-        property string icon: ""
-        property string label: ""
-        property bool accent: false
-        property bool active: false
-
-        signal clicked()
-
-        implicitWidth: chipLabel.implicitWidth + 32
-        height: parent.height
-        radius: height / 2
-        color: "transparent"
-
-        GlassSurface {
-            radius: parent.radius
-            hovered: chipHover.hovered || chip.active
-            backgroundColor: chip.accent ? Colors.alpha(Colors.primary, chipHover.hovered ? 0.95 : 0.8) : "transparent"
-        }
-
-        Text {
-            id: chipLabel
-
-            anchors.centerIn: parent
-            text: (chip.icon !== "" ? chip.icon + "  " : "") + chip.label
-            color: chip.accent ? Colors.base : chip.active ? Colors.primary : Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: 13
-            font.weight: chip.accent ? Font.Bold : Font.Normal
-        }
-
-        HoverHandler {
-            id: chipHover
-
-            cursorShape: Qt.PointingHandCursor
-        }
-
-        TapHandler {
-            onTapped: {
-                chipBounce.restart();
-                chip.clicked();
-            }
-        }
-
-        BounceAnimation {
-            id: chipBounce
-
-            target: chip
         }
 
     }

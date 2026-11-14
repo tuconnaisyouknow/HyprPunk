@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell.Widgets
 import qs.services
+import qs.components
 import qs.theme
 
 // Everything the island can briefly show (Osd): a level (volume, brightness), an on/off
@@ -36,25 +37,25 @@ RowLayout {
         return Battery.percent + "% · " + duration + (Battery.onBattery ? " left" : " until full");
     }
 
-    spacing: 8
+    spacing: Metrics.spacing.normal
 
     Text {
         visible: view.shown && view.content.kind === ""
         text: view.content.icon
         color: Colors.primary
         font.family: Metrics.font
-        font.pixelSize: 20
+        font.pixelSize: Metrics.text.heading
     }
 
     // Volume and screen brightness only show their icon and bar.
     Text {
         visible: view.shown && view.content.kind === "" && view.content.maxLevel <= 10
-        Layout.leftMargin: 4
-        Layout.rightMargin: 4
+        Layout.leftMargin: Metrics.spacing.small
+        Layout.rightMargin: Metrics.spacing.small
         text: view.content.label
         color: Colors.primary
         font.family: Metrics.font
-        font.pixelSize: 15
+        font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Bold
     }
 
@@ -62,7 +63,7 @@ RowLayout {
         visible: view.shown && view.content.kind === "" && view.content.maxLevel <= 0
         implicitWidth: statusOsdStateText.implicitWidth + 16
         implicitHeight: 24
-        radius: 12
+        radius: Metrics.radius.normal
         color: view.content.enabled ? Colors.primary : Colors.surface1
 
         Text {
@@ -72,7 +73,7 @@ RowLayout {
             text: view.content.enabled ? "On" : "Off"
             color: view.content.enabled ? Colors.base : Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
             font.weight: Font.Bold
         }
 
@@ -83,7 +84,7 @@ RowLayout {
         readonly property int filled: view.content.level
 
         visible: view.shown && view.content.kind === "" && view.content.maxLevel > 0 && view.content.maxLevel <= 10
-        spacing: 4
+        spacing: Metrics.spacing.small
 
         Repeater {
             model: parent.segments
@@ -97,8 +98,8 @@ RowLayout {
                 color: index < parent.filled ? Colors.primary : Colors.surface1
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: 140
+                    ColorAnim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -138,21 +139,21 @@ RowLayout {
             style: Text.Outline
             styleColor: Colors.alpha(Colors.crust, 0.6)
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
         }
 
     }
 
     Column {
         visible: view.shown && view.content.kind === "screenshot"
-        Layout.leftMargin: 2
+        Layout.leftMargin: Metrics.spacing.hairline
         spacing: 0
 
         Text {
             text: view.content.title
             color: Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.Bold
         }
 
@@ -160,7 +161,7 @@ RowLayout {
             text: view.content.label
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 11
+            font.pixelSize: Metrics.text.small
         }
 
     }
@@ -187,14 +188,14 @@ RowLayout {
 
             NumberAnimation {
                 to: 0.35
-                duration: 600
-                easing.type: Easing.InOutSine
+                duration: Motion.pulse.duration
+                easing.type: Motion.pulse.easing
             }
 
             NumberAnimation {
                 to: 1
-                duration: 600
-                easing.type: Easing.InOutSine
+                duration: Motion.pulse.duration
+                easing.type: Motion.pulse.easing
             }
 
         }
@@ -203,14 +204,14 @@ RowLayout {
 
     Column {
         visible: view.shown && view.content.kind === "battery"
-        Layout.leftMargin: 2
+        Layout.leftMargin: Metrics.spacing.hairline
         spacing: 0
 
         Text {
             text: view.content.label
             color: view.batteryColor()
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.Bold
         }
 
@@ -218,7 +219,7 @@ RowLayout {
             text: view.batteryDetail()
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 11
+            font.pixelSize: Metrics.text.small
         }
 
     }
@@ -320,16 +321,15 @@ RowLayout {
             color: view.content.enabled ? Colors.primary : Colors.secondary
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 140
+                ColorAnim {
+                    token: Motion.color.small
                 }
 
             }
 
             Behavior on width {
-                NumberAnimation {
-                    duration: 140
-                    easing.type: Easing.OutCubic
+                Anim {
+                    token: Motion.resize.small
                 }
 
             }

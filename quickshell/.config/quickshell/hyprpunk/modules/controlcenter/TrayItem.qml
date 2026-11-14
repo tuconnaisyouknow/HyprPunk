@@ -44,8 +44,8 @@ Item {
         opacity: trayMouse.containsMouse ? 1 : 0
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 120
+            Anim {
+                token: Motion.color.small
             }
 
         }

@@ -8,28 +8,11 @@ import qs.state
 
 // The settings' appearance page: the shell's glass, the music's cover and wave, and the
 // wallpaper and theme pickers, whose wallpaper gives every color its palette.
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Appearance"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Every color comes from your wallpaper, for the shell and the apps alike."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Appearance"
+    description: "Every color comes from your wallpaper, for the shell and the apps alike."
 
     SettingRow {
         Layout.fillWidth: true
@@ -105,7 +88,7 @@ ColumnLayout {
 
         ColumnLayout {
             width: parent.width
-            spacing: 6
+            spacing: Metrics.spacing.normal
 
             ActionRow {
                 Layout.fillWidth: true

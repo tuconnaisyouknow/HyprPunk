@@ -6,8 +6,11 @@ import qs.theme
 
 // The settings' island page: which changes the island shows as they happen, and how
 // long they stay. Notifications have their own page.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Island"
+    description: "What the island shows you as it happens. Notifications have their own page."
 
     // Each change the island can show, as osdctl.sh names it.
     readonly property var changes: [{
@@ -46,26 +49,6 @@ ColumnLayout {
         "title": "Screenshots and recordings",
         "description": "A preview of what you just took, to open it."
     }]
-
-    spacing: 12
-
-    Text {
-        text: "Island"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "What the island shows you as it happens. Notifications have their own page."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
 
     SettingRow {
         Layout.fillWidth: true

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
+import qs.components
 import qs.theme
 
 // An AirPods battery ring, with the pod's letter inside (a bolt while charging)
@@ -13,7 +14,7 @@ Column {
     readonly property bool charging: battery !== null && battery.charging
     readonly property bool low: level !== null && level <= 20 && !charging
 
-    spacing: 6
+    spacing: Metrics.spacing.small
 
     Item {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -55,9 +56,8 @@ Column {
                     sweepAngle: ring.level === null ? 0 : 3.6 * ring.level
 
                     Behavior on sweepAngle {
-                        NumberAnimation {
-                            duration: 450
-                            easing.type: Easing.OutCubic
+                        Anim {
+                            token: Motion.move.large
                         }
 
                     }
@@ -73,7 +73,7 @@ Column {
             text: ring.charging ? "󱐋" : ring.battery !== null && ring.battery.label ? ring.battery.label : ""
             color: ring.charging ? Colors.green : Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: ring.charging ? 17 : 13
+            font.pixelSize: ring.charging ? Metrics.text.title : Metrics.text.body
             font.weight: Font.Bold
         }
 
@@ -84,7 +84,7 @@ Column {
         text: ring.level === null ? "--" : ring.level + "%"
         color: ring.low ? Colors.red : Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 17
+        font.pixelSize: Metrics.text.title
         font.weight: Font.Medium
     }
 

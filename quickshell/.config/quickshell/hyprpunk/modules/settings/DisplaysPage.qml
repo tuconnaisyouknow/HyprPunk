@@ -8,8 +8,11 @@ import qs.theme
 // the settings of the one you pick, applied straight away through displayctl.sh. A new
 // resolution, refresh rate or scale asks if you want to keep it, and undoes itself if
 // you don't answer; closing the window keeps it.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Displays"
+    description: "Drag a screen against another to place it, or move the one you're on with Shift and the arrows. Each is remembered as it is, whichever port it's plugged into."
 
     readonly property var info: Displays.info
     property string selectedName: ""
@@ -169,26 +172,7 @@ ColumnLayout {
 
     }
 
-    spacing: 12
     onOutputsChanged: follow()
-
-    Text {
-        text: "Displays"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Drag a screen against another to place it, or move the one you're on with Shift and the arrows. Each is remembered as it is, whichever port it's plugged into."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
 
     // The screens at their size and place. A click picks one; dragged, it follows the
     // pointer and shows where it will go against the others, and goes there when dropped.
@@ -222,7 +206,7 @@ ColumnLayout {
         readonly property real frameY: layout.y + (reach.y - layout.y) * spread
         readonly property real frameWidth: layout.width + (reach.width - layout.width) * spread
         readonly property real frameHeight: layout.height + (reach.height - layout.height) * spread
-        readonly property real padding: 16
+        readonly property real padding: Metrics.spacing.huge
         readonly property real factor: Math.min((width - 2 * padding) / Math.max(1, frameWidth), (height - 2 * padding) / Math.max(1, frameHeight))
         // The layout's point drawn at the preview's (0, 0), the frame in the middle.
         readonly property real originX: frameX - (width / factor - frameWidth) / 2
@@ -291,15 +275,14 @@ ColumnLayout {
         }
 
         Behavior on spread {
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.move.normal
             }
 
         }
 
         GlassSurface {
-            radius: 18
+            radius: Metrics.radius.card
         }
 
         Text {
@@ -308,7 +291,7 @@ ColumnLayout {
             text: Displays.busy ? "Loading…" : "No screen found"
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
         }
 
         // The place the dragged screen would take.
@@ -320,7 +303,7 @@ ColumnLayout {
             y: moved !== null ? preview.toPreview(preview.target.x, preview.target.y).y + 2 : 0
             width: moved !== null ? moved.width * preview.factor - 4 : 0
             height: moved !== null ? moved.height * preview.factor - 4 : 0
-            radius: 10
+            radius: Metrics.radius.normal
             color: Colors.alpha(Colors.primary, 0.12)
             border.width: 1.5
             border.color: Colors.alpha(Colors.primary, 0.85)
@@ -335,7 +318,7 @@ ColumnLayout {
                 required property string modelData
                 readonly property var rect: preview.rectOf(modelData)
                 readonly property bool chosen: page.selected !== null && page.selected.name === modelData
-                readonly property real radius: 10
+                readonly property real radius: Metrics.radius.normal
                 // Where it's drawn in the layout: its place, the pointer's while dragged,
                 // and the place it was dropped on until the layout comes back with it.
                 property var held: null
@@ -381,14 +364,14 @@ ColumnLayout {
 
                 Column {
                     anchors.centerIn: parent
-                    spacing: 2
+                    spacing: Metrics.spacing.hairline
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: screenRect.rect !== null ? screenRect.rect.output.slot || "?" : ""
                         color: screenRect.chosen ? Colors.base : Colors.primary
                         font.family: Metrics.font
-                        font.pixelSize: 22
+                        font.pixelSize: Metrics.text.heading
                         font.weight: Font.Bold
                     }
 
@@ -397,7 +380,7 @@ ColumnLayout {
                         text: screenRect.modelData
                         color: screenRect.chosen ? Colors.base : Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: 11
+                        font.pixelSize: Metrics.text.small
                     }
 
                 }
@@ -461,7 +444,7 @@ ColumnLayout {
 
         RowLayout {
             width: parent.width
-            spacing: 8
+            spacing: Metrics.spacing.normal
 
             ActionRow {
                 Layout.fillWidth: true
@@ -591,64 +574,23 @@ ColumnLayout {
 
         Flow {
             width: parent.width
-            spacing: 6
+            spacing: Metrics.spacing.normal
 
             Repeater {
                 model: 10
 
-                // Like SettingChoices' chips, several of them chosen at once.
-                Item {
-                    id: workspaceChip
-
+                // Like SettingChoices, several of them chosen at once. One held by
+                // another screen is faded, like anything that isn't yours to use.
+                GlassButton {
                     required property int index
                     readonly property string workspace: String(index + 1)
                     readonly property string owner: page.workspaceOwner(workspace)
-                    readonly property bool chosen: page.selected !== null && owner === page.selected.name
-                    readonly property real radius: height / 2
 
-                    function activate() {
-                        workspaceBounce.restart();
-                        page.toggleWorkspace(workspace);
-                    }
-
-                    implicitWidth: Math.max(implicitHeight, workspaceText.implicitWidth + 28)
-                    implicitHeight: 32
+                    label: workspace
+                    accent: page.selected !== null && owner === page.selected.name
+                    opacity: !accent && owner !== "" ? 0.5 : 1
                     activeFocusOnTab: true
-
-                    GlassSurface {
-                        radius: workspaceChip.radius
-                        hovered: workspaceHover.hovered
-                        backgroundColor: workspaceChip.chosen ? Colors.alpha(Colors.primary, 0.85) : "transparent"
-                    }
-
-                    Text {
-                        id: workspaceText
-
-                        anchors.centerIn: parent
-                        text: workspaceChip.workspace
-                        color: workspaceChip.chosen ? Colors.base : Colors.alpha(Colors.secondary, workspaceChip.owner !== "" ? 0.5 : 1)
-                        font.family: Metrics.font
-                        font.pixelSize: 12
-                        font.weight: workspaceChip.chosen ? Font.Bold : Font.Medium
-                    }
-
-                    HoverHandler {
-                        id: workspaceHover
-
-                        cursorShape: Qt.PointingHandCursor
-                    }
-
-                    TapHandler {
-                        gesturePolicy: TapHandler.ReleaseWithinBounds
-                        onTapped: workspaceChip.activate()
-                    }
-
-                    BounceAnimation {
-                        id: workspaceBounce
-
-                        target: workspaceChip
-                    }
-
+                    onClicked: page.toggleWorkspace(workspace)
                 }
 
             }
@@ -666,7 +608,7 @@ ColumnLayout {
 
         ColumnLayout {
             width: parent.width
-            spacing: 6
+            spacing: Metrics.spacing.normal
 
             ActionRow {
                 Layout.fillWidth: true

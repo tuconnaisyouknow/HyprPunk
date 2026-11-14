@@ -10,7 +10,7 @@ import qs.theme
 IslandPanel {
     id: picker
 
-    readonly property int cardPadding: 14
+    readonly property int cardPadding: Metrics.spacing.large
     readonly property var centre: carousel.centreIndex >= 0 ? carousel.items[carousel.centreIndex] : null
 
     // The file's name, as a title: last-light-at-the-seaside-station.png gives
@@ -88,15 +88,15 @@ IslandPanel {
 
         anchors.top: carousel.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        topPadding: 10
-        spacing: 6
+        topPadding: Metrics.spacing.normal
+        spacing: Metrics.spacing.normal
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: picker.centre ? picker.titleOf(picker.centre.id) : ""
             color: Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 15
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.Bold
         }
 
@@ -104,7 +104,7 @@ IslandPanel {
         // card without its faint outline.
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 8
+            spacing: Metrics.spacing.normal
 
             Repeater {
                 model: picker.centre ? picker.centre.colors : []

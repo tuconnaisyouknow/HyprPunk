@@ -90,8 +90,8 @@ Item {
                 color: control.accent
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: 140
+                    ColorAnim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -108,8 +108,8 @@ Item {
                 backgroundColor: control.accent
 
                 Behavior on backgroundColor {
-                    ColorAnimation {
-                        duration: 140
+                    ColorAnim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -129,7 +129,7 @@ Item {
             color: Colors.secondary
             elide: Text.ElideRight
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
             font.weight: Font.Bold
         }
 
@@ -177,7 +177,7 @@ Item {
         id: iconArea
 
         anchors.left: parent.left
-        anchors.leftMargin: 2
+        anchors.leftMargin: Metrics.spacing.hairline
         anchors.verticalCenter: parent.verticalCenter
         width: control.height - 4
         height: width
@@ -188,8 +188,8 @@ Item {
             opacity: control.iconButton && iconHover.hovered ? 1 : 0
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: 120
+                Anim {
+                    token: Motion.color.small
                 }
 
             }
@@ -201,7 +201,7 @@ Item {
             text: control.icon
             color: control.iconColor
             font.family: Metrics.font
-            font.pixelSize: 16
+            font.pixelSize: Metrics.text.title
             font.weight: Font.Bold
         }
 
@@ -229,9 +229,8 @@ Item {
     }
 
     Behavior on shownValue {
-        NumberAnimation {
-            duration: 90
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.move.small
         }
 
     }

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Shapes
+import qs.components
 import qs.theme
 
 // Round album cover, spun like a record by the bar's music pill.
@@ -93,8 +94,8 @@ Item {
         }
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 220
+            Anim {
+                token: Motion.color.normal
             }
 
         }
@@ -137,8 +138,8 @@ Item {
         maskSpreadAtMin: 1
 
         Behavior on opacity {
-            NumberAnimation {
-                duration: 220
+            Anim {
+                token: Motion.color.normal
             }
 
         }

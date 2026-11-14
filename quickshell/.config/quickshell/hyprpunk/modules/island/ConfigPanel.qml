@@ -88,7 +88,7 @@ SearchPanel {
         text: "No file"
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
     }
 
     ListView {
@@ -115,27 +115,27 @@ SearchPanel {
 
             width: ListView.view.width
             height: config.rowHeight
-            radius: 14
+            radius: Metrics.radius.normal
             color: "transparent"
 
             Text {
                 id: fileIcon
 
                 anchors.left: parent.left
-                anchors.leftMargin: 16
+                anchors.leftMargin: Metrics.spacing.huge
                 anchors.verticalCenter: parent.verticalCenter
                 width: 22
                 text: row.modelData.icon
                 color: row.selected ? Colors.primary : Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 18
+                font.pixelSize: Metrics.text.title
             }
 
             Column {
                 anchors.left: fileIcon.right
-                anchors.leftMargin: 12
+                anchors.leftMargin: Metrics.spacing.large
                 anchors.right: parent.right
-                anchors.rightMargin: 14
+                anchors.rightMargin: Metrics.spacing.large
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 1
 
@@ -145,7 +145,7 @@ SearchPanel {
                     text: row.modelData.name
                     color: row.selected ? Colors.primary : Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 14
+                    font.pixelSize: Metrics.text.emphasis
                     font.weight: row.selected ? Font.Bold : Font.Normal
                 }
 
@@ -155,7 +155,7 @@ SearchPanel {
                     text: row.modelData.path
                     color: Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 11
+                    font.pixelSize: Metrics.text.small
                 }
 
             }

@@ -27,7 +27,7 @@ Item {
         id: row
 
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 10
+        spacing: Metrics.spacing.normal
 
         Rectangle {
             id: box
@@ -43,8 +43,8 @@ Item {
                 backgroundColor: check.checked ? Colors.alpha(Colors.primary, checkHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {
-                    ColorAnimation {
-                        duration: 140
+                    ColorAnim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -57,7 +57,7 @@ Item {
                 text: ""
                 color: Colors.base
                 font.family: Metrics.font
-                font.pixelSize: 11
+                font.pixelSize: Metrics.text.small
                 font.weight: Font.Bold
             }
 
@@ -74,7 +74,7 @@ Item {
             text: check.label
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
     }

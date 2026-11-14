@@ -8,8 +8,11 @@ import qs.services
 
 // The settings' screenshots and recordings page: where a screenshot goes, the folders
 // they're saved to, and what a recording hears and how smoothly it records.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Screenshots and recordings"
+    description: "Screenshots are saved to Screenshots in your pictures folder, recordings to Recordings in your videos folder, unless you choose others."
 
     // The shell's file picker, to choose the folders.
 
@@ -29,26 +32,6 @@ ColumnLayout {
         }, (paths) => {
             return CaptureSettings.set(key, paths[0]);
         });
-    }
-
-    spacing: 12
-
-    Text {
-        text: "Screenshots and recordings"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Screenshots are saved to Screenshots in your pictures folder, recordings to Recordings in your videos folder, unless you choose others."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
     }
 
     SettingRow {

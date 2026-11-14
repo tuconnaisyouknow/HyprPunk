@@ -236,40 +236,13 @@ Rectangle {
                 Repeater {
                     model: card.buttonActions
 
-                    Rectangle {
+                    GlassButton {
                         required property var modelData
 
                         Layout.fillWidth: true
-                        implicitHeight: 34
-                        radius: 12
-                        color: "transparent"
-
-                        // Accent glass, like the button that clears the notifications.
-                        GlassSurface {
-                            radius: parent.radius
-                            hovered: actionArea.containsMouse
-                            backgroundColor: Colors.alpha(Colors.primary, actionArea.containsMouse ? 0.95 : 0.8)
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: parent.modelData.text
-                            color: Colors.base
-                            font.family: Metrics.font
-                            font.pixelSize: Metrics.text.emphasis
-                            font.weight: Font.Bold
-                        }
-
-                        MouseArea {
-                            id: actionArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            enabled: card.alive
-                            onClicked: card.invokeAction(parent.modelData.identifier)
-                        }
-
+                        label: modelData.text
+                        accent: true
+                        onClicked: card.invokeAction(modelData.identifier)
                     }
 
                 }
@@ -280,49 +253,18 @@ Rectangle {
 
     }
 
-    // Small neutral close cross in the top-right corner.
-    Rectangle {
+    // Closes the card.
+    IconButton {
+        icon: ""
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: Metrics.spacing.normal
-        width: 22
-        height: 22
-        radius: 11
-        color: "transparent"
-
-        // Glass halo on hover only, so the cross stays discreet.
-        GlassSurface {
-            radius: parent.radius
-            hovered: true
-            opacity: closeArea.containsMouse ? 1 : 0
-
-            Behavior on opacity {
-                Anim {
-                    token: Motion.color.small
-                }
-
-            }
+        // Not faded as the card leaves: a card already gone just ignores the click.
+        onClicked: {
+            if (card.alive)
+                card.notification.dismiss();
 
         }
-
-        Text {
-            anchors.centerIn: parent
-            text: ""
-            color: closeArea.containsMouse ? Colors.primary : Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.body
-        }
-
-        MouseArea {
-            id: closeArea
-
-            anchors.fill: parent
-            enabled: card.alive
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: card.notification.dismiss()
-        }
-
     }
 
 }

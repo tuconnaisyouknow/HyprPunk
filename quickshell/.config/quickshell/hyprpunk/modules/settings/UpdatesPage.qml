@@ -7,8 +7,11 @@ import qs.theme
 
 // The settings' updates page: the HyprPunk you have and updating it, whether you're told
 // at login when there's a new one, and the bar's count of package updates.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Updates"
+    description: "Updates always ask before they change anything, in your terminal."
 
     // "d48bc5d, from 12/11/2026", in your regional format.
     readonly property string versionText: {
@@ -18,26 +21,6 @@ ColumnLayout {
 
         const [year, month, date] = day.split("-").map(Number);
         return commit + ", from " + new Date(year, month - 1, date).toLocaleDateString(Session.regionalFormats, Locale.ShortFormat);
-    }
-
-    spacing: 12
-
-    Text {
-        text: "Updates"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Updates always ask before they change anything, in your terminal."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
     }
 
     SettingRow {

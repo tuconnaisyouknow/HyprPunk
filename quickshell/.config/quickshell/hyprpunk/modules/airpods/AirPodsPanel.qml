@@ -35,8 +35,8 @@ ControlBlock {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.margins: 14
-        spacing: 14
+        anchors.margins: Metrics.spacing.large
+        spacing: Metrics.spacing.large
 
         Column {
             Layout.fillWidth: true
@@ -48,7 +48,7 @@ ControlBlock {
                 color: Colors.primary
                 elide: Text.ElideRight
                 font.family: Metrics.font
-                font.pixelSize: 15
+                font.pixelSize: Metrics.text.emphasis
                 font.weight: Font.Bold
             }
 
@@ -58,7 +58,7 @@ ControlBlock {
                 color: Colors.secondary
                 elide: Text.ElideRight
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
             }
 
         }
@@ -70,7 +70,7 @@ ControlBlock {
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignTop
-                spacing: 10
+                spacing: Metrics.spacing.normal
 
                 AirPodsImage {
                     Layout.preferredWidth: 120
@@ -81,7 +81,7 @@ ControlBlock {
 
                 Row {
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: 16
+                    spacing: Metrics.spacing.huge
 
                     Repeater {
                         model: AirPods.podBatteries(panel.device)
@@ -101,7 +101,7 @@ ControlBlock {
             ColumnLayout {
                 visible: panel.caseShown && panel.images !== null
                 Layout.alignment: Qt.AlignTop
-                spacing: 10
+                spacing: Metrics.spacing.normal
 
                 AirPodsImage {
                     Layout.preferredWidth: 120

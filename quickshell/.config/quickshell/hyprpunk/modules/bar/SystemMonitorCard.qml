@@ -35,18 +35,18 @@ Item {
     component SectionTitle: Text {
         color: Colors.primary
         font.family: Metrics.font
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Bold
     }
 
     component IconTitle: IconText {
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Bold
     }
 
     component IconDetail: IconText {
         color: Colors.secondary
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
         font.weight: Font.Normal
         font.features: {
             "tnum": 1
@@ -56,7 +56,7 @@ Item {
     component Detail: Text {
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
         font.features: {
             "tnum": 1
         }
@@ -76,8 +76,8 @@ Item {
             id: sectionColumn
 
             anchors.fill: parent
-            anchors.margins: 12
-            spacing: 8
+            anchors.margins: Metrics.spacing.large
+            spacing: Metrics.spacing.normal
         }
 
     }
@@ -126,13 +126,13 @@ Item {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.margins: 14
-        spacing: 10
+        anchors.margins: Metrics.spacing.large
+        spacing: Metrics.spacing.normal
 
         Section {
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: Metrics.spacing.normal
 
                 IconTitle {
                     icon: ""
@@ -161,7 +161,7 @@ Item {
             // One bar per core, filled from the bottom.
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 4
+                spacing: Metrics.spacing.small
 
                 Repeater {
                     model: SystemStats.coreUsage.length
@@ -184,9 +184,8 @@ Item {
                             opacity: 0.35 + 0.65 * (SystemStats.coreUsage[parent.index] || 0)
 
                             Behavior on height {
-                                NumberAnimation {
-                                    duration: 400
-                                    easing.type: Easing.OutCubic
+                                Anim {
+                                    token: Motion.resize.large
                                 }
 
                             }
@@ -220,7 +219,7 @@ Item {
         Section {
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: Metrics.spacing.normal
 
                 IconTitle {
                     icon: ""
@@ -265,7 +264,7 @@ Item {
         Section {
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 6
+                spacing: Metrics.spacing.normal
 
                 IconTitle {
                     Layout.fillWidth: true
@@ -308,7 +307,7 @@ Item {
                             text: sortChip.modelData.label
                             color: sortChip.selected ? Colors.base : Colors.secondary
                             font.family: Metrics.font
-                            font.pixelSize: 11
+                            font.pixelSize: Metrics.text.small
                             font.weight: Font.Bold
                         }
 
@@ -338,7 +337,7 @@ Item {
                     readonly property var process: monitor.processes[index] ?? null
 
                     Layout.fillWidth: true
-                    spacing: 10
+                    spacing: Metrics.spacing.normal
 
                     Text {
                         Layout.fillWidth: true
@@ -346,7 +345,7 @@ Item {
                         color: Colors.primary
                         elide: Text.ElideRight
                         font.family: Metrics.font
-                        font.pixelSize: 13
+                        font.pixelSize: Metrics.text.emphasis
                     }
 
                     // The sorted column in the accent, the other one in the secondary color.

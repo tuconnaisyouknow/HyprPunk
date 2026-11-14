@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Hyprland
+import qs.components
 import qs.theme
 
 // The bar's workspace buttons: this screen's workspaces from 1 to 10, empty ones
@@ -87,9 +88,8 @@ Item {
         visible: workspaceSwitcher.activeButtonIndex >= 0
 
         Behavior on x {
-            NumberAnimation {
-                duration: 260
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.move.large
             }
 
         }
@@ -100,7 +100,7 @@ Item {
         id: workspaceRow
 
         z: 1
-        spacing: 2
+        spacing: Metrics.spacing.hairline
 
         Repeater {
             id: workspaceRepeater

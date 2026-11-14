@@ -48,17 +48,8 @@ Rectangle {
     property real swipe: 1
     property int swipeDirection: 1
     property bool frontIsA: true
-    property string currentTrackId: ""
-    property var trackHistory: []
-    // Set by the player buttons just before skipping.
-    property int skipHint: 0
     // Extra angle of the front disc while it rewinds (track restarted).
     property real rewind: 0
-    // Last position reported by the player (seconds), when and while playing or not.
-    property real knownPosition: 0
-    property real knownPositionTime: 0
-    property bool knownPositionPlaying: false
-    property real trackChangeTime: 0
 
     // A little pop on play, pause and track changes. Not while the player is
     // open though: the pill sits under the card and would poke out of it.
@@ -78,11 +69,6 @@ Rectangle {
         return frontIsA ? discA : discB;
     }
 
-    function trackId() {
-        const player = musicPill.player;
-        return player.metadata["mpris:trackid"] ?? (player.trackTitle + player.trackArtist);
-    }
-
     // The front disc comes in from one side, the other one leaves on the opposite side.
     function discX(front) {
         const travel = discWindow.width + 8;
@@ -94,36 +80,21 @@ Rectangle {
         return (front ? frontAngle : outgoingSpin) + x * 180 / (Math.PI * discWindow.width / 2);
     }
 
-    function rememberPosition(position) {
-        knownPosition = position ?? musicPill.player.position;
-        knownPositionTime = Date.now();
-        knownPositionPlaying = musicPill.player.isPlaying;
-    }
-
-    // "Previous" a few seconds in restarts the track instead of changing it:
-    // the position jumps back to 0 on the same track.
-    function checkRestart(position) {
-        const current = position ?? musicPill.player.position;
-        const expected = knownPosition + (knownPositionPlaying ? (Date.now() - knownPositionTime) / 1000 : 0);
-        // A position jump right after a track change isn't a restart (it used to give the
-        // new disc an extra spin), and "previous" that early changes track anyway.
-        const settled = Date.now() - trackChangeTime > 2000;
-        const restarted = settled && trackId() === currentTrackId && current < 1.5 && expected > 2;
-        rememberPosition(current);
-        if (restarted && displayFrozen) {
+    // The track started again (Music.restarted): the disc turns back upright.
+    function rewindDisc() {
+        if (displayFrozen) {
             // Hidden under the player's cover: straight back to upright.
             rewindAnimation.stop();
             spin = 0;
             rewind = 0;
-            pulse();
-        } else if (restarted) {
-            // Back to upright, at least one full turn so it shows.
+        } else {
+            // At least one full turn, so it shows.
             spinRamp.stop();
             spinFactor = 0;
             rewindAnimation.to = -(spin + (spin < 120 ? 360 : 0));
-            pulse();
             rewindAnimation.restart();
         }
+        pulse();
     }
 
     function resetDiscs() {
@@ -133,39 +104,12 @@ Rectangle {
         spin = 0;
         rewind = 0;
         spinFactor = 1;
-        currentTrackId = musicPill.player !== null ? trackId() : "";
-        trackHistory = currentTrackId !== "" ? [currentTrackId] : [];
         frontDisc().source = musicPill.player !== null ? pillArt() : "";
-        if (musicPill.player !== null)
-            rememberPosition();
-
     }
 
-    function changeTrack() {
-        const id = trackId();
-        if (id === currentTrackId)
-            return ;
-
-        // No hint (media keys, the phone…): going back to the previous track
-        // in the history means backwards.
-        const history = trackHistory.slice();
-        let direction = skipHint;
-        if (direction === 0 && Date.now() < Music.skipUntil)
-            direction = Music.skipDirection;
-
-        if (direction === 0)
-            direction = history.length >= 2 && history[history.length - 2] === id ? -1 : 1;
-
-        if (direction < 0 && history.length >= 2 && history[history.length - 2] === id)
-            history.pop();
-        else
-            history.push(id);
-        trackHistory = history.slice(-50);
-        skipHint = 0;
-        currentTrackId = id;
-        // The player still reports the old track's position at this point.
-        rememberPosition(0);
-        trackChangeTime = Date.now();
+    // The track changed (Music.trackChanged): the old disc rolls out, the new one in,
+    // 1 from the right, -1 from the left.
+    function rollTo(direction) {
         discSwipe.stop();
         // The new disc waits outside the hole, the old one stays in place.
         swipe = 0;
@@ -225,9 +169,8 @@ Rectangle {
     }
 
     Behavior on spinSpeed {
-        NumberAnimation {
-            duration: 900
-            easing.type: Easing.InOutQuad
+        Anim {
+            token: Motion.record.speed
         }
 
     }
@@ -239,7 +182,7 @@ Rectangle {
 
         anchors.fill: parent
         // Slightly larger than the hole: its edge is drawn by the ring above.
-        anchors.margins: 2
+        anchors.margins: Metrics.spacing.hairline
 
         CoverDisc {
             id: discA
@@ -323,43 +266,31 @@ Rectangle {
     SequentialAnimation {
         id: pulseAnimation
 
-        NumberAnimation {
+        Anim {
             target: musicPill
             property: "scale"
-            to: 1.16
-            duration: 120
-            easing.type: Easing.OutQuad
+            to: Motion.record.popScale
+            token: Motion.record.popOut
         }
 
-        NumberAnimation {
+        Anim {
             target: musicPill
             property: "scale"
             to: 1
-            duration: 480
-            easing.type: Easing.OutBack
-            easing.overshoot: 3
+            token: Motion.record.popBack
+            easing.overshoot: Motion.record.popOvershoot
         }
 
     }
 
-    // Leaves time for a real track change (which also resets the position)
-    // to be announced first.
-    Timer {
-        id: restartCheckDelay
-
-        interval: 150
-        onTriggered: musicPill.checkRestart()
-    }
-
     // One quick turn backwards, like a record pulled back by hand.
-    NumberAnimation {
+    Anim {
         id: rewindAnimation
 
         target: musicPill
         property: "rewind"
         from: 0
-        duration: 650
-        easing.type: Easing.OutCubic
+        token: Motion.record.rewind
         onFinished: {
             musicPill.spin = 0;
             musicPill.rewind = 0;
@@ -367,69 +298,48 @@ Rectangle {
         }
     }
 
-    // Spotify doesn't always announce a restart (no Seeked signal), so after
-    // "previous" we ask for the position directly.
-    Timer {
-        id: restartProbeDelay
-
-        interval: 350
-        onTriggered: Music.probe((state) => {
-            // Not yet the new track: a change that hasn't been announced isn't a restart.
-            if (musicPill.player !== null && state.track === musicPill.currentTrackId)
-                musicPill.checkRestart(state.position);
-
-        })
-    }
-
     Connections {
-        function onPreviousRequested() {
-            restartProbeDelay.restart();
+        function onTrackChanged(direction) {
+            musicPill.rollTo(direction);
+        }
+
+        function onRestarted() {
+            musicPill.rewindDisc();
         }
 
         target: Music
     }
 
     // Starts spinning gently, like a turntable getting up to speed.
-    NumberAnimation {
+    Anim {
         id: spinRamp
 
         target: musicPill
         property: "spinFactor"
         to: 1
-        duration: 700
-        easing.type: Easing.InQuad
+        token: Motion.record.spinUp
     }
 
-    NumberAnimation {
+    Anim {
         id: discSwipe
 
         target: musicPill
         property: "swipe"
         from: 0
         to: 1
-        duration: 520
-        easing.type: Easing.OutCubic
+        token: Motion.record.roll
         onFinished: spinRamp.restart()
     }
 
     Connections {
-        function onPostTrackChanged() {
-            musicPill.changeTrack();
-        }
-
-        function onPositionChanged() {
-            restartCheckDelay.restart();
-        }
-
         function onIsPlayingChanged() {
-            musicPill.rememberPosition();
             musicPill.pulse();
         }
 
         function onTrackArtUrlChanged() {
             // The cover sometimes arrives after the track change, and sometimes just before,
-            // while the old disc is still in front (changeTrack handles that case).
-            if (musicPill.trackId() === musicPill.currentTrackId)
+            // while the old disc is still in front (rollTo handles that case).
+            if (Music.playerTrack() === Music.currentTrack)
                 musicPill.frontDisc().source = musicPill.pillArt();
 
         }
@@ -487,12 +397,6 @@ Rectangle {
             player: musicPill.player
             glassVisible: false
             coverVisible: false
-            onSkipRequested: (direction) => {
-                musicPill.skipHint = direction;
-                if (direction < 0)
-                    restartProbeDelay.restart();
-
-            }
         }
 
         // From the pill's little round cover to the player's artwork. Nothing spins: the disc
@@ -547,7 +451,7 @@ Rectangle {
                     text: "󰎆"
                     color: Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: musicPopup.lerp(16, 24)
+                    font.pixelSize: musicPopup.lerp(16, musicPlayerCard.artSize * 0.4)
                 }
 
             }

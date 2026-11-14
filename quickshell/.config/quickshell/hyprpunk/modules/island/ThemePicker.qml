@@ -13,7 +13,7 @@ import qs.theme
 IslandPanel {
     id: picker
 
-    readonly property int cardPadding: 14
+    readonly property int cardPadding: Metrics.spacing.large
     readonly property int gap: 14
     readonly property int thumbWidth: 360
     readonly property int thumbHeight: 202
@@ -94,7 +94,7 @@ IslandPanel {
                 readonly property bool selected: index === picker.selectedIndex
 
                 width: picker.thumbWidth
-                spacing: 4
+                spacing: Metrics.spacing.small
 
                 Item {
                     width: picker.thumbWidth
@@ -102,7 +102,7 @@ IslandPanel {
 
                     ClippingRectangle {
                         anchors.fill: parent
-                        radius: 12
+                        radius: Metrics.radius.normal
                         color: Colors.crust
 
                         Image {
@@ -116,7 +116,7 @@ IslandPanel {
 
                         GlassSurface {
                             z: 1
-                            radius: 12
+                            radius: Metrics.radius.normal
                             tinted: false
                         }
 
@@ -125,15 +125,15 @@ IslandPanel {
                     // Accent ring on the theme you're about to pick.
                     Rectangle {
                         anchors.fill: parent
-                        radius: 12
+                        radius: Metrics.radius.normal
                         color: "transparent"
                         border.width: 2
                         border.color: Colors.primary
                         opacity: themeCard.selected ? 1 : 0
 
                         Behavior on opacity {
-                            NumberAnimation {
-                                duration: 140
+                            Anim {
+                                token: Motion.color.small
                             }
 
                         }
@@ -145,10 +145,10 @@ IslandPanel {
                         visible: themeCard.index === picker.currentIndex
                         anchors.top: parent.top
                         anchors.right: parent.right
-                        anchors.margins: 10
+                        anchors.margins: Metrics.spacing.normal
                         width: 28
                         height: 28
-                        radius: 14
+                        radius: Metrics.radius.normal
                         color: "transparent"
 
                         GlassSurface {
@@ -161,7 +161,7 @@ IslandPanel {
                             text: ""
                             color: Colors.base
                             font.family: Metrics.font
-                            font.pixelSize: 13
+                            font.pixelSize: Metrics.text.emphasis
                         }
 
                     }
@@ -178,11 +178,11 @@ IslandPanel {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    topPadding: 4
+                    topPadding: Metrics.spacing.small
                     text: themeCard.modelData.name
                     color: themeCard.selected ? Colors.primary : Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 15
+                    font.pixelSize: Metrics.text.emphasis
                     font.weight: Font.Bold
                 }
 
@@ -192,7 +192,7 @@ IslandPanel {
                     visible: text !== ""
                     color: Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.text.emphasis
                     font.italic: true
                 }
 

@@ -19,8 +19,25 @@ Singleton {
     // AirPods in pairing mode: {address, name, model, kind, state ("ready", "pairing", "failed")}.
     property var pairing: null
 
+    // Their card should pop up on the screen you're on. Not when they connected because
+    // they went in your ears: nothing to show then, unless you asked ("manual").
     signal popupRequested(string address, string reason)
     signal lidClosed(string address)
+
+    // Both pods worn.
+    function inEars(device) {
+        return device !== null && device.kind === "buds" && device.left.inEar && device.right.inEar;
+    }
+
+    // The pods as one battery, for the OSD: the lower of the two, charging when both are.
+    function budsBattery(device) {
+        const left = device.left.level;
+        const right = device.right.level;
+        return {
+            "level": left === null ? right : right === null ? left : Math.min(left, right),
+            "charging": device.left.charging && device.right.charging
+        };
+    }
 
     function device(address) {
         return devices.find((item) => {
@@ -123,7 +140,9 @@ Singleton {
                     airPods.devices = message.devices;
                     airPods.pairing = message.pairing;
                 } else if (message.event === "popup") {
-                    airPods.popupRequested(message.address, message.reason);
+                    if (!airPods.inEars(airPods.device(message.address)))
+                        airPods.popupRequested(message.address, message.reason);
+
                 } else if (message.event === "lidClosed") {
                     airPods.lidClosed(message.address);
                 }

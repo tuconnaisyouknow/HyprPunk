@@ -19,9 +19,9 @@ ControlBlock {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: 14
-        anchors.rightMargin: 14
-        spacing: 8
+        anchors.leftMargin: Metrics.spacing.large
+        anchors.rightMargin: Metrics.spacing.large
+        spacing: Metrics.spacing.normal
 
         Repeater {
             model: info.rows.filter((row) => {
@@ -32,13 +32,13 @@ ControlBlock {
                 required property var modelData
 
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: Metrics.spacing.large
 
                 Text {
                     text: modelData.label
                     color: Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.text.emphasis
                 }
 
                 Text {
@@ -48,7 +48,7 @@ ControlBlock {
                     text: modelData.value
                     color: Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.text.emphasis
                     font.weight: Font.Bold
                 }
 

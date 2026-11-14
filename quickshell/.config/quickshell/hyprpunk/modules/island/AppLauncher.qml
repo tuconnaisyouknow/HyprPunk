@@ -239,7 +239,7 @@ SearchPanel {
 
         highlight: SelectionHighlight {
             view: grid
-            radius: 18
+            radius: Metrics.radius.card
             inset: Metrics.spacing.small
         }
 
@@ -259,7 +259,7 @@ SearchPanel {
 
                 anchors.fill: parent
                 anchors.margins: Metrics.spacing.small
-                radius: 18
+                radius: Metrics.radius.card
                 color: "transparent"
                 scale: cellTap.pressed ? 0.94 : 1
 

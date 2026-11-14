@@ -99,7 +99,7 @@ ControlPage {
     }
 
     pageName: "hidden"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     PageHeader {
         Layout.fillWidth: true
@@ -116,8 +116,8 @@ ControlPage {
             id: form
 
             anchors.fill: parent
-            anchors.margins: 12
-            spacing: 10
+            anchors.margins: Metrics.spacing.large
+            spacing: Metrics.spacing.normal
             enabled: !WifiProfiles.busy
 
             FormField {
@@ -173,12 +173,12 @@ ControlPage {
         text: page.error
         color: Colors.red
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     RowLayout {
         Layout.fillWidth: true
-        spacing: 10
+        spacing: Metrics.spacing.normal
 
         Text {
             Layout.fillWidth: true
@@ -186,7 +186,7 @@ ControlPage {
             text: WifiProfiles.busy ? "Connecting…" : page.missing
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
         ConnectButton {

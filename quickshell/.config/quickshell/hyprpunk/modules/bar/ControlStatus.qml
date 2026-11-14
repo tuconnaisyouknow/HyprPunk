@@ -31,7 +31,7 @@ RowLayout {
         return Icons.wifi(network !== null ? network.signalStrength : 0, device.connected && Vpn.connection !== null);
     }
 
-    spacing: 10
+    spacing: Metrics.spacing.normal
 
     // A background app waits for you: it's in the control center.
     Rectangle {

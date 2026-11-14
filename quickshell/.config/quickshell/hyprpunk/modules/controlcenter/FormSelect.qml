@@ -23,7 +23,7 @@ ColumnLayout {
         text: select.label
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
         font.weight: Font.Bold
     }
 
@@ -37,7 +37,7 @@ ColumnLayout {
             select.expanded = !select.expanded;
         }
 
-        radius: 12
+        radius: Metrics.radius.normal
         color: Colors.alpha(Colors.crust, boxHover.hovered ? 0.6 : 0.45)
         opacity: select.enabled ? 1 : 0.45
         activeFocusOnTab: true
@@ -45,32 +45,31 @@ ColumnLayout {
         Text {
             anchors.left: parent.left
             anchors.right: chevron.left
-            anchors.leftMargin: 12
-            anchors.rightMargin: 8
+            anchors.leftMargin: Metrics.spacing.large
+            anchors.rightMargin: Metrics.spacing.normal
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             text: select.current ? select.current.label : ""
             color: Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
         }
 
         Text {
             id: chevron
 
             anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.rightMargin: Metrics.spacing.large
             anchors.verticalCenter: parent.verticalCenter
             text: "󰅀"
             color: Colors.secondary
             rotation: select.expanded ? 180 : 0
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
 
             Behavior on rotation {
-                NumberAnimation {
-                    duration: 180
-                    easing.type: Easing.OutCubic
+                Anim {
+                    token: Motion.move.normal
                 }
 
             }
@@ -95,8 +94,8 @@ ColumnLayout {
         }
 
         Behavior on color {
-            ColorAnimation {
-                duration: 120
+            ColorAnim {
+                token: Motion.color.small
             }
 
         }
@@ -114,8 +113,8 @@ ColumnLayout {
             id: optionColumn
 
             width: parent.width
-            topPadding: 2
-            spacing: 2
+            topPadding: Metrics.spacing.hairline
+            spacing: Metrics.spacing.hairline
 
             Repeater {
                 model: select.options
@@ -134,21 +133,21 @@ ColumnLayout {
 
                     width: optionColumn.width
                     height: 32
-                    radius: 10
+                    radius: Metrics.radius.normal
                     activeFocusOnTab: true
                     color: optionHover.hovered ? Colors.alpha(Colors.primary, 0.16) : "transparent"
 
                     Text {
                         anchors.left: parent.left
                         anchors.right: check.left
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 8
+                        anchors.leftMargin: Metrics.spacing.large
+                        anchors.rightMargin: Metrics.spacing.normal
                         anchors.verticalCenter: parent.verticalCenter
                         elide: Text.ElideRight
                         text: option.modelData.label
                         color: option.index === select.currentIndex ? Colors.primary : Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: 13
+                        font.pixelSize: Metrics.text.emphasis
                         font.weight: option.index === select.currentIndex ? Font.Bold : Font.Normal
                     }
 
@@ -156,13 +155,13 @@ ColumnLayout {
                         id: check
 
                         anchors.right: parent.right
-                        anchors.rightMargin: 12
+                        anchors.rightMargin: Metrics.spacing.large
                         anchors.verticalCenter: parent.verticalCenter
                         visible: option.index === select.currentIndex
                         text: ""
                         color: Colors.primary
                         font.family: Metrics.font
-                        font.pixelSize: 12
+                        font.pixelSize: Metrics.text.body
                     }
 
                     HoverHandler {
@@ -177,8 +176,8 @@ ColumnLayout {
                     }
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: 100
+                        ColorAnim {
+                            token: Motion.color.small
                         }
 
                     }
@@ -190,9 +189,8 @@ ColumnLayout {
         }
 
         Behavior on implicitHeight {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }

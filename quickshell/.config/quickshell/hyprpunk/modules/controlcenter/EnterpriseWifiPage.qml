@@ -259,7 +259,7 @@ ControlPage {
     }
 
     pageName: "enterprise"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     PageHeader {
         Layout.fillWidth: true
@@ -276,10 +276,10 @@ ControlPage {
         // Into the block's padding by 6px a side, so the fields' bounce isn't cut.
         Flickable {
             anchors.fill: parent
-            anchors.leftMargin: 6
-            anchors.rightMargin: 6
-            anchors.topMargin: 12
-            anchors.bottomMargin: 12
+            anchors.leftMargin: Metrics.spacing.normal
+            anchors.rightMargin: Metrics.spacing.normal
+            anchors.topMargin: Metrics.spacing.large
+            anchors.bottomMargin: Metrics.spacing.large
             contentHeight: form.implicitHeight
             boundsBehavior: Flickable.StopAtBounds
             clip: true
@@ -289,7 +289,7 @@ ControlPage {
 
                 x: 6
                 width: parent.width - 12
-                spacing: 10
+                spacing: Metrics.spacing.normal
                 enabled: !page.connecting && !page.loading
 
                 FormSelect {
@@ -567,12 +567,12 @@ ControlPage {
         text: page.error
         color: Colors.red
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     RowLayout {
         Layout.fillWidth: true
-        spacing: 10
+        spacing: Metrics.spacing.normal
 
         Text {
             Layout.fillWidth: true
@@ -580,7 +580,7 @@ ControlPage {
             text: page.loading ? "Loading the saved settings…" : page.connecting ? "Connecting…" : page.missing !== "" ? page.missing.charAt(0).toUpperCase() + page.missing.slice(1) : ""
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
         ConnectButton {

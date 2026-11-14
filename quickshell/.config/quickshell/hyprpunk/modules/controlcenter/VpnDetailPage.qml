@@ -35,7 +35,7 @@ ControlPage {
     }
 
     pageName: "vpnDetail"
-    spacing: 12
+    spacing: Metrics.spacing.large
     onUuidChanged: {
         details = {
         };
@@ -78,19 +78,19 @@ ControlPage {
     ControlBlock {
         Layout.fillWidth: true
         implicitHeight: 44
-        radius: 14
+        radius: Metrics.radius.normal
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 14
-            anchors.rightMargin: 12
-            spacing: 12
+            anchors.leftMargin: Metrics.spacing.large
+            anchors.rightMargin: Metrics.spacing.large
+            spacing: Metrics.spacing.large
 
             Text {
                 text: "󰁪"
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 17
+                font.pixelSize: Metrics.text.title
             }
 
             Text {
@@ -99,7 +99,7 @@ ControlPage {
                 text: "Connect Automatically"
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 14
+                font.pixelSize: Metrics.text.emphasis
                 font.weight: Font.Bold
             }
 
@@ -119,7 +119,7 @@ ControlPage {
         text: Vpn.errors[page.uuid] || ""
         color: Colors.red
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     ActionRow {

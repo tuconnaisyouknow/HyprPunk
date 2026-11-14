@@ -5,34 +5,17 @@ import qs.config
 import qs.theme
 
 // The settings' night light page: when the screens turn warm, and how warm.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Night light"
+    description: "Warms the screens' colors, easier on the eyes in the evening."
 
     readonly property bool scheduled: NightLightSettings.mode === "schedule"
 
     // "9:00 PM" or "21:00", as the regional formats have it.
     function hourText(hour) {
         return Session.shortTime(new Date(2000, 0, 1, hour));
-    }
-
-    spacing: 12
-
-    Text {
-        text: "Night light"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "Warms the screens' colors, easier on the eyes in the evening."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
     }
 
     SegmentedControl {

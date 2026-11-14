@@ -33,20 +33,20 @@ ControlBlock {
     }
 
     implicitHeight: 48
-    radius: 14
+    radius: Metrics.radius.normal
     activeFocusOnTab: true
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 12
+        anchors.leftMargin: Metrics.spacing.large
         anchors.rightMargin: row.detailsAvailable ? 8 : 14
-        spacing: 12
+        spacing: Metrics.spacing.large
 
         Text {
             text: row.icon
             color: row.highlighted ? Colors.primary : Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 18
+            font.pixelSize: Metrics.text.title
         }
 
         Column {
@@ -59,7 +59,7 @@ ControlBlock {
                 color: Colors.primary
                 elide: Text.ElideRight
                 font.family: Metrics.font
-                font.pixelSize: 14
+                font.pixelSize: Metrics.text.emphasis
                 font.weight: row.highlighted ? Font.Bold : Font.Medium
             }
 
@@ -70,7 +70,7 @@ ControlBlock {
                 color: Colors.secondary
                 elide: Text.ElideRight
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
             }
 
         }
@@ -80,7 +80,7 @@ ControlBlock {
             text: row.trailing
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
         }
 
         // Plain glyph with a glass halo on hover, like the player's controls.
@@ -97,8 +97,8 @@ ControlBlock {
                 opacity: detailsArea.containsMouse ? 1 : 0
 
                 Behavior on opacity {
-                    NumberAnimation {
-                        duration: 120
+                    Anim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -110,7 +110,7 @@ ControlBlock {
                 text: "󰋽"
                 color: detailsArea.containsMouse ? Colors.primary : Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 17
+                font.pixelSize: Metrics.text.title
             }
 
             // A MouseArea takes the click from the row.

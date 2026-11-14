@@ -56,9 +56,8 @@ IslandPanel {
     Behavior on cardHeight {
         enabled: prompt.opened
 
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.resize.normal
         }
 
     }
@@ -90,11 +89,11 @@ IslandPanel {
         x: prompt.cardPadding
         y: prompt.cardPadding
         width: prompt.cardWidth - 2 * prompt.cardPadding
-        spacing: 14
+        spacing: Metrics.spacing.large
 
         Row {
             width: parent.width
-            spacing: 14
+            spacing: Metrics.spacing.large
 
             Item {
                 width: 36
@@ -123,7 +122,7 @@ IslandPanel {
             Column {
                 width: parent.width - 36 - parent.spacing
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 4
+                spacing: Metrics.spacing.small
 
                 Text {
                     width: parent.width
@@ -133,7 +132,7 @@ IslandPanel {
                     elide: Text.ElideRight
                     color: Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.text.emphasis
                     lineHeight: 1.15
                 }
 
@@ -145,7 +144,7 @@ IslandPanel {
                     elide: Text.ElideMiddle
                     color: Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 11
+                    font.pixelSize: Metrics.text.small
                 }
 
             }
@@ -192,43 +191,16 @@ IslandPanel {
             horizontalAlignment: Text.AlignHCenter
             color: prompt.flow && prompt.flow.supplementaryIsError ? Colors.red : Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
         }
 
     }
 
     // Wrong password: the field shakes
-    SequentialAnimation {
+    Shake {
         id: shake
 
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: -12
-            duration: 50
-        }
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: 10
-            duration: 70
-        }
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: -6
-            duration: 60
-        }
-
-        NumberAnimation {
-            target: field
-            property: "shakeOffset"
-            to: 0
-            duration: 60
-        }
-
+        target: field
     }
 
 }

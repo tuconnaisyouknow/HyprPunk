@@ -39,7 +39,7 @@ Flow {
 
     }
 
-    spacing: 6
+    spacing: Metrics.spacing.normal
     onValueChanged: keepValue()
     // Once the value has caught up with new values too, so the chosen one is built
     // chosen rather than turning to the accent as you watch.
@@ -53,66 +53,17 @@ Flow {
     Repeater {
         model: choices.shown
 
-        Item {
-            id: chip
-
+        GlassButton {
             required property var modelData
-            readonly property bool chosen: modelData === choices.value
-            readonly property real radius: height / 2
 
-            function activate() {
-                chipBounce.restart();
-                if (!chosen)
+            label: choices.label(modelData)
+            accent: modelData === choices.value
+            activeFocusOnTab: true
+            onClicked: {
+                if (!accent)
                     choices.selected(modelData);
 
             }
-
-            implicitWidth: chipText.implicitWidth + 28
-            implicitHeight: 32
-            activeFocusOnTab: true
-
-            GlassSurface {
-                radius: chip.radius
-                hovered: chipHover.hovered
-                backgroundColor: chip.chosen ? Colors.alpha(Colors.primary, 0.85) : "transparent"
-
-                Behavior on backgroundColor {
-                    ColorAnimation {
-                        duration: 160
-                    }
-
-                }
-
-            }
-
-            Text {
-                id: chipText
-
-                anchors.centerIn: parent
-                text: choices.label(chip.modelData)
-                color: chip.chosen ? Colors.base : Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: 12
-                font.weight: chip.chosen ? Font.Bold : Font.Medium
-            }
-
-            HoverHandler {
-                id: chipHover
-
-                cursorShape: Qt.PointingHandCursor
-            }
-
-            TapHandler {
-                gesturePolicy: TapHandler.ReleaseWithinBounds
-                onTapped: chip.activate()
-            }
-
-            BounceAnimation {
-                id: chipBounce
-
-                target: chip
-            }
-
         }
 
     }

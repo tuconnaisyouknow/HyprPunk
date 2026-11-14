@@ -38,14 +38,14 @@ ControlBlock {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 10
-        anchors.rightMargin: 8
-        spacing: 10
+        anchors.leftMargin: Metrics.spacing.normal
+        anchors.rightMargin: Metrics.spacing.normal
+        spacing: Metrics.spacing.normal
 
         Rectangle {
             Layout.preferredWidth: 36
             Layout.preferredHeight: 36
-            radius: 18
+            radius: Metrics.radius.card
             color: "transparent"
 
             // Accent glass while on, plain glass while off.
@@ -55,8 +55,8 @@ ControlBlock {
                 backgroundColor: tile.active ? Colors.alpha(Colors.primary, iconHover.hovered ? 0.95 : 0.8) : "transparent"
 
                 Behavior on backgroundColor {
-                    ColorAnimation {
-                        duration: 140
+                    ColorAnim {
+                        token: Motion.color.small
                     }
 
                 }
@@ -68,7 +68,7 @@ ControlBlock {
                 text: tile.icon
                 color: tile.active ? Colors.base : Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 17
+                font.pixelSize: Metrics.text.title
                 font.weight: Font.Bold
             }
 
@@ -84,8 +84,8 @@ ControlBlock {
             }
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 140
+                ColorAnim {
+                    token: Motion.color.small
                 }
 
             }
@@ -108,7 +108,7 @@ ControlBlock {
                     color: Colors.primary
                     elide: Text.ElideRight
                     font.family: Metrics.font
-                    font.pixelSize: 14
+                    font.pixelSize: Metrics.text.emphasis
                     font.weight: Font.Bold
                 }
 
@@ -130,7 +130,7 @@ ControlBlock {
                         color: Colors.secondary
                         elide: Text.ElideRight
                         font.family: Metrics.font
-                        font.pixelSize: 12
+                        font.pixelSize: Metrics.text.body
                     }
 
                     MarqueeText {
@@ -142,7 +142,7 @@ ControlBlock {
                         text: tile.subtitle
                         color: Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: 12
+                        font.pixelSize: Metrics.text.body
                     }
 
                 }
@@ -165,7 +165,7 @@ ControlBlock {
             text: "󰅂"
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 16
+            font.pixelSize: Metrics.text.title
 
             TapHandler {
                 gesturePolicy: TapHandler.ReleaseWithinBounds

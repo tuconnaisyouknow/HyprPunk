@@ -175,9 +175,8 @@ Card {
             opacity: panel.opened ? 1 : 0
 
             Behavior on opacity {
-                NumberAnimation {
-                    duration: 120
-                    easing.type: Easing.OutCubic
+                Anim {
+                    token: Motion.color.small
                 }
 
             }

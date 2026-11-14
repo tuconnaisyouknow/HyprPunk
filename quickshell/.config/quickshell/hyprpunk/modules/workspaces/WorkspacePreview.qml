@@ -27,7 +27,7 @@ ClippingRectangle {
     readonly property var windows: workspace !== null ? workspace.toplevels.values : []
 
     implicitHeight: Math.round(width * screenHeight / screenWidth)
-    radius: 12
+    radius: Metrics.radius.normal
     color: Colors.crust
 
     Image {
@@ -110,7 +110,7 @@ ClippingRectangle {
             text: "Empty"
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 13
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.DemiBold
         }
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.components
 import qs.theme
 import qs.state
 import qs.services
@@ -41,16 +42,15 @@ RowLayout {
             color: Privacy.cameraInUse ? Colors.green : Colors.peach
 
             Behavior on scale {
-                NumberAnimation {
-                    duration: 260
-                    easing.type: Easing.OutBack
+                Anim {
+                    token: Motion.pop
                 }
 
             }
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 200
+                ColorAnim {
+                    token: Motion.color.normal
                 }
 
             }
@@ -60,9 +60,8 @@ RowLayout {
         Behavior on Layout.preferredWidth {
             enabled: chips.animated
 
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }
@@ -70,9 +69,8 @@ RowLayout {
         Behavior on Layout.leftMargin {
             enabled: chips.animated
 
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }
@@ -97,8 +95,8 @@ RowLayout {
             color: recordingHover.hovered ? Colors.alpha(Colors.red, 0.28) : Colors.alpha(Colors.red, 0.16)
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 140
+                ColorAnim {
+                    token: Motion.color.small
                 }
 
             }
@@ -110,7 +108,7 @@ RowLayout {
 
             anchors.verticalCenter: parent.verticalCenter
             x: 8
-            spacing: 6
+            spacing: Metrics.spacing.normal
 
             // The stop square on hover, the dot otherwise.
             Rectangle {
@@ -133,21 +131,21 @@ RowLayout {
 
                     NumberAnimation {
                         to: 0.3
-                        duration: 700
-                        easing.type: Easing.InOutSine
+                        duration: Motion.pulse.duration
+                        easing.type: Motion.pulse.easing
                     }
 
                     NumberAnimation {
                         to: 1
-                        duration: 700
-                        easing.type: Easing.InOutSine
+                        duration: Motion.pulse.duration
+                        easing.type: Motion.pulse.easing
                     }
 
                 }
 
                 Behavior on radius {
-                    NumberAnimation {
-                        duration: 140
+                    Anim {
+                        token: Motion.resize.small
                     }
 
                 }
@@ -159,7 +157,7 @@ RowLayout {
                 text: Osd.formatDuration(chips.bar.recordingElapsed)
                 color: Colors.red
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
                 font.weight: Font.Bold
                 font.features: {
                     "tnum": 1
@@ -185,9 +183,8 @@ RowLayout {
         Behavior on Layout.preferredWidth {
             enabled: chips.animated
 
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }
@@ -195,9 +192,8 @@ RowLayout {
         Behavior on Layout.leftMargin {
             enabled: chips.animated
 
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }
@@ -221,8 +217,8 @@ RowLayout {
             color: Colors.alpha(ShellState.doNotDisturb ? Colors.secondary : Colors.primary, 0.16)
 
             Behavior on color {
-                ColorAnimation {
-                    duration: 140
+                ColorAnim {
+                    token: Motion.color.small
                 }
 
             }
@@ -234,7 +230,7 @@ RowLayout {
 
             anchors.verticalCenter: parent.verticalCenter
             x: 7
-            spacing: 4
+            spacing: Metrics.spacing.small
             opacity: ShellState.doNotDisturb ? 0.5 : 1
 
             Text {
@@ -242,7 +238,7 @@ RowLayout {
                 text: ShellState.doNotDisturb ? "󰂛" : "󰂚"
                 color: ShellState.doNotDisturb ? Colors.secondary : Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 13
+                font.pixelSize: Metrics.text.emphasis
             }
 
             Text {
@@ -250,7 +246,7 @@ RowLayout {
                 text: chips.bar.notificationCount
                 color: ShellState.doNotDisturb ? Colors.secondary : Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
                 font.weight: Font.Bold
                 font.features: {
                     "tnum": 1
@@ -262,9 +258,8 @@ RowLayout {
         Behavior on Layout.preferredWidth {
             enabled: chips.animated
 
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }
@@ -272,9 +267,8 @@ RowLayout {
         Behavior on Layout.leftMargin {
             enabled: chips.animated
 
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
+            Anim {
+                token: Motion.resize.normal
             }
 
         }

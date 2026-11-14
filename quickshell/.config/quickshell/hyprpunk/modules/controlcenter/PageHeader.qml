@@ -15,14 +15,14 @@ RowLayout {
     signal backRequested()
     signal toggled()
 
-    spacing: 10
+    spacing: Metrics.spacing.normal
 
     Rectangle {
         id: backButton
 
         implicitWidth: 34
         implicitHeight: 34
-        radius: 17
+        radius: height / 2
         color: "transparent"
 
         GlassSurface {
@@ -35,7 +35,7 @@ RowLayout {
             text: "󰅁"
             color: Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 18
+            font.pixelSize: Metrics.text.title
         }
 
         HoverHandler {
@@ -65,7 +65,7 @@ RowLayout {
         text: header.title
         color: Colors.primary
         font.family: Metrics.font
-        font.pixelSize: 18
+        font.pixelSize: Metrics.text.title
         font.weight: Font.Bold
     }
 

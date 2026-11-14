@@ -1,4 +1,5 @@
 import QtQuick
+import qs.theme
 import QtQuick.Layouts
 import Quickshell.Bluetooth
 import qs.components
@@ -15,7 +16,7 @@ ControlPage {
     }
 
     pageName: "bluetoothDetail"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     PageHeader {
         Layout.fillWidth: true

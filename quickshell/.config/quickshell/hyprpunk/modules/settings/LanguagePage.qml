@@ -8,8 +8,11 @@ import qs.theme
 // The settings' keyboard and language page: the keyboard layout, the interface's
 // language and, apart, the regional formats, so you can have an English desktop with
 // French dates. The scripts apply them (keyboard-layoutctl.sh, locale-profilectl.sh).
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Keyboard and language"
+    description: "New apps follow a language change right away. Log out and back in for the apps already open."
 
     readonly property var languages: [{
         "value": "us",
@@ -32,26 +35,6 @@ ColumnLayout {
 
     function setLocale(category, profile) {
         Quickshell.execDetached([Session.scripts + "/locale-profilectl.sh", "set-" + category, profile]);
-    }
-
-    spacing: 12
-
-    Text {
-        text: "Keyboard and language"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "New apps follow a language change right away. Log out and back in for the apps already open."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
     }
 
     SettingRow {

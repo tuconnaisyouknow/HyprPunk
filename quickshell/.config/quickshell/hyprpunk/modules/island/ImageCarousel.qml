@@ -69,9 +69,8 @@ Item {
     Behavior on position {
         enabled: carousel.animatePosition
 
-        NumberAnimation {
-            duration: 340
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.move.large
         }
 
     }
@@ -111,7 +110,7 @@ Item {
 
             ClippingRectangle {
                 anchors.fill: parent
-                radius: 12
+                radius: Metrics.radius.normal
                 color: Colors.crust
 
                 // The whole image, never cropped.
@@ -131,13 +130,13 @@ Item {
                     text: slide.modelData.id
                     color: Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: 16
+                    font.pixelSize: Metrics.text.title
                     font.weight: Font.Bold
                 }
 
                 GlassSurface {
                     z: 1
-                    radius: 12
+                    radius: Metrics.radius.normal
                     tinted: false
                 }
 
@@ -146,7 +145,7 @@ Item {
             // Accent ring on the item in the centre.
             Rectangle {
                 anchors.fill: parent
-                radius: 12
+                radius: Metrics.radius.normal
                 color: "transparent"
                 border.width: 2
                 border.color: Colors.primary
@@ -158,10 +157,10 @@ Item {
                 visible: slide.modelData.id === carousel.currentId
                 anchors.top: parent.top
                 anchors.right: parent.right
-                anchors.margins: 10
+                anchors.margins: Metrics.spacing.normal
                 width: 28
                 height: 28
-                radius: 14
+                radius: Metrics.radius.normal
                 color: "transparent"
 
                 GlassSurface {
@@ -174,7 +173,7 @@ Item {
                     text: ""
                     color: Colors.base
                     font.family: Metrics.font
-                    font.pixelSize: 13
+                    font.pixelSize: Metrics.text.emphasis
                 }
 
             }

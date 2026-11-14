@@ -5,28 +5,11 @@ import qs.theme
 
 // The settings' sound page: how much a volume key changes the volume, and how high the
 // shell lets it go.
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Sound"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "How the volume moves. The outputs and each app's volume are in the control center."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Sound"
+    description: "How the volume moves. The outputs and each app's volume are in the control center."
 
     SettingRow {
         Layout.fillWidth: true

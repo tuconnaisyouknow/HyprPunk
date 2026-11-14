@@ -61,7 +61,7 @@ SearchPanel {
         text: Clipboard.loading && clipboard.entries.length === 0 ? "Loading…" : clipboard.entries.length === 0 ? "The clipboard is empty" : "No match"
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
     }
 
     ListView {
@@ -90,7 +90,7 @@ SearchPanel {
 
             width: ListView.view.width
             height: isImage ? clipboard.imageRowHeight : clipboard.textRowHeight
-            radius: 14
+            radius: Metrics.radius.normal
             color: "transparent"
 
             ClippingRectangle {
@@ -98,11 +98,11 @@ SearchPanel {
 
                 visible: row.isImage
                 anchors.left: parent.left
-                anchors.leftMargin: 8
+                anchors.leftMargin: Metrics.spacing.normal
                 anchors.verticalCenter: parent.verticalCenter
                 width: 136
                 height: clipboard.imageRowHeight - 16
-                radius: 10
+                radius: Metrics.radius.normal
                 color: Colors.crust
 
                 Image {
@@ -119,9 +119,9 @@ SearchPanel {
 
             Text {
                 anchors.left: row.isImage ? thumbnail.right : parent.left
-                anchors.leftMargin: 14
+                anchors.leftMargin: Metrics.spacing.large
                 anchors.right: parent.right
-                anchors.rightMargin: 14
+                anchors.rightMargin: Metrics.spacing.large
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 maximumLineCount: 1
@@ -129,7 +129,7 @@ SearchPanel {
                 textFormat: Text.PlainText
                 color: row.selected ? Colors.primary : Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 13
+                font.pixelSize: Metrics.text.emphasis
             }
 
             HoverHandler {

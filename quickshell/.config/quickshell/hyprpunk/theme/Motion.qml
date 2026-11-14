@@ -60,10 +60,79 @@ Singleton {
         readonly property real slideIn: 0.3
         readonly property real backOff: 0.15
     }
+    // No, with a shake of the head (a wrong password, a name you can't save under): each
+    // swing smaller than the last, where the element goes from its place (Shake).
+    readonly property QtObject shake: QtObject {
+        readonly property var swings: [-12, 10, -6, 0]
+        readonly property int swingDuration: 60
+    }
+
+    // Something taking its size with a touch past it, then settling: a hovered emoji or
+    // icon, a workspace button, a dot that appears.
+    readonly property var pop: ({
+        "duration": 200,
+        "easing": Easing.OutBack
+    })
+
     // Something breathing on its own while a state lasts (a recording, a wait).
     readonly property QtObject pulse: QtObject {
         readonly property int duration: 700
         readonly property int easing: Easing.InOutSine
+    }
+
+    // The record in the bar (MusicPill), moving like a real one: the turntable getting up
+    // to speed and slowing down, the next disc rolling in, a disc pulled back by hand when
+    // the track restarts, and a pop on play, pause and a new track.
+    readonly property QtObject record: QtObject {
+        readonly property var spinUp: ({
+            "duration": 700,
+            "easing": Easing.InQuad
+        })
+        readonly property var speed: ({
+            "duration": 900,
+            "easing": Easing.InOutQuad
+        })
+        readonly property var roll: ({
+            "duration": 520,
+            "easing": Easing.OutCubic
+        })
+        readonly property var rewind: ({
+            "duration": 650,
+            "easing": Easing.OutCubic
+        })
+        readonly property var popOut: ({
+            "duration": 120,
+            "easing": Easing.OutQuad
+        })
+        readonly property var popBack: ({
+            "duration": 480,
+            "easing": Easing.OutBack
+        })
+        readonly property real popScale: 1.16
+        readonly property real popOvershoot: 3
+    }
+
+    // The lyrics following the song (LyricsView): the view glides to the line sung, the
+    // old lines slide away, the new ones rise one after another from the line sung.
+    readonly property QtObject lyrics: QtObject {
+        readonly property var follow: ({
+            "duration": 560,
+            "easing": Easing.OutCubic
+        })
+        readonly property var leave: ({
+            "duration": 260,
+            "easing": Easing.InCubic
+        })
+        readonly property var arrive: ({
+            "duration": 420,
+            "easing": Easing.OutCubic
+        })
+        readonly property int arriveStagger: 45
+        // The line sung growing to its size.
+        readonly property var line: ({
+            "duration": 360,
+            "easing": Easing.OutCubic
+        })
     }
 
     // How long the pointer rests on a pill before its card opens on hover (sweeping

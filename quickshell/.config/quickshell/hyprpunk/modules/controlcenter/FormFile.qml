@@ -23,7 +23,7 @@ ColumnLayout {
         text: file.label
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
         font.weight: Font.Bold
     }
 
@@ -51,7 +51,7 @@ ColumnLayout {
             file.path = "";
         }
 
-        radius: 12
+        radius: Metrics.radius.normal
         color: Colors.alpha(Colors.crust, boxHover.hovered ? 0.6 : 0.45)
         opacity: file.enabled ? 1 : 0.45
         activeFocusOnTab: true
@@ -59,14 +59,14 @@ ColumnLayout {
         Text {
             anchors.left: parent.left
             anchors.right: clear.visible ? clear.left : icon.left
-            anchors.leftMargin: 12
-            anchors.rightMargin: 8
+            anchors.leftMargin: Metrics.spacing.large
+            anchors.rightMargin: Metrics.spacing.normal
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideMiddle
             text: file.path !== "" ? file.path.split("/").pop() : "(None)"
             color: file.path !== "" ? Colors.primary : Colors.alpha(Colors.secondary, 0.5)
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
         }
 
         // Back to "(None)".
@@ -74,13 +74,13 @@ ColumnLayout {
             id: clear
 
             anchors.right: icon.left
-            anchors.rightMargin: 10
+            anchors.rightMargin: Metrics.spacing.normal
             anchors.verticalCenter: parent.verticalCenter
             visible: file.path !== ""
             text: ""
             color: clearHover.hovered ? Colors.primary : Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 12
+            font.pixelSize: Metrics.text.body
 
             HoverHandler {
                 id: clearHover
@@ -99,12 +99,12 @@ ColumnLayout {
             id: icon
 
             anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.rightMargin: Metrics.spacing.large
             anchors.verticalCenter: parent.verticalCenter
             text: "󰉋"
             color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
         }
 
         HoverHandler {
@@ -125,8 +125,8 @@ ColumnLayout {
         }
 
         Behavior on color {
-            ColorAnimation {
-                duration: 120
+            ColorAnim {
+                token: Motion.color.small
             }
 
         }

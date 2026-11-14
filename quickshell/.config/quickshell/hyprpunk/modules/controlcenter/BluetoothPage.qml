@@ -14,7 +14,7 @@ ControlPage {
     signal detailsRequested(var device)
 
     pageName: "bluetooth"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     // Looks for devices around while you're on the page.
     Binding {
@@ -34,13 +34,13 @@ ControlPage {
 
     IconText {
         Layout.alignment: Qt.AlignHCenter
-        Layout.topMargin: 8
-        Layout.bottomMargin: 8
+        Layout.topMargin: Metrics.spacing.normal
+        Layout.bottomMargin: Metrics.spacing.normal
         visible: BluetoothStatus.devices.length === 0
         icon: BluetoothStatus.enabled ? "󰂰" : "󰂲"
         text: BluetoothStatus.enabled ? "Searching for devices…" : "Bluetooth is off"
         color: Colors.secondary
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Normal
 
     }
@@ -63,7 +63,7 @@ ControlPage {
             clip: true
             // The control center moves through the rows itself.
             keyNavigationEnabled: false
-            spacing: 4
+            spacing: Metrics.spacing.small
             // Keeps the rows that stay instead of rebuilding them all at each change,
             // which held up the animations.
             model: ScriptModel {

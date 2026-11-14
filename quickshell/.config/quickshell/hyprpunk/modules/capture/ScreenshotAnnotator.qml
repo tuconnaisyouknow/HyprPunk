@@ -323,7 +323,7 @@ Item {
             id: toolRow
 
             anchors.centerIn: parent
-            spacing: 4
+            spacing: Metrics.spacing.small
 
             Repeater {
                 model: annotator.tools
@@ -373,9 +373,8 @@ Item {
                         border.color: Colors.primary
 
                         Behavior on width {
-                            NumberAnimation {
-                                duration: 140
-                                easing.type: Easing.OutBack
+                            Anim {
+                                token: Motion.pop
                             }
 
                         }
@@ -419,8 +418,8 @@ Item {
                         color: annotator.size === parent.index ? Colors.primary : Colors.secondary
 
                         Behavior on color {
-                            ColorAnimation {
-                                duration: 140
+                            ColorAnim {
+                                token: Motion.color.small
                             }
 
                         }
@@ -460,8 +459,8 @@ Item {
     }
 
     component Separator: Rectangle {
-        Layout.leftMargin: 4
-        Layout.rightMargin: 4
+        Layout.leftMargin: Metrics.spacing.small
+        Layout.rightMargin: Metrics.spacing.small
         implicitWidth: 1
         implicitHeight: 22
         color: Colors.alpha(Colors.light, 0.15)
@@ -485,7 +484,7 @@ Item {
             text: button.icon
             color: button.chosen ? Colors.base : Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 17
+            font.pixelSize: Metrics.text.title
         }
 
         HoverHandler {
@@ -508,8 +507,8 @@ Item {
         }
 
         Behavior on color {
-            ColorAnimation {
-                duration: 140
+            ColorAnim {
+                token: Motion.color.small
             }
 
         }

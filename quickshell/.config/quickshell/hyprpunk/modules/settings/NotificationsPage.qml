@@ -8,28 +8,11 @@ import qs.theme
 
 // The settings' notifications page: how long they stay out of the island, and which
 // apps get to pop up at all.
-ColumnLayout {
+SettingsPage {
     id: page
 
-    spacing: 12
-
-    Text {
-        text: "Notifications"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "How they pop up out of the island. Focus, in the control center, keeps all but the urgent ones away."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
-    }
+    title: "Notifications"
+    description: "How they pop up out of the island. Focus, in the control center, keeps all but the urgent ones away."
 
     SettingRow {
         Layout.fillWidth: true
@@ -59,14 +42,14 @@ ColumnLayout {
 
         Column {
             width: parent.width
-            spacing: 4
+            spacing: Metrics.spacing.small
 
             Text {
                 visible: NotificationSettings.apps.length === 0
                 text: "No app has sent a notification yet."
                 color: Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: 12
+                font.pixelSize: Metrics.text.body
             }
 
             Repeater {
@@ -84,7 +67,7 @@ ColumnLayout {
 
                     width: parent.width
                     height: 36
-                    spacing: 12
+                    spacing: Metrics.spacing.large
 
                     Item {
                         Layout.preferredWidth: 24
@@ -102,7 +85,7 @@ ColumnLayout {
                             text: "󰂚"
                             color: Colors.secondary
                             font.family: Metrics.font
-                            font.pixelSize: 18
+                            font.pixelSize: Metrics.text.title
                         }
 
                     }
@@ -113,7 +96,7 @@ ColumnLayout {
                         color: Colors.alpha(Colors.secondary, app.muted ? 0.5 : 1)
                         elide: Text.ElideRight
                         font.family: Metrics.font
-                        font.pixelSize: 13
+                        font.pixelSize: Metrics.text.emphasis
                     }
 
                     ToggleSwitch {

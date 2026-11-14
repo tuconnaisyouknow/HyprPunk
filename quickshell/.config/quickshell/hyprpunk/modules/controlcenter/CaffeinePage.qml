@@ -27,7 +27,7 @@ ControlPage {
     }]
 
     pageName: "caffeine"
-    spacing: 6
+    spacing: Metrics.spacing.normal
 
     PageHeader {
         Layout.fillWidth: true
@@ -39,12 +39,12 @@ ControlPage {
 
     Text {
         Layout.fillWidth: true
-        Layout.bottomMargin: 6
+        Layout.bottomMargin: Metrics.spacing.normal
         text: "Keeps the screen on: no dimming, locking or sleep."
         color: Colors.secondary
         wrapMode: Text.Wrap
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     Repeater {

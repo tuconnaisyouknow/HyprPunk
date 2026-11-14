@@ -88,41 +88,11 @@ ColumnLayout {
             font.weight: Font.Bold
         }
 
-        Rectangle {
-            implicitWidth: clearLabel.implicitWidth + 18
-            implicitHeight: 30
-            radius: 11
-            color: "transparent"
-
-            // Accent glass.
-            GlassSurface {
-                radius: parent.radius
-                hovered: clearHover.hovered
-                backgroundColor: Colors.alpha(Colors.primary, clearHover.hovered ? 0.95 : 0.8)
-            }
-
-            IconText {
-                id: clearLabel
-
-                anchors.centerIn: parent
-                icon: "󰎟"
-                text: "Clear"
-                color: Colors.base
-                font.pixelSize: 13
-                font.weight: Font.Bold
-            }
-
-            HoverHandler {
-                id: clearHover
-
-                cursorShape: Qt.PointingHandCursor
-            }
-
-            TapHandler {
-                gesturePolicy: TapHandler.ReleaseWithinBounds
-                onTapped: list.clearAll()
-            }
-
+        GlassButton {
+            icon: "󰎟"
+            label: "Clear"
+            accent: true
+            onClicked: list.clearAll()
         }
 
     }

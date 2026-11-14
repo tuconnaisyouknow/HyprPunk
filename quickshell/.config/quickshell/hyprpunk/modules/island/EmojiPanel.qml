@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.components
 import qs.theme
 
 // The emoji picker: every emoji from data/emojis.tsv, your recent ones first, searchable
@@ -122,7 +123,7 @@ SearchPanel {
         text: "No emoji"
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 14
+        font.pixelSize: Metrics.text.emphasis
     }
 
     GridView {
@@ -158,7 +159,7 @@ SearchPanel {
 
                 anchors.fill: parent
                 anchors.margins: 3
-                radius: 14
+                radius: Metrics.radius.normal
                 color: "transparent"
                 scale: cellTap.pressed ? 0.9 : 1
 
@@ -170,9 +171,8 @@ SearchPanel {
                 }
 
                 Behavior on scale {
-                    NumberAnimation {
-                        duration: 160
-                        easing.type: Easing.OutBack
+                    Anim {
+                        token: Motion.pop
                     }
 
                 }

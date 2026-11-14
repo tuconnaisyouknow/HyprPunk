@@ -7,8 +7,11 @@ import qs.theme
 
 // The settings' idle and sleep page: how long after you leave the computer each step
 // comes, plugged in and on battery, and whether media playing keeps it awake.
-ColumnLayout {
+SettingsPage {
     id: page
+
+    title: "Idle and sleep"
+    description: "How long after you leave the computer each step comes. Caffeine holds them all back."
 
     // Whose delays you're changing: where the power comes from now, until you pick.
     property string source: Power.source
@@ -67,26 +70,6 @@ ColumnLayout {
             return minutes + " min" + (rest > 0 ? " " + rest + " s" : "");
 
         return rest + " s";
-    }
-
-    spacing: 12
-
-    Text {
-        text: "Idle and sleep"
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: 20
-        font.weight: Font.Bold
-    }
-
-    Text {
-        Layout.fillWidth: true
-        Layout.bottomMargin: 4
-        text: "How long after you leave the computer each step comes. Caffeine holds them all back."
-        color: Colors.secondary
-        wrapMode: Text.Wrap
-        font.family: Metrics.font
-        font.pixelSize: 12
     }
 
     // Desktops have one set of delays.

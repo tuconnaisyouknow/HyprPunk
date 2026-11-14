@@ -57,7 +57,7 @@ ControlPage {
     }
 
     pageName: "wifiDetail"
-    spacing: 12
+    spacing: Metrics.spacing.large
 
     PageHeader {
         Layout.fillWidth: true
@@ -118,8 +118,8 @@ ControlPage {
             id: passwordColumn
 
             anchors.fill: parent
-            anchors.margins: 12
-            spacing: 10
+            anchors.margins: Metrics.spacing.large
+            spacing: Metrics.spacing.normal
 
             WepKeySelect {
                 id: wepKeyType
@@ -143,7 +143,7 @@ ControlPage {
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: Metrics.spacing.normal
 
                 FormCheck {
                     id: showPassword
@@ -157,7 +157,7 @@ ControlPage {
                     text: "Connecting…"
                     color: Colors.secondary
                     font.family: Metrics.font
-                    font.pixelSize: 12
+                    font.pixelSize: Metrics.text.body
                 }
 
             }
@@ -173,7 +173,7 @@ ControlPage {
         text: page.error
         color: Colors.red
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
     ActionRow {
