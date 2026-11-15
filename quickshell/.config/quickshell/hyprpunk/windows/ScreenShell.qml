@@ -26,11 +26,15 @@ Scope {
     readonly property alias bar: bar
     readonly property var screenState: ShellState.forScreen(screen)
     // A window is fullscreen over the shell's window: nothing of the shell may take the
-    // keyboard or the pointer there meanwhile, and the cards fold back.
+    // keyboard or the pointer there meanwhile.
     readonly property bool fullscreen: screenState !== null && screenState.fullscreen
+    // Something takes the screen over, a fullscreen window or the lock: the cards fold
+    // back, but the prompts an app waits on. Before the lock, so it starts from the bar
+    // alone with the island at rest (Lock.engage).
+    readonly property bool takenOver: fullscreen || Lock.covering
 
-    onFullscreenChanged: {
-        if (!fullscreen)
+    onTakenOverChanged: {
+        if (!takenOver)
             return ;
 
         for (const card of window.cards) {

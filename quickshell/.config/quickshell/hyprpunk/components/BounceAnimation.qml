@@ -8,8 +8,7 @@ SequentialAnimation {
 
     required property Item target
     property string scaleProperty: "scale"
-    // The same few pixels for every size, at most 10% for the small buttons.
-    readonly property real squeeze: Math.max(0.9, 1 - 8 / Math.max(target.width, 1))
+    readonly property real squeeze: Motion.squeeze(target.width)
 
     NumberAnimation {
         target: bounce.target

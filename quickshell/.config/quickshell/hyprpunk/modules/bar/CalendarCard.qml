@@ -108,9 +108,9 @@ PillPopup {
         height: calendarPopup.island.height
         // The island's own time, so it stays while the card folds back onto
         // the island showing the time. Another card taking the island's shape
-        // over, or the island taking an OSD, has no time to meet: it fades
-        // with the rest of the content.
-        opacity: calendarPopup.bar.islandFrame.owner === calendarPopup || calendarPopup.bar.islandFrame.owner === null && !calendarPopup.bar.islandOsdShown ? 1 : 0
+        // over, or the island taking an OSD or locking, has no time to meet:
+        // it fades with the rest of the content.
+        opacity: calendarPopup.bar.islandFrame.owner === calendarPopup || calendarPopup.bar.islandFrame.owner === null && calendarPopup.island.face === "clock" ? 1 : 0
 
         Behavior on opacity {
             Anim {
@@ -123,7 +123,7 @@ PillPopup {
         // as the time slides to the card's middle, and open again as it slides back,
         // so the card lands on the island as it is.
         RowLayout {
-            readonly property real islandX: calendarPopup.island.timeLabel.parent.x
+            readonly property real islandX: calendarPopup.island.timeX
             readonly property real centerX: (parent.width - width) / 2
 
             anchors.verticalCenter: parent.verticalCenter

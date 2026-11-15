@@ -14,8 +14,7 @@ Scale {
     property bool active: false
     property bool pressed: false
     property real grown: active ? 1 + 6 / Math.max(pill.width, 1) : 1
-    // The same few pixels for every size, at most 10% for the small ones.
-    property real squeezed: pressed ? Math.max(0.9, 1 - 8 / Math.max(pill.width, 1)) : 1
+    property real squeezed: pressed ? Motion.squeeze(pill.width) : 1
 
     origin.x: pill.width / 2
     origin.y: pill.height / 2

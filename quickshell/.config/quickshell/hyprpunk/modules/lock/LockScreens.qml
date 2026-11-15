@@ -4,8 +4,9 @@ import Quickshell.Wayland
 import qs.config
 import qs.services
 
-// The lock screens, one per screen (LockSurface). It's a real session lock: if the shell
-// crashes, the screens stay locked. When and how it locks is the Lock service's.
+// The lock screens, one per screen (LockSurface), and the islands they leave behind
+// (LockRelay). It's a real session lock: if the shell crashes, the screens stay locked.
+// When and how it locks is the Lock service's.
 Scope {
     // Decode each screen's wallpaper ahead of time (a 4K one takes a good part of a
     // second), so the lock finds it in the cache and can fade it in straight away.
@@ -27,8 +28,22 @@ Scope {
 
     WlSessionLock {
         locked: Lock.locked
+        onSecureChanged: {
+            if (secure)
+                Lock.secured();
+
+        }
 
         LockSurface {
+        }
+
+    }
+
+    // Each screen's island as the lock leaves it, over the bar until it draws again.
+    Variants {
+        model: Quickshell.screens
+
+        LockRelay {
         }
 
     }

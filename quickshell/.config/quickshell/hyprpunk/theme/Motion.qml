@@ -18,6 +18,13 @@ Singleton {
     readonly property var leave: tokens(Easing.InCubic, 0.75)
     // A color or an opacity changing in place.
     readonly property var color: tokens(Easing.OutCubic, 1)
+    // The island's content changing where it stands (its faces, the parts that come and
+    // go in it): it eases in as well as out, so a change that follows another move flows
+    // on from it instead of cutting in.
+    readonly property var swap: ({
+        "duration": 300,
+        "easing": Easing.InOutQuad
+    })
 
     // The answer to a press: squeezed a little, then springing back a touch too far
     // (BounceAnimation).
@@ -60,6 +67,22 @@ Singleton {
         readonly property real slideIn: 0.3
         readonly property real backOff: 0.15
     }
+    // The time leaving the island for the lock screen's clock, growing as it goes: it
+    // sets off at once and lands a touch past its place, like the shell's other moves,
+    // only gentler over that distance.
+    readonly property var clockFlight: ({
+        "duration": 700,
+        "easing": Easing.OutBack,
+        "overshoot": 0.7
+    })
+    // Its way back home into the island: it sets off gently and falls into its place,
+    // still moving as it lands, without going past. The island takes the impact
+    // (IslandPill).
+    readonly property var clockReturn: ({
+        "duration": 700,
+        "easing": Easing.InQuad
+    })
+
     // No, with a shake of the head (a wrong password, a name you can't save under): each
     // swing smaller than the last, where the element goes from its place (Shake).
     readonly property QtObject shake: QtObject {
@@ -145,6 +168,12 @@ Singleton {
     // How long the music wave takes to settle into the floor or rise from it, around the
     // lock screen.
     readonly property int waveSettle: 450
+
+    // How far a press squeezes something that big (bounce): the same few pixels for every
+    // size, at most 10% for the small ones.
+    function squeeze(size) {
+        return Math.max(0.9, 1 - 8 / Math.max(size, 1));
+    }
 
     // Three sizes, by how far the element travels.
     function tokens(easing, scale) {

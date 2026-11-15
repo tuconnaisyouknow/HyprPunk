@@ -6,31 +6,42 @@ import qs.state
 import qs.services
 
 // What the island shows after the time: the privacy dot, the recording and the
-// notifications waiting. The bar's island and the lock screen's both use it, so the lock
-// starts from the island as it was and closes them while it grows into the padlock.
+// notifications waiting. The bar's island and the lock screen's both use it: the lock
+// starts from the island as it was and keeps the privacy dot and the recording once the
+// time has left with the notifications.
 RowLayout {
     id: chips
 
     required property var bar
-    // Each chip closes when this goes off, and opens again after.
+    // Each chip closes when this goes off, and opens again after. The notifications'
+    // too when theirs does: the lock keeps them out of sight.
     property bool shown: true
+    property bool notificationsShown: shown
     property bool animated: true
     // In the bar, a click on the recording stops it. The lock only shows it.
     property bool interactive: true
     readonly property bool stopHovered: recordingHover.hovered
+    // How much is open before the chips, 0 to 1: the time, or on the lock screen the
+    // padlock or the dots.
+    property real lead: 1
+    // How much of them is there, for what comes after.
+    readonly property real presence: Math.min(1, privacyChip.presence + recordingChip.presence + notificationChip.presence)
 
-    // Each chip brings its own gap before it, the first one's after the time, so a closed
-    // one leaves none and the time stays centred once the last one closes (IslandChip).
+    // Each chip brings its own gap before it, as much as something is open before it: a
+    // gap only parts two things, so the island stays centred on whatever is left in it
+    // (IslandPart).
     spacing: 0
 
     // Privacy: a dot while something is listening or watching, green for the camera,
     // orange for the microphone alone.
-    IslandChip {
+    IslandPart {
+        id: privacyChip
+
         shown: chips.shown && (Privacy.cameraInUse || Privacy.microphoneInUse)
         animated: chips.animated
         openWidth: 8
         openHeight: 8
-        gap: 6
+        gap: 6 * chips.lead
 
         Rectangle {
             anchors.fill: parent
@@ -49,12 +60,14 @@ RowLayout {
     }
 
     // Recording: a pulsing red dot and how long it's been going.
-    IslandChip {
+    IslandPart {
         id: recordingChip
 
         shown: chips.shown && Screenshot.recording
         animated: chips.animated
+        gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence)
         openWidth: recordingRow.implicitWidth + 16
+        openHeight: 24
 
         Rectangle {
             anchors.fill: parent
@@ -151,10 +164,14 @@ RowLayout {
 
     // Notifications waiting: a bell and how many. The secondary color at half opacity while Focus
     // keeps them quiet.
-    IslandChip {
-        shown: chips.shown && chips.bar.notificationCount > 0
+    IslandPart {
+        id: notificationChip
+
+        shown: chips.notificationsShown && chips.bar.notificationCount > 0
         animated: chips.animated
+        gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence + recordingChip.presence)
         openWidth: notificationBadgeRow.implicitWidth + 14
+        openHeight: 24
 
         Rectangle {
             anchors.fill: parent

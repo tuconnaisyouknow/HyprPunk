@@ -38,20 +38,25 @@ Item {
     // stays still. It isn't drawn under the lock, so it would only catch up on its
     // animations once the lock is gone.
     readonly property bool sessionLocked: Lock.locked
+    // The lock has the island, from the moment you lock until you're back: it takes the
+    // island as it is and gives it back the same, so nothing else may change it
+    // meanwhile.
+    readonly property bool lockShown: Lock.covering || Lock.islandAway
     // A card is drawn over the island (the calendar, an island panel, the notifications,
     // the AirPods), opening or folding back.
     readonly property bool islandCovered: pillHidden("island")
     // The island shows the OSD while nobody holds it (ScreenState). Held, the OSD shows
     // beside the card instead (sideOsd). As soon as the card lets go the island takes it
     // back, hidden, so the card folds straight into the OSD's shape.
-    readonly property bool islandOsdShown: osdVisible && !sessionLocked && screenState !== null && screenState.islandOwner === ""
+    readonly property bool islandOsdShown: osdVisible && !lockShown && screenState !== null && screenState.islandOwner === ""
     // The OSD is going into the island under a card folding back onto it: its time
     // running out waits for the card to land (Osd.landing).
     readonly property bool osdLanding: islandOsdShown && islandCovered
     // The island resizes at once while hidden under a card: animating it there made the
     // bar and the blur behind the card redraw every frame for nothing, and the card's own
-    // animations drop frames (the calendar while a notification slides out of it).
-    readonly property bool islandAnimated: !pillHidden("island")
+    // animations drop frames (the calendar while a notification slides out of it). Under
+    // the lock too, where it isn't drawn and would only play once the lock is gone.
+    readonly property bool islandAnimated: !pillHidden("island") && !sessionLocked
     // Seconds since the recording started, for the island.
     property int recordingElapsed: 0
     // What the pills are drawn in, for the workspace previews' snapshot of the bar.
@@ -103,10 +108,8 @@ Item {
             osdShown = osd;
 
     }
-    onOsdVisibleChanged: {
-        island.fadeContent();
-        sideOsd.follow();
-    }
+    onOsdVisibleChanged: sideOsd.follow()
+
     onOsdLabelChanged: island.fadeContent()
     Component.onCompleted: {
         if (screenState !== null)

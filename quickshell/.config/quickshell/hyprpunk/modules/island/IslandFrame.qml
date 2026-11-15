@@ -1,7 +1,5 @@
 import QtQuick
-import QtQuick.Layouts
 import qs.components
-import qs.config
 import qs.modules.island
 import qs.theme
 import qs.windows
@@ -133,36 +131,31 @@ Card {
 
     }
 
-    // The time and its chips as the island shows them, at their place in it: they fade
-    // as a card grows out, faster than the shape so they're gone before its content
-    // shows, and come back as it folds, whole once it lands. The calendar carries them
-    // itself, and an OSD has its own way into the island (Osd.landing).
-    RowLayout {
-        id: islandContent
+    // The island as it shows itself (the time and its chips), at its place:
+    // it fades as a card grows out, faster than the shape so it's gone before the card's
+    // content shows, and comes back as it folds, whole once it lands. The calendar
+    // carries the time and chips itself, and an OSD has its own way into the island
+    // (Osd.landing).
+    IslandView {
+        id: islandCopy
 
         readonly property Item pill: frame.bar.islandItem
 
         visible: frame.visible && opacity > 0
-        opacity: frame.bar.islandOsdShown || frame.lastOwner !== null && frame.lastOwner.carriesIslandContent ? 0 : Math.pow(frame.islandShare, 3)
-        x: frame.width / 2 + frame.island.centerOffset - frame.island.width / 2 + pill.timeLabel.parent.x
+        opacity: pill.face === "osd" || pill.face === "clock" && frame.lastOwner !== null && frame.lastOwner.carriesIslandContent ? 0 : Math.pow(frame.islandShare, 3)
+        x: frame.width / 2 + frame.island.centerOffset - width / 2
         y: frame.island.top + (frame.island.height - height) / 2
-        spacing: 0
-
-        Label {
-            text: Session.clockText(islandContent.pill.date)
-        }
-
         // Still while covered, like the island's own.
-        IslandChips {
-            bar: frame.bar
-            animated: false
-            interactive: false
-        }
+        bar: frame.bar
+        face: pill.face
+        animated: false
+        interactive: false
+        date: pill.date
 
         // Zoomed with the island, past its place under the pointer.
         transform: Scale {
-            origin.x: frame.island.width / 2 - islandContent.pill.timeLabel.parent.x
-            origin.y: islandContent.height / 2
+            origin.x: islandCopy.width / 2
+            origin.y: islandCopy.height / 2
             xScale: 1 + 2 * frame.island.spreadX / Math.max(frame.island.width, 1)
             yScale: 1 + 2 * frame.island.spreadY / Math.max(frame.island.height, 1)
         }

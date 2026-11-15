@@ -65,3 +65,6 @@ hl.layer_rule({
 
 -- Screenshot selection appears right away over the frozen screen, no fade
 hl.layer_rule({ match = { namespace = "hyprpunk-screenshot" }, no_anim = true })
+
+-- The island the lock leaves behind stands in for the bar's at once and goes unseen
+hl.layer_rule({ match = { namespace = "hyprpunk-relay" }, no_anim = true })

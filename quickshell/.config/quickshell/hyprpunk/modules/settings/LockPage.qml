@@ -25,7 +25,7 @@ SettingsPage {
         Layout.fillWidth: true
         icon: "󰗘"
         title: "Animation"
-        description: "The lock blurs in out of your desktop and plays its way out. Off, it covers the screen and leaves it at once, and only the island plays its padlock."
+        description: "The lock blurs in out of your desktop and plays its way out. Off, it covers the screen and leaves it at once, and only the island moves."
         checkable: true
         checked: LockSettings.animation
         onToggled: LockSettings.set("animation", !checked)
