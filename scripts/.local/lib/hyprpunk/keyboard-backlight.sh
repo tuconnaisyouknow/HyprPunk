@@ -5,9 +5,28 @@
 #   keyboard-backlight.sh status   prints the backlight's device name
 # Quietly does nothing on keyboards without a backlight.
 
-script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-# shellcheck source=lib/system-info.sh
-source "$script_dir/lib/system-info.sh"
+leds_dir="${SYS_LEDS_DIR:-/sys/class/leds}"
+
+# Found by its name, which depends on the driver
+find_keyboard_backlight() {
+  local device name max
+
+  for device in "$leds_dir"/*; do
+    [ -r "$device/max_brightness" ] || continue
+    name=$(basename "$device")
+    case "$name" in
+    *kbd_backlight* | *keyboard* | *kbd-backlight*)
+      max=$(cat "$device/max_brightness")
+      if [ "$max" -gt 0 ] 2>/dev/null; then
+        printf '%s\n' "$name"
+        return 0
+      fi
+      ;;
+    esac
+  done
+
+  return 1
+}
 
 device=$(find_keyboard_backlight) || exit 0
 

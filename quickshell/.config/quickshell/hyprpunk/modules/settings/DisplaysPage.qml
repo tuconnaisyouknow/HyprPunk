@@ -106,7 +106,7 @@ SettingsPage {
         }) : current.concat([workspace]).sort((a, b) => {
             return Number(a) - Number(b);
         });
-        Displays.apply(["workspace-set", selected.name, list.length > 0 ? list.join(",") : "none"], false);
+        Displays.apply(["workspaces", selected.name, list.length > 0 ? list.join(",") : "none"], false);
     }
 
     // Where a screen can go, as displayctl.sh places it: against a side of another,
@@ -500,7 +500,7 @@ SettingsPage {
                 return size === "auto" ? "Auto" : size.replace("x", " × ");
             }
             onSelected: (value) => {
-                return Displays.apply(value === "auto" ? ["auto", page.selected.name] : ["resolution", page.selected.name, value], true);
+                return Displays.apply(["mode", page.selected.name, value === "auto" ? "preferred" : value], true);
             }
         }
 
@@ -518,7 +518,7 @@ SettingsPage {
             value: page.frequency
             label: page.rateLabel
             onSelected: (value) => {
-                return Displays.apply(["refresh", page.selected.name, value], true);
+                return Displays.apply(["mode", page.selected.name, page.selected.width + "x" + page.selected.height + "@" + value], true);
             }
         }
 
@@ -535,7 +535,7 @@ SettingsPage {
             width: parent.width
             // None until the screens are read, so the chips are built with the screen's own.
             values: page.selected ? ["auto", "1", "1.25", "1.5", "1.75", "2"] : []
-            value: page.selected ? page.selected.scale || page.info.default_scale : null
+            value: page.selected ? page.selected.scale || "auto" : null
             label: (scale) => {
                 return scale === "auto" ? "Auto" : scale + "×";
             }

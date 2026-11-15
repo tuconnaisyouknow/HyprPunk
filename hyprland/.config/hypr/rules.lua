@@ -1,12 +1,7 @@
 -- Where each app opens and how windows behave, then how Hyprland blurs and animates
 -- the shell's own layers. Loaded by hyprland.lua, before your personal/rules.lua.
 
-package.loaded["glass_state"] = nil -- Glass style, read again on every reload
-local linked, glass = pcall(__require, "glass_state")
--- Classic until glass_state.lua is linked, so a git pull without stow can't break the config
-if not linked then
-  glass = { liquid = false, ignore_alpha = 0.5 }
-end
+local glass = __require("glass_state") -- The shell's glass style
 
 ------------------
 -- WINDOW RULES --

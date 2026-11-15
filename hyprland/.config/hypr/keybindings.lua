@@ -16,7 +16,7 @@ hyprpunk.programs = {
   notes = "obsidian",
   music = "spotify-launcher",
 }
-for role, command in pairs(__require("lib.state").fresh("apps_state")) do
+for role, command in pairs(__require("apps_state")) do
   hyprpunk.programs[role] = command
 end
 

@@ -29,7 +29,7 @@ local startup = {
   { name = "systemd",          command = "dbus-update-activation-environment --systemd --all" },
 
   -- The desktop itself: screens, touchpad, wallpaper, the shell and idle handling
-  { name = "displays",         command = hyprpunk.scripts .. "/displayctl.sh bootstrap" },
+  { name = "displays",         command = hyprpunk.scripts .. "/displayctl.sh sync" },
   { name = "touchpad",         command = hyprpunk.scripts .. "/touchpadctl.sh sync" },
   -- awww-daemon forgets the last wallpaper, so wallpaperctl.sh puts it back
   { name = "wallpaper-daemon", command = "awww-daemon" },

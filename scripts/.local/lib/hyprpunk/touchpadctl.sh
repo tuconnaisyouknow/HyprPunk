@@ -1,37 +1,30 @@
 #!/usr/bin/env bash
 # Turns the touchpad on and off, and remembers it. Hyprland applies the saved state
-# through input.lua, and the shell's bar shows it.
+# through input.lua, and the shell's bar shows it. No file means on.
 #   touchpadctl.sh toggle | enable | disable   from the touchpad key or the shell
 #   touchpadctl.sh sync                        at login: finds the touchpads again
 #   touchpadctl.sh status
-#   touchpadctl.sh ensure | init [true|false]  makes sure a state is saved (install.sh)
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_FILE="${HYPR_TOUCHPAD_STATE:-$STATE_HOME/hyprpunk/touchpad-state.conf}"
 LOCK_FILE="${STATE_FILE}.lock"
-DEFAULT_ENABLED=true
 TOUCHPADS=""
 INPUT_SYSFS="${TOUCHPADCTL_INPUT_SYSFS:-/sys/class/input}"
 
 usage() {
   cat <<EOF
 Usage:
-  $(basename "$0") ensure
   $(basename "$0") sync
   $(basename "$0") toggle
   $(basename "$0") enable
   $(basename "$0") disable
   $(basename "$0") status
-  $(basename "$0") init [true|false]
 EOF
 }
 
 # One change at a time, a key held down sends a few in a row
 acquire_lock() {
-  if [[ "${TOUCHPADCTL_LOCKED:-false}" == "true" ]]; then
-    return 0
-  fi
   command -v flock >/dev/null 2>&1 || {
     echo "flock is required to update the touchpad state." >&2
     exit 3
@@ -42,12 +35,23 @@ acquire_lock() {
     echo "Timed out waiting for the touchpad state lock." >&2
     exit 3
   }
-  export TOUCHPADCTL_LOCKED=true
 }
 
+# On unless saved off
 read_enabled() {
-  [[ -f "$STATE_FILE" ]] || return 0
-  awk -F= '$1 == "enabled" { print substr($0, length($1) + 2); exit }' "$STATE_FILE"
+  if [[ -f "$STATE_FILE" ]] && grep -qx 'enabled=false' "$STATE_FILE"; then
+    printf 'false\n'
+  else
+    printf 'true\n'
+  fi
+}
+
+# The device lines, as the state file keeps them
+device_lines() {
+  local device
+  while IFS= read -r device; do
+    [[ -z "$device" ]] || printf 'device=%s\n' "$device"
+  done <<<"$TOUCHPADS"
 }
 
 # Hyprland's pointer devices that are touchpads: those udev flags as one (under the
@@ -102,131 +106,60 @@ load_touchpads() {
 }
 
 write_state() {
-  local enabled="$1" dir tmp
+  local dir tmp
   dir="$(dirname "$STATE_FILE")"
   mkdir -p "$dir"
   tmp="$(mktemp --tmpdir="$dir" touchpad-state.XXXXXX)"
-  printf 'enabled=%s\n' "$enabled" >"$tmp"
-  if [[ -n "$TOUCHPADS" ]]; then
-    while IFS= read -r device; do
-      [[ -n "$device" ]] && printf 'device=%s\n' "$device"
-    done <<<"$TOUCHPADS" >>"$tmp"
-  fi
+  {
+    printf 'enabled=%s\n' "$1"
+    device_lines
+  } >"$tmp"
   mv -f "$tmp" "$STATE_FILE"
 }
 
-# Nothing valid saved yet: the touchpad is on
-ensure_state() {
-  local enabled
-  enabled="$(read_enabled || true)"
-  if [[ "$enabled" != "true" && "$enabled" != "false" ]]; then
-    TOUCHPADS=""
-    write_state "$DEFAULT_ENABLED"
+# On and off show up in the shell's bar, which watches the state file; only errors notify
+set_enabled() {
+  load_touchpads
+  if [[ -z "$TOUCHPADS" ]]; then
+    notify-send -a Touchpad -i input-touchpad "No touchpad detected" 2>/dev/null || true
+    echo "No touchpad detected." >&2
+    exit 2
   fi
-}
-
-reload_hyprland() {
+  write_state "$1"
   hyprctl reload >/dev/null 2>&1 || true
 }
 
-# On and off show up in the shell's bar, which watches the state file; only errors notify
-notify_error() {
-  notify-send -a Touchpad -i input-touchpad "$1" 2>/dev/null || true
-}
-
-set_enabled() {
-  local enabled="$1"
-  load_touchpads
-  if [[ -z "$TOUCHPADS" ]]; then
-    notify_error "No touchpad detected"
-    echo "No touchpad detected." >&2
-    return 2
-  fi
-  write_state "$enabled"
-  reload_hyprland
-}
-
 command="${1:-}"
+[[ $# -eq 1 ]] || command=""
 case "$command" in
-ensure)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  acquire_lock
-  ensure_state
-  ;;
+# Written again only when the touchpads changed
 sync)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
   acquire_lock
-  ensure_state
-  enabled="$(read_enabled)"
-  # Rewrite only when the touchpads changed, or the file still has the old synced= line
-  previous="$(sed -n '/^device=/p' "$STATE_FILE" 2>/dev/null || true)"
   load_touchpads
-  current="$(while IFS= read -r device; do [[ -n "$device" ]] && printf 'device=%s\n' "$device"; done <<<"$TOUCHPADS")"
-  if [[ "$previous" != "$current" ]] || grep -q '^synced=' "$STATE_FILE"; then
-    write_state "$enabled"
-    reload_hyprland
+  if [[ "$(sed -n '/^device=/p' "$STATE_FILE" 2>/dev/null || true)" != "$(device_lines)" ]]; then
+    write_state "$(read_enabled)"
+    hyprctl reload >/dev/null 2>&1 || true
   fi
   ;;
 toggle)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
   acquire_lock
-  ensure_state
-  enabled="$(read_enabled)"
-  if [[ "$enabled" == "true" ]]; then
+  if [[ "$(read_enabled)" == "true" ]]; then
     set_enabled false
   else
     set_enabled true
   fi
   ;;
 enable)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
   acquire_lock
-  ensure_state
   set_enabled true
   ;;
 disable)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
   acquire_lock
-  ensure_state
   set_enabled false
   ;;
 status)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  enabled="$(read_enabled || true)"
-  printf 'enabled=%s\n' "${enabled:-$DEFAULT_ENABLED}"
-  [[ -f "$STATE_FILE" ]] && sed -n '/^device=/p' "$STATE_FILE"
-  ;;
-init)
-  [[ $# -le 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  enabled="${2:-$DEFAULT_ENABLED}"
-  [[ "$enabled" == "true" || "$enabled" == "false" ]] || {
-    echo "Invalid touchpad state: $enabled" >&2
-    exit 1
-  }
-  acquire_lock
-  TOUCHPADS=""
-  write_state "$enabled"
+  printf 'enabled=%s\n' "$(read_enabled)"
+  [[ ! -f "$STATE_FILE" ]] || sed -n '/^device=/p' "$STATE_FILE"
   ;;
 *)
   usage >&2

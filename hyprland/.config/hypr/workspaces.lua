@@ -5,7 +5,7 @@
 ----------------
 
 -- Pins each workspace to the screen it was given in the display settings
-local state = __require("lib.state").fresh("monitor_state")
+local state = __require("monitor_state")
 
 local assignments = {}
 

@@ -47,9 +47,6 @@ EOF
 
 # One change at a time, even when the selector and a new screen ask together
 acquire_lock() {
-  if [[ "${WALLPAPERCTL_LOCKED:-false}" == "true" ]]; then
-    return 0
-  fi
   command -v flock >/dev/null 2>&1 || {
     echo "flock is required to update the wallpaper state." >&2
     exit 3
@@ -60,7 +57,6 @@ acquire_lock() {
     echo "Timed out waiting for the wallpaper state lock." >&2
     exit 3
   }
-  export WALLPAPERCTL_LOCKED=true
 }
 
 # The value of a key=value line, empty when the file or the key is missing

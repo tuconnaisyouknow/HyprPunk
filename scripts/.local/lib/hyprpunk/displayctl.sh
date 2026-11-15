@@ -2,25 +2,71 @@
 # Remembers how each screen is set up, and finds it again whichever port it's plugged into.
 #
 # Every screen gets an ID from its EDID (make, model, serial), and under that ID:
+#   selector          how Hyprland finds it (its description, or its port)
 #   mode, scale       resolution, refresh rate and scaling
 #   slot              its number, 1 to 10, shown in the shell
 #   workspaces        the workspaces it holds (its own number by default)
 #   relative          where it sits next to another screen, in a custom layout
+#   position          where that puts it, worked out from the relations
 # All of it in ~/.local/state/hyprpunk/monitor-state.conf, which monitors.lua and
-# workspaces.lua read. The shell's display settings drive it through the commands below.
+# workspaces.lua read. No file means Hyprland's automatic setup for every screen.
 #
-# Hyprland calls bootstrap at login, sync when a screen is plugged in, and reflow when
-# one goes away (see autostart.lua).
+#   displayctl.sh sync                         at login and when a screen is plugged in
+#   displayctl.sh reflow                       when one goes away (autostart.lua)
+#   displayctl.sh info | status                the screens, as JSON for the shell or to read
+#   displayctl.sh mode <port> <preferred|WIDTHxHEIGHT[@rate]>
+#   displayctl.sh scale <port> <auto|1|1.25|1.5|1.75|2>
+#   displayctl.sh slot <port> <1-10>
+#   displayctl.sh workspaces <port> <list|none>
+#   displayctl.sh position <port> <left|right|above|below> <port>
+#   displayctl.sh auto-layout | reset          lines them up again, or forgets everything
+#   displayctl.sh try <command…> | undo        a change you can take back (the settings)
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_FILE="${HYPR_MONITOR_STATE:-$STATE_HOME/hyprpunk/monitor-state.conf}"
-LEGACY_STATE_FILE="$HOME/.config/hypr/monitor-state.conf"
+BACKUP_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/monitor-state.backup"
 LOCK_FILE="${STATE_FILE}.lock"
 MONITORS_JSON=""
 MONITOR_ID=""
 MONITOR_SELECTOR=""
-MIGRATED=false
+
+# A screen's size once scaled and turned, as the layout sees it
+LOGICAL_SIZE='def logical_size: .scale as $scale | (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end) | map(. / $scale);'
+
+usage() {
+  cat <<EOF
+Usage:
+  $(basename "$0") sync
+  $(basename "$0") reflow
+  $(basename "$0") info
+  $(basename "$0") status
+  $(basename "$0") mode <port> <preferred|WIDTHxHEIGHT[@rate]>
+  $(basename "$0") scale <port> <auto|1|1.25|1.5|1.75|2>
+  $(basename "$0") slot <port> <1-10>
+  $(basename "$0") workspaces <port> <list|none>
+  $(basename "$0") position <port> <left|right|above|below> <port>
+  $(basename "$0") auto-layout
+  $(basename "$0") reset
+  $(basename "$0") try <command…>
+  $(basename "$0") undo
+EOF
+}
+
+fail() {
+  echo "$*" >&2
+  exit 1
+}
+
+# Every command takes a set number of arguments, its name included
+expect() {
+  local count="$1"
+  shift
+  [[ $# -eq $count ]] || {
+    usage >&2
+    exit 1
+  }
+}
 
 # One change at a time: plugging two screens fires two syncs at once
 acquire_lock() {
@@ -42,157 +88,74 @@ acquire_lock() {
   export DISPLAYCTL_LOCKED=true
 }
 
-usage() {
-  cat <<EOF
-Usage:
-  $(basename "$0") status
-  $(basename "$0") info
-  $(basename "$0") ensure
-  $(basename "$0") bootstrap
-  $(basename "$0") sync
-  $(basename "$0") outputs
-  $(basename "$0") modes <output>
-  $(basename "$0") resolutions <output>
-  $(basename "$0") frequencies <output>
-  $(basename "$0") resolution <output> <WIDTHxHEIGHT>
-  $(basename "$0") mode <output> <resolution[@refresh]>
-  $(basename "$0") refresh <output> <frequency>
-  $(basename "$0") scale <output> <auto|factor>
-  $(basename "$0") slot-get <output>
-  $(basename "$0") slot <output> <number>
-  $(basename "$0") workspace-get <output>
-  $(basename "$0") workspace-owners
-  $(basename "$0") workspace-set <output> <list|none>
-  $(basename "$0") position <output> <left|right|above|below> <reference>
-  $(basename "$0") reflow
-  $(basename "$0") reload
-  $(basename "$0") auto-layout
-  $(basename "$0") auto <output>
-  $(basename "$0") reset
-  $(basename "$0") init [preferred|WIDTHxHEIGHT]
-EOF
+#########
+# STATE #
+#########
+
+# Plain key=value lines. Read as empty while there's no file yet.
+state() {
+  if [[ -f "$STATE_FILE" ]]; then
+    printf '%s\n' "$STATE_FILE"
+  else
+    printf '/dev/null\n'
+  fi
 }
 
-# The state file is plain key=value lines, rewritten whole on every change
 read_value() {
-  local key="$1"
-  [[ -f "$STATE_FILE" ]] || return 0
-  awk -F= -v key="$key" '$1 == key { print substr($0, length($1) + 2); exit }' "$STATE_FILE"
+  awk -F= -v key="$1" '$1 == key { print substr($0, length($1) + 2); exit }' "$(state)"
 }
 
-write_value() {
-  local key="$1" value="$2" dir tmp
+# Every change runs the whole file through awk, then swaps it in at once, so Hyprland
+# never reads half of one
+rewrite_state() {
+  local dir tmp
   dir="$(dirname "$STATE_FILE")"
   mkdir -p "$dir"
   tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-
-  if [[ -f "$STATE_FILE" ]]; then
-    awk -F= -v key="$key" '$1 != key' "$STATE_FILE" >"$tmp"
-  fi
-  printf '%s=%s\n' "$key" "$value" >>"$tmp"
+  awk -F= "$@" "$(state)" >"$tmp"
   mv -f "$tmp" "$STATE_FILE"
 }
 
-delete_value() {
-  local key="$1" dir tmp
-  [[ -f "$STATE_FILE" ]] || return 0
-  dir="$(dirname "$STATE_FILE")"
-  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-  awk -F= -v key="$key" '$1 != key' "$STATE_FILE" >"$tmp"
-  mv -f "$tmp" "$STATE_FILE"
+# Each key=value given replaces its line where it is, or comes at the end
+write_values() {
+  local IFS=$'\n'
+  rewrite_state -v updates="$*" '
+    BEGIN {
+      count = split(updates, lines, "\n")
+      for (i = 1; i <= count; i++) {
+        at = index(lines[i], "=")
+        order[i] = substr(lines[i], 1, at - 1)
+        values[order[i]] = substr(lines[i], at + 1)
+      }
+    }
+    $1 in values {
+      if (!($1 in written)) print $1 "=" values[$1]
+      written[$1] = 1
+      next
+    }
+    { print }
+    END {
+      for (i = 1; i <= count; i++) {
+        if (!(order[i] in written)) print order[i] "=" values[order[i]]
+        written[order[i]] = 1
+      }
+    }
+  '
 }
 
-delete_matching_values() {
-  local pattern="$1" dir tmp
-  [[ -f "$STATE_FILE" ]] || return 0
-  dir="$(dirname "$STATE_FILE")"
-  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-  awk -F= -v pattern="$pattern" '$1 !~ pattern' "$STATE_FILE" >"$tmp"
-  mv -f "$tmp" "$STATE_FILE"
+delete_values() {
+  rewrite_state -v pattern="$1" '$1 !~ pattern'
 }
 
-# Settings from older versions that no longer mean anything
-remove_legacy_state() {
-  local dir tmp
-  [[ -f "$STATE_FILE" ]] || return 0
-  dir="$(dirname "$STATE_FILE")"
-  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-  awk -F= '$1 != "profile" && $1 != "refresh_optimized"' "$STATE_FILE" >"$tmp"
-  if cmp -s "$STATE_FILE" "$tmp"; then
-    rm -f "$tmp"
-  else
-    mv -f "$tmp" "$STATE_FILE"
-  fi
-}
-
-# The state used to live in ~/.config/hypr
-migrate_state_file() {
-  [[ -z "${HYPR_MONITOR_STATE:-}" ]] || return 0
-  [[ ! -f "$STATE_FILE" && -f "$LEGACY_STATE_FILE" ]] || return 0
-  mkdir -p "$(dirname "$STATE_FILE")"
-  mv "$LEGACY_STATE_FILE" "$STATE_FILE"
-}
-
-# The screen the pointer is on and where on it, as "name x y", empty when on none
-pointer_spot() {
-  local position
-  position="$(hyprctl cursorpos 2>/dev/null)" || return 0
-  hyprctl monitors -j | jq -r --argjson x "${position%%,*}" --argjson y "${position#*, }" '
-    .[] | select(.disabled != true) |
-    .scale as $scale |
-    (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end | map(. / $scale)) as [$w, $h] |
-    select($x >= .x and $x < .x + $w and $y >= .y and $y < .y + $h) |
-    "\(.name) \($x - .x) \($y - .y)"
-  ' 2>/dev/null | head -n 1
-}
-
-# The pointer back on that screen at the same spot, or as close as its new size allows
-restore_pointer() {
-  local target
-  target="$(hyprctl monitors -j | jq -r --arg name "$1" --argjson dx "$2" --argjson dy "$3" '
-    .[] | select(.name == $name and .disabled != true) |
-    .scale as $scale |
-    (if .transform % 2 == 1 then [.height, .width] else [.width, .height] end | map(. / $scale)) as [$w, $h] |
-    "\(.x + ([$dx, $w - 1] | min) | floor) \(.y + ([$dy, $h - 1] | min) | floor)"
-  ')"
-  [[ -n "$target" ]] || return 0
-  hyprctl dispatch "hl.dsp.cursor.move({ x = ${target% *}, y = ${target#* } })" >/dev/null 2>&1 || true
-}
-
-# Without animations, so the windows don't slide across to the screens' new places
-# (looknfeel.lua reads the flag), and with the pointer kept on its screen rather than
-# left at the same point of a layout that moved. Then a reload that leaves the screens
-# alone brings the animations back, once Hyprland has moved everything; it runs on its
-# own, off the lock.
-reload_hyprland() {
-  local flag="${XDG_RUNTIME_DIR:-/tmp}/hyprpunk-still-reload" spot name dx dy
-  if command -v hyprctl >/dev/null 2>&1; then
-    spot="$(pointer_spot || true)"
-    : >"$flag"
-    hyprctl reload >/dev/null 2>&1 || true
-    rm -f "$flag"
-    if [[ -n "$spot" ]]; then
-      read -r name dx dy <<<"$spot"
-      restore_pointer "$name" "$dx" "$dy"
-    fi
-    (
-      sleep 1
-      hyprctl reload config-only >/dev/null 2>&1 || true
-    ) 9>&- >/dev/null 2>&1 &
-  fi
-}
+############
+# MONITORS #
+############
 
 load_monitors() {
-  if ! command -v hyprctl >/dev/null 2>&1; then
+  command -v hyprctl >/dev/null 2>&1 &&
+    MONITORS_JSON="$(hyprctl monitors all -j 2>/dev/null)" &&
+    jq empty <<<"$MONITORS_JSON" 2>/dev/null || {
     echo "No running Hyprland session." >&2
-    exit 2
-  fi
-  MONITORS_JSON="$(hyprctl monitors all -j)" || {
-    echo "No running Hyprland session." >&2
-    exit 2
-  }
-  jq empty <<<"$MONITORS_JSON" || {
-    echo "Invalid monitor data returned by Hyprland." >&2
     exit 2
   }
 }
@@ -204,8 +167,8 @@ set_monitor_identity() {
   local identity duplicate_count
 
   if [[ -z "$description" ]]; then
-    # Virtual (headless) outputs and some adapters have no description, and
-    # "desc:" alone would match every display. Use the connector instead.
+    # Headless outputs and some adapters have none, and "desc:" alone would match
+    # every screen
     identity="|$output"
     MONITOR_SELECTOR="$output"
   elif [[ -n "$serial" ]]; then
@@ -217,8 +180,7 @@ set_monitor_identity() {
         '[.[] | select(.description == $description)] | length' <<<"$MONITORS_JSON"
     )"
     if [[ "$duplicate_count" -gt 1 ]]; then
-      # Identical displays without serial numbers cannot be distinguished by
-      # EDID. Keep them separate using their current connectors.
+      # Twin screens without a serial look the same: only their ports tell them apart
       identity="$description|$output"
       MONITOR_SELECTOR="$output"
     else
@@ -227,162 +189,71 @@ set_monitor_identity() {
     fi
   fi
 
-  MONITOR_ID="$(
-    printf '%s' "$identity" |
-      sha256sum |
-      cut -c1-16
-  )"
+  MONITOR_ID="$(printf '%s' "$identity" | sha256sum | cut -c1-16)"
 }
 
-# Same, from a port name (DP-1, HDMI-A-1…)
+# The screens plugged in, one per line: port, ID, selector, then the fields the jq
+# array given asks for
+screens() {
+  local extra="${1:-[]}" output make model serial description rest
+  while IFS=$'\x1f' read -r output make model serial description rest; do
+    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
+    printf '%s\x1f%s\x1f%s\x1f%s\n' "$output" "$MONITOR_ID" "$MONITOR_SELECTOR" "$rest"
+  done < <(
+    jq -r "$LOGICAL_SIZE"'
+      .[] |
+      select(.disabled != true) |
+      [.name, (.make // ""), (.model // ""), (.serial // ""), .description] +
+        ('"$extra"' | map(tostring)) |
+      join("\u001f")
+    ' <<<"$MONITORS_JSON"
+  )
+}
+
+# The ID of the screen on a port
 resolve_monitor() {
-  local output="$1" fields
+  local fields output make model serial description
   fields="$(
-    jq -er --arg output "$output" '
+    jq -er --arg output "$1" '
       .[] |
       select(.name == $output and .disabled != true) |
       [.name, (.make // ""), (.model // ""), (.serial // ""), .description] |
       join("\u001f")
     ' <<<"$MONITORS_JSON"
-  )" || {
-    echo "Unknown output: $output" >&2
-    exit 1
-  }
+  )" || fail "Unknown output: $1"
   IFS=$'\x1f' read -r output make model serial description <<<"$fields"
   set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
 }
 
-# Checks the screen really offers a mode, and returns it the way Hyprland spells it
-supported_mode() {
-  local output="$1" requested="${2%Hz}"
-  local resolution frequency
-
-  if [[ "$requested" == *@* ]]; then
-    resolution="${requested%%@*}"
-    frequency="${requested#*@}"
-    jq -er \
-      --arg output "$output" \
-      --arg resolution "$resolution" \
-      --argjson frequency "$frequency" '
-        [
-          .[] |
-          select(.name == $output and .disabled != true) |
-          .availableModes[] |
-          select(startswith($resolution + "@")) |
-          . as $mode |
-          (
-            sub("^.*@"; "") |
-            sub("Hz$"; "") |
-            tonumber
-          ) as $advertised_frequency |
-          select(($advertised_frequency - $frequency | fabs) < 0.001) |
-          $mode |
-          sub("Hz$"; "")
-        ][0] // empty
-      ' <<<"$MONITORS_JSON"
-  else
-    jq -er \
-      --arg output "$output" \
-      --arg resolution "$requested" '
-        [
-          .[] |
-          select(.name == $output and .disabled != true) |
-          .availableModes[] |
-          select(startswith($resolution + "@")) |
-          $resolution
-        ][0] // empty
-      ' <<<"$MONITORS_JSON"
-  fi
+# The mode to save, the way Hyprland spells it: a resolution alone gets the fastest rate
+# the screen offers at that size, a resolution@rate only one it really offers
+pick_mode() {
+  local output="$1" requested="${2%Hz}" rate=""
+  [[ "$requested" == "preferred" ]] && {
+    printf 'preferred\n'
+    return 0
+  }
+  [[ "$requested" == *@* ]] && rate="${requested#*@}"
+  jq -er --arg output "$output" --arg resolution "${requested%%@*}" --arg rate "$rate" '
+    .[] |
+    select(.name == $output and .disabled != true) |
+    [
+      .availableModes[] |
+      select(startswith($resolution + "@")) |
+      sub("Hz$"; "") |
+      { mode: ., rate: (sub("^.*@"; "") | tonumber) }
+    ] |
+    if $rate == "" then max_by(.rate)
+    else map(select((.rate - ($rate | tonumber) | fabs) < 0.001)) | first
+    end |
+    select(. != null) |
+    .mode
+  ' <<<"$MONITORS_JSON"
 }
 
-# Older states were keyed by port: move those settings under the screen's ID
-migrate_monitor_state() {
-  local output="$1" id="$2" selector="$3"
-  local legacy_mode legacy_scale legacy_position current_selector
-  legacy_mode="$(read_value "mode.$output" || true)"
-  legacy_scale="$(read_value "scale.$output" || true)"
-  legacy_position="$(read_value "position.$output" || true)"
-  current_selector="$(read_value "selector.$id" || true)"
-  MIGRATED=false
-
-  if [[ "$current_selector" != "$selector" ]]; then
-    write_value "selector.$id" "$selector"
-    MIGRATED=true
-  fi
-  if [[ -n "$legacy_mode" && -z "$(read_value "mode.$id" || true)" ]]; then
-    write_value "mode.$id" "$legacy_mode"
-    MIGRATED=true
-  fi
-  if [[ -n "$legacy_position" && -z "$(read_value "position.$id" || true)" ]]; then
-    write_value "position.$id" "$legacy_position"
-    MIGRATED=true
-  fi
-  if [[ -n "$legacy_scale" && -z "$(read_value "scale.$id" || true)" ]]; then
-    write_value "scale.$id" "$legacy_scale"
-    MIGRATED=true
-  fi
-
-  if [[ -n "$legacy_mode" ]]; then
-    delete_value "mode.$output"
-    MIGRATED=true
-  fi
-  if [[ -n "$legacy_position" ]]; then
-    delete_value "position.$output"
-    MIGRATED=true
-  fi
-  if [[ -n "$legacy_scale" ]]; then
-    delete_value "scale.$output"
-    MIGRATED=true
-  fi
-}
-
-# The port a screen is plugged into right now, if it is
-active_output_for_id() {
-  local wanted_id="$1"
-  local fields output make model serial description
-
-  while IFS=$'\x1f' read -r output make model serial description; do
-    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
-    if [[ "$MONITOR_ID" == "$wanted_id" ]]; then
-      printf '%s\n' "$output"
-      return 0
-    fi
-  done < <(
-    jq -r '
-      .[] |
-      select(.disabled != true) |
-      [.name, (.make // ""), (.model // ""), (.serial // ""), .description] |
-      join("\u001f")
-    ' <<<"$MONITORS_JSON"
-  )
-  return 1
-}
-
-# Placing A next to B, when B already hangs off A, would chase its own tail
-would_create_layout_cycle() {
-  local moved_id="$1" current_id="$2"
-  local relation next_id seen=" "
-
-  while [[ -n "$current_id" ]]; do
-    if [[ "$current_id" == "$moved_id" ]]; then
-      return 0
-    fi
-    if [[ "$seen" == *" $current_id "* ]]; then
-      # The referenced chain is already cyclic. Do not attach another output
-      # to invalid layout state.
-      return 0
-    fi
-    seen+="$current_id "
-
-    relation="$(read_value "relative.$current_id" || true)"
-    [[ "$relation" == *:* ]] || break
-    next_id="${relation#*:}"
-    [[ -n "$next_id" && "$next_id" != "$relation" ]] || break
-    current_id="$next_id"
-  done
-
-  return 1
-}
+#####################
+# SLOTS, WORKSPACES #
+#####################
 
 # The lowest number from 1 to 10 no screen has yet
 next_monitor_slot() {
@@ -396,12 +267,24 @@ next_monitor_slot() {
         }
       }
     }
-  ' "$STATE_FILE"
+  ' "$(state)"
+}
+
+# Giving a screen a number another one has swaps their numbers
+write_monitor_slot() {
+  local monitor_id="$1" new_slot="$2" current_slot occupant_id
+  current_slot="$(read_value "slot.$monitor_id")"
+  [[ "$current_slot" == "$new_slot" ]] && return 0
+  occupant_id="$(
+    awk -F= -v slot="$new_slot" '
+      $1 ~ /^slot\./ && $2 == slot { sub(/^slot\./, "", $1); print $1; exit }
+    ' "$(state)"
+  )"
+  write_values "slot.$monitor_id=$new_slot" ${occupant_id:+"slot.$occupant_id=$current_slot"}
 }
 
 workspace_is_assigned() {
-  local wanted="$1"
-  awk -F= -v wanted="$wanted" '
+  awk -F= -v wanted="$1" '
     $1 ~ /^workspaces\./ {
       count = split($2, values, ",")
       for (i = 1; i <= count; i++) {
@@ -409,54 +292,14 @@ workspace_is_assigned() {
       }
     }
     END { exit !found }
-  ' "$STATE_FILE"
-}
-
-# Giving a screen a number another one has swaps their numbers
-write_monitor_slot() {
-  local monitor_id="$1" new_slot="$2" current_slot occupant_id dir tmp
-  current_slot="$(read_value "slot.$monitor_id" || true)"
-  [[ "$current_slot" == "$new_slot" ]] && return 0
-  occupant_id="$(
-    awk -F= -v slot="$new_slot" '
-      $1 ~ /^slot\./ && $2 == slot { sub(/^slot\./, "", $1); print $1; exit }
-    ' "$STATE_FILE"
-  )"
-
-  dir="$(dirname "$STATE_FILE")"
-  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-  awk -F= \
-    -v target="slot.$monitor_id" \
-    -v occupant="${occupant_id:+slot.$occupant_id}" \
-    -v new_slot="$new_slot" \
-    -v old_slot="$current_slot" '
-      $1 == target {
-        print target "=" new_slot
-        target_written = 1
-        next
-      }
-      occupant != "" && $1 == occupant {
-        if (old_slot != "") print occupant "=" old_slot
-        occupant_written = 1
-        next
-      }
-      { print }
-      END {
-        if (!target_written) print target "=" new_slot
-        if (occupant != "" && old_slot != "" && !occupant_written) {
-          print occupant "=" old_slot
-        }
-      }
-    ' "$STATE_FILE" >"$tmp"
-  mv -f "$tmp" "$STATE_FILE"
+  ' "$(state)"
 }
 
 # "3, 1,1" becomes "1,3"; "none" stays empty
 normalize_workspace_list() {
   local list="$1"
   [[ "$list" == "none" ]] && return 0
-  [[ "$list" =~ ^[0-9,[:space:]]+$ ]] || return 1
-  [[ "$list" =~ [0-9] ]] || return 1
+  [[ "$list" =~ ^[0-9,[:space:]]+$ && "$list" =~ [0-9] ]] || return 1
   printf '%s\n' "$list" |
     tr ', ' '\n' |
     awk '
@@ -471,46 +314,60 @@ normalize_workspace_list() {
 
 # A workspace belongs to one screen only: claiming it takes it from the others
 write_workspace_list() {
-  local monitor_id="$1" requested="$2" dir tmp
-  dir="$(dirname "$STATE_FILE")"
-  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-  awk -F= -v target="workspaces.$monitor_id" -v requested="$requested" '
+  rewrite_state -v target="workspaces.$1" -v requested="$2" '
     BEGIN {
       count = split(requested, requested_values, ",")
-      for (i = 1; i <= count; i++) {
-        if (requested_values[i] != "") claimed[requested_values[i]] = 1
-      }
+      for (i = 1; i <= count; i++) claimed[requested_values[i]] = 1
     }
     $1 ~ /^workspaces\./ {
       if ($1 == target) next
-      output = ""
+      kept = ""
       count = split($2, existing, ",")
       for (i = 1; i <= count; i++) {
         if (!(existing[i] in claimed) && existing[i] != "") {
-          output = output (output == "" ? "" : ",") existing[i]
+          kept = kept (kept == "" ? "" : ",") existing[i]
         }
       }
-      print $1 "=" (output == "" ? "none" : output)
+      print $1 "=" (kept == "" ? "none" : kept)
       next
     }
     { print }
-    END {
-      print target "=" (requested == "" ? "none" : requested)
-    }
-  ' "$STATE_FILE" >"$tmp"
-  mv -f "$tmp" "$STATE_FILE"
+    END { print target "=" (requested == "" ? "none" : requested) }
+  '
+}
+
+##########
+# LAYOUT #
+##########
+
+# Placing A next to B, when B already hangs off A, would chase its own tail
+would_create_layout_cycle() {
+  local moved_id="$1" current_id="$2" relation seen=" "
+
+  while [[ -n "$current_id" ]]; do
+    # Reaching the moved screen, or a chain that already loops
+    [[ "$current_id" != "$moved_id" && "$seen" != *" $current_id "* ]] || return 0
+    seen+="$current_id "
+    relation="$(read_value "relative.$current_id")"
+    [[ "$relation" == *:?* ]] || break
+    current_id="${relation#*:}"
+  done
+
+  return 1
 }
 
 # Turns the saved "left of / above…" relations into positions for the screens that are
 # plugged in. A missing screen's neighbours hang off whoever is left, and everything
-# is shifted back to 0,0 so no empty space remains.
+# is shifted back to 0,0 so no empty space remains. Hyprland only reloads when a
+# position really changed.
 reflow_layout() {
-  local fields output make model serial description x y logical_width logical_height
-  local moved_id updates="" min_x min_y normalized_x normalized_y
+  local output id selector x y logical_width logical_height
+  local min_x min_y updates=() changed=false
   declare -A active pos_x pos_y width height resolved visiting
 
+  # The first screen up the chain of relations that's plugged in
   nearest_active_reference() {
-    local current_id="$1" relation next_id
+    local current_id="$1" relation
     declare -A seen_reference
 
     while [[ -n "$current_id" && -z "${seen_reference[$current_id]:-}" ]]; do
@@ -519,60 +376,51 @@ reflow_layout() {
         return 0
       fi
       seen_reference["$current_id"]=true
-      relation="$(read_value "relative.$current_id" || true)"
-      [[ "$relation" == *:* ]] || return 1
-      next_id="${relation#*:}"
-      [[ -n "$next_id" && "$next_id" != "$relation" ]] || return 1
-      current_id="$next_id"
+      relation="$(read_value "relative.$current_id")"
+      [[ "$relation" == *:?* ]] || return 1
+      current_id="${relation#*:}"
     done
 
     return 1
   }
 
+  # Placed against its reference once that one is placed. A screen with no reference
+  # plugged in roots what's left, at its saved spot or where Hyprland put it.
   resolve_layout_position() {
     local id="$1" relation direction reference_id saved_position
 
-    [[ -n "${active[$id]:-}" ]] || return 1
+    [[ -n "${active[$id]:-}" && -z "${visiting[$id]:-}" ]] || return 1
     [[ -z "${resolved[$id]:-}" ]] || return 0
-    [[ -z "${visiting[$id]:-}" ]] || return 1
     visiting["$id"]=true
 
-    relation="$(read_value "relative.$id" || true)"
-    if [[ "$relation" == *:* ]]; then
-      direction="${relation%%:*}"
+    relation="$(read_value "relative.$id")"
+    direction="${relation%%:*}"
+    reference_id=""
+    if [[ "$relation" == *:?* && "$direction" =~ ^(left|right|above|below)$ ]]; then
       reference_id="$(nearest_active_reference "${relation#*:}" || true)"
-      if [[ -n "$reference_id" &&
-        "$direction" =~ ^(left|right|above|below)$ ]] &&
-        resolve_layout_position "$reference_id"; then
-        case "$direction" in
-        left)
-          pos_x["$id"]=$((pos_x[$reference_id] - width[$id]))
-          pos_y["$id"]="${pos_y[$reference_id]}"
-          ;;
-        right)
-          pos_x["$id"]=$((pos_x[$reference_id] + width[$reference_id]))
-          pos_y["$id"]="${pos_y[$reference_id]}"
-          ;;
-        above)
-          pos_x["$id"]="${pos_x[$reference_id]}"
-          pos_y["$id"]=$((pos_y[$reference_id] - height[$id]))
-          ;;
-        below)
-          pos_x["$id"]="${pos_x[$reference_id]}"
-          pos_y["$id"]=$((pos_y[$reference_id] + height[$reference_id]))
-          ;;
-        esac
-      else
-        # No ancestor from this relation is currently connected. Treat this
-        # output as the temporary root of the remaining active sub-layout.
-        saved_position="$(read_value "position.$id" || true)"
-        if [[ "$saved_position" =~ ^-?[0-9]+x-?[0-9]+$ ]]; then
-          pos_x["$id"]="${saved_position%%x*}"
-          pos_y["$id"]="${saved_position#*x}"
-        fi
-      fi
+    fi
+
+    if [[ -n "$reference_id" ]] && resolve_layout_position "$reference_id"; then
+      case "$direction" in
+      left)
+        pos_x["$id"]=$((pos_x[$reference_id] - width[$id]))
+        pos_y["$id"]="${pos_y[$reference_id]}"
+        ;;
+      right)
+        pos_x["$id"]=$((pos_x[$reference_id] + width[$reference_id]))
+        pos_y["$id"]="${pos_y[$reference_id]}"
+        ;;
+      above)
+        pos_x["$id"]="${pos_x[$reference_id]}"
+        pos_y["$id"]=$((pos_y[$reference_id] - height[$id]))
+        ;;
+      below)
+        pos_x["$id"]="${pos_x[$reference_id]}"
+        pos_y["$id"]=$((pos_y[$reference_id] + height[$reference_id]))
+        ;;
+      esac
     else
-      saved_position="$(read_value "position.$id" || true)"
+      saved_position="$(read_value "position.$id")"
       if [[ "$saved_position" =~ ^-?[0-9]+x-?[0-9]+$ ]]; then
         pos_x["$id"]="${saved_position%%x*}"
         pos_y["$id"]="${saved_position#*x}"
@@ -584,232 +432,154 @@ reflow_layout() {
     return 0
   }
 
-  [[ "$(read_value layout || true)" == "custom" ]] || return 0
+  [[ "$(read_value layout)" == "custom" ]] || return 0
   load_monitors
 
-  while IFS=$'\x1f' read -r output make model serial description x y logical_width logical_height; do
-    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
-    active["$MONITOR_ID"]=true
-    pos_x["$MONITOR_ID"]="$x"
-    pos_y["$MONITOR_ID"]="$y"
-    width["$MONITOR_ID"]="$logical_width"
-    height["$MONITOR_ID"]="$logical_height"
-  done < <(
-    jq -r '
-      .[] |
-      select(.disabled != true) |
-      [
-        .name,
-        (.make // ""),
-        (.model // ""),
-        (.serial // ""),
-        .description,
-        (.x | tostring),
-        (.y | tostring),
-        ((.width / .scale | floor) | tostring),
-        ((.height / .scale | floor) | tostring)
-      ] |
-      join("\u001f")
-    ' <<<"$MONITORS_JSON"
-  )
+  while IFS=$'\x1f' read -r output id selector x y logical_width logical_height; do
+    active["$id"]=true
+    pos_x["$id"]="$x"
+    pos_y["$id"]="$y"
+    width["$id"]="$logical_width"
+    height["$id"]="$logical_height"
+  done < <(screens '[.x, .y, (logical_size | map(floor) | .[])]')
 
   [[ ${#active[@]} -gt 0 ]] || return 0
-  for moved_id in "${!active[@]}"; do
-    resolve_layout_position "$moved_id" || continue
-    if [[ -z "${min_x+x}" ]] || ((pos_x[$moved_id] < min_x)); then
-      min_x="${pos_x[$moved_id]}"
+  for id in "${!active[@]}"; do
+    resolve_layout_position "$id" || continue
+    if [[ -z "${min_x+x}" ]] || ((pos_x[$id] < min_x)); then
+      min_x="${pos_x[$id]}"
     fi
-    if [[ -z "${min_y+x}" ]] || ((pos_y[$moved_id] < min_y)); then
-      min_y="${pos_y[$moved_id]}"
+    if [[ -z "${min_y+x}" ]] || ((pos_y[$id] < min_y)); then
+      min_y="${pos_y[$id]}"
     fi
   done
 
-  # Translation does not alter the relative layout. Keeping the active bounds
-  # at the origin removes empty space left by a disconnected root monitor.
-  for moved_id in "${!resolved[@]}"; do
-    normalized_x=$((pos_x[$moved_id] - min_x))
-    normalized_y=$((pos_y[$moved_id] - min_y))
-    updates+="${moved_id}=${normalized_x}x${normalized_y}"$'\n'
+  for id in "${!resolved[@]}"; do
+    updates+=("position.$id=$((pos_x[$id] - min_x))x$((pos_y[$id] - min_y))")
+    [[ "$(read_value "position.$id")" == "${updates[-1]#*=}" ]] || changed=true
   done
 
-  [[ -n "$updates" ]] || return 0
-  local dir tmp
-  dir="$(dirname "$STATE_FILE")"
-  tmp="$(mktemp --tmpdir="$dir" monitor-state.XXXXXX)"
-  awk -F= -v updates="$updates" '
-    BEGIN {
-      count = split(updates, lines, "\n")
-      for (i = 1; i <= count; i++) {
-        if (lines[i] == "") continue
-        separator = index(lines[i], "=")
-        id = substr(lines[i], 1, separator - 1)
-        values["position." id] = substr(lines[i], separator + 1)
-      }
-    }
-    {
-      if ($1 in values) {
-        print $1 "=" values[$1]
-        written[$1] = 1
-      } else {
-        print
-      }
-    }
-    END {
-      for (key in values) {
-        if (!(key in written)) print key "=" values[key]
-      }
-    }
-  ' "$STATE_FILE" >"$tmp"
-  mv -f "$tmp" "$STATE_FILE"
+  [[ "$changed" == "true" ]] || return 0
+  write_values "${updates[@]}"
   reload_hyprland
+}
+
+############
+# HYPRLAND #
+############
+
+# The screen the pointer is on and where on it, as "name x y", empty when on none
+pointer_spot() {
+  local position
+  position="$(hyprctl cursorpos 2>/dev/null)" || return 0
+  hyprctl monitors -j | jq -r --argjson x "${position%%,*}" --argjson y "${position#*, }" "$LOGICAL_SIZE"'
+    .[] | select(.disabled != true) |
+    logical_size as [$w, $h] |
+    select($x >= .x and $x < .x + $w and $y >= .y and $y < .y + $h) |
+    "\(.name) \($x - .x) \($y - .y)"
+  ' 2>/dev/null | head -n 1
+}
+
+# The pointer back on that screen at the same spot, or as close as its new size allows
+restore_pointer() {
+  local target
+  target="$(hyprctl monitors -j | jq -r --arg name "$1" --argjson dx "$2" --argjson dy "$3" "$LOGICAL_SIZE"'
+    .[] | select(.name == $name and .disabled != true) |
+    logical_size as [$w, $h] |
+    "\(.x + ([$dx, $w - 1] | min) | floor) \(.y + ([$dy, $h - 1] | min) | floor)"
+  ')"
+  [[ -n "$target" ]] || return 0
+  hyprctl dispatch "hl.dsp.cursor.move({ x = ${target% *}, y = ${target#* } })" >/dev/null 2>&1 || true
+}
+
+# Without animations, so the windows don't slide across to the screens' new places
+# (looknfeel.lua reads the flag), and with the pointer kept on its screen rather than
+# left at the same point of a layout that moved. Then a reload that leaves the screens
+# alone brings the animations back, once Hyprland has moved everything; it runs on its
+# own, off the lock.
+reload_hyprland() {
+  local flag="${XDG_RUNTIME_DIR:-/tmp}/hyprpunk-still-reload" spot name dx dy
+  command -v hyprctl >/dev/null 2>&1 || return 0
+  spot="$(pointer_spot || true)"
+  : >"$flag"
+  hyprctl reload >/dev/null 2>&1 || true
+  rm -f "$flag"
+  if [[ -n "$spot" ]]; then
+    read -r name dx dy <<<"$spot"
+    restore_pointer "$name" "$dx" "$dy"
+  fi
+  (
+    sleep 1
+    hyprctl reload config-only >/dev/null 2>&1 || true
+  ) 9>&- >/dev/null 2>&1 &
+}
+
+# A new size moves the screens: Hyprland takes it, then the custom layout is worked out
+# again from the screens' new sizes
+apply_geometry() {
+  reload_hyprland
+  reflow_layout
 }
 
 command="${1:-}"
 case "$command" in
-# Makes sure a state file exists and is up to date
-ensure)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  acquire_lock
-  migrate_state_file
-  if [[ ! -f "$STATE_FILE" ]]; then
-    "$0" init preferred
-  fi
-  remove_legacy_state
-  if [[ -z "$(read_value default_scale || true)" ]]; then
-    write_value default_scale auto
-  fi
-  ;;
-# At login
-bootstrap)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  acquire_lock
-  "$0" ensure
-  "$0" sync
-  ;;
-# A new screen gets a number, workspaces and its best refresh rate; known ones are left alone
-sync | optimize)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
+# A new screen gets a number, workspaces and its fastest rate; known ones are left alone
+sync)
+  expect 1 "$@"
   acquire_lock
   load_monitors
   changed=false
-  if [[ -z "$(read_value default_scale || true)" ]]; then
-    write_value default_scale auto
-    changed=true
-  fi
-  while IFS=$'\x1f' read -r output make model serial description best_mode; do
-    [[ -n "$output" && -n "$best_mode" ]] || continue
-    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
-    migrate_monitor_state "$output" "$MONITOR_ID" "$MONITOR_SELECTOR"
-    [[ "$MIGRATED" == "false" ]] || changed=true
-    monitor_slot="$(read_value "slot.$MONITOR_ID" || true)"
-    if [[ ! "$monitor_slot" =~ ^([1-9]|10)$ ]]; then
-      monitor_slot="$(next_monitor_slot)"
-      [[ -n "$monitor_slot" ]] || {
-        echo "Unable to assign an output number: all numbers from 1 to 10 are already used." >&2
-        exit 1
-      }
-      write_value "slot.$MONITOR_ID" "$monitor_slot"
-      changed=true
+  while IFS=$'\x1f' read -r output id selector size; do
+    updates=()
+    [[ "$(read_value "selector.$id")" == "$selector" ]] || updates+=("selector.$id=$selector")
+    slot="$(read_value "slot.$id")"
+    if [[ ! "$slot" =~ ^([1-9]|10)$ ]]; then
+      slot="$(next_monitor_slot)"
+      [[ -n "$slot" ]] || fail "Unable to assign an output number: all numbers from 1 to 10 are already used."
+      updates+=("slot.$id=$slot")
     fi
-    if [[ -z "$(read_value "workspaces.$MONITOR_ID" || true)" ]]; then
-      if workspace_is_assigned "$monitor_slot"; then
-        write_value "workspaces.$MONITOR_ID" none
+    if [[ -z "$(read_value "workspaces.$id")" ]]; then
+      if workspace_is_assigned "$slot"; then
+        updates+=("workspaces.$id=none")
       else
-        write_value "workspaces.$MONITOR_ID" "$monitor_slot"
+        updates+=("workspaces.$id=$slot")
       fi
+    fi
+    [[ -n "$(read_value "scale.$id")" ]] || updates+=("scale.$id=auto")
+    if [[ -z "$(read_value "mode.$id")" ]]; then
+      mode="$(pick_mode "$output" "$size" || true)"
+      [[ -z "$mode" ]] || updates+=("mode.$id=$mode")
+    fi
+    if ((${#updates[@]})); then
+      write_values "${updates[@]}"
       changed=true
     fi
-    if [[ -z "$(read_value "scale.$MONITOR_ID" || true)" ]]; then
-      write_value "scale.$MONITOR_ID" "auto"
-      changed=true
-    fi
-    [[ -n "$(read_value "mode.$MONITOR_ID" || true)" ]] && continue
-    write_value "mode.$MONITOR_ID" "${best_mode%Hz}"
-    changed=true
-  done < <(jq -r '
-        .[] |
-        select(.disabled != true) |
-        . as $output |
-        ((.width | tostring) + "x" + (.height | tostring)) as $resolution |
-        [
-          .availableModes[] |
-          select(startswith($resolution + "@")) |
-          {
-            mode: .,
-            refresh: (
-              sub("^.*@"; "") |
-              sub("Hz$"; "") |
-              tonumber
-            )
-          }
-        ] |
-        sort_by(.refresh) |
-        last |
-        select(. != null) |
-        [
-          $output.name,
-          ($output.make // ""),
-          ($output.model // ""),
-          ($output.serial // ""),
-          $output.description,
-          .mode
-        ] |
-        join("\u001f")
-      ' <<<"$MONITORS_JSON")
+  done < <(screens '[(.width | tostring) + "x" + (.height | tostring)]')
   [[ "$changed" == "false" ]] || reload_hyprland
-  if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
-    reflow_layout
-  fi
+  reflow_layout
   ;;
-status)
-  current_default="$(read_value default_mode || true)"
-  current_scale="$(read_value default_scale || true)"
-  current_layout="$(read_value layout || true)"
-  printf 'layout=%s\n' "${current_layout:-auto}"
-  printf 'default_mode=%s\n' "${current_default:-preferred}"
-  printf 'default_scale=%s\n' "${current_scale:-auto}"
-  [[ -f "$STATE_FILE" ]] &&
-    awk -F= '$1 ~ /^(selector|mode|scale|position|relative|slot|workspaces)\./ { print }' "$STATE_FILE"
+reflow)
+  expect 1 "$@"
+  acquire_lock
+  reflow_layout
   ;;
+# The screens plugged in with their saved settings, as JSON for the shell
 info)
-  # Active outputs with their saved settings, as JSON for the quickshell panel.
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
+  expect 1 "$@"
   load_monitors
-  while IFS=$'\x1f' read -r output make model serial description; do
-    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
-    printf '%s\x1f' "$output" "$MONITOR_ID" \
-      "$(read_value "mode.$MONITOR_ID")" \
-      "$(read_value "scale.$MONITOR_ID")" \
-      "$(read_value "slot.$MONITOR_ID")" \
-      "$(read_value "workspaces.$MONITOR_ID")" \
-      "$(read_value "relative.$MONITOR_ID")"
+  while IFS=$'\x1f' read -r output id _; do
+    printf '%s\x1f' "$output" "$id" \
+      "$(read_value "mode.$id")" \
+      "$(read_value "scale.$id")" \
+      "$(read_value "slot.$id")" \
+      "$(read_value "workspaces.$id")" \
+      "$(read_value "relative.$id")"
     printf '\n'
-  done < <(
-    jq -r '
-      .[] |
-      select(.disabled != true) |
-      [.name, (.make // ""), (.model // ""), (.serial // ""), .description] |
-      join("\u001f")
-    ' <<<"$MONITORS_JSON"
-  ) | jq -Rn \
+  done < <(screens) | jq -Rn \
     --argjson monitors "$MONITORS_JSON" \
-    --arg layout "$(read_value layout)" \
-    --arg default_scale "$(read_value default_scale)" '
+    --arg layout "$(read_value layout)" '
       {
         layout: (if $layout == "" then "auto" else $layout end),
-        default_scale: (if $default_scale == "" then "auto" else $default_scale end),
         outputs: [
           inputs |
           split("\u001f") |
@@ -839,312 +609,79 @@ info)
       }
     '
   ;;
-outputs)
-  load_monitors
-  jq -r '.[] | select(.disabled != true) | .name' <<<"$MONITORS_JSON"
-  ;;
-modes)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  load_monitors
-  jq -r --arg output "$2" \
-    '.[] | select(.name == $output) | .availableModes[]' <<<"$MONITORS_JSON"
-  ;;
-resolutions)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  load_monitors
-  jq -r --arg output "$2" '
-      [
-        .[] |
-        select(.name == $output and .disabled != true) |
-        .availableModes[] |
-        sub("@.*$"; "")
-      ] |
-      unique[]
-    ' <<<"$MONITORS_JSON"
-  ;;
-frequencies)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  load_monitors
-  jq -r --arg output "$2" '
-      .[] |
-      select(.name == $output) |
-      (.width | tostring) + "x" + (.height | tostring) as $resolution |
-      .availableModes[] |
-      select(startswith($resolution + "@")) |
-      sub("^.*@"; "") |
-      sub("Hz$"; "")
-    ' <<<"$MONITORS_JSON" | awk '!seen[$0]++'
-  ;;
-resolution)
-  [[ $# -eq 3 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  [[ "$3" =~ ^[0-9]+x[0-9]+$ ]] ||
-    {
-      echo "Invalid resolution: $3" >&2
-      exit 1
-    }
-  acquire_lock
-  load_monitors
-  resolve_monitor "$2"
-  selected_mode="$(
-    jq -er \
-      --arg output "$2" \
-      --arg resolution "$3" '
-        .[] |
-        select(.name == $output and .disabled != true) |
-        . as $output |
-        [
-          .availableModes[] |
-          select(startswith($resolution + "@")) |
-          {
-            mode: sub("Hz$"; ""),
-            frequency: (
-              sub("^.*@"; "") |
-              sub("Hz$"; "") |
-              tonumber
-            )
-          }
-        ] as $modes |
-        (
-          ($modes | map(select((.frequency - $output.refreshRate | fabs) < 0.01)) | first) //
-          ($modes | sort_by(.frequency) | last)
-        ) |
-        select(. != null) |
-        .mode
-      ' <<<"$MONITORS_JSON"
-  )" || {
-    echo "Unsupported resolution for $2: $3" >&2
-    exit 1
-  }
-  migrate_monitor_state "$2" "$MONITOR_ID" "$MONITOR_SELECTOR"
-  write_value "mode.$MONITOR_ID" "$selected_mode"
-  reload_hyprland
-  if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
-    reflow_layout
-  fi
+# The same, to read in a terminal
+status)
+  expect 1 "$@"
+  "$0" info | jq -r '
+    (.outputs | map({ (.id): .name }) | add // {}) as $ports |
+    "Layout: \(.layout)",
+    (.outputs[] |
+      "",
+      "\(.name) (number \(.slot)): \(.description)",
+      "  mode        \(if .mode == "" then "preferred" else .mode end), now \(.width)x\(.height) at \(.refresh_rate * 100 | round / 100) Hz",
+      "  scale       \(if .scale == "" then "auto" else .scale end), now \(.current_scale)",
+      "  workspaces  \(if .workspaces == "" then "none" else .workspaces end)",
+      (select(.relative != "") |
+        (.relative | split(":")) as [$side, $id] |
+        "  placed      \($side) \($ports[$id] // "a screen not plugged in")"),
+      "  modes       \(.modes | map(sub("Hz$"; "")) | join(" "))")
+  '
   ;;
 mode)
-  [[ $# -eq 3 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  [[ "$3" =~ ^[0-9]+x[0-9]+(@[0-9.]+)?(Hz)?$ ]] ||
-    {
-      echo "Invalid mode: $3" >&2
-      exit 1
-    }
+  expect 3 "$@"
+  [[ "$3" == "preferred" || "$3" =~ ^[0-9]+x[0-9]+(@[0-9]+([.][0-9]+)?(Hz)?)?$ ]] ||
+    fail "Invalid mode: $3"
   acquire_lock
   load_monitors
   resolve_monitor "$2"
-  canonical_mode="$(supported_mode "$2" "$3" || true)"
-  [[ -n "$canonical_mode" ]] ||
-    {
-      echo "Unsupported mode for $2: $3" >&2
-      exit 1
-    }
-  migrate_monitor_state "$2" "$MONITOR_ID" "$MONITOR_SELECTOR"
-  write_value "mode.$MONITOR_ID" "$canonical_mode"
-  reload_hyprland
-  if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
-    reflow_layout
-  fi
-  ;;
-refresh)
-  [[ $# -eq 3 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  [[ "$3" =~ ^[0-9]+([.][0-9]+)?(Hz)?$ ]] ||
-    {
-      echo "Invalid frequency: $3" >&2
-      exit 1
-    }
-  acquire_lock
-  load_monitors
-  resolution="$(
-    jq -r --arg output "$2" '
-        .[] | select(.name == $output) |
-        (.width | tostring) + "x" + (.height | tostring)
-      ' <<<"$MONITORS_JSON"
-  )"
-  [[ -n "$resolution" ]] || {
-    echo "Unknown output: $2" >&2
-    exit 1
-  }
-  frequency="${3%Hz}"
-  "$0" mode "$2" "$resolution@$frequency"
+  mode="$(pick_mode "$2" "$3")" || fail "Unsupported mode for $2: $3"
+  write_values "mode.$MONITOR_ID=$mode"
+  apply_geometry
   ;;
 scale)
-  [[ $# -eq 3 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  [[ "$3" == "auto" || "$3" =~ ^(1|1[.]25|1[.]5|1[.]75|2)$ ]] ||
-    {
-      echo "Invalid scale: $3" >&2
-      exit 1
-    }
+  expect 3 "$@"
+  [[ "$3" =~ ^(auto|1|1[.]25|1[.]5|1[.]75|2)$ ]] || fail "Invalid scale: $3"
   acquire_lock
   load_monitors
   resolve_monitor "$2"
-  migrate_monitor_state "$2" "$MONITOR_ID" "$MONITOR_SELECTOR"
-  write_value "scale.$MONITOR_ID" "$3"
-  reload_hyprland
-  if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
-    reflow_layout
-  fi
-  ;;
-slot-get)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  load_monitors
-  resolve_monitor "$2"
-  read_value "slot.$MONITOR_ID"
+  write_values "scale.$MONITOR_ID=$3"
+  apply_geometry
   ;;
 slot)
-  [[ $# -eq 3 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  [[ "$3" =~ ^([1-9]|10)$ ]] || {
-    echo "Output number must be between 1 and 10." >&2
-    exit 1
-  }
+  expect 3 "$@"
+  [[ "$3" =~ ^([1-9]|10)$ ]] || fail "Output number must be between 1 and 10."
   acquire_lock
   load_monitors
   resolve_monitor "$2"
-  write_monitor_slot "$MONITOR_ID" "$((10#$3))"
+  write_monitor_slot "$MONITOR_ID" "$3"
   reload_hyprland
   ;;
-workspace-get)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  load_monitors
-  resolve_monitor "$2"
-  current_workspaces="$(read_value "workspaces.$MONITOR_ID" || true)"
-  [[ "$current_workspaces" != "none" ]] && printf '%s\n' "$current_workspaces"
-  ;;
-workspace-owners)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  load_monitors
-  while IFS=$'\x1f' read -r output make model serial description; do
-    set_monitor_identity "$output" "$make" "$model" "$serial" "$description"
-    current_workspaces="$(read_value "workspaces.$MONITOR_ID" || true)"
-    [[ -n "$current_workspaces" && "$current_workspaces" != "none" ]] || continue
-    tr ',' '\n' <<<"$current_workspaces" |
-      awk -v output="$output" 'NF { print $1 "\t" output }'
-  done < <(
-    jq -r '
-      .[] |
-      select(.disabled != true) |
-      [.name, (.make // ""), (.model // ""), (.serial // ""), .description] |
-      join("\u001f")
-    ' <<<"$MONITORS_JSON"
-  ) | sort -n
-  ;;
-workspace-set)
-  [[ $# -eq 3 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
+workspaces)
+  expect 3 "$@"
+  workspaces="$(normalize_workspace_list "$3")" || fail "Invalid workspace list: $3"
   acquire_lock
-  normalized_workspaces="$(normalize_workspace_list "$3")" || {
-    echo "Invalid workspace list: $3" >&2
-    exit 1
-  }
   load_monitors
   resolve_monitor "$2"
-  write_workspace_list "$MONITOR_ID" "$normalized_workspaces"
+  write_workspace_list "$MONITOR_ID" "$workspaces"
   reload_hyprland
   ;;
+# Only the relation is saved: the positions all follow from it
 position)
-  [[ $# -eq 4 ]] || {
-    usage >&2
-    exit 1
-  }
+  expect 4 "$@"
   output="$2"
   direction="$3"
   reference="$4"
-  [[ "$output" =~ ^[A-Za-z0-9._-]+$ && "$reference" =~ ^[A-Za-z0-9._-]+$ ]] ||
-    {
-      echo "Invalid output name." >&2
-      exit 1
-    }
-  [[ "$output" != "$reference" ]] || {
-    echo "An output cannot reference itself." >&2
-    exit 1
-  }
-  [[ "$direction" =~ ^(left|right|above|below)$ ]] ||
-    {
-      echo "Invalid direction: $direction" >&2
-      exit 1
-    }
+  [[ "$direction" =~ ^(left|right|above|below)$ ]] || fail "Invalid direction: $direction"
   acquire_lock
   load_monitors
-  resolve_monitor "$output"
-  output_id="$MONITOR_ID"
-  output_selector="$MONITOR_SELECTOR"
   resolve_monitor "$reference"
   reference_id="$MONITOR_ID"
-  reference_selector="$MONITOR_SELECTOR"
-  [[ "$output_id" != "$reference_id" ]] ||
-    {
-      echo "The selected outputs have the same monitor identity." >&2
-      exit 1
-    }
+  resolve_monitor "$output"
+  output_id="$MONITOR_ID"
+  [[ "$output_id" != "$reference_id" ]] || fail "A screen can't be placed against itself."
   # Against the screen placed against it: the same layout, said the other way round, so
   # dragging either of two screens works
-  if [[ "$(read_value "relative.$reference_id" || true)" == *":$output_id" ]]; then
+  if [[ "$(read_value "relative.$reference_id")" == *":$output_id" ]]; then
     case "$direction" in
     left) direction=right ;;
     right) direction=left ;;
@@ -1154,139 +691,53 @@ position)
     exec "$0" position "$reference" "$direction" "$output"
   fi
   if would_create_layout_cycle "$output_id" "$reference_id"; then
-    echo "Unable to position $output relative to $reference: this would create a layout cycle." >&2
-    exit 1
+    fail "Unable to position $output relative to $reference: this would create a layout cycle."
   fi
-
-  coordinates="$(
-    jq -er \
-      --arg output "$output" \
-      --arg reference "$reference" \
-      --arg direction "$direction" '
-        (.[] | select(.name == $output and .disabled != true)) as $moved |
-        (.[] | select(.name == $reference and .disabled != true)) as $ref |
-        ($moved.width / $moved.scale | floor) as $mw |
-        ($moved.height / $moved.scale | floor) as $mh |
-        ($ref.width / $ref.scale | floor) as $rw |
-        ($ref.height / $ref.scale | floor) as $rh |
-        if $direction == "left" then
-          (($ref.x - $mw) | tostring) + "x" + ($ref.y | tostring)
-        elif $direction == "right" then
-          (($ref.x + $rw) | tostring) + "x" + ($ref.y | tostring)
-        elif $direction == "above" then
-          ($ref.x | tostring) + "x" + (($ref.y - $mh) | tostring)
-        else
-          ($ref.x | tostring) + "x" + (($ref.y + $rh) | tostring)
-        end
-      ' <<<"$MONITORS_JSON"
-  )" || {
-    echo "Unable to calculate output position." >&2
-    exit 2
-  }
-
-  # Preserve the reference at its current coordinates, then place the selected
-  # output next to it. This makes the result stable after a reload.
-  reference_position="$(
-    jq -er --arg reference "$reference" '
-        .[] | select(.name == $reference and .disabled != true) |
-        (.x | tostring) + "x" + (.y | tostring)
-      ' <<<"$MONITORS_JSON"
-  )"
-  migrate_monitor_state "$output" "$output_id" "$output_selector"
-  migrate_monitor_state "$reference" "$reference_id" "$reference_selector"
-  reference_mode="$(read_value "mode.$reference_id" || true)"
-  output_mode="$(read_value "mode.$output_id" || true)"
-  write_value layout custom
-  write_value "position.$reference_id" "$reference_position"
-  write_value "position.$output_id" "$coordinates"
-  write_value "relative.$output_id" "$direction:$reference_id"
-  write_value "mode.$reference_id" "${reference_mode:-preferred}"
-  write_value "mode.$output_id" "${output_mode:-preferred}"
-  if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
-    reflow_layout
-  else
-    reload_hyprland
-  fi
-  ;;
-# The saved state as it is, after it was put back by hand (the settings' Revert)
-reload)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  reload_hyprland
-  ;;
-reflow)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
-  acquire_lock
+  write_values layout=custom "relative.$output_id=$direction:$reference_id"
   reflow_layout
   ;;
 # Forget the custom layout, Hyprland lines them up again
 auto-layout)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
+  expect 1 "$@"
   acquire_lock
-  write_value layout auto
-  delete_matching_values '^(position|relative)[.]'
+  write_values layout=auto
+  delete_values '^(position|relative)[.]'
   reload_hyprland
   ;;
-auto)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 1
-  }
-  [[ "$2" =~ ^[A-Za-z0-9._-]+$ ]] || {
-    echo "Invalid output: $2" >&2
-    exit 1
-  }
-  acquire_lock
-  load_monitors
-  resolve_monitor "$2"
-  migrate_monitor_state "$2" "$MONITOR_ID" "$MONITOR_SELECTOR"
-  write_value "mode.$MONITOR_ID" "preferred"
-  reload_hyprland
-  if [[ "${DISPLAYCTL_REFLOWING:-false}" != "true" ]]; then
-    reflow_layout
-  fi
-  ;;
-# Start over from scratch
+# Start over from scratch: every screen set up again as if just plugged in
 reset)
-  [[ $# -eq 1 ]] || {
-    usage >&2
-    exit 1
-  }
+  expect 1 "$@"
   acquire_lock
-  "$0" init preferred
-  if command -v hyprctl >/dev/null 2>&1 && hyprctl monitors all -j >/dev/null 2>&1; then
+  rm -f "$STATE_FILE"
+  if command -v hyprctl >/dev/null 2>&1 && hyprctl monitors -j >/dev/null 2>&1; then
     "$0" sync
-  else
-    echo "Defaults saved; outputs will be detected when Hyprland starts."
   fi
   ;;
-# A fresh state file, from install.sh
-init)
-  [[ $# -le 2 ]] || {
+# The state as it was before, kept for undo
+try)
+  (($# > 1)) || {
     usage >&2
     exit 1
   }
-  initial_mode="${2:-preferred}"
-  [[ "$initial_mode" == "preferred" || "$initial_mode" =~ ^[0-9]+x[0-9]+$ ]] ||
-    {
-      echo "Invalid initial mode: $initial_mode" >&2
-      exit 1
-    }
   acquire_lock
-  state_dir="$(dirname "$STATE_FILE")"
-  mkdir -p "$state_dir"
-  state_tmp="$(mktemp --tmpdir="$state_dir" monitor-state.XXXXXX)"
-  printf 'layout=auto\ndefault_mode=%s\ndefault_scale=auto\n' "$initial_mode" >"$state_tmp"
-  mv -f "$state_tmp" "$STATE_FILE"
-  echo "Monitor configuration initialized with mode: $initial_mode"
+  mkdir -p "$(dirname "$BACKUP_FILE")"
+  if [[ -f "$STATE_FILE" ]]; then
+    cp -f "$STATE_FILE" "$BACKUP_FILE"
+  else
+    rm -f "$BACKUP_FILE"
+  fi
+  shift
+  exec "$0" "$@"
+  ;;
+undo)
+  expect 1 "$@"
+  acquire_lock
+  if [[ -f "$BACKUP_FILE" ]]; then
+    cp -f "$BACKUP_FILE" "$STATE_FILE"
+  else
+    rm -f "$STATE_FILE"
+  fi
+  reload_hyprland
   ;;
 *)
   usage >&2

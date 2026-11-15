@@ -23,7 +23,6 @@ import json
 import os
 import re
 import socket
-import subprocess
 import sys
 import threading
 import time
@@ -150,7 +149,9 @@ def model_info(model_id, name=""):
     return (name or "AirPods", kind)
 
 
-# --- Proximity pairing advertisements -----------------------------------------
+####################################
+# PROXIMITY PAIRING ADVERTISEMENTS #
+####################################
 
 
 def aes_ecb(key, block, decrypt=False):
@@ -241,7 +242,9 @@ def apply_precise_battery(message, enc_key):
             message[part]["charging"] = bool(raw & 0x80)
 
 
-# --- AAP session ----------------------------------------------------------------
+###############
+# AAP SESSION #
+###############
 
 
 class AapSession:
@@ -382,10 +385,9 @@ class AapSession:
         secondary_side = "right" if self.primary == "left" else "left"
         device[self.primary]["inEar"] = primary == IN_EAR
         device[secondary_side]["inEar"] = secondary == IN_EAR
+        # How many are worn, for the connections the AirPods make on their own
         in_ear = (primary == IN_EAR) + (secondary == IN_EAR)
-        previous, self.ear = self.ear, in_ear
-        if previous is not None:
-            self.daemon.ear_changed(self.address, previous, in_ear)
+        self.ear = in_ear
         self.daemon.changed()
 
     def handle_control(self, identifier, value):
@@ -438,7 +440,9 @@ class AapSession:
         self.drop_socket()
 
 
-# --- Pairing agent ----------------------------------------------------------------
+#################
+# PAIRING AGENT #
+#################
 
 
 class Agent(dbus.service.Object):
@@ -475,7 +479,9 @@ class Agent(dbus.service.Object):
             raise dbus.DBusException("Rejected", name="org.bluez.Error.Rejected")
 
 
-# --- Daemon -----------------------------------------------------------------------
+##########
+# DAEMON #
+##########
 
 
 class Daemon:
@@ -508,7 +514,6 @@ class Daemon:
         self.pairing_target = None
         self.pairing_model = None
         self.pairing_ignored = {}
-        self.paused_by_us = False
         self.emit_pending = False
         self.last_state = ""
         self.downloads = set()
@@ -1044,29 +1049,6 @@ class Daemon:
                     "disconnect", address, error.get_dbus_message()
                 ),
             )
-
-    # Automatic pause when a pod leaves an ear, and resume when it is back.
-
-    def ear_changed(self, address, previous, current):
-        device = self.devices.get(address)
-        if device is None or device["kind"] != "buds":
-            return
-        if current < previous:
-            if self.player_status() == "Playing":
-                subprocess.run(["playerctl", "pause"], check=False)
-                self.paused_by_us = True
-        elif current > previous and self.paused_by_us and current >= 1:
-            self.paused_by_us = False
-            subprocess.run(["playerctl", "play"], check=False)
-
-    @staticmethod
-    def player_status():
-        try:
-            return subprocess.run(
-                ["playerctl", "status"], capture_output=True, text=True, timeout=2
-            ).stdout.strip()
-        except (OSError, subprocess.TimeoutExpired):
-            return ""
 
     # Shell side.
 

@@ -1,7 +1,7 @@
 -- How windows look and move: gaps, borders, blur, shadows, animations and the
 -- tiling layout. Loaded by hyprland.lua.
 
-local colors = __require("lib.state").fresh("colors_state") -- The wallpaper's accent
+local colors = __require("colors_state") -- The wallpaper's accent
 
 -------------------
 -- LOOK AND FEEL --
@@ -30,7 +30,7 @@ hl.config({
 
 hl.config({
   decoration = {
-    -- The shell's cards' corners, so windows and cards match (Theme.cardRadius)
+    -- The shell's cards' corners, so windows and cards match (Metrics.radius.card)
     rounding = 19,
     rounding_power = 2,
 

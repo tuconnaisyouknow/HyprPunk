@@ -1,8 +1,8 @@
 -- The keyboard, mouse and touchpad, and the touchpad's gestures. Loaded by hyprland.lua,
 -- before your personal/input.lua.
 
-local keyboard = __require("keyboard_state")              -- Keyboard layout, reloaded when you switch it
-local mouse = __require("lib.state").fresh("input_state") -- The settings' mouse and touchpad
+local keyboard = __require("keyboard_state") -- Keyboard layout, reloaded when you switch it
+local mouse = __require("input_state")       -- The settings' mouse and touchpad
 
 -----------
 -- INPUT --
@@ -32,7 +32,7 @@ hl.config({
 })
 
 -- The touchpads on or off, as the toggle left them (see touchpad_state.lua)
-local state = __require("lib.state").fresh("touchpad_state")
+local state = __require("touchpad_state")
 
 for _, device in ipairs(state.devices) do
   hl.device({

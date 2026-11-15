@@ -60,6 +60,28 @@ DEVICE_REASONS = {
     53: "The network was not found",
 }
 
+# The form's enterprise fields and their 802-1x keys, both ways: written when
+# connecting, read back to fill the form again
+EAP_TEXT = {
+    "identity": "identity",
+    "password": "password",
+    "anonymousIdentity": "anonymous-identity",
+    "domain": "domain-suffix-match",
+    "caCertPassword": "ca-cert-password",
+    "peapVersion": "phase1-peapver",
+    "phase2Auth": "phase2-auth",
+    "phase2AuthEap": "phase2-autheap",
+    "clientCertPassword": "client-cert-password",
+    "privateKeyPassword": "private-key-password",
+    "fastProvisioning": "phase1-fast-provisioning",
+    "pacFile": "pac-file",
+}
+EAP_FILES = {
+    "caCert": "ca-cert",
+    "clientCert": "client-cert",
+    "privateKey": "private-key",
+}
+
 
 def reply(ok, error=""):
     print(json.dumps({"ok": True} if ok else {"ok": False, "error": error}), flush=True)
@@ -115,29 +137,10 @@ def build(request):
         return settings
 
     x = {"eap": dbus.Array([eap], signature="s")}
-    text = {
-        "identity": "identity",
-        "password": "password",
-        "anonymousIdentity": "anonymous-identity",
-        "domain": "domain-suffix-match",
-        "caCertPassword": "ca-cert-password",
-        "phase2Auth": "phase2-auth",
-        "phase2AuthEap": "phase2-autheap",
-        "clientCertPassword": "client-cert-password",
-        "privateKeyPassword": "private-key-password",
-        "fastProvisioning": "phase1-fast-provisioning",
-        "pacFile": "pac-file",
-    }
-    for key, name in text.items():
+    for key, name in EAP_TEXT.items():
         if request.get(key):
             x[name] = request[key]
-    if request.get("peapVersion") in ("0", "1"):
-        x["phase1-peapver"] = request["peapVersion"]
-    for key, name in (
-        ("caCert", "ca-cert"),
-        ("clientCert", "client-cert"),
-        ("privateKey", "private-key"),
-    ):
+    for key, name in EAP_FILES.items():
         if request.get(key):
             x[name] = cert(request[key])
     settings["802-1x"] = x
@@ -216,28 +219,10 @@ def read(ssid):
         pass
     methods = x.get("eap", [])
     values["eap"] = str(methods[0]) if methods else ""
-    text = {
-        "identity": "identity",
-        "password": "password",
-        "anonymous-identity": "anonymousIdentity",
-        "domain-suffix-match": "domain",
-        "ca-cert-password": "caCertPassword",
-        "phase1-peapver": "peapVersion",
-        "phase2-auth": "phase2Auth",
-        "phase2-autheap": "phase2AuthEap",
-        "client-cert-password": "clientCertPassword",
-        "private-key-password": "privateKeyPassword",
-        "phase1-fast-provisioning": "fastProvisioning",
-        "pac-file": "pacFile",
-    }
-    for name, key in text.items():
+    for key, name in EAP_TEXT.items():
         if name in x:
             values[key] = str(x[name])
-    for name, key in (
-        ("ca-cert", "caCert"),
-        ("client-cert", "clientCert"),
-        ("private-key", "privateKey"),
-    ):
+    for key, name in EAP_FILES.items():
         if name in x:
             values[key] = path_of(x[name])
     print(json.dumps(values), flush=True)

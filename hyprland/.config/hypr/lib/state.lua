@@ -1,5 +1,6 @@
 -- Reads what the shell saves in ~/.local/state/hyprpunk, for the *_state.lua files.
 -- They load it with __require, the plain Lua one, since it's a helper rather than config.
+-- Every reload starts a new Lua state, so each one reads the files again.
 
 local state = {}
 
@@ -34,13 +35,6 @@ function state.pairs(name)
 
   file:close()
   return entries
-end
-
--- A state module read again from disk, so a reload picks up what the shell just saved
--- (plain Lua modules stay cached otherwise)
-function state.fresh(module)
-  package.loaded[module] = nil
-  return __require(module)
 end
 
 return state

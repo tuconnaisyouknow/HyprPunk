@@ -3,10 +3,12 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Mpris
 import qs.config
 
 // Talks to airpodsd.py: your paired AirPods with their batteries and
-// settings, AirPods nearby waiting to pair, and when to pop their card up.
+// settings, AirPods nearby waiting to pair, and when to pop their card up. Taking a pod
+// out pauses what's playing, putting it back plays it again.
 Singleton {
     id: airPods
 
@@ -18,6 +20,9 @@ Singleton {
     property var devices: []
     // AirPods in pairing mode: {address, name, model, kind, state ("ready", "pairing", "failed")}.
     property var pairing: null
+    // The pods worn, by connected AirPods, and the players a pod coming out paused.
+    property var worn: ({})
+    property var pausedPlayers: []
 
     // Their card should pop up on the screen you're on. Not when they connected because
     // they went in your ears: nothing to show then, unless you asked ("manual").
@@ -37,6 +42,38 @@ Singleton {
             "level": left === null ? right : right === null ? left : Math.min(left, right),
             "charging": device.left.charging && device.right.charging
         };
+    }
+
+    // Fewer pods worn pauses every player playing, more plays again the ones it paused.
+    function followEars(devices) {
+        const next = {};
+        for (const device of devices) {
+            if (device.kind !== "buds" || !device.connected)
+                continue;
+
+            const count = device.left.inEar + device.right.inEar;
+            const before = worn[device.address];
+            next[device.address] = count;
+            if (before === undefined || count === before)
+                continue;
+
+            if (count < before) {
+                const playing = Mpris.players.values.filter((player) => {
+                    return player.isPlaying && player.canPause;
+                });
+                for (const player of playing)
+                    player.pause();
+                pausedPlayers = pausedPlayers.concat(playing);
+            } else {
+                for (const player of pausedPlayers) {
+                    if (Mpris.players.values.includes(player) && player.canPlay)
+                        player.play();
+
+                }
+                pausedPlayers = [];
+            }
+        }
+        worn = next;
     }
 
     function device(address) {
@@ -137,6 +174,7 @@ Singleton {
                     return ;
                 }
                 if (message.event === "state") {
+                    airPods.followEars(message.devices);
                     airPods.devices = message.devices;
                     airPods.pairing = message.pairing;
                 } else if (message.event === "popup") {

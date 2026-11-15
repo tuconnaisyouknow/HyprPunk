@@ -537,14 +537,6 @@ configure_locale_profiles() {
   "$LIB_DIR/locale-profilectl.sh" ensure
 }
 
-configure_monitors() {
-  "$LIB_DIR/displayctl.sh" ensure
-}
-
-configure_touchpad() {
-  "$LIB_DIR/touchpadctl.sh" ensure
-}
-
 configure_power() {
   "$LIB_DIR/powerctl.sh" ensure
 }
@@ -850,8 +842,6 @@ converge() {
   run_step "Generating Qt configuration" generate_qt_configs
   run_step "Configuring the keyboard" configure_keyboard
   run_step "Configuring locale profiles" configure_locale_profiles
-  run_step "Configuring monitors" configure_monitors
-  run_step "Configuring the touchpad" configure_touchpad
   run_step "Configuring idle and sleep" configure_power
   run_step "Configuring notifications" configure_notifications
   run_step "Configuring screenshots and recordings" configure_capture

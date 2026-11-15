@@ -12,14 +12,11 @@ Singleton {
     id: displays
 
     readonly property string displayctl: Session.scripts + "/displayctl.sh"
-    readonly property string stateFile: Session.stateDir + "/monitor-state.conf"
-    readonly property string backupFile: Session.cacheDir + "/monitor-state.backup"
     readonly property int revertSeconds: 15
     property int refCount: 0
-    // From displayctl info: { layout, default_scale, outputs: [...] }.
+    // From displayctl info: { layout, outputs: [...] }.
     property var info: ({
         "layout": "auto",
-        "default_scale": "auto",
         "outputs": []
     })
     // Seconds left before the last guarded change reverts, 0 when none.
@@ -30,17 +27,15 @@ Singleton {
         reader.running = true;
     }
 
-    // guarded: a resolution, refresh rate or scale change, which can undo itself.
+    // guarded: a mode or scale change, which displayctl can undo.
     function apply(args, guarded) {
         if (busy)
             return ;
 
+        applier.command = [displayctl].concat(guarded ? ["try"] : [], args);
         if (guarded) {
-            applier.command = ["bash", "-c", "mkdir -p \"$(dirname \"$1\")\"; if [[ -f $0 ]]; then cp -f \"$0\" \"$1\"; else rm -f \"$1\"; fi; shift; exec \"$@\"", stateFile, backupFile, displayctl].concat(args);
             revertCountdown = revertSeconds;
             countdown.restart();
-        } else {
-            applier.command = [displayctl].concat(args);
         }
         applier.running = true;
     }
@@ -52,7 +47,7 @@ Singleton {
 
     function revert() {
         keep();
-        Quickshell.execDetached(["bash", "-c", "flock -w 10 \"$0.lock\" bash -c 'if [[ -f $1 ]]; then cp -f \"$1\" \"$0\"; else rm -f \"$0\"; fi' \"$0\" \"$1\" && \"$2\" reload", stateFile, backupFile, displayctl]);
+        Quickshell.execDetached([displayctl, "undo"]);
         revertRefresh.restart();
     }
 

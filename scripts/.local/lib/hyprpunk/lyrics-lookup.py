@@ -9,7 +9,7 @@ Prints one JSON line:
   {"status": "missing"}   lrclib has nothing for it
   {"status": "network"}   lrclib could not be asked (offline, busy): ask again later
 
-Answers are cached in $XDG_STATE_HOME/hyprpunk/lyrics, a miss for a week, unless
+Answers are cached in $XDG_CACHE_HOME/hyprpunk/lyrics, a miss for a week, unless
 lrclib left a search unanswered.
 """
 
@@ -42,7 +42,7 @@ class Unreachable(Exception):
 
 
 def cache_path(artist, title, album, seconds):
-    base = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
+    base = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
     directory = os.path.join(base, "hyprpunk", "lyrics")
     os.makedirs(directory, exist_ok=True)
     key = hashlib.sha1(
