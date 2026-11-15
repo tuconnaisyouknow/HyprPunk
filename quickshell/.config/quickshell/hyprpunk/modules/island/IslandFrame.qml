@@ -1,5 +1,8 @@
 import QtQuick
+import QtQuick.Layouts
 import qs.components
+import qs.config
+import qs.modules.island
 import qs.theme
 import qs.windows
 
@@ -10,6 +13,8 @@ import qs.windows
 // card folding back behind the other. The cards draw their content clipped to it.
 // It eases where it sits too: the island moves and changes height when it takes an OSD
 // (Bar.islandOsdShown), which happens as soon as the last card closes.
+// The island itself is hidden while a card covers it, so the shape draws its content
+// while it's still the island's: nothing pops as a card grows out or folds back.
 Card {
     id: frame
 
@@ -23,6 +28,8 @@ Card {
     // The card whose shape it heads to: the open one, taken once the shape it's in has
     // been noted, so that nothing heading to the new card moves before.
     property Item owner: null
+    // The card that held the shape last, kept while it folds back.
+    property Item lastOwner: null
     readonly property var island: bar.islandPill
     // Folded, it's the island as you see it, zoomed past its place under the pointer.
     readonly property real targetWidth: owner !== null ? owner.cardWidth : island.width + 2 * island.spreadX
@@ -82,6 +89,9 @@ Card {
             settle.play(openCard.cardWidth > fromWidth, openCard.cardHeight > fromHeight);
 
         owner = openCard;
+        if (openCard !== null)
+            lastOwner = openCard;
+
         travel = 0;
         travelAnimation.restart();
 
@@ -119,6 +129,42 @@ Card {
         // than the card shown in it.
         TapHandler {
             gesturePolicy: TapHandler.ReleaseWithinBounds
+        }
+
+    }
+
+    // The time and its chips as the island shows them, at their place in it: they fade
+    // as a card grows out, faster than the shape so they're gone before its content
+    // shows, and come back as it folds, whole once it lands. The calendar carries them
+    // itself, and an OSD has its own way into the island (Osd.landing).
+    RowLayout {
+        id: islandContent
+
+        readonly property Item pill: frame.bar.islandItem
+
+        visible: frame.visible && opacity > 0
+        opacity: frame.bar.islandOsdShown || frame.lastOwner !== null && frame.lastOwner.carriesIslandContent ? 0 : Math.pow(frame.islandShare, 3)
+        x: frame.width / 2 + frame.island.centerOffset - frame.island.width / 2 + pill.timeLabel.parent.x
+        y: frame.island.top + (frame.island.height - height) / 2
+        spacing: 0
+
+        Label {
+            text: Session.clockText(islandContent.pill.date)
+        }
+
+        // Still while covered, like the island's own.
+        IslandChips {
+            bar: frame.bar
+            animated: false
+            interactive: false
+        }
+
+        // Zoomed with the island, past its place under the pointer.
+        transform: Scale {
+            origin.x: frame.island.width / 2 - islandContent.pill.timeLabel.parent.x
+            origin.y: islandContent.height / 2
+            xScale: 1 + 2 * frame.island.spreadX / Math.max(frame.island.width, 1)
+            yScale: 1 + 2 * frame.island.spreadY / Math.max(frame.island.height, 1)
         }
 
     }

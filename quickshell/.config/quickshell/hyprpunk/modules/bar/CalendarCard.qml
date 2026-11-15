@@ -67,6 +67,7 @@ PillPopup {
     blocked: calendarPopup.bar.screenState.prompting()
     align: Qt.AlignHCenter
     cardHeight: animatedHeight
+    carriesIslandContent: true
     cardWidth: animatedWidth
     implicitWidth: calendarWidth + notificationWidth
     // Sized for a six-week month so the card can animate without clipping. Not taken
@@ -118,15 +119,27 @@ PillPopup {
 
         }
 
-        // Starts where the time sits in the island, pushed left by the badge or
-        // the dots, and slides to the card's middle as it opens, then back.
-        Label {
-            readonly property real islandX: calendarPopup.island.timeLabel.parent.x + calendarPopup.island.timeLabel.x
+        // The island's time and chips, starting where they sit in it: the chips close
+        // as the time slides to the card's middle, and open again as it slides back,
+        // so the card lands on the island as it is.
+        RowLayout {
+            readonly property real islandX: calendarPopup.island.timeLabel.parent.x
             readonly property real centerX: (parent.width - width) / 2
 
             anchors.verticalCenter: parent.verticalCenter
             x: Math.round(islandX + (centerX - islandX) * calendarPopup.progress)
-            text: Session.clockText(calendarPopup.island.date)
+            spacing: 0
+
+            Label {
+                text: Session.clockText(calendarPopup.island.date)
+            }
+
+            IslandChips {
+                bar: calendarPopup.bar
+                shown: !calendarPopup.expanded
+                interactive: false
+            }
+
         }
 
     }

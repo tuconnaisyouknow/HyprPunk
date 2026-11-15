@@ -12,7 +12,7 @@ RowLayout {
     id: chips
 
     required property var bar
-    // Each chip closes its width when this goes off, and opens again after.
+    // Each chip closes when this goes off, and opens again after.
     property bool shown: true
     property bool animated: true
     // In the bar, a click on the recording stops it. The lock only shows it.
@@ -20,33 +20,22 @@ RowLayout {
     readonly property bool stopHovered: recordingHover.hovered
 
     // Each chip brings its own gap before it, the first one's after the time, so a closed
-    // one leaves none and the time stays centred once the last one closes.
+    // one leaves none and the time stays centred once the last one closes (IslandChip).
     spacing: 0
 
     // Privacy: a dot while something is listening or watching, green for the camera,
     // orange for the microphone alone.
-    Item {
-        readonly property bool shown: chips.shown && (Privacy.cameraInUse || Privacy.microphoneInUse)
-
-        visible: Layout.preferredWidth > 0
-        Layout.preferredWidth: shown ? 8 : 0
-        Layout.leftMargin: shown ? 6 : 0
-        implicitHeight: 8
+    IslandChip {
+        shown: chips.shown && (Privacy.cameraInUse || Privacy.microphoneInUse)
+        animated: chips.animated
+        openWidth: 8
+        openHeight: 8
+        gap: 6
 
         Rectangle {
-            anchors.centerIn: parent
-            width: 8
-            height: 8
+            anchors.fill: parent
             radius: 4
-            scale: parent.shown ? 1 : 0
             color: Privacy.cameraInUse ? Colors.green : Colors.peach
-
-            Behavior on scale {
-                Anim {
-                    token: Motion.pop
-                }
-
-            }
 
             Behavior on color {
                 ColorAnim {
@@ -57,37 +46,15 @@ RowLayout {
 
         }
 
-        Behavior on Layout.preferredWidth {
-            enabled: chips.animated
-
-            Anim {
-                token: Motion.resize.normal
-            }
-
-        }
-
-        Behavior on Layout.leftMargin {
-            enabled: chips.animated
-
-            Anim {
-                token: Motion.resize.normal
-            }
-
-        }
-
     }
 
     // Recording: a pulsing red dot and how long it's been going.
-    Item {
+    IslandChip {
         id: recordingChip
 
-        readonly property bool shown: chips.shown && Screenshot.recording
-
-        visible: Layout.preferredWidth > 0
-        Layout.preferredWidth: shown ? recordingRow.implicitWidth + 16 : 0
-        Layout.leftMargin: shown ? 8 : 0
-        implicitHeight: 24
-        clip: true
+        shown: chips.shown && Screenshot.recording
+        animated: chips.animated
+        openWidth: recordingRow.implicitWidth + 16
 
         Rectangle {
             anchors.fill: parent
@@ -180,36 +147,14 @@ RowLayout {
             onTapped: Screenshot.request("stop", "", 0)
         }
 
-        Behavior on Layout.preferredWidth {
-            enabled: chips.animated
-
-            Anim {
-                token: Motion.resize.normal
-            }
-
-        }
-
-        Behavior on Layout.leftMargin {
-            enabled: chips.animated
-
-            Anim {
-                token: Motion.resize.normal
-            }
-
-        }
-
     }
 
     // Notifications waiting: a bell and how many. The secondary color at half opacity while Focus
     // keeps them quiet.
-    Item {
-        readonly property bool shown: chips.shown && chips.bar.notificationCount > 0
-
-        visible: Layout.preferredWidth > 0
-        Layout.preferredWidth: shown ? notificationBadgeRow.implicitWidth + 14 : 0
-        Layout.leftMargin: shown ? 8 : 0
-        implicitHeight: 24
-        clip: true
+    IslandChip {
+        shown: chips.shown && chips.bar.notificationCount > 0
+        animated: chips.animated
+        openWidth: notificationBadgeRow.implicitWidth + 14
 
         Rectangle {
             anchors.fill: parent
@@ -251,24 +196,6 @@ RowLayout {
                 font.features: {
                     "tnum": 1
                 }
-            }
-
-        }
-
-        Behavior on Layout.preferredWidth {
-            enabled: chips.animated
-
-            Anim {
-                token: Motion.resize.normal
-            }
-
-        }
-
-        Behavior on Layout.leftMargin {
-            enabled: chips.animated
-
-            Anim {
-                token: Motion.resize.normal
             }
 
         }
