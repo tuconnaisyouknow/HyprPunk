@@ -1,11 +1,10 @@
 import QtQuick
-import QtQuick.Shapes
 import qs.config
 import qs.theme
 
 // The shell's glass: a frosted fill over the blur, with a rim that catches the light at
 // the top and glows faintly at the bottom. It sits behind its parent's content, so the
-// parent itself should stay transparent. In the liquid style the rim is LiquidGlass's.
+// parent itself should stay transparent. The rim is GlassRim's, in either style.
 Item {
     id: glass
 
@@ -104,62 +103,11 @@ Item {
 
     }
 
-    Shape {
-        anchors.fill: parent
-        visible: !glass.liquid
-        preferredRendererType: Shape.CurveRenderer
-
-        ShapePath {
-            strokeColor: "transparent"
-            // The two rectangles cut a 1px ring.
-            fillRule: ShapePath.OddEvenFill
-
-            fillGradient: LinearGradient {
-                x1: 0
-                y1: 0
-                x2: 0
-                y2: glass.height
-
-                GradientStop {
-                    position: 0
-                    color: glass.rimColor(0.38, 0.95)
-                }
-
-                GradientStop {
-                    position: 0.45
-                    color: glass.rimColor(0.06, 0.6)
-                }
-
-                GradientStop {
-                    position: 1
-                    color: glass.rimColor(0.16, 0.8)
-                }
-
-            }
-
-            PathRectangle {
-                width: glass.width
-                height: glass.height
-                radius: glass.radius
-            }
-
-            // A touch thicker while focused.
-            PathRectangle {
-                x: 1 + 0.5 * glass.accent
-                y: 1 + 0.5 * glass.accent
-                width: Math.max(0, glass.width - 2 - glass.accent)
-                height: Math.max(0, glass.height - 2 - glass.accent)
-                radius: Math.max(0, glass.radius - 1 - 0.5 * glass.accent)
-            }
-
-        }
-
-    }
-
-    LiquidGlass {
-        visible: glass.liquid
+    // The rim, a touch thicker while focused.
+    GlassRim {
+        liquid: glass.liquid
         radius: glass.radius
-        rimWidth: 3 + glass.accent
+        rimWidth: glass.liquid ? 3 + glass.accent : 1 + 0.5 * glass.accent
         rimTop: glass.rimColor(0.38, 0.95)
         rimMiddle: glass.rimColor(0.06, 0.6)
         rimBottom: glass.rimColor(0.16, 0.8)

@@ -12,26 +12,6 @@ Pill {
     clickable: true
     spotHovered: controlPill.bar.controlSpotHovered
 
-    // Where it rests in its row, and its zoom apart.
-    function publishGeometry() {
-        const origin = parent.mapToItem(null, x, y);
-        controlPill.bar.controlPill = {
-            "right": controlPill.bar.width - origin.x - width,
-            "top": origin.y,
-            "width": width,
-            "height": height,
-            "spreadX": spreadX,
-            "spreadY": spreadY
-        };
-    }
-
-    onSpreadXChanged: publishGeometry()
-    onSpreadYChanged: publishGeometry()
-    onXChanged: publishGeometry()
-    onYChanged: publishGeometry()
-    onWidthChanged: publishGeometry()
-    onHeightChanged: publishGeometry()
-    Component.onCompleted: publishGeometry()
     onClicked: controlPill.bar.screenState.toggle("controlcenter")
 
     ControlStatus {

@@ -72,7 +72,7 @@ Item {
 
     // Where each pill sits on screen, so the lock screen can start from there: the ones it
     // keeps (resources, island, control pill) and the ones it lets go. Where they rest,
-    // like publishGeometry().
+    // like islandPill and controlPill.
     function lockGeometry() {
         const rect = (item) => {
             const origin = item.parent.mapToItem(null, item.x, item.y);
@@ -127,26 +127,27 @@ Item {
             screenState.bar = null;
 
     }
-    // Where its island and control pill are, for the cards growing out of them:
-    // centerOffset is how far the island sits from the middle, right and top are the
-    // control pill's distances from the screen's edges. spreadX and spreadY are how far
-    // its zoom draws the pill past its place, where a card starts and ends.
-    property var islandPill: ({
-        "centerOffset": 0,
-        "top": Metrics.barTop,
-        "width": 70,
-        "height": Metrics.pillHeight,
-        "spreadX": 0,
-        "spreadY": 0
-    })
-    property var controlPill: ({
-        "right": Metrics.barMargin,
-        "top": Metrics.barTop,
-        "width": 120,
-        "height": Metrics.pillHeight,
-        "spreadX": 0,
-        "spreadY": 0
-    })
+    // Where its island and control pill rest in the bar, for the cards growing out of
+    // them: centerOffset is how far the island sits from the middle, right and top are
+    // the control pill's distances from the screen's edges. spreadX and spreadY are how
+    // far its zoom draws the pill past its place, where a card starts and ends. Each is
+    // read on its own, so a card only follows what it uses.
+    readonly property QtObject islandPill: QtObject {
+        readonly property real centerOffset: barContent.x + centerGroup.x + island.x + island.width / 2 - bar.width / 2
+        readonly property real top: barContent.y + centerGroup.y + island.y
+        readonly property real width: island.width
+        readonly property real height: island.height
+        readonly property real spreadX: island.spreadX
+        readonly property real spreadY: island.spreadY
+    }
+    readonly property QtObject controlPill: QtObject {
+        readonly property real right: bar.width - barContent.x - rightGroup.x - control.x - control.width
+        readonly property real top: barContent.y + rightGroup.y + control.y
+        readonly property real width: control.width
+        readonly property real height: control.height
+        readonly property real spreadX: control.spreadX
+        readonly property real spreadY: control.spreadY
+    }
     // The pointer is on the control pill's spot in the control center, which keeps the
     // pill lit (Pill.spotHovered).
     property bool controlSpotHovered: false
@@ -220,9 +221,6 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: Metrics.barTop
             spacing: Metrics.spacing.normal
-            // The island moves with the group as it's centred, not inside it.
-            onXChanged: island.publishGeometry()
-            onYChanged: island.publishGeometry()
 
             IslandPill {
                 id: island
@@ -255,10 +253,6 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: Metrics.barTop
             spacing: Metrics.spacing.normal
-            // When the control pill changes width, it reports its place before the row has
-            // settled against the right edge, so report again once it has.
-            onXChanged: control.publishGeometry()
-            onYChanged: control.publishGeometry()
 
             // Package updates waiting: a click runs them in your terminal.
             DropInSlot {

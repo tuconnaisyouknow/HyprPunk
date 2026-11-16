@@ -70,7 +70,12 @@ Card {
     // the card lays out beyond its edge (the calendar's notification side, empty) must
     // stay hidden. Never above the island's top either, where the shape starts from the
     // zoomed island: the content stays still while the shape heads to its place.
+    // Only the card in the shape follows it. The others keep their own size, or every
+    // card's content would be laid out again at each step of the island (an OSD).
     function contentRect(card) {
+        if (!covering || card !== owner && card !== lastOwner)
+            return Qt.rect(0, 0, card.cardWidth, card.cardHeight);
+
         const top = Math.max(shape.y, Math.round(island.top));
         const width = Math.min(shape.width, card.cardWidth);
         const height = Math.min(shape.y + shape.height - top, card.cardHeight);

@@ -36,19 +36,6 @@ Pill {
         view.fadeOsd();
     }
 
-    // Where it rests in its row, and its zoom apart.
-    function publishGeometry() {
-        const origin = parent.mapToItem(null, x, y);
-        clockPill.bar.islandPill = {
-            "centerOffset": origin.x + width / 2 - clockPill.bar.width / 2,
-            "top": origin.y,
-            "width": width,
-            "height": height,
-            "spreadX": spreadX,
-            "spreadY": spreadY
-        };
-    }
-
     // Hidden under the lock, which has it, and covered by its relay as the lock goes
     // (Lock.islandAway).
     opacity: clockPill.bar.pillHidden("island") || Lock.islandAway ? 0 : 1
@@ -58,11 +45,6 @@ Pill {
     scale: Lock.relays[clockPill.bar.screen.name] !== undefined ? Motion.squeeze(width) : 1
     // Not under the recording chip, which answers the pointer itself.
     clickable: (face === "clock" && !clockPill.bar.lockShown || face === "osd" && clockPill.bar.osdShown.kind === "screenshot") && !view.stopHovered
-    onWidthChanged: publishGeometry()
-    onHeightChanged: publishGeometry()
-    onSpreadXChanged: publishGeometry()
-    onSpreadYChanged: publishGeometry()
-    Component.onCompleted: publishGeometry()
     // A click opens the calendar card, or closes it, or the player from the music's
     // ends, unless an OSD has the island: the screenshot or recording just taken then
     // opens in its viewer. The recording chip keeps its own click, which stops the
