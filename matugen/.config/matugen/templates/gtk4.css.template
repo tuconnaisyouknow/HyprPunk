@@ -119,3 +119,57 @@
   --shade-color: @shade_color;
   --scrollbar-outline-color: @scrollbar_outline_color;
 }
+
+/* What's selected wears the accent's faint tint, as in GTK 3 and Qt. libadwaita greys
+ * it in sidebars, so they take the tint of its lists */
+.navigation-sidebar row:selected,
+.navigation-sidebar child:selected,
+.navigation-sidebar flowboxchild:selected,
+treeview.navigation-sidebar:selected {
+  background-color: color-mix(in srgb, var(--accent-bg-color) 25%, transparent);
+}
+
+.navigation-sidebar row.activatable:selected:hover,
+.navigation-sidebar child.activatable:selected:hover,
+.navigation-sidebar flowboxchild:selected:hover,
+.navigation-sidebar row.activatable:selected.has-open-popup,
+.navigation-sidebar child.activatable:selected.has-open-popup,
+.navigation-sidebar flowboxchild:selected.has-open-popup {
+  background-color: color-mix(in srgb, var(--accent-bg-color) 32%, transparent);
+}
+
+.navigation-sidebar row.activatable:selected:active,
+.navigation-sidebar child.activatable:selected:active,
+.navigation-sidebar flowboxchild:selected:active {
+  background-color: color-mix(in srgb, var(--accent-bg-color) 39%, transparent);
+}
+
+/* Files greys its own selection; give it back the accent */
+.nautilus-list-view listview,
+.nautilus-grid-view gridview,
+.nautilus-network-view listview {
+  --accent-bg-color: @accent_bg_color;
+  --accent-color: @accent_color;
+}
+
+/* In Files, only the selection colors an item: the pointer lights up its icon */
+.nautilus-grid-view gridview > child.activatable:not(:selected),
+.nautilus-list-view columnview > listview > row.activatable:not(:selected) {
+  background-color: transparent;
+}
+
+.nautilus-grid-view gridview > child.activatable:selected,
+.nautilus-list-view columnview > listview > row.activatable:selected {
+  background-color: color-mix(in srgb, var(--accent-bg-color) 25%, transparent);
+}
+
+/* Files' own icon shadow, kept under the light; thumbnails have none */
+.nautilus-grid-view gridview > child:hover .nautilus-image,
+.nautilus-list-view columnview > listview > row:hover .nautilus-image {
+  filter: brightness(1.2) drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.nautilus-grid-view gridview > child:hover .nautilus-image.file-thumbnail,
+.nautilus-list-view columnview > listview > row:hover .nautilus-image.file-thumbnail {
+  filter: brightness(1.2);
+}
