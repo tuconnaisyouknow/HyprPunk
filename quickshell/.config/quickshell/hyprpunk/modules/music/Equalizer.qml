@@ -43,7 +43,9 @@ Row {
             required property var modelData
             readonly property real level: 0.5 + 0.3 * Math.sin(modelData[0] * equalizer.time + modelData[2]) + 0.2 * Math.sin(modelData[1] * equalizer.time + 2 * modelData[2])
 
-            anchors.verticalCenter: parent.verticalCenter
+            // Centred by hand: an anchor would keep its middle on a whole pixel, and
+            // the bar would shake as it grows.
+            y: (equalizer.height - height) / 2
             width: 3
             height: equalizer.height * (equalizer.rest + (1 - equalizer.rest) * equalizer.energy * level)
             radius: width / 2

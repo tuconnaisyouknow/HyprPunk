@@ -29,6 +29,7 @@ private:
     };
 
     static bool drawsFrame(QQuickWindow* window);
+    static bool hasWork(QQuickWindow* window);
     void windowFrame(QQuickWindow* window, WindowState& state);
     void frameEnded(QQuickWindow* window);
     void tick(qint64 time);

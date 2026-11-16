@@ -6,7 +6,7 @@
 // screen's beat, and nothing waits for the screens anywhere else. A timer only takes over
 // while no window draws.
 //   QT_LOGGING_RULES=hyprpunk.frames.debug=true   logs each frame: screen, real time,
-//                                                 frame time, clock (µs)
+//                                                 frame time, clock (µs), window size
 #include "framedriver.h"
 
 #include <chrono>
@@ -149,7 +149,8 @@ void FrameDriver::windowFrame(QQuickWindow* window, WindowState& state) {
     state.lastFrame = frame;
 
     qCDebug(lcFrames).noquote() << "frame" << (window->screen() ? window->screen()->name() : QString())
-                                << time / 1000 << frame / 1000 << qMax(mClock, frame) / 1000;
+                                << time / 1000 << frame / 1000 << qMax(mClock, frame) / 1000
+                                << QStringLiteral("%1x%2").arg(window->width()).arg(window->height());
 
     // While a window draws, the timer waits: it only steps in once frames stop coming
     // (a hidden window, an animation with nothing to show)
@@ -158,24 +159,33 @@ void FrameDriver::windowFrame(QQuickWindow* window, WindowState& state) {
     tick(frame);
 
     // A window with something new to draw wants its next frame, so it keeps its own
-    // screen's pace while anything in it moves, and stops one frame after. Qt alone
-    // won't ask: an item changed by another screen's step and still waiting to be drawn
-    // doesn't ask again when this step changes it once more.
+    // screen's pace while anything in it moves, and stops one frame after.
+    state.wantsNext = hasWork(window);
+}
+
+// Something in it waits to be laid out or drawn
+bool FrameDriver::hasWork(QQuickWindow* window) {
     const auto* d = QQuickWindowPrivate::get(window);
-    state.wantsNext = d->dirtyItemList || !d->itemsToPolish.isEmpty();
+    return d->dirtyItemList || !d->itemsToPolish.isEmpty();
 }
 
 // Every frame ends with this, shown or not. Asked from here, the next frame waits for the
 // screen's next beat.
+// Qt drops the request of anything that changes while a window lays itself out, whichever
+// window it's in: what this frame changed in another window (the blur behind a pill that
+// zooms) would wait there for good. So every window left with something to draw is asked.
 void FrameDriver::frameEnded(QQuickWindow* window) {
-    auto state = mWindows.find(window);
-    if (state == mWindows.end())
+    auto ended = mWindows.find(window);
+    if (ended == mWindows.end())
         return;
-    state->drawing = false;
-    if (!state->wantsNext)
-        return;
-    state->wantsNext = false;
-    window->requestUpdate();
+    ended->drawing = false;
+
+    for (auto state = mWindows.begin(); state != mWindows.end(); ++state) {
+        if (state->drawing || !(state->wantsNext || (drawsFrame(state.key()) && hasWork(state.key()))))
+            continue;
+        state->wantsNext = false;
+        state.key()->requestUpdate();
+    }
 }
 
 // The clock never goes back: another screen may already have moved it a little further

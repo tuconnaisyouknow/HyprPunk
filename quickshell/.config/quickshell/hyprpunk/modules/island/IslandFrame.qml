@@ -65,7 +65,8 @@ Card {
         return from + (to - from) * share;
     }
 
-    // Where a card shows its content: in the shape, but never past the card's own size.
+    // Where a card shows its content: in the shape, on whole pixels (between two,
+    // everything drawn in it would shake), but never past the card's own size.
     // Coming from a wider card, the shape is wider than the card for a moment, and what
     // the card lays out beyond its edge (the calendar's notification side, empty) must
     // stay hidden. Never above the island's top either, where the shape starts from the
@@ -77,9 +78,9 @@ Card {
             return Qt.rect(0, 0, card.cardWidth, card.cardHeight);
 
         const top = Math.max(shape.y, Math.round(island.top));
-        const width = Math.min(shape.width, card.cardWidth);
+        const width = 2 * Math.round(Math.min(shape.width, card.cardWidth) / 2);
         const height = Math.min(shape.y + shape.height - top, card.cardHeight);
-        return Qt.rect(middle - Math.round(width / 2), top, width, height);
+        return Qt.rect(middle - width / 2, top, width, height);
     }
 
     onOpenCardChanged: {
@@ -117,12 +118,12 @@ Card {
 
         property real radius: frame.lerp(frame.fromRadius, frame.targetRadius, frame.travel)
 
-        // On whole pixels, like the cards' content: half pixels while the card grows make
-        // everything in it shake. Two pixels at a time across, so both sides move alike
-        // around its middle.
+        // The glass alone, so its width moves freely between two pixels: on whole ones
+        // its sides stepped, a few times a second as the bounce slows down. It heads to
+        // a whole, even width, where its edges are sharp around its middle.
         x: frame.middle - width / 2
         y: Math.round(frame.shapeTop)
-        width: 2 * Math.round((frame.lerp(frame.fromWidth, frame.targetWidth, frame.travel) + settle.width) / 2)
+        width: frame.lerp(frame.fromWidth, 2 * Math.round(frame.targetWidth / 2), frame.travel) + settle.width
         height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travel) + settle.height
 
         // Same look as the island it grows from: base color at 0.9, blurred, with the

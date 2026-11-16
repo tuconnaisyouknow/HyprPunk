@@ -39,6 +39,11 @@ Card {
     property real openHeight: 0
     // Where the island is.
     readonly property var island: bar.islandPill
+    // The popup being added joins a card that's already out, so it makes its own room in
+    // it. The ones a card opens with are whole from the start: the island's shape heads
+    // straight to their size, where growing with their room too it first stretched into
+    // a flat pill and only then took its height.
+    property bool joining: false
 
     function show(notification) {
         // Another screen's: each one shows those that arrive while you're on it.
@@ -51,6 +56,7 @@ Card {
             return ;
 
         const id = notification.id;
+        joining = opened;
         popupList.add([notification]);
         notification.closed.connect(() => {
             return popupList.leave([id]);
@@ -177,7 +183,12 @@ Card {
                     width: column.width
                     height: (notificationCard.implicitHeight + popups.cardPadding) * slot
                     opacity: 0
-                    Component.onCompleted: enterAnimation.start()
+                    Component.onCompleted: {
+                        if (!popups.joining)
+                            slot = 1;
+
+                        enterAnimation.start();
+                    }
                     onLeavingChanged: {
                         if (leaving) {
                             enterAnimation.stop();
@@ -203,7 +214,8 @@ Card {
                         onTriggered: popups.popupList.leave([popup.modelData.id])
                     }
 
-                    // Makes room first, then fades in once the card has opened around it.
+                    // Makes room first, then fades in once the card has opened around it:
+                    // as long after when its room is there from the start.
                     SequentialAnimation {
                         id: enterAnimation
 

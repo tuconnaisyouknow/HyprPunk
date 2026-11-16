@@ -67,6 +67,11 @@ Card {
     // how far its shape still starts past that place, on whole pixels.
     readonly property int startX: frame !== null ? 0 : Math.round(lerp(pill.spreadX, 0))
     readonly property int startY: frame !== null ? 0 : Math.round(lerp(pill.spreadY, 0))
+    // Its own shape's size as it grows and bounces, between two pixels too.
+    readonly property real shapeWidth: lerp(pill.width + 2 * pill.spreadX, cardWidth) + settle.width
+    readonly property real shapeHeight: lerp(pill.height + 2 * pill.spreadY, cardHeight) + settle.height
+    // What draws its shape: its own glass, or its content's place in the shared one.
+    readonly property Item shape: frame !== null ? card : glass
     default property alias content: room.data
 
     // Right before it opens, to set the content up.
@@ -187,7 +192,7 @@ Card {
     height: implicitHeight
     visible: mapped && available
     covering: visible
-    cardRect: Qt.rect(x + card.x, y + card.y, card.width, card.height)
+    cardRect: Qt.rect(x + shape.x, y + shape.y, shape.width, shape.height)
     cardRadius: card.radius
     takesKeyboard: pinned && visible
     dismissable: pinned && visible
@@ -286,26 +291,41 @@ Card {
         }
     }
 
-    ClippingRectangle {
-        id: card
+    // Its glass, alone so it moves freely between two pixels: on whole ones its edges
+    // stepped, a few times a second as the bounce slows down. The shared shape draws
+    // its own.
+    Item {
+        id: glass
 
-        // On whole pixels, its size too: half pixels while the card grows or bounces make it
-        // and everything in it shake (the content is drawn as a picture of its size).
-        x: popup.frame !== null ? popup.frameContent.x - popup.x : popup.align === Qt.AlignRight ? popup.width - width + popup.startX : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : -popup.startX
-        y: popup.frame !== null ? popup.frameContent.y - popup.y : -popup.startY
-        width: popup.frame !== null ? popup.frameContent.width : Math.round(popup.lerp(popup.pill.width + 2 * popup.pill.spreadX, popup.cardWidth) + settle.width)
-        height: popup.frame !== null ? popup.frameContent.height : Math.round(popup.lerp(popup.pill.height + 2 * popup.pill.spreadY, popup.cardHeight) + settle.height)
-        radius: popup.frame !== null ? popup.frame.shape.radius : popup.openRadius
-        color: "transparent"
-        visible: popup.covering
+        readonly property real startX: popup.lerp(popup.pill.spreadX, 0)
 
-        // The shared shape draws its own.
+        x: popup.align === Qt.AlignRight ? popup.width - width + startX : popup.align === Qt.AlignHCenter ? (popup.width - width) / 2 : -startX
+        y: -popup.lerp(popup.pill.spreadY, 0)
+        width: popup.shapeWidth
+        height: popup.shapeHeight
+        visible: popup.frame === null && popup.covering
+
         GlassSurface {
-            visible: popup.frame === null
             radius: card.radius
             tinted: false
             backgroundColor: Colors.panel
         }
+
+    }
+
+    ClippingRectangle {
+        id: card
+
+        // The content's place in the glass, on whole pixels, its size too: half pixels
+        // while the card grows or bounces make everything in it shake (the content is
+        // drawn as a picture of its size).
+        x: popup.frame !== null ? popup.frameContent.x - popup.x : popup.align === Qt.AlignRight ? popup.width - width + popup.startX : popup.align === Qt.AlignHCenter ? Math.round((popup.width - width) / 2) : -popup.startX
+        y: popup.frame !== null ? popup.frameContent.y - popup.y : -popup.startY
+        width: popup.frame !== null ? popup.frameContent.width : Math.round(popup.shapeWidth)
+        height: popup.frame !== null ? popup.frameContent.height : Math.round(popup.shapeHeight)
+        radius: popup.frame !== null ? popup.frame.shape.radius : popup.openRadius
+        color: "transparent"
+        visible: popup.covering
 
         // Has the keyboard while it's kept open.
         Item {

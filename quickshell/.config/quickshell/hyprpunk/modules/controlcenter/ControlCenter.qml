@@ -87,7 +87,7 @@ Card {
     anchors.fill: parent
     pillName: "control"
     covering: progress > 0
-    cardRect: Qt.rect(panelSpot.x + panel.x, panelSpot.y + panel.y, panel.width, panel.height)
+    cardRect: Qt.rect(panelSpot.x + glass.x, panelSpot.y + glass.y, glass.width, glass.height)
     cardRadius: panel.radius
     takesKeyboard: opened
     dismissable: opened
@@ -105,7 +105,30 @@ Card {
         width: panel.width
         height: panel.height
 
-        // Grows out of the pill like the calendar and the player do.
+        // The panel's glass, alone so it moves freely between two pixels: on whole ones
+        // its edges stepped, a few times a second as the bounce slows down.
+        Item {
+            id: glass
+
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: -controlCenter.lerp(controlCenter.pill.spreadY, 0)
+            anchors.rightMargin: -controlCenter.lerp(controlCenter.pill.spreadX, 0)
+            visible: panel.visible
+            width: panel.shapeWidth
+            height: panel.shapeHeight
+
+            // Same look as the pill it grows from, so it feels like the pill itself is growing.
+            GlassSurface {
+                radius: panel.radius
+                tinted: false
+                backgroundColor: Colors.panel
+            }
+
+        }
+
+        // Grows out of the pill like the calendar and the player do: the pages' place in
+        // the glass.
         ClippingRectangle {
             id: panel
 
@@ -119,6 +142,9 @@ Card {
             // stay on that place, still while the shape heads to it.
             readonly property int startX: Math.round(controlCenter.lerp(controlCenter.pill.spreadX, 0))
             readonly property int startY: Math.round(controlCenter.lerp(controlCenter.pill.spreadY, 0))
+            // The glass's size as it grows and bounces, between two pixels too.
+            readonly property real shapeWidth: controlCenter.lerp(controlCenter.pill.width + 2 * controlCenter.pill.spreadX, controlCenter.panelWidth) + settle.width
+            readonly property real shapeHeight: controlCenter.lerp(controlCenter.pill.height + 2 * controlCenter.pill.spreadY, fullHeight) + settle.height
 
             anchors.top: parent.top
             anchors.right: parent.right
@@ -127,8 +153,8 @@ Card {
             anchors.topMargin: -startY
             anchors.rightMargin: -startX
             visible: controlCenter.progress > 0
-            width: Math.round(controlCenter.lerp(controlCenter.pill.width + 2 * controlCenter.pill.spreadX, controlCenter.panelWidth) + settle.width)
-            height: Math.round(controlCenter.lerp(controlCenter.pill.height + 2 * controlCenter.pill.spreadY, fullHeight) + settle.height)
+            width: Math.round(shapeWidth)
+            height: Math.round(shapeHeight)
             // The pill's corners: rounder ones would let the pill's show under the panel.
             radius: controlCenter.pill.height / 2
             color: "transparent"
@@ -169,13 +195,6 @@ Card {
                     onTapped: controlCenter.close()
                 }
 
-            }
-
-            // Same look as the pill it grows from, so it feels like the pill itself is growing.
-            GlassSurface {
-                radius: panel.radius
-                tinted: false
-                backgroundColor: Colors.panel
             }
 
             // Built bit by bit soon after the shell starts and kept, so the panel opens as
