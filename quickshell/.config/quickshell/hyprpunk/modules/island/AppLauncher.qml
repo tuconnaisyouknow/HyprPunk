@@ -28,8 +28,7 @@ SearchPanel {
     readonly property var calculation: mode === "apps" ? Apps.calculate(trimmedQuery) : null
     // Built once the shell has settled after startup, then kept: built at the first
     // opening, the grid and its icons froze the card for ~300 ms. Not right away either:
-    // the applications arrive one by one at startup, and sorting them and rebuilding the
-    // grid each time held up the bar's first values.
+    // building the grid as the shell starts held up the bar's first values.
     property bool listWanted: false
     readonly property var results: listWanted && mode === "apps" ? Apps.search(trimmedQuery) : []
     // calc, command, web or "" when there is no special row.
@@ -49,6 +48,12 @@ SearchPanel {
             "action": action
         };
     })) : []
+
+    // Set by hand: as the apps are narrowed down the grid moves its cells, and keeps its
+    // current one on the app it was on.
+    function syncGrid() {
+        grid.currentIndex = selectedIndex;
+    }
 
     function launch(entry, action) {
         close();
@@ -105,10 +110,7 @@ SearchPanel {
     bodyHeight: actionsEntry ? actionRows.length * (rowHeight + rowSpacing) - rowSpacing : (special !== "" ? rowHeight : 0) + (special !== "" && gridRows > 0 ? sectionSpacing : 0) + gridRows * cellHeight
     onOpening: actionsEntry = null
     onDefaultIndexChanged: selectedIndex = defaultIndex
-    onResultsChanged: {
-        selectedIndex = defaultIndex;
-        grid.positionViewAtBeginning();
-    }
+    onSelectedIndexChanged: syncGrid()
     // Enter and Tab are the launcher's own; so is every key while an app's actions
     // are listed, which go up and down and back to the grid.
     onKeyPressed: (event) => {
@@ -232,10 +234,16 @@ SearchPanel {
         cellWidth: launcher.cellWidth
         cellHeight: launcher.cellHeight
         boundsBehavior: Flickable.StopAtBounds
-        model: launcher.results
-        currentIndex: launcher.selectedIndex
         highlightFollowsCurrentItem: true
         highlightMoveDuration: 0
+
+        // An app keeps its cell as long as it's listed, whatever object stands for it:
+        // Quickshell makes some anew each time it lists the apps again.
+        model: ScriptModel {
+            objectProp: "id"
+            values: launcher.results
+            onValuesChanged: launcher.syncGrid()
+        }
 
         highlight: SelectionHighlight {
             view: grid

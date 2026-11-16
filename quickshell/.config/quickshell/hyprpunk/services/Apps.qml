@@ -18,6 +18,11 @@ Singleton {
     // { "<desktop id>": { "count": launches, "last": ms since epoch } }
     property var history: ({
     })
+    // The installed apps, taken once Quickshell is done listing them. It lists them again
+    // at every change in your home folder (a terminal saving its history after each
+    // command), taking some out and putting them back on the way: followed step by step,
+    // that rebuilt the launcher's grid several times and froze whatever was moving.
+    property var installed: []
 
     // How well a query matches a text, 0 for not at all. Best is the whole text, then
     // the start, the start of a word, anywhere, and last the letters in order, close together.
@@ -69,9 +74,8 @@ Singleton {
         const pinned = LauncherSettings.pinned;
         const hidden = LauncherSettings.hidden;
         const records = history;
-        const entries = DesktopEntries.applications.values;
         const matches = [];
-        for (const entry of entries) {
+        for (const entry of installed) {
             if (entry.noDisplay || hidden.includes(entry.id))
                 continue;
 
@@ -158,6 +162,16 @@ Singleton {
             Session.launchInTerminal(["sh", "-c", holdScript, "sh", command]);
         else
             Session.launch(["sh", "-c", command]);
+    }
+
+    Component.onCompleted: installed = DesktopEntries.applications.values
+
+    Connections {
+        function onApplicationsChanged() {
+            apps.installed = DesktopEntries.applications.values;
+        }
+
+        target: DesktopEntries
     }
 
     FileView {
