@@ -36,6 +36,8 @@ Item {
     property string lockError: ""
     // The time, where the lock's clock leaves from.
     readonly property Item timeItem: timeLabel
+    // Between two faces.
+    readonly property bool swapping: clockFace.moving || osdFace.moving
     // Where the time starts, from the view's left edge.
     readonly property real timeX: clockFace.x + timePart.x
     readonly property bool stopHovered: chips.stopHovered

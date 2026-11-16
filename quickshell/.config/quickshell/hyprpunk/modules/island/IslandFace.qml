@@ -22,6 +22,8 @@ Item {
     readonly property real islandWidth: Math.max(contentWidth + 2 * padding, islandHeight)
     // How much it's there: 0 gone, 1 whole.
     property real presence: shown ? 1 : 0
+    // Coming or going.
+    readonly property bool moving: swap.running
 
     anchors.centerIn: parent
     width: contentWidth
@@ -35,6 +37,8 @@ Item {
         enabled: face.animated
 
         Anim {
+            id: swap
+
             token: Motion.swap
         }
 

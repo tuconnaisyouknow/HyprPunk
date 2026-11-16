@@ -40,7 +40,8 @@ WlSessionLockSurface {
     property real flight: Lock.instant || Lock.still ? 1 : 0
     // Where the time sits in the island, which the clock leaves from and heads back to.
     property rect flightHome: Qt.rect(0, 0, 0, 0)
-    // The music wave stands: it rises as the lock comes in and settles as it goes.
+    // The music wave stands: it rises as the time leaves the island, and settles before
+    // anything moves once the password is right.
     property bool waveUp: Lock.instant || Lock.still
     // The time out of the island: the clock has it. Already for sleep.
     property bool timeAway: Lock.instant
@@ -245,6 +246,12 @@ WlSessionLockSurface {
     SequentialAnimation {
         id: revealOut
 
+        // The music wave lies flat first, as the desktop's did before locking: the
+        // desktop's lies flat under the lock, which shows it as the lock goes.
+        PauseAnimation {
+            duration: Lock.music.playing && MusicSettings.wave ? Motion.waveSettle : 0
+        }
+
         ParallelAnimation {
             NumberAnimation {
                 target: surface
@@ -347,7 +354,6 @@ WlSessionLockSurface {
                 stillOut.restart();
             else
                 revealOut.restart();
-            // Right away, as the desktop's settles as soon as you lock.
             surface.waveUp = false;
             // The lock already showed the OSD. Gone now, so the bar's island doesn't
             // open for it once the lock is gone.
@@ -552,9 +558,9 @@ WlSessionLockSurface {
         }
 
         // The music wave, where the desktop's was (VisualizerShell.qml): that one settled into the
-        // floor before the screen froze, this one rises as the screen starts to blur, past the
-        // moments the shell stalls building the lock. Unlocking mirrors it: it settles as soon as
-        // the password is right, then the desktop's rises once unlocked. Both move the same way.
+        // floor before the screen froze, this one rises as the time leaves the island, past the
+        // moments the shell stalls building the lock. Unlocking mirrors it: it settles before the
+        // lock plays its way out, then the desktop's rises once unlocked. Both move the same way.
         VisualizerWave {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter

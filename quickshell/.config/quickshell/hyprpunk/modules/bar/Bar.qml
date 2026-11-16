@@ -49,6 +49,11 @@ Item {
     // beside the card instead (sideOsd). As soon as the card lets go the island takes it
     // back, hidden, so the card folds straight into the OSD's shape.
     readonly property bool islandOsdShown: osdVisible && !lockShown && screenState !== null && screenState.islandOwner === ""
+    // Nothing moving that the lock would freeze: no card folding back (but the prompts,
+    // which stay), the island not between two faces. The lock waits for it (Lock.resting).
+    readonly property bool resting: !island.swapping && !cards.some((card) => {
+        return card.covering && !card.keptUnderFullscreen;
+    })
     // The OSD is going into the island under a card folding back onto it: its time
     // running out waits for the card to land (Osd.landing).
     readonly property bool osdLanding: islandOsdShown && islandCovered

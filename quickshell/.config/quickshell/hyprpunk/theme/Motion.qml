@@ -67,11 +67,14 @@ Singleton {
         readonly property real slideIn: 0.3
         readonly property real backOff: 0.15
     }
+    // How long the time takes between the island and the lock screen's clock, the same
+    // both ways.
+    readonly property int clockTravel: 450
     // The time leaving the island for the lock screen's clock, growing as it goes: it
     // sets off at once and lands a touch past its place, like the shell's other moves,
     // only gentler over that distance.
     readonly property var clockFlight: ({
-        "duration": 700,
+        "duration": clockTravel,
         "easing": Easing.OutBack,
         "overshoot": 0.7
     })
@@ -79,7 +82,7 @@ Singleton {
     // still moving as it lands, without going past. The island takes the impact
     // (IslandPill).
     readonly property var clockReturn: ({
-        "duration": 700,
+        "duration": clockTravel,
         "easing": Easing.InQuad
     })
 
@@ -166,8 +169,9 @@ Singleton {
     // them go in order without waiting on each.
     readonly property int stagger: 70
     // How long the music wave takes to settle into the floor or rise from it, around the
-    // lock screen.
-    readonly property int waveSettle: 450
+    // lock screen. The lock waits for it the same both ways: before its snapshot, and
+    // before playing its way out.
+    readonly property int waveSettle: 150
 
     // How far a press squeezes something that big (bounce): the same few pixels for every
     // size, at most 10% for the small ones.

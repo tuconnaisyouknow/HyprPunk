@@ -22,6 +22,8 @@ Pill {
     readonly property string face: bar.islandOsdShown ? "osd" : "clock"
     // Where its time starts, from its left edge.
     readonly property real timeX: view.parent.x + view.x + view.timeX
+    // Between the time and an OSD.
+    readonly property bool swapping: view.swapping
 
     // Another OSD over the one shown.
     function fadeContent() {

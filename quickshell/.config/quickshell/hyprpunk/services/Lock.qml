@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pam
 import qs.config
+import qs.state
 import qs.theme
 
 // Locking the session: the way in (the islands coming to rest and the desktop's wave
@@ -53,6 +54,11 @@ Singleton {
     property var relays: ({})
     // Waiting for the desktop's wave to lie flat, so the snapshot doesn't keep it.
     property bool waitingForWave: false
+    // Every bar at rest (Bar.resting): a card folding back or the island leaving an OSD
+    // would freeze mid-move in the snapshot. Nothing moving, the lock goes at once.
+    readonly property bool resting: Quickshell.screens.every((screen) => {
+        return ShellState.forScreen(screen)?.bar?.resting ?? true;
+    })
 
     // Each failed try, for the island to shake.
     signal failed()
@@ -71,7 +77,6 @@ Singleton {
         if (covering) {
             if (instant && !snapshot.running) {
                 locker.instant = true;
-                resting.stop();
                 waitingForWave = false;
                 freeze();
             }
@@ -92,13 +97,13 @@ Singleton {
             return ;
         }
         waitingForWave = !still && music.playing && MusicSettings.wave;
-        resting.restart();
+        proceed();
     }
 
     // Once the islands are at rest and the desktop's wave lies flat: the lock then starts
     // from the screen as it is, with nothing moving while it comes up.
     function proceed() {
-        if (resting.running || waitingForWave || !covering || locked)
+        if (!resting || waitingForWave || !covering || locked || snapshot.running)
             return ;
 
         if (still)
@@ -179,7 +184,6 @@ Singleton {
 
     function lockNow() {
         deadline.stop();
-        resting.stop();
         waitingForWave = false;
         locked = true;
     }
@@ -236,6 +240,8 @@ Singleton {
         }
     }
 
+    onRestingChanged: proceed()
+
     // The desktop's levels, followed while the lock covers the screen: the desktop's wave
     // settles into the floor meanwhile (VisualizerShell.qml), and rises once unlocked.
     CavaLevels {
@@ -266,17 +272,8 @@ wait'
         onExited: locker.lockNow()
     }
 
-    // A card folding back onto its island, or the island leaving an OSD (Bar.lockShown).
-    // grim then takes a moment more before the lock comes.
-    Timer {
-        id: resting
-
-        interval: Math.max(Motion.swap.duration, Motion.resize.large.duration)
-        onTriggered: locker.proceed()
-    }
-
-    // Locks anyway when something's late: the desktop's wave lying flat (not running, or
-    // getting no frames) or grim. The lock then comes without the screen it blurs out of.
+    // Locks anyway when something's late: a bar coming to rest, the desktop's wave lying
+    // flat (not running, or getting no frames) or grim. The lock then comes without the screen it blurs out of.
     Timer {
         id: deadline
 
