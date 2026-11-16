@@ -2,7 +2,8 @@
 # Gives Papirus's folders the wallpaper's accent. Each accent gets its own icon theme,
 # HyprPunk-<accent>: Papirus-Dark's folders recolored, everything else inherited. Open
 # apps only reload icons when the theme's name changes, so a new accent is a new theme.
-# matugen runs apply after writing the folder colors (folder-colors.template).
+# wallpaperctl.sh runs apply once matugen has written the folder colors
+# (folder-colors.template).
 #   foldersctl.sh apply   builds the accent's theme if needed, and moves every app to it
 #   foldersctl.sh name    prints the theme apps should use (qt-configctl.sh)
 set -euo pipefail

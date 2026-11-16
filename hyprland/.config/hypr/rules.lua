@@ -54,11 +54,10 @@ hl.window_rule({
 -- LAYER RULES --
 -----------------
 
--- The shell's window, with the bar and every card: blur only what is drawn, not the
--- empty space around it, and its tooltips too
+-- The shell asks for the blur behind its pills and cards itself, shape by shape. Its
+-- tooltips can't: blur what they draw, not the empty space around
 hl.layer_rule({
   match = { namespace = "hyprpunk-shell" },
-  blur = true,
   blur_popups = true,
   ignore_alpha = glass.ignore_alpha,
 })

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Catppuccin Mocha for bat and yazi's previews, retouched so code gets the same colors
      as in Neovim, and the wallpaper's palette in place of its surfaces, grays, mauve and
-     lavender. matugen writes it to ~/.config/bat/themes/HyprPunk.tmTheme.
+     lavender. matugen writes it for yazi with every palette, and batctl.sh once per
+     palette for bat.
      The NEOVIM'S COLORS rules come first, so they win over Catppuccin's own
      whenever both match a token just as closely. -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

@@ -1,8 +1,6 @@
 -- How windows look and move: gaps, borders, blur, shadows, animations and the
 -- tiling layout. Loaded by hyprland.lua.
 
-local colors = __require("colors_state") -- The wallpaper's accent
-
 -------------------
 -- LOOK AND FEEL --
 -------------------
@@ -12,11 +10,10 @@ hl.config({
     gaps_in = 5,
     gaps_out = 10,
 
-    -- A thin accent line marks the window you're in, the others have none
+    -- A thin line marks the window you're in (accent.lua colors it), the others have none
     border_size = 1,
 
     col = {
-      active_border = "rgba(" .. colors.primary .. "b3)",
       inactive_border = "rgba(00000000)",
     },
 
@@ -42,12 +39,12 @@ hl.config({
     dim_inactive = true,
     dim_strength = 0.12,
 
-    -- A faint accent glow around the window you're in, nothing around the others
+    -- A faint glow around the window you're in (accent.lua colors it), nothing around
+    -- the others
     shadow = {
       enabled = true,
       range = 14,
       render_power = 4,
-      color = "rgba(" .. colors.primary .. "26)",
       color_inactive = "rgba(00000000)",
     },
 

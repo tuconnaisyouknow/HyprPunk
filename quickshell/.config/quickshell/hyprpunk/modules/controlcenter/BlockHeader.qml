@@ -48,11 +48,8 @@ RowLayout {
         font.family: Metrics.font
         font.pixelSize: Metrics.text.emphasis
 
-        Behavior on color {
-            ColorAnim {
-                token: Motion.color.small
-            }
-
+        ColorFade on color {
+            token: Motion.color.small
         }
 
     }

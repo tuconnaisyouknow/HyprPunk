@@ -42,11 +42,8 @@ ColumnLayout {
         border.width: 1.5
         border.color: Colors.alpha(Colors.primary, input.activeFocus ? 0.85 : 0)
 
-        Behavior on border.color {
-            ColorAnimation {
-                duration: 160
-            }
-
+        ColorFade on border.color {
+            token: Motion.color.small
         }
 
         TextInput {

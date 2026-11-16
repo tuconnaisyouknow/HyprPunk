@@ -85,14 +85,16 @@ Item {
         }
     }
 
+    // A slide per item, built by their number alone: another theme's wallpapers change
+    // what the slides show, not the slides.
     Repeater {
-        model: carousel.items
+        model: carousel.count
 
         Item {
             id: slide
 
-            required property var modelData
             required property int index
+            readonly property var item: carousel.items[index]
             // Signed distance to the centre in slides, looping around (-count/2..count/2).
             readonly property real offset: {
                 const count = carousel.count;
@@ -116,8 +118,8 @@ Item {
                 // The whole image, never cropped.
                 Image {
                     anchors.fill: parent
-                    visible: slide.modelData.image !== ""
-                    source: slide.modelData.image !== "" ? "file://" + slide.modelData.image : ""
+                    visible: slide.item.image !== ""
+                    source: slide.item.image !== "" ? "file://" + slide.item.image : ""
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     smooth: true
@@ -126,8 +128,8 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    visible: slide.modelData.image === ""
-                    text: slide.modelData.id
+                    visible: slide.item.image === ""
+                    text: slide.item.id
                     color: Colors.primary
                     font.family: Metrics.font
                     font.pixelSize: Metrics.text.title
@@ -154,7 +156,7 @@ Item {
 
             // Badge on the item in use.
             Rectangle {
-                visible: slide.modelData.id === carousel.currentId
+                visible: slide.item.id === carousel.currentId
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.margins: Metrics.spacing.normal

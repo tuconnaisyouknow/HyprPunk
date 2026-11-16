@@ -54,11 +54,8 @@ ControlBlock {
                 hovered: iconHover.hovered
                 backgroundColor: tile.active ? Colors.alpha(Colors.primary, iconHover.hovered ? 0.95 : 0.8) : "transparent"
 
-                Behavior on backgroundColor {
-                    ColorAnim {
-                        token: Motion.color.small
-                    }
-
+                ColorFade on backgroundColor {
+                    token: Motion.color.small
                 }
 
             }
@@ -83,11 +80,8 @@ ControlBlock {
                 onTapped: tile.toggle()
             }
 
-            Behavior on color {
-                ColorAnim {
-                    token: Motion.color.small
-                }
-
+            ColorFade on color {
+                token: Motion.color.small
             }
 
         }

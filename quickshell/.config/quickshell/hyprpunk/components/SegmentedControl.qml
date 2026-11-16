@@ -109,11 +109,8 @@ Item {
                         font.family: Metrics.font
                         font.pixelSize: control.compact ? 16 : 20
 
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 200
-                            }
-
+                        ColorFade on color {
+                            token: Motion.color.normal
                         }
 
                     }
@@ -125,11 +122,8 @@ Item {
                         font.pixelSize: control.compact ? 12 : 10
                         font.weight: segment.chosen ? Font.Bold : Font.Medium
 
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 200
-                            }
-
+                        ColorFade on color {
+                            token: Motion.color.normal
                         }
 
                     }

@@ -89,11 +89,8 @@ Item {
                 radius: parent.radius
                 color: control.accent
 
-                Behavior on color {
-                    ColorAnim {
-                        token: Motion.color.small
-                    }
-
+                ColorFade on color {
+                    token: Motion.color.small
                 }
 
             }
@@ -107,11 +104,8 @@ Item {
                 radius: sliderFill.radius
                 backgroundColor: control.accent
 
-                Behavior on backgroundColor {
-                    ColorAnim {
-                        token: Motion.color.small
-                    }
-
+                ColorFade on backgroundColor {
+                    token: Motion.color.small
                 }
 
             }

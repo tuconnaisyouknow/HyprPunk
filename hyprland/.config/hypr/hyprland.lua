@@ -13,6 +13,7 @@ require("monitors")    -- Screens
 require("workspaces")  -- Which workspace lives on which screen, per machine
 require("input")       -- Keyboard, mouse, touchpad and gestures
 require("looknfeel")   -- Gaps, borders, blur, animations and layout
+require("accent")      -- The wallpaper's accent on the borders
 require("rules")       -- Where apps open, and the shell's blurred layers
 require("keybindings") -- Shortcuts
 require("env")         -- Environment variables

@@ -1,0 +1,4 @@
+# bat, which zsh-bat also puts behind cat. matugen writes ~/.config/bat/config from this
+# file for every new wallpaper, with its palette's name in the theme's. batctl.sh keeps
+# a theme per palette in bat's cache.
+--theme="HyprPunk-{{palette}}"

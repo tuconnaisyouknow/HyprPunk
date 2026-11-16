@@ -98,6 +98,12 @@ in that surface (a card's preview, its pinned state, the page shown).
   wave (its own process, so the shell's stalls never freeze it).
 - **The shell's window is never resized:** Hyprland shows a resized layer's new buffer
   in its old box for a frame.
+- **Blur is asked for shape by shape, by a window no bigger than it needs.** Hyprland
+  blurs the whole of a window that asks for blur, again at every frame something moves
+  behind it. So the pills' blur belongs to a second window of the bar's size that draws
+  nothing (a glass on the desktop puts a `BlurShape` in itself), and the shell's window
+  only asks for its open cards' (`Card.cardRect`). Never a blur rule on a full-screen
+  layer: it cost a third of the graphics card all through a wallpaper's transition.
 - **What's closed costs nothing, and opens without a stall.** A card's content is built
   off the critical path: by an asynchronous `Loader` once the bar has its first values.
   Then it's kept. While closed, its content is `visible: false`, holds no `ServiceRef`,
@@ -130,7 +136,9 @@ in that surface (a card's preview, its pinned state, the page shown).
   | `pulse` | something breathing on its own while a state lasts |
 
   The first five come in `small`, `normal` and `large`, by the distance travelled, and
-  are played with `Anim` and `ColorAnim` (`Anim { token: Motion.leave.small }`).
+  are played with `Anim` and `ColorFade` (`Anim { token: Motion.leave.small }`,
+  `ColorFade on color { token: Motion.color.small }`). A color only fades for a change
+  of state: a new palette lands at once everywhere, and `ColorFade` lets it through.
   `bounce`, `settle`, `drop` and `pulse` are gestures of their own, each with its
   components.
 - **Springs for what follows a moving target.** A value that can change while it

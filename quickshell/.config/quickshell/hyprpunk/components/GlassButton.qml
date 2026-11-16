@@ -34,11 +34,8 @@ Item {
         backgroundColor: button.accent ? Colors.alpha(Colors.primary, button.hovered ? 0.95 : 0.8) : "transparent"
 
         // Chosen or let go, in the accent or not.
-        Behavior on backgroundColor {
-            ColorAnim {
-                token: Motion.color.small
-            }
-
+        ColorFade on backgroundColor {
+            token: Motion.color.small
         }
 
     }

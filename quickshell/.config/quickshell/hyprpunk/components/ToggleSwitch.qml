@@ -27,11 +27,8 @@ Rectangle {
         hovered: switchHover.hovered
         backgroundColor: toggleSwitch.checked ? Colors.alpha(Colors.primary, switchHover.hovered ? 0.95 : 0.8) : "transparent"
 
-        Behavior on backgroundColor {
-            ColorAnimation {
-                duration: 160
-            }
-
+        ColorFade on backgroundColor {
+            token: Motion.color.small
         }
 
     }
@@ -45,11 +42,8 @@ Rectangle {
         // Dark on the accent, the faded secondary color on the plain glass, where dark would vanish.
         color: toggleSwitch.checked ? Colors.base : Colors.alpha(Colors.secondary, 0.5)
 
-        Behavior on color {
-            ColorAnimation {
-                duration: 160
-            }
-
+        ColorFade on color {
+            token: Motion.color.small
         }
 
         Behavior on x {

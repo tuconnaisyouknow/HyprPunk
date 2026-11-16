@@ -9,6 +9,7 @@ gtk3/.local/share/themes/HyprPunk/gtk-3.0/colors.css
 gtk4/.config/gtk-4.0/gtk.css
 kvantum/.config/Kvantum/HyprPunk/
 bat/.config/bat/themes/
+bat/.config/bat/config
 btop/.config/btop/themes/
 yazi/.config/yazi/theme.toml
 fastfetch/.config/fastfetch/config.jsonc

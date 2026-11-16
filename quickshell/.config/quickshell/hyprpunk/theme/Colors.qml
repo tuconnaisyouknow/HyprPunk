@@ -9,8 +9,12 @@ import qs.config
 // accent, the secondary the rest of what you read, in place of the greys. Every file
 // takes its colors from here by role, so a new wallpaper recolors the whole shell at once.
 Singleton {
+    id: colors
+
     // A new palette lands at once: fading into it re-evaluates every color of the
-    // shell on each frame, which dropped it to a few frames a second.
+    // shell on each frame, which dropped it to a few frames a second. While it lands,
+    // the fades of single colors stand aside (ColorFade).
+    property bool landing: false
     readonly property color crust: palette.crust
     readonly property color base: palette.base
     readonly property color surface0: palette.surface0
@@ -27,7 +31,8 @@ Singleton {
     readonly property color peach: palette.peach
     readonly property color red: palette.red
 
-    // The cards and pills: the base at 0.9, blurred behind by Hyprland's layer rules.
+    // The cards and pills: the base at 0.9, blurred behind by Hyprland where the shell
+    // asks (ScreenShell).
     readonly property color panel: alpha(base, 0.9)
     // Search and password fields, a little see-through inside the card.
     readonly property color field: alpha(base, 0.6)
@@ -48,7 +53,12 @@ Singleton {
         blockLoading: true
         watchChanges: true
         printErrors: false
-        onFileChanged: reload()
+        onFileChanged: {
+            colors.landing = true;
+            reload();
+        }
+        onLoaded: colors.landing = false
+        onLoadFailed: colors.landing = false
 
         JsonAdapter {
             id: palette

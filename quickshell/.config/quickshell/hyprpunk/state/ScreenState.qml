@@ -34,6 +34,19 @@ QtObject {
         const owner = first(1) ?? first(2) ?? first(3);
         return owner !== undefined ? owner.name : "";
     }
+    // The glass drawn straight on its desktop (BlurShape), for the blur behind it.
+    property var blurShapes: []
+
+    function addBlurShape(shape) {
+        blurShapes = blurShapes.concat([shape]);
+    }
+
+    function removeBlurShape(shape) {
+        blurShapes = blurShapes.filter((listed) => {
+            return listed !== shape;
+        });
+    }
+
     // Its bar (Bar), for the lock screen to start from where its pills are.
     property Item bar: null
     // The surfaces you can open on this screen, by name (the IPC's panel names).

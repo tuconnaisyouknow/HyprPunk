@@ -30,7 +30,11 @@ Item {
     property real liquidBottom: lightBackground ? 0.95 : 0.4
 
     // The rim's color, from the usual pale glass to the accent as the field gets the focus.
+    // The accent is only read once it shows, so a new palette leaves every other rim alone.
     function rimColor(alpha, focusedAlpha) {
+        if (accent === 0)
+            return Colors.alpha(Colors.light, alpha);
+
         return Qt.rgba(Colors.light.r + (Colors.primary.r - Colors.light.r) * accent, Colors.light.g + (Colors.primary.g - Colors.light.g) * accent, Colors.light.b + (Colors.primary.b - Colors.light.b) * accent, alpha + (focusedAlpha - alpha) * accent);
     }
 

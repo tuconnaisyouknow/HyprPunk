@@ -20,6 +20,7 @@ import qs.theme
 // The bar's strip is kept free by Hyprland (monitors.lua), not by a window of its own.
 // The window covers the screen but only takes the pointer on the bar and the open cards.
 // It stays under fullscreen windows, like the bar always did.
+// A second window, of the bar's size, draws nothing: it asks for the blur behind the pills.
 Scope {
     id: shell
 
@@ -45,6 +46,56 @@ Scope {
         }
     }
 
+    // The blur behind the pills. Hyprland blurs the whole of a window that asks for
+    // blur, again at each frame something moves behind it: asked for by the shell's
+    // window, every screen was blurred whole all through a new wallpaper's transition,
+    // more than the graphics card could draw in time. So a window of the bar's size asks
+    // for the pills' blur and draws nothing, under the shell's window, which only asks
+    // for its open cards'.
+    PanelWindow {
+        id: glass
+
+        screen: shell.screen
+        color: "transparent"
+        implicitHeight: bar.height
+        exclusionMode: ExclusionMode.Ignore
+        WlrLayershell.namespace: "hyprpunk-glass"
+        BackgroundEffect.blurRegion: pillBlur
+
+        anchors {
+            top: true
+            left: true
+            right: true
+        }
+
+        mask: Region {
+        }
+
+        Region {
+            id: pillBlur
+
+            regions: pillBlurShapes.instances
+        }
+
+        Variants {
+            id: pillBlurShapes
+
+            model: shell.screenState !== null ? shell.screenState.blurShapes : []
+
+            Region {
+                required property var modelData
+
+                x: modelData.place.x
+                y: modelData.place.y
+                width: modelData.place.width
+                height: modelData.place.height
+                radius: modelData.placeRadius
+            }
+
+        }
+
+    }
+
     PanelWindow {
         id: window
 
@@ -57,6 +108,8 @@ Scope {
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: "hyprpunk-shell"
+        // Blur behind the open cards only (the blur window has the pills').
+        BackgroundEffect.blurRegion: cardBlur
         // On demand rather than exclusive: the focus grab already hands it the keyboard
         // while a card that closes on a click outside is open, and with both, Hyprland
         // held back the window's frames (a card took seconds to open).
@@ -335,6 +388,29 @@ Scope {
                 y: modelData.inputRect.y
                 width: modelData.inputRect.width
                 height: modelData.inputRect.height
+            }
+
+        }
+
+        Region {
+            id: cardBlur
+
+            regions: cardBlurShapes.instances
+        }
+
+        Variants {
+            id: cardBlurShapes
+
+            model: window.cards
+
+            Region {
+                required property var modelData
+
+                x: modelData.covering ? modelData.cardRect.x : 0
+                y: modelData.covering ? modelData.cardRect.y : 0
+                width: modelData.covering ? modelData.cardRect.width : 0
+                height: modelData.covering ? modelData.cardRect.height : 0
+                radius: modelData.cardRadius
             }
 
         }

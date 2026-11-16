@@ -417,11 +417,8 @@ Item {
                         radius: width / 2
                         color: annotator.size === parent.index ? Colors.primary : Colors.secondary
 
-                        Behavior on color {
-                            ColorAnim {
-                                token: Motion.color.small
-                            }
-
+                        ColorFade on color {
+                            token: Motion.color.small
                         }
 
                     }
@@ -506,11 +503,8 @@ Item {
             target: button
         }
 
-        Behavior on color {
-            ColorAnim {
-                token: Motion.color.small
-            }
-
+        ColorFade on color {
+            token: Motion.color.small
         }
 
     }

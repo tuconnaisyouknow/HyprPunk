@@ -24,7 +24,7 @@ border_symbol = "│"
 border_style  = { fg = "{{colors.overlay1.default.hex}}" }
 
 # Previews highlight code like bat
-syntect_theme = "~/.config/bat/themes/HyprPunk.tmTheme"
+syntect_theme = "~/.local/state/hyprpunk/code.tmTheme"
 
 [tabs]
 active   = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.text.default.hex}}", bold = true }

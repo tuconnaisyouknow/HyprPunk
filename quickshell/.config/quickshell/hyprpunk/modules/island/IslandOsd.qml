@@ -97,11 +97,8 @@ RowLayout {
                 radius: 4
                 color: index < parent.filled ? Colors.primary : Colors.surface1
 
-                Behavior on color {
-                    ColorAnim {
-                        token: Motion.color.small
-                    }
-
+                ColorFade on color {
+                    token: Motion.color.small
                 }
 
             }
@@ -320,11 +317,8 @@ RowLayout {
             // The secondary color when muted, the bar still shows the level it'll come back to.
             color: view.content.enabled ? Colors.primary : Colors.secondary
 
-            Behavior on color {
-                ColorAnim {
-                    token: Motion.color.small
-                }
-
+            ColorFade on color {
+                token: Motion.color.small
             }
 
             Behavior on width {

@@ -42,11 +42,8 @@ Item {
                 hovered: checkHover.hovered
                 backgroundColor: check.checked ? Colors.alpha(Colors.primary, checkHover.hovered ? 0.95 : 0.8) : "transparent"
 
-                Behavior on backgroundColor {
-                    ColorAnim {
-                        token: Motion.color.small
-                    }
-
+                ColorFade on backgroundColor {
+                    token: Motion.color.small
                 }
 
             }

@@ -261,11 +261,37 @@ palette_of() {
   printf '%s\n' "$MATUGEN_DIR/palettes/$name.json"
 }
 
-# matugen writes every app's colors from it, Brave's included, kept between sessions
+# matugen writes every app's colors from it, Brave's included, kept between sessions.
+# It also gets the palette's name, for what's kept ready for each palette (bat's theme).
 render_colors() {
   local palette
   palette="$(palette_of "$1")"
-  matugen -q json "$palette"
+  matugen -q --import-json-string "{\"palette\": \"$(basename "$palette" .json)\"}" json "$palette"
+}
+
+# The open apps take the colors matugen wrote, one after another, in the order you'd
+# notice them: told all at once, they redraw together and the screens miss frames in the
+# middle of the transition. At the lowest priority, for what a step has to build.
+tell_apps() {
+  nice -n 19 bash -s <<'TELL' >/dev/null 2>&1 || true
+# The borders, without reloading Hyprland, which freezes every screen for a few frames
+hyprctl eval 'dofile(os.getenv("HOME") .. "/.config/hypr/accent.lua")'
+# kitty reads its colors again on SIGUSR1
+pkill -USR1 -x kitty
+# Open GTK 3 apps only read the theme anew when its name changes
+gsettings set org.gnome.desktop.interface gtk-theme '' && gsettings set org.gnome.desktop.interface gtk-theme HyprPunk
+# The folders' icon theme, built if it's a new accent
+~/.local/lib/hyprpunk/foldersctl.sh apply
+# Brave's color, through its root tool, which polkit lets through. Skipped without Brave.
+[ -x /usr/local/bin/hyprpunk-brave-color ] && pkexec /usr/local/bin/hyprpunk-brave-color "$(cat ~/.local/state/hyprpunk/brave-color)"
+# A running tmux, the prompts on screen (.zshrc draws them again on SIGURG, which every
+# other program ignores) and open btops (SIGUSR2)
+tmux source-file ~/.local/state/hyprpunk/tmux-colors.conf
+pkill -URG -x zsh
+pkill -USR2 -x btop
+# bat's themes, built again if a palette changed
+~/.local/lib/hyprpunk/batctl.sh ensure
+TELL
 }
 
 # pkexec, since the login screen is the system's, and polkit lets this tool through. It
@@ -276,7 +302,8 @@ set_login_screen() {
 
 # A new wallpaper and its look. A wallpaper without a palette stops here, before
 # anything changes. Then the transition starts as soon as you pick it, since awww doesn't
-# wait for it to end, and the colors, which take matugen a moment, land during it. It's
+# wait for it to end, and the colors, which take matugen a moment, land during it: the
+# shell's as soon as they're written, the apps' one after another. It's
 # saved only once both are in place, so a failure leaves the old one to come back at
 # login. The login screen comes last, since you only see it at the next login. Without
 # awww arguments the wallpaper isn't shown (install.sh).
@@ -288,6 +315,7 @@ switch_to() {
     show_wallpaper "$wallpaper" "$@"
   fi
   render_colors "$wallpaper"
+  tell_apps
   write_state "$wallpaper"
   set_login_screen "$wallpaper"
 }

@@ -5,7 +5,7 @@ import Quickshell
 
 // How the shell moves. Every animation takes its timing from here, named by what the
 // element does, so two moves of the same kind feel the same everywhere and the shell's
-// rhythm changes in one place. Anim and ColorAnim read these for you.
+// rhythm changes in one place. Anim and ColorFade read these for you.
 Singleton {
     // Something going somewhere, or a shape changing size, starting fast so it answers
     // right away. Large is a card unfolding out of its pill.

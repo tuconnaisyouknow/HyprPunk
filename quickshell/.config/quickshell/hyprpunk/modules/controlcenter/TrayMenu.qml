@@ -81,11 +81,8 @@ Column {
                     radius: Metrics.radius.normal
                     color: entry.current ? Colors.alpha(Colors.primary, 0.16) : "transparent"
 
-                    Behavior on color {
-                        ColorAnim {
-                            token: Motion.color.small
-                        }
-
+                    ColorFade on color {
+                        token: Motion.color.small
                     }
 
                 }

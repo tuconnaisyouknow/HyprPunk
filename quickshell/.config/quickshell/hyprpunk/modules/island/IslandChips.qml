@@ -48,11 +48,8 @@ RowLayout {
             radius: 4
             color: Privacy.cameraInUse ? Colors.green : Colors.peach
 
-            Behavior on color {
-                ColorAnim {
-                    token: Motion.color.normal
-                }
-
+            ColorFade on color {
+                token: Motion.color.normal
             }
 
         }
@@ -74,11 +71,8 @@ RowLayout {
             radius: height / 2
             color: recordingHover.hovered ? Colors.alpha(Colors.red, 0.28) : Colors.alpha(Colors.red, 0.16)
 
-            Behavior on color {
-                ColorAnim {
-                    token: Motion.color.small
-                }
-
+            ColorFade on color {
+                token: Motion.color.small
             }
 
         }
@@ -178,11 +172,8 @@ RowLayout {
             radius: height / 2
             color: Colors.alpha(ShellState.doNotDisturb ? Colors.secondary : Colors.primary, 0.16)
 
-            Behavior on color {
-                ColorAnim {
-                    token: Motion.color.small
-                }
-
+            ColorFade on color {
+                token: Motion.color.small
             }
 
         }

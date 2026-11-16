@@ -132,11 +132,8 @@ ClippingRectangle {
 
                     }
 
-                    Behavior on color {
-                        ColorAnim {
-                            token: Motion.color.normal
-                        }
-
+                    ColorFade on color {
+                        token: Motion.color.normal
                     }
 
                 }
@@ -198,11 +195,8 @@ ClippingRectangle {
 
         }
 
-        Behavior on color {
-            ColorAnim {
-                token: Motion.color.small
-            }
-
+        ColorFade on color {
+            token: Motion.color.small
         }
 
     }

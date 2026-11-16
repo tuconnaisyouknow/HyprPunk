@@ -348,11 +348,8 @@ Item {
 
         }
 
-        Behavior on color {
-            ColorAnim {
-                token: Motion.color.large
-            }
-
+        ColorFade on color {
+            token: Motion.color.large
         }
 
     }

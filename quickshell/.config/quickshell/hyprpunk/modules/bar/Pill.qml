@@ -30,7 +30,7 @@ Rectangle {
     property int spacing: Metrics.spacing.normal
     // On each side.
     property int horizontalPadding: Metrics.pillPadding
-    // The panels' card: base at 0.9, blurred by the shell's layer rule. Drawn by the glass
+    // The panels' card: base at 0.9, blurred behind (BlurShape). Drawn by the glass
     // rather than the pill, so the liquid style can make it see-through.
     readonly property color baseColor: Colors.panel
 
@@ -56,6 +56,11 @@ Rectangle {
         tinted: false
         hovered: pill.lit
         backgroundColor: pill.baseColor
+    }
+
+    BlurShape {
+        radius: pill.radius
+        shown: glass.opacity > 0.5
     }
 
     HoverHandler {

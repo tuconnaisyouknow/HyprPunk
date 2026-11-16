@@ -99,11 +99,8 @@ IslandPanel {
                             hovered: entryCard.selected
                             backgroundColor: entryCard.armed ? Colors.alpha(Colors.red, 0.9) : entryCard.selected ? Colors.alpha(Colors.primary, 0.9) : "transparent"
 
-                            Behavior on backgroundColor {
-                                ColorAnim {
-                                    token: Motion.color.small
-                                }
-
+                            ColorFade on backgroundColor {
+                                token: Motion.color.small
                             }
 
                         }
@@ -118,11 +115,8 @@ IslandPanel {
                             font.pixelSize: 24
                             font.weight: Font.Bold
 
-                            Behavior on color {
-                                ColorAnim {
-                                    token: Motion.color.small
-                                }
-
+                            ColorFade on color {
+                                token: Motion.color.small
                             }
 
                         }

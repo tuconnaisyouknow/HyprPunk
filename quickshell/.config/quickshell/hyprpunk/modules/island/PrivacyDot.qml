@@ -22,6 +22,11 @@ Item {
         backgroundColor: Colors.panel
     }
 
+    BlurShape {
+        radius: dot.height / 2
+        shown: dot.opacity > 0.5
+    }
+
     Row {
         id: dots
 
@@ -35,11 +40,8 @@ Item {
             radius: 4
             color: dot.camera ? Colors.green : Colors.peach
 
-            Behavior on color {
-                ColorAnim {
-                    token: Motion.color.normal
-                }
-
+            ColorFade on color {
+                token: Motion.color.normal
             }
 
         }

@@ -83,14 +83,16 @@ IslandPanel {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: picker.gap
 
+        // A card per theme, built by their number alone: a new wallpaper changes what
+        // the cards show, not the cards.
         Repeater {
-            model: picker.themes
+            model: picker.themes.length
 
             Column {
                 id: themeCard
 
-                required property var modelData
                 required property int index
+                readonly property var theme: picker.themes[index]
                 readonly property bool selected: index === picker.selectedIndex
 
                 width: picker.thumbWidth
@@ -107,7 +109,7 @@ IslandPanel {
 
                         Image {
                             anchors.fill: parent
-                            source: "file://" + themeCard.modelData.thumbnail
+                            source: "file://" + themeCard.theme.thumbnail
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             smooth: true
@@ -179,7 +181,7 @@ IslandPanel {
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     topPadding: Metrics.spacing.small
-                    text: themeCard.modelData.name
+                    text: themeCard.theme.name
                     color: themeCard.selected ? Colors.primary : Colors.secondary
                     font.family: Metrics.font
                     font.pixelSize: Metrics.text.emphasis
@@ -188,7 +190,7 @@ IslandPanel {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: picker.mottos[themeCard.modelData.name] || ""
+                    text: picker.mottos[themeCard.theme.name] || ""
                     visible: text !== ""
                     color: Colors.secondary
                     font.family: Metrics.font

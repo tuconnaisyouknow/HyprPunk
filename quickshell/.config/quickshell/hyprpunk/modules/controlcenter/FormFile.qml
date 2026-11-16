@@ -124,11 +124,8 @@ ColumnLayout {
             target: box
         }
 
-        Behavior on color {
-            ColorAnim {
-                token: Motion.color.small
-            }
-
+        ColorFade on color {
+            token: Motion.color.small
         }
 
     }

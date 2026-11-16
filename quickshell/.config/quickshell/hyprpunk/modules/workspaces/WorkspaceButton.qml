@@ -44,11 +44,8 @@ Rectangle {
         font.weight: Font.Normal
         font.pixelSize: Metrics.text.title
 
-        Behavior on color {
-            ColorAnim {
-                token: Motion.color.small
-            }
-
+        ColorFade on color {
+            token: Motion.color.small
         }
 
     }
@@ -80,11 +77,8 @@ Rectangle {
 
     }
 
-    Behavior on color {
-        ColorAnim {
-            token: Motion.color.normal
-        }
-
+    ColorFade on color {
+        token: Motion.color.normal
     }
 
     Behavior on opacity {
