@@ -13,7 +13,7 @@ local homes = {
   { class = "brave-browser",        workspace = "2" },
   { class = "Spotify",              workspace = "3" },
   { class = "md.obsidian.Obsidian", workspace = "4" },
-  { class = "thunar",               workspace = "6" },
+  { class = "org.gnome.Nautilus",   workspace = "6" },
 }
 
 -- Opens an app on its workspace. Also for personal/rules.lua: a second call for the

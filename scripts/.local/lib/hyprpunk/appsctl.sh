@@ -20,14 +20,15 @@ STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hyprpunk/apps.conf"
 declare -A DEFAULTS=(
   [terminal]=kitty
   [browser]=brave
-  [files]=thunar
+  [files]="nautilus --new-window"
   [music]=spotify-launcher
 )
 KEYS=(terminal browser files music)
 
-# A command on one line
+# A command on one line, whose app is still installed: one that's gone falls back to
+# ours, so a key keeps opening something when HyprPunk swaps one of its apps
 valid() {
-  [[ -n "$2" && "$2" != *$'\n'* ]]
+  [[ -n "$2" && "$2" != *$'\n'* ]] && command -v -- "${2%% *}" >/dev/null
 }
 
 # What opens links and folders, for the apps that ask the system

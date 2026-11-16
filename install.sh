@@ -65,10 +65,9 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
   budgie-desktop lxqt-session i3-wm sway hyprland niri
 )
 
-# The folders that aren't linked into your home: installed by their own steps (most
-# system-wide, Thunar's copied once), or the README's images. Every other folder is a
-# stow module.
-readonly -a SYSTEM_MODULES=(assets battery brave grub keyboard sddm thunar)
+# The folders that aren't linked into your home: installed system-wide by their own
+# steps, or the README's images. Every other folder is a stow module.
+readonly -a SYSTEM_MODULES=(assets battery brave grub keyboard sddm)
 
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
@@ -109,8 +108,8 @@ readonly -a PACKAGES=(
   otf-font-awesome
   ttf-apple-emoji
 
-  thunar thunar-archive-plugin xarchiver loupe papers
-  tumbler ffmpegthumbnailer poppler-glib libgsf libgepub libopenraw freetype2
+  nautilus nautilus-python sushi gst-libav loupe papers
+  ffmpegthumbnailer libgsf raw-thumbnailer gnome-epub-thumbnailer gnome-font-viewer
   gvfs gvfs-mtp gvfs-afc gvfs-smb
   7zip unrar unzip zip
   ffmpeg mpv celluloid mate-media
@@ -494,8 +493,10 @@ stow_dotfiles() {
     [[ " ${SYSTEM_MODULES[*]} " == *" $module "* ]] || modules+=("$module")
   done
   # stow links a folder missing from your home as a whole, and what other programs
-  # write there would land in the repository: pip's packages in ~/.local/lib
-  mkdir -p "$HOME/.local/bin" "$HOME/.local/lib"
+  # write there would land in the repository: pip's packages in ~/.local/lib, apps'
+  # icons in ~/.local/share/icons, Nautilus's other extensions next to ours
+  mkdir -p "$HOME/.local/bin" "$HOME/.local/lib" "$HOME/.local/share/icons" \
+    "$HOME/.local/share/nautilus-python/extensions"
   stow --dir "$DOTFILES_DIR" --target "$HOME" "${modules[@]}"
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
@@ -508,14 +509,6 @@ stow_dotfiles() {
   # files you have stay.
   mkdir -p "$HOME/.config/hypr/personal"
   cp --update=none "$DOTFILES_DIR/hyprland/.config/hypr/personal.example/"*.lua "$HOME/.config/hypr/personal/"
-}
-
-# Thunar rewrites its custom actions whenever you edit one, so it starts from a copy of
-# ours, and the actions you already have stay. Its "Open Terminal Here" opens your
-# terminal (hyprpunk.programs), where Thunar's own asks Xfce's settings for one.
-configure_thunar() {
-  mkdir -p "$HOME/.config/Thunar"
-  cp --update=none "$DOTFILES_DIR/thunar/uca.xml" "$HOME/.config/Thunar/uca.xml"
 }
 
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy written by
@@ -612,7 +605,7 @@ set_default_apps() {
   echo "Setting default applications..."
 
   local mimeapps="${XDG_CONFIG_HOME:-$HOME/.config}/mimeapps.list"
-  local thunar="thunar.desktop"
+  local nautilus="org.gnome.Nautilus.desktop"
   local loupe="org.gnome.Loupe.desktop"
   local papers="org.gnome.Papers.desktop"
   local mpv="mpv.desktop"
@@ -648,7 +641,7 @@ set_default_apps() {
     done
   }
 
-  set_default "$thunar" \
+  set_default "$nautilus" \
     inode/directory
 
   set_default "$loupe" \
@@ -838,7 +831,6 @@ converge() {
   run_step "Installing Oh My Zsh" install_oh_my_zsh
   run_step "Downloading the dotfiles" clone_dotfiles
   run_step "Linking dotfiles" stow_dotfiles
-  run_step "Configuring Thunar" configure_thunar
   run_step "Generating Qt configuration" generate_qt_configs
   run_step "Configuring the keyboard" configure_keyboard
   run_step "Configuring locale profiles" configure_locale_profiles

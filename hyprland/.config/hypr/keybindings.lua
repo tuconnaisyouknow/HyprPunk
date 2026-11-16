@@ -11,7 +11,7 @@
 hyprpunk.programs = {
   terminal = "kitty",
   editor = "nvim",
-  files = "thunar",
+  files = "nautilus --new-window",
   browser = "brave",
   notes = "obsidian",
   music = "spotify-launcher",
