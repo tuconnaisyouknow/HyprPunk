@@ -19,6 +19,9 @@ Singleton {
     readonly property int pillHeight: 38
     // Room on each side of a pill's content.
     readonly property int pillPadding: spacing.large
+    // How far the music's cover and equalizer sit from the island's edges, all around:
+    // they hug its round ends, like the cover in a phone's island.
+    readonly property int islandMusicInset: spacing.small
     // The island grows while an OSD takes it over, so you notice it. The lock's island
     // takes the same shape, to take over from the bar's without a jump.
     readonly property int islandOsdHeight: pillHeight + spacing.large

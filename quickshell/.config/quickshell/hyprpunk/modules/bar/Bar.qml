@@ -11,9 +11,10 @@ import qs.state
 import qs.theme
 
 // The bar along the top of each screen, a row of pills: workspaces and resources on
-// the left, the dynamic island in the middle, updates, the Spotify record and the
-// control pill on the right. A click on a pill opens its card, the workspaces also
-// preview on hover. The island's card holds the calendar and the notifications waiting.
+// the left, the dynamic island in the middle, with Spotify's cover and equalizer at its
+// ends, updates and the control pill on the right. A click on a pill opens its card, the
+// workspaces also preview on hover. The island's cards hold the calendar with the
+// notifications waiting, and the player.
 // Drawn in its screen's window (ScreenShell), with the cards.
 Item {
     id: bar
@@ -150,7 +151,7 @@ Item {
     // pill lit (Pill.spotHovered).
     property bool controlSpotHovered: false
     // The bar's own cards, for the screen to watch.
-    readonly property var ownCards: [workspaces.popup, monitor.popup, calendar, musicPill.popup]
+    readonly property var ownCards: [workspaces.popup, monitor.popup, calendar, player]
 
     // Down to the island showing an OSD, which overhangs the bar's strip.
     implicitHeight: Metrics.barTop + Metrics.islandOsdHeight
@@ -228,10 +229,18 @@ Item {
 
                 bar: bar
                 calendar: calendar
+                player: player
             }
 
             CalendarCard {
                 id: calendar
+
+                bar: bar
+                island: island
+            }
+
+            PlayerCard {
+                id: player
 
                 bar: bar
                 island: island
@@ -271,22 +280,6 @@ Item {
 
                     }
 
-                }
-
-            }
-
-            // The Spotify track's cover as a spinning record. Click it to open the player.
-            DropInSlot {
-                shown: Music.player !== null
-
-                MusicPill {
-                    id: musicPill
-
-                    opacity: bar.pillHidden("player") ? 0 : 1
-
-                    player: Music.player
-                    cardLayer: bar.cardLayer
-                    screenState: bar.screenState
                 }
 
             }

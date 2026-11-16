@@ -6,7 +6,7 @@ import QtQuick
 // pointer through everywhere else, gives the card the keyboard and closes it on a click
 // outside. The island's cards also share one shape (IslandFrame).
 Item {
-    // The pill it grows out of: "workspaces", "monitor", "island", "player" or "control".
+    // The pill it grows out of: "workspaces", "monitor", "island" or "control".
     property string pillName: ""
     // Open, or opening: the island's shape (IslandFrame) heads to this card's.
     property bool opened: false
@@ -15,6 +15,9 @@ Item {
     // An island card that carries the island's time and chips itself as it opens and
     // folds back (the calendar), rather than leaving them to the island's shape.
     property bool carriesIslandContent: false
+    // An island card that carries the music's cover and equalizer out of the island and
+    // back (the player), drawn in their place meanwhile.
+    property bool carriesMusic: false
     // Its size and corners once open.
     property real cardWidth: 0
     property real cardHeight: 0

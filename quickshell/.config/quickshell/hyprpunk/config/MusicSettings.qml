@@ -3,11 +3,11 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// How the music shows, saved by musicctl.sh: the bar's cover spinning, still, or a plain
-// record (MusicPill.qml), and the wave at the bottom of the desktop and the lock screen
+// How the music shows, saved by musicctl.sh: the island's equalizer moving or still
+// (Equalizer.qml), and the wave at the bottom of the desktop and the lock screen
 // (VisualizerShell.qml, Lock.qml).
 Singleton {
-    readonly property string cover: file.values.cover || "spinning"
+    readonly property bool equalizer: file.values.equalizer !== "false"
     readonly property bool wave: file.values.wave !== "false"
 
     function set(key, value) {

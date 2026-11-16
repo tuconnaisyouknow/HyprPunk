@@ -54,6 +54,10 @@ Card {
     // a card goes into the island with it as it folds back, and comes out as a card opens.
     readonly property real islandShare: lerp(fromIslandShare, owner === null ? 1 : 0, travel)
     readonly property alias shape: shape
+    // The shape's middle on a whole pixel, which it and the content are centred on: each
+    // rounded on its own, they took turns rounding the other way as the shape bounced,
+    // and the content shook by a pixel inside it.
+    readonly property int middle: Math.round(width / 2 + shapeCenter)
 
     // From a value to another, the given share of the way: the share is passed in so the
     // bindings follow it as it changes.
@@ -70,7 +74,7 @@ Card {
         const top = Math.max(shape.y, Math.round(island.top));
         const width = Math.min(shape.width, card.cardWidth);
         const height = Math.min(shape.y + shape.height - top, card.cardHeight);
-        return Qt.rect(Math.round(shape.x + (shape.width - width) / 2), top, width, height);
+        return Qt.rect(middle - Math.round(width / 2), top, width, height);
     }
 
     onOpenCardChanged: {
@@ -109,10 +113,11 @@ Card {
         property real radius: frame.lerp(frame.fromRadius, frame.targetRadius, frame.travel)
 
         // On whole pixels, like the cards' content: half pixels while the card grows make
-        // everything in it shake.
-        x: Math.round(frame.width / 2 + frame.shapeCenter - width / 2)
+        // everything in it shake. Two pixels at a time across, so both sides move alike
+        // around its middle.
+        x: frame.middle - width / 2
         y: Math.round(frame.shapeTop)
-        width: frame.lerp(frame.fromWidth, frame.targetWidth, frame.travel) + settle.width
+        width: 2 * Math.round((frame.lerp(frame.fromWidth, frame.targetWidth, frame.travel) + settle.width) / 2)
         height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travel) + settle.height
 
         // Same look as the island it grows from: base color at 0.9, blurred, with the
@@ -150,6 +155,7 @@ Card {
         face: pill.face
         animated: false
         interactive: false
+        musicLifted: frame.lastOwner !== null && frame.lastOwner.carriesMusic
         date: pill.date
 
         // Zoomed with the island, past its place under the pointer.

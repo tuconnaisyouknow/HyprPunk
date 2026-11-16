@@ -106,38 +106,6 @@ Singleton {
         readonly property int easing: Easing.InOutSine
     }
 
-    // The record in the bar (MusicPill), moving like a real one: the turntable getting up
-    // to speed and slowing down, the next disc rolling in, a disc pulled back by hand when
-    // the track restarts, and a pop on play, pause and a new track.
-    readonly property QtObject record: QtObject {
-        readonly property var spinUp: ({
-            "duration": 700,
-            "easing": Easing.InQuad
-        })
-        readonly property var speed: ({
-            "duration": 900,
-            "easing": Easing.InOutQuad
-        })
-        readonly property var roll: ({
-            "duration": 520,
-            "easing": Easing.OutCubic
-        })
-        readonly property var rewind: ({
-            "duration": 650,
-            "easing": Easing.OutCubic
-        })
-        readonly property var popOut: ({
-            "duration": 120,
-            "easing": Easing.OutQuad
-        })
-        readonly property var popBack: ({
-            "duration": 480,
-            "easing": Easing.OutBack
-        })
-        readonly property real popScale: 1.16
-        readonly property real popOvershoot: 3
-    }
-
     // The lyrics following the song (LyricsView): the view glides to the line sung, the
     // old lines slide away, the new ones rise one after another from the line sung.
     readonly property QtObject lyrics: QtObject {

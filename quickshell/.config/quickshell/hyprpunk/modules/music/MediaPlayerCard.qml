@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Mpris
-import Quickshell.Widgets
 import qs.components
+import qs.config
 import qs.services
 import qs.theme
 
@@ -17,17 +17,19 @@ Rectangle {
     required property var player
     // Drawn under the glass, for a card with no blurred panel behind it.
     property color backgroundColor: "transparent"
-    // Off when something else draws the glass and the cover (the bar's music popup
-    // animates them out of the cover pill).
+    // Off when something else draws the glass, the cover and the equalizer (the island's
+    // player flies them out of the island).
     property bool glassVisible: true
     property bool coverVisible: true
+    property bool equalizerVisible: true
     // Off when the lyrics are shown somewhere else (beside the card on the lock screen),
     // which then uses lyricsLine.
     property bool lyricsInside: true
-    // Artwork geometry, followed by the bar's popup when it animates the cover.
+    // Where the artwork and the equalizer sit, for the island's player flying them in.
     readonly property int artSize: 56
     readonly property int artMargin: Metrics.spacing.huge
     readonly property int artRadius: Metrics.radius.normal
+    readonly property point equalizerCenter: Qt.point(equalizer.x + equalizer.width / 2, equalizer.y + equalizer.height / 2)
     // Shown: the position is followed and the card animates.
     property bool active: true
     readonly property bool playing: player !== null && player.isPlaying
@@ -88,38 +90,16 @@ Rectangle {
         backgroundColor: card.backgroundColor
     }
 
-    ClippingRectangle {
+    CoverArt {
         id: artwork
 
         x: card.artMargin
         y: card.artMargin
         width: card.artSize
         height: card.artSize
-        opacity: card.coverVisible ? 1 : 0
+        visible: card.coverVisible
         radius: card.artRadius
-        color: Colors.surface1
-
-        Image {
-            id: albumArt
-
-            anchors.fill: parent
-            source: card.player !== null ? card.player.trackArtUrl : ""
-            asynchronous: true
-            cache: true
-            fillMode: Image.PreserveAspectCrop
-            mipmap: true
-            visible: status === Image.Ready
-        }
-
-        Text {
-            anchors.centerIn: parent
-            visible: albumArt.status !== Image.Ready
-            text: "󰎆"
-            color: Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: card.artSize * 0.4
-        }
-
+        source: card.player !== null ? card.player.trackArtUrl : ""
     }
 
     ColumnLayout {
@@ -151,60 +131,15 @@ Rectangle {
 
     }
 
-    // Bars bouncing while the track plays, resting low while paused. Each at its own
-    // pace, so they never move together.
-    Row {
+    Equalizer {
         id: equalizer
 
         anchors.right: parent.right
         anchors.rightMargin: card.artMargin + Metrics.spacing.hairline
         anchors.verticalCenter: artwork.verticalCenter
-        height: 18
-        spacing: 3
-
-        Repeater {
-            model: [380, 520, 300, 450]
-
-            Rectangle {
-                id: bar
-
-                required property int modelData
-                required property int index
-                property real level: 0.3
-
-                anchors.bottom: parent.bottom
-                width: 3
-                height: parent.height * level
-                radius: width / 2
-                color: Colors.primary
-
-                SequentialAnimation on level {
-                    running: card.active && card.playing
-                    loops: Animation.Infinite
-                    onRunningChanged: {
-                        if (!running)
-                            bar.level = 0.3;
-
-                    }
-
-                    NumberAnimation {
-                        to: 1
-                        duration: bar.modelData
-                        easing.type: Motion.pulse.easing
-                    }
-
-                    NumberAnimation {
-                        to: 0.25 + bar.index * 0.1
-                        duration: bar.modelData * 0.8
-                        easing.type: Motion.pulse.easing
-                    }
-
-                }
-
-            }
-
-        }
-
+        visible: card.equalizerVisible
+        playing: card.playing
+        running: card.active && card.equalizerVisible && MusicSettings.equalizer
     }
 
     Item {

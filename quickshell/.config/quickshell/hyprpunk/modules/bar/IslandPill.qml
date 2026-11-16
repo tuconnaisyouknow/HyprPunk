@@ -7,21 +7,27 @@ import qs.modules.island
 import qs.services
 import qs.theme
 
-// The dynamic island in the bar: the time and its chips, or an OSD that takes it over
-// (IslandView). A click opens the calendar, or the screenshot or recording an OSD shows.
-// Every card of the island grows out of it (IslandFrame).
+// The dynamic island in the bar: the time and its chips between the music's cover and
+// equalizer, or an OSD that takes it over (IslandView). A click opens the calendar, the
+// player from the music's ends, or the screenshot or recording an OSD shows. Every card
+// of the island grows out of it (IslandFrame).
 Pill {
     id: clockPill
 
     required property var bar
-    // The calendar card it opens.
+    // The calendar card it opens, and the player.
     required property Item calendar
+    required property Item player
     // The time, ticking for the calendar's own copy of it too.
     readonly property alias date: clock.date
     // What it shows (IslandView.face).
     readonly property string face: bar.islandOsdShown ? "osd" : "clock"
     // Where its time starts, from its left edge.
     readonly property real timeX: view.parent.x + view.x + view.timeX
+    // Where its row starts, and where the music's cover and equalizer are, the same way.
+    readonly property real rowX: view.parent.x + view.x + view.rowX
+    readonly property real coverX: view.parent.x + view.x + view.coverX
+    readonly property real equalizerX: view.parent.x + view.x + view.equalizerX
     // Between the time and an OSD.
     readonly property bool swapping: view.swapping
 
@@ -57,12 +63,16 @@ Pill {
     onSpreadXChanged: publishGeometry()
     onSpreadYChanged: publishGeometry()
     Component.onCompleted: publishGeometry()
-    // A click opens the calendar card, or closes it, unless an OSD has the
-    // island: the screenshot or recording just taken then opens in its viewer.
-    // The recording chip keeps its own click, which stops the recording.
+    // A click opens the calendar card, or closes it, or the player from the music's
+    // ends, unless an OSD has the island: the screenshot or recording just taken then
+    // opens in its viewer. The recording chip keeps its own click, which stops the
+    // recording.
     onClicked: {
         if (face === "clock") {
-            clockPill.calendar.togglePinned();
+            if (view.musicHovered)
+                clockPill.player.togglePinned();
+            else
+                clockPill.calendar.togglePinned();
         } else {
             Quickshell.execDetached(["xdg-open", clockPill.bar.osdShown.file]);
             Osd.dismiss();
@@ -93,6 +103,7 @@ Pill {
         bar: clockPill.bar
         face: clockPill.face
         animated: clockPill.bar.islandAnimated
+        live: clockPill.bar.islandAnimated
         date: clock.date
 
         // Ticks every second though it shows minutes: its timer stands still

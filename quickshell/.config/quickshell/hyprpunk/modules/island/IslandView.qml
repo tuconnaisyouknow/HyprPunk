@@ -2,12 +2,13 @@ import QtQuick
 import QtQuick.Layouts
 import qs.components
 import qs.config
+import qs.services
 import qs.theme
 
 // What the island shows: one row of parts that open and close in place (IslandPart), the
-// time, or the padlock in its place while the lock has it, the password's dots in the
-// padlock's place as you type, the time's chips and why a try failed, or an OSD over it
-// as another face (IslandFace). Its size follows its content as it changes, so
+// time between the music's cover and equalizer at its round ends, or the padlock in its
+// place while the lock has it, the password's dots in the padlock's place as you type,
+// the time's chips and why a try failed, or an OSD over it as another face (IslandFace). Its size follows its content as it changes, so
 // the island around it needs no animation of its own. The bar's island, the lock's, and
 // the shape a card folds back into all draw it, so each picks up the island as it is.
 Item {
@@ -24,6 +25,14 @@ Item {
     // it, the privacy dot and the recording stay until the lock goes.
     property bool timeShown: true
     property bool chipsShown: timeShown
+    // The music's cover and equalizer, while Spotify runs. They leave with the time: the
+    // lock shows its own player.
+    readonly property bool musicShown: timeShown && Music.player !== null
+    // The cover and the equalizer drawn elsewhere for now, their places kept: the player's,
+    // as it grows out of the island and folds back into it.
+    property bool musicLifted: false
+    // The equalizer moves: off while the island is hidden.
+    property bool live: true
     // The padlock, while the lock has the time and you've typed nothing.
     property bool padlock: false
     // The time drawn elsewhere for now, its place kept: the lock's clock, as it leaves
@@ -40,7 +49,14 @@ Item {
     readonly property bool swapping: clockFace.moving || osdFace.moving
     // Where the time starts, from the view's left edge.
     readonly property real timeX: clockFace.x + timePart.x
+    // Where the row starts, the cover first, and where the cover and the equalizer's slot
+    // are, all from the view's left edge.
+    readonly property real rowX: clockFace.x
+    readonly property real coverX: clockFace.x + coverPart.x
+    readonly property real equalizerX: clockFace.x + equalizerPart.x
     readonly property bool stopHovered: chips.stopHovered
+    // The pointer is on the cover or the equalizer, where a click opens the player.
+    readonly property bool musicHovered: coverHover.hovered || equalizerHover.hovered
     readonly property real presence: clockFace.presence + osdFace.presence
 
     // Another OSD over the one shown: its content fades in again, while the face eases
@@ -60,7 +76,9 @@ Item {
         animated: view.animated
         contentWidth: clockRow.implicitWidth
         contentHeight: clockRow.implicitHeight
-        padding: Metrics.pillPadding
+        // The cover and the equalizer hug the round ends, as near to the edge as to the
+        // top and the bottom.
+        padding: Metrics.pillPadding - (Metrics.pillPadding - Metrics.islandMusicInset) * coverPart.presence
         islandHeight: Metrics.pillHeight
 
         // Each part opens in the place of the one before it closes: the padlock in the
@@ -72,12 +90,28 @@ Item {
             anchors.centerIn: parent
             spacing: 0
 
+            IslandCover {
+                id: coverPart
+
+                shown: view.musicShown
+                animated: view.animated
+                lifted: view.musicLifted
+                gap: 0
+
+                HoverHandler {
+                    id: coverHover
+
+                    enabled: view.interactive
+                }
+
+            }
+
             IslandPart {
                 id: timePart
 
                 shown: view.timeShown
                 animated: view.animated
-                gap: 0
+                gap: Metrics.spacing.normal * coverPart.presence
                 openWidth: timeLabel.implicitWidth
                 openHeight: timeLabel.implicitHeight
 
@@ -95,7 +129,7 @@ Item {
 
                 shown: view.padlock
                 animated: view.animated
-                gap: Metrics.spacing.normal * timePart.presence
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence)
                 openWidth: padlockIcon.implicitWidth
                 openHeight: padlockIcon.implicitHeight
 
@@ -118,7 +152,7 @@ Item {
                 checking: view.checking
                 alert: view.lockError !== "" && view.typed === 0
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, timePart.presence + padlockPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence)
             }
 
             IslandChips {
@@ -129,13 +163,30 @@ Item {
                 notificationsShown: view.chipsShown && view.timeShown
                 animated: view.animated
                 interactive: view.interactive && clockFace.shown
-                lead: Math.min(1, timePart.presence + padlockPart.presence + dotsPart.presence)
+                lead: Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + dotsPart.presence)
+            }
+
+            IslandEqualizer {
+                id: equalizerPart
+
+                shown: view.musicShown
+                animated: view.animated
+                lifted: view.musicLifted
+                live: view.live
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + dotsPart.presence + chips.presence)
+
+                HoverHandler {
+                    id: equalizerHover
+
+                    enabled: view.interactive
+                }
+
             }
 
             LockWords {
                 label: view.lockError
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, timePart.presence + padlockPart.presence + dotsPart.presence + chips.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + dotsPart.presence + chips.presence + equalizerPart.presence)
             }
 
         }

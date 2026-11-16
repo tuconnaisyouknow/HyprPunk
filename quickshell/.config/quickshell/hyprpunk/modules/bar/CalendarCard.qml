@@ -119,25 +119,40 @@ PillPopup {
 
         }
 
-        // The island's time and chips, starting where they sit in it: the chips close
+        // The island's row, starting where it sits in it: the music and the chips close
         // as the time slides to the card's middle, and open again as it slides back,
         // so the card lands on the island as it is.
         RowLayout {
-            readonly property real islandX: calendarPopup.island.timeX
+            readonly property real islandX: calendarPopup.island.rowX
             readonly property real centerX: (parent.width - width) / 2
 
             anchors.verticalCenter: parent.verticalCenter
             x: Math.round(islandX + (centerX - islandX) * calendarPopup.progress)
             spacing: 0
 
+            IslandCover {
+                id: headerCover
+
+                shown: !calendarPopup.expanded && Music.player !== null
+            }
+
             Label {
+                Layout.leftMargin: Metrics.spacing.normal * headerCover.presence
                 text: Session.clockText(calendarPopup.island.date)
             }
 
             IslandChips {
+                id: headerChips
+
                 bar: calendarPopup.bar
                 shown: !calendarPopup.expanded
                 interactive: false
+            }
+
+            IslandEqualizer {
+                shown: !calendarPopup.expanded && Music.player !== null
+                gap: Metrics.spacing.normal
+                live: calendarPopup.mapped
             }
 
         }
