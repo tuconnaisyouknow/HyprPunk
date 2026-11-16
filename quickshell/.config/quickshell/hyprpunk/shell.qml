@@ -5,10 +5,10 @@
 
 // Gray antialiasing for the text: colored edges assume an opaque background and
 // glitch through the see-through glass, worst over a light page.
-// Animations keep Qt's own driver, paced by the main screen: its clock-driven one
-// (QSG_USE_SIMPLE_ANIMATION_DRIVER) let each screen animate at its own rate, but made
-// every screen redraw whole while anything moved on another one.
+// HyprPunk.Frames moves the animations with each screen's own frames (frames/ in the
+// dotfiles).
 import QtQuick
+import HyprPunk.Frames
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
@@ -56,6 +56,16 @@ ShellRoot {
         }
 
         target: MusicSettings
+    }
+
+    // No "Config reloaded" popup: a reload that works shows itself. A failed one keeps
+    // its popup, which says what's wrong.
+    Connections {
+        function onReloadCompleted() {
+            Quickshell.inhibitReloadPopup();
+        }
+
+        target: Quickshell
     }
 
     // The settings window, asked for like a panel, as "settings": Super+I through

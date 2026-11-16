@@ -17,6 +17,7 @@ import qs.theme
 // that grows out of its pills (Card). A card and its pill drawn in the same window change
 // in the same frame, so a pill never blinks as its card opens or folds back: as windows
 // of their own, the compositor could show both for a frame, or neither.
+// The bar's strip is kept free by Hyprland (monitors.lua), not by a window of its own.
 // The window covers the screen but only takes the pointer on the bar and the open cards.
 // It stays under fullscreen windows, like the bar always did.
 Scope {
@@ -42,26 +43,6 @@ Scope {
                 card.close();
 
         }
-    }
-
-    // Keeps the bar's room at the top free of windows, which the shell's own window
-    // can't do while it covers the whole screen.
-    PanelWindow {
-        screen: shell.screen
-        implicitHeight: 1
-        exclusiveZone: Metrics.barHeight
-        color: "transparent"
-        WlrLayershell.namespace: "hyprpunk-exclusion"
-
-        anchors {
-            top: true
-            left: true
-            right: true
-        }
-
-        mask: Region {
-        }
-
     }
 
     PanelWindow {

@@ -11,8 +11,9 @@ Singleton {
     // How far the bar's pills sit from the screen's sides, in line with the windows'
     // edges (Hyprland's gaps_out), so it isn't on the spacing grid.
     readonly property int barMargin: 10
-    // The strip the bar keeps free of windows (ScreenShell), its pills centred in it:
-    // Hyprland's gaps_out then sets the windows apart from it like from any edge.
+    // The strip the bar keeps free of windows, its pills centred in it: Hyprland reserves
+    // it (monitors.lua, keep both alike), and its gaps_out then sets the windows apart
+    // from it like from any edge.
     readonly property int barHeight: 50
     readonly property int barTop: (barHeight - pillHeight) / 2
     // The bar's pills. Every card keeps its pill's round ends as it grows.

@@ -24,3 +24,6 @@ btop/.config/btop/btop.conf
 # cava puts its stock shaders and themes back on every launch
 cava/.config/cava/shaders/
 cava/.config/cava/themes/
+
+# The animation clock plugin, built for each Qt version by install.sh
+frames/build/

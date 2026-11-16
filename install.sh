@@ -67,7 +67,7 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
 
 # The folders that aren't linked into your home: installed system-wide by their own
 # steps, or the README's images. Every other folder is a stow module.
-readonly -a SYSTEM_MODULES=(assets battery brave grub keyboard sddm)
+readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard sddm)
 
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
@@ -772,6 +772,15 @@ install_brave_policy() {
     /etc/polkit-1/rules.d/50-hyprpunk-brave-color.rules
 }
 
+# The shell's animation clock, a QML plugin that lets every screen animate at its own
+# refresh rate. The shell needs it, so it goes in before the links reach the shell. It
+# reaches into Qt's private API, so it's rebuilt for each new Qt: until then, the shell
+# keeps Qt's own clock.
+install_frame_clock() {
+  make -C "$DOTFILES_DIR/frames"
+  sudo make -C "$DOTFILES_DIR/frames" install
+}
+
 # The battery charge limit you set from the control center, on laptops that support one.
 # The service puts it back at boot and after sleep, and lets the wheel group change it.
 install_battery_limit() {
@@ -826,6 +835,7 @@ converge() {
   run_step "Installing packages" install_packages
   run_step "Installing Oh My Zsh" install_oh_my_zsh
   run_step "Downloading the dotfiles" clone_dotfiles
+  run_step "Installing the shell's animation clock" install_frame_clock
   run_step "Linking dotfiles" stow_dotfiles
   run_step "Generating Qt configuration" generate_qt_configs
   run_step "Configuring the keyboard" configure_keyboard

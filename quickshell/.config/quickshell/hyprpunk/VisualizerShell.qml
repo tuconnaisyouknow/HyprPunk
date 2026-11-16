@@ -1,4 +1,6 @@
 import QtQuick
+// The wave moves with each screen's own frames (frames/ in the dotfiles)
+import HyprPunk.Frames
 import Quickshell
 import Quickshell.Wayland
 import qs.config
@@ -21,6 +23,16 @@ ShellRoot {
     }
 
     Component.onCompleted: quitUnlessWanted()
+
+    // No "Config reloaded" popup: a reload that works shows itself. A failed one keeps
+    // its popup, which says what's wrong.
+    Connections {
+        function onReloadCompleted() {
+            Quickshell.inhibitReloadPopup();
+        }
+
+        target: Quickshell
+    }
 
     Connections {
         function onWaveChanged() {

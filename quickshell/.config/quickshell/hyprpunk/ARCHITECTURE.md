@@ -153,6 +153,12 @@ in that surface (a card's preview, its pinned state, the page shown).
   shows until the bar draws again.
 - **Nothing hidden animates.** An animation on something you can't see costs frames on
   what you can.
+- **Each screen animates at its own refresh rate.** Qt has one animation clock per
+  process; the HyprPunk.Frames plugin (`frames/` in the dotfiles) moves it with each
+  window's frames, so a 120 Hz screen gets 120 states a second and a screen where
+  nothing moves doesn't draw. Each window draws one frame at a time, at its screen's
+  beat, and the swap never waits for a screen, so a 60 Hz screen doesn't hold the
+  120 Hz one back. Both shells import it (`shell.qml`, `VisualizerShell.qml`).
 
 ## Looks
 
