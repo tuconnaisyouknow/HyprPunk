@@ -100,7 +100,6 @@ readonly -a PACKAGES=(
 
   adw-gtk-theme matugen imagemagick
   papirus-icon-theme
-  papirus-folders
   rose-pine-cursor
   rose-pine-hyprcursor nwg-look
 
@@ -691,14 +690,11 @@ install_tmux_plugins() {
     "$tpm_dir/bin/install_plugins"
 }
 
-# Papirus-Dark with grey folders, which go with every wallpaper's palette, the fonts, the
-# cursor, dark mode and the GTK theme. GTK 4 apps read these rather than settings.ini,
-# so they match GTK 3 and Qt. The look is HyprPunk's, so anything changed here is put
-# back. The colors inside the GTK theme come with the wallpaper.
+# The fonts, the cursor, dark mode and the GTK theme. GTK 4 apps read these rather than
+# settings.ini, so they match GTK 3 and Qt. The look is HyprPunk's, so anything changed
+# here is put back. The colors inside the GTK theme come with the wallpaper, and so does
+# the icon theme, whose folders take its accent (foldersctl.sh).
 apply_themes() {
-  papirus-folders -C grey --theme Papirus-Dark
-
-  gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
   gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrainsMono Nerd Font 9'
   gsettings set org.gnome.desktop.interface document-font-name 'JetBrainsMono Nerd Font 9'

@@ -53,6 +53,14 @@ input_path = "./templates/brave.template"
 output_path = "~/.local/state/hyprpunk/brave-color"
 post_hook = "[ -x /usr/local/bin/hyprpunk-brave-color ] && pkexec /usr/local/bin/hyprpunk-brave-color \"$(cat ~/.local/state/hyprpunk/brave-color)\" >/dev/null 2>&1 || true"
 
+# Papirus's folders in the accent: their front, their back a shade darker and the symbol
+# on them a deep shade of it. foldersctl.sh builds the icon theme they make and
+# moves the open apps to it.
+[templates.folders]
+input_path = "./templates/folder-colors.template"
+output_path = "~/.local/state/hyprpunk/folder-colors"
+post_hook = "{ ~/.local/lib/hyprpunk/foldersctl.sh apply; } >/dev/null 2>&1 &"
+
 # The login screen's colors, which wallpaperctl.sh hands to SDDM with the login screen
 [templates.sddm]
 input_path = "./templates/sddm.conf.template"
