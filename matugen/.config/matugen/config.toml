@@ -63,7 +63,8 @@ output_path = "~/.local/state/hyprpunk/login-colors.conf"
 input_path = "./templates/hyprland.template"
 output_path = "~/.local/state/hyprpunk/hypr-colors"
 
-# The terminal's colors, which kitty includes
+# The terminal's colors, which kitty includes. fastfetch has none of its own: it draws
+# in the terminal's accent and secondary, so the one on screen follows too.
 [templates.kitty]
 input_path = "./templates/kitty.conf.template"
 output_path = "~/.local/state/hyprpunk/kitty-colors.conf"
@@ -94,11 +95,7 @@ output_path = "~/.local/state/hyprpunk/code.tmTheme"
 input_path = "~/.config/bat/config.template"
 output_path = "~/.config/bat/config"
 
-# fastfetch and yazi take theirs when they start
-[templates.fastfetch]
-input_path = "./templates/fastfetch.jsonc.template"
-output_path = "~/.config/fastfetch/config.jsonc"
-
+# yazi takes its own when it starts
 [templates.yazi]
 input_path = "./templates/yazi.toml.template"
 output_path = "~/.config/yazi/theme.toml"

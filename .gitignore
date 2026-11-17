@@ -12,7 +12,6 @@ bat/.config/bat/themes/
 bat/.config/bat/config
 btop/.config/btop/themes/
 yazi/.config/yazi/theme.toml
-fastfetch/.config/fastfetch/config.jsonc
 
 # Your own tmux and kitty settings, read by their configs
 tmux/.config/tmux/personal.conf

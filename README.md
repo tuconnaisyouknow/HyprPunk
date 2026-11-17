@@ -139,8 +139,8 @@ the whole look:
 
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
 terminal and its tools (Catppuccin Mocha tinted with the palette), and Brave's Classic theme, through its policy. The
-shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop and Brave change at once, Qt apps, yazi and fastfetch
-the next time they start. Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
+shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop, Brave and a fastfetch already on screen change at
+once, Qt apps and yazi the next time they start. Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
 theme, built in a moment from Papirus's grey folders.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
@@ -367,7 +367,7 @@ from other people's nearby.
 ├── brave/               # Brave's policy, and the tool that gives its theme the wallpaper's colors, installed system-wide
 ├── btop/                # Btop configuration
 ├── cava/                # Audio visualizer configuration
-├── fastfetch/           # Fastfetch's logos
+├── fastfetch/           # Fastfetch configuration and logos
 ├── fontconfig/          # JetBrainsMono Nerd Font preference
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors

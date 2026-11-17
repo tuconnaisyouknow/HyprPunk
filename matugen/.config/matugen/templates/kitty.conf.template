@@ -81,3 +81,7 @@ color14 #94e2d5
 # white
 color7  {{colors.subtext1.default.hex}}
 color15 {{colors.subtext0.default.hex}}
+
+# The secondary color, in the 256 colors' own lavender: what's drawn in it (fastfetch)
+# follows the wallpaper while on screen, like what's drawn in magenta
+color147 {{colors.secondary.default.hex}}
