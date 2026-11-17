@@ -25,6 +25,8 @@ Singleton {
         }
         return connecting;
     }
+    // What carries you once it's up, a new one each time you join a network.
+    readonly property var link: device !== null && device.connected ? device : null
     readonly property bool connecting: (device !== null && !device.connected) || Vpn.connecting
     // Wired with a VPN up: the cable's icon gets a padlock.
     readonly property bool wiredLocked: device !== null && device.connected && device.type === DeviceType.Wired && Vpn.connection !== null
@@ -54,6 +56,14 @@ Singleton {
         });
     }
     readonly property var activeWifi: wifiNetworks.length > 0 && wifiNetworks[0].connected ? wifiNetworks[0] : null
+
+    // A VPN that was online keeps NetworkManager's word for five minutes, whatever network
+    // it now crosses: joining one asks again, so a sign-in page it hides is found at once.
+    onLinkChanged: {
+        if (link !== null)
+            Networking.checkConnectivity();
+
+    }
 
     Connections {
         function onConnectivityChanged() {

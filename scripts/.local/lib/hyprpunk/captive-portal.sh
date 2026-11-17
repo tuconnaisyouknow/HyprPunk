@@ -21,6 +21,15 @@ check_uri() {
     awk -F= '/^\[/ { section = $0 } section == "[connectivity]" && $1 == "uri" { print substr($0, 5); exit }'
 }
 
+# Where the network sends the check page: its sign-in page. Asked here and not by the
+# browser, which only loads the check page's host over HTTPS, out of the network's reach.
+# A network that answers in place instead gets the check page itself.
+sign_in_page() {
+  local page
+  page="$(curl -s -m 5 -o /dev/null -w '%{redirect_url}' "$1" || true)"
+  echo "${page:-$1}"
+}
+
 # The VPNs up right now, by uuid
 active_vpns() {
   nmcli -t -f UUID,TYPE connection show --active | awk -F: '$2 == "wireguard" || $2 == "vpn" { print $1 }'
@@ -46,7 +55,7 @@ portal() {
   action="$(notify-send -a HyprPunk -i network-wireless -A open="Sign In" \
     "Sign in to the network" "This network wants you to sign in before you can go online.")"
   [[ "$action" == "open" ]] || exit 0
-  exec xdg-open "$uri"
+  exec xdg-open "$(sign_in_page "$uri")"
 }
 
 limited() {
