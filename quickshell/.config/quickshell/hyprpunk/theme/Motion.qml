@@ -108,6 +108,14 @@ Singleton {
         "overshoot": 1.7
     })
 
+    // Something let go taking its place (a screen dropped in the displays' drawing): it
+    // lands a touch past it and comes back.
+    readonly property var place: ({
+        "duration": 400,
+        "easing": Easing.OutBack,
+        "overshoot": 1.2
+    })
+
     // Something breathing on its own while a state lasts (a recording, a wait).
     readonly property QtObject pulse: QtObject {
         readonly property int duration: 700

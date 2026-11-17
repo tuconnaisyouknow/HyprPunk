@@ -165,12 +165,14 @@ SettingsPage {
         return best;
     }
 
-    // Puts a screen there, unless it's already there.
+    // Puts a screen there, unless it's already there. True when it was asked for.
     function place(name, spot) {
         const moved = preview.rectOf(name);
-        if (spot !== null && (spot.x !== moved.x || spot.y !== moved.y))
-            Displays.apply(["position", name, spot.direction, spot.reference], false);
+        if (spot === null || Displays.busy || (spot.x === moved.x && spot.y === moved.y))
+            return false;
 
+        Displays.apply(["position", name, spot.direction, spot.reference], false);
+        return true;
     }
 
     onOutputsChanged: follow()
@@ -214,7 +216,9 @@ SettingsPage {
     // The screens at their size and place. A click picks one; dragged, it follows the
     // pointer and shows where it will go against the others, and goes there when dropped.
     // Shift and the arrows move the one with the keyboard. At rest the drawing fits the
-    // screens; while one is dragged it eases out to fit every place it can take.
+    // screens; while one is dragged it fits every place it can take. One glide takes the
+    // whole drawing from where it is to where it goes, so the screens stay against each
+    // other on the way.
     Item {
         id: preview
 
@@ -228,26 +232,136 @@ SettingsPage {
                 "height": (rotated ? output.width : output.height) / output.current_scale
             };
         })
-        // The screens' outline, in the layout's pixels.
-        readonly property var layout: bounds(rects)
-        // The screen being dragged, "" while none is, and where it would go.
+        // The screen the drawing makes room for, "" while none is dragged, and where it
+        // would go.
         property string dragged: ""
         property var target: null
-        // Every place the dragged screen can take, with the screens. Kept after the
-        // drop so the drawing eases back from it.
-        property var reach: layout
-        // How far the drawing has eased out to the reach: 0 at rest, 1 while dragging.
-        // Only a drag moves it, so the screens arriving when the page opens don't.
-        property real spread: dragged !== "" ? 1 : 0
-        readonly property real frameX: layout.x + (reach.x - layout.x) * spread
-        readonly property real frameY: layout.y + (reach.y - layout.y) * spread
-        readonly property real frameWidth: layout.width + (reach.width - layout.width) * spread
-        readonly property real frameHeight: layout.height + (reach.height - layout.height) * spread
+        // The screen in the pointer's hand, the pointer in the preview, and where it
+        // caught the screen as a share of its width and height: the same point stays
+        // under it as the drawing makes room and the screen shrinks.
+        property string carried: ""
+        property point pointer: Qt.point(0, 0)
+        property point grab: Qt.point(0, 0)
+        // The screen just dropped and the place it was dropped on, until the layout comes
+        // back with it: the drawing is already the one to come. Hyprland is only asked
+        // once the glide is over, as its reload would cut into it, and no other screen
+        // moves until then.
+        property var dropped: null
+        readonly property var held: dropped !== null && dropped.rects === rects ? dropped : null
+        // The drawing asked for: the frame's size and middle in the layout's pixels, and
+        // every screen's box by name, from that middle. Only its shape counts, so the
+        // layout coming back shifted to 0,0 is the same drawing.
+        readonly property var asked: {
+            const shown = rects.map((rect) => {
+                return held !== null && rect.output.name === held.name ? Object.assign({
+                }, rect, {
+                    "x": held.spot.x,
+                    "y": held.spot.y
+                }) : rect;
+            });
+            const moved = rectOf(dragged);
+            const frame = bounds(moved === null ? shown : rects.concat(page.placements(dragged).map((spot) => {
+                return {
+                    "x": spot.x,
+                    "y": spot.y,
+                    "width": moved.width,
+                    "height": moved.height
+                };
+            })));
+            const drawing = {
+                "width": frame.width,
+                "height": frame.height,
+                "middleX": frame.x + frame.width / 2,
+                "middleY": frame.y + frame.height / 2,
+                "boxes": {
+                }
+            };
+            for (const rect of shown) drawing.boxes[rect.output.name] = {
+                "x": rect.x - drawing.middleX,
+                "y": rect.y - drawing.middleY,
+                "width": rect.width,
+                "height": rect.height
+            }
+            return drawing;
+        }
+        // The drawing glides from one to the other. In the layout's pixels, so the
+        // preview taking its size as the window opens moves nothing.
+        property var from: null
+        property var to: null
+        property real progress: 1
         readonly property real padding: Metrics.spacing.huge
-        readonly property real factor: Math.min((width - 2 * padding) / Math.max(1, frameWidth), (height - 2 * padding) / Math.max(1, frameHeight))
-        // The layout's point drawn at the preview's (0, 0), the frame in the middle.
-        readonly property real originX: frameX - (width / factor - frameWidth) / 2
-        readonly property real originY: frameY - (height / factor - frameHeight) / 2
+        readonly property real factor: to === null ? 1 : Math.min((width - 2 * padding) / Math.max(1, mix(from.width, to.width)), (height - 2 * padding) / Math.max(1, mix(from.height, to.height)))
+
+        function mix(start, end) {
+            return start + (end - start) * progress;
+        }
+
+        // A screen's box as the glide has it now, null when it isn't drawn.
+        function boxOf(name) {
+            const end = to !== null ? to.boxes[name] : undefined;
+            if (end === undefined)
+                return null;
+
+            const start = from.boxes[name] || end;
+            return {
+                "x": mix(start.x, end.x),
+                "y": mix(start.y, end.y),
+                "width": mix(start.width, end.width),
+                "height": mix(start.height, end.height)
+            };
+        }
+
+        // The drawing as it is right now, with the screens of the one to come: a new
+        // screen is at its place, the one in the pointer's hand where the pointer has it.
+        function current(next) {
+            const drawing = {
+                "width": mix(from.width, to.width),
+                "height": mix(from.height, to.height),
+                "boxes": {
+                }
+            };
+            for (const name in next.boxes) {
+                const box = boxOf(name) || Object.assign({
+                }, next.boxes[name]);
+                if (name === carried) {
+                    box.x = (pointer.x - width / 2) / factor - grab.x * box.width;
+                    box.y = (pointer.y - height / 2) / factor - grab.y * box.height;
+                }
+                drawing.boxes[name] = box;
+            }
+            return drawing;
+        }
+
+        function same(drawing, other) {
+            const near = (a, b) => {
+                return Math.abs(a - b) < 0.01;
+            };
+            const names = Object.keys(drawing.boxes);
+            return near(drawing.width, other.width) && near(drawing.height, other.height) && names.length === Object.keys(other.boxes).length && names.every((name) => {
+                const box = drawing.boxes[name];
+                const match = other.boxes[name];
+                return match !== undefined && near(box.x, match.x) && near(box.y, match.y) && near(box.width, match.width) && near(box.height, match.height);
+            });
+        }
+
+        // Glides to the drawing asked for. The first screens to show are simply there,
+        // and the same drawing asked again leaves the glide alone, unless a screen is in
+        // the pointer's hand: that one always has its way to go.
+        function follow() {
+            const arriving = to === null || Object.keys(to.boxes).length === 0;
+            if (!arriving && carried === "" && same(to, asked)) {
+                to = asked;
+                return ;
+            }
+            const start = arriving ? asked : current(asked);
+            glide.stop();
+            from = start;
+            to = asked;
+            progress = arriving ? 1 : 0;
+            if (!arriving)
+                glide.start();
+
+        }
 
         function bounds(list) {
             if (list.length === 0)
@@ -282,41 +396,34 @@ SettingsPage {
             }) || null;
         }
 
-        // A point of the preview in the layout's pixels, and back.
-        function toLayout(x, y) {
-            return Qt.point(x / factor + originX, y / factor + originY);
-        }
-
-        function toPreview(x, y) {
-            return Qt.point((x - originX) * factor, (y - originY) * factor);
-        }
-
         Layout.fillWidth: true
         clip: true
         // Always as tall: following the screens' shape, it would push every setting
         // under it up or down when a new scale or resolution changes that shape.
         Layout.preferredHeight: 320
+        onAskedChanged: follow()
+        Component.onCompleted: follow()
 
-        onDraggedChanged: {
-            if (dragged === "")
-                return ;
+        Anim {
+            id: glide
 
-            const moved = rectOf(dragged);
-            reach = bounds(rects.concat(page.placements(dragged).map((spot) => {
-                return {
-                    "x": spot.x,
-                    "y": spot.y,
-                    "width": moved.width,
-                    "height": moved.height
-                };
-            })));
-        }
+            target: preview
+            property: "progress"
+            from: 0
+            to: 1
+            token: Motion.place
+            easing.overshoot: Motion.place.overshoot
+            // Refused, the screen glides back.
+            onFinished: {
+                const drop = preview.held;
+                if (drop === null || drop.asked)
+                    return ;
 
-        Behavior on spread {
-            Anim {
-                token: Motion.move.normal
+                drop.asked = true;
+                if (!page.place(drop.name, drop.spot))
+                    preview.dropped = null;
+
             }
-
         }
 
         GlassSurface {
@@ -337,8 +444,8 @@ SettingsPage {
             readonly property var moved: preview.target !== null ? preview.rectOf(preview.dragged) : null
 
             visible: moved !== null
-            x: moved !== null ? preview.toPreview(preview.target.x, preview.target.y).x + 2 : 0
-            y: moved !== null ? preview.toPreview(preview.target.x, preview.target.y).y + 2 : 0
+            x: moved !== null ? preview.width / 2 + (preview.target.x - preview.to.middleX) * preview.factor + 2 : 0
+            y: moved !== null ? preview.height / 2 + (preview.target.y - preview.to.middleY) * preview.factor + 2 : 0
             width: moved !== null ? moved.width * preview.factor - 4 : 0
             height: moved !== null ? moved.height * preview.factor - 4 : 0
             radius: Metrics.radius.normal
@@ -350,43 +457,32 @@ SettingsPage {
         Repeater {
             model: page.names
 
+            // Drawn 2 px inside its place.
             Item {
                 id: screenRect
 
                 required property string modelData
                 readonly property var rect: preview.rectOf(modelData)
+                readonly property var box: preview.boxOf(modelData)
+                readonly property bool carried: preview.carried === modelData
                 readonly property bool chosen: page.selected !== null && page.selected.name === modelData
                 readonly property real radius: Metrics.radius.normal
-                // Where it's drawn in the layout: its place, the pointer's while dragged,
-                // and the place it was dropped on until the layout comes back with it.
-                property var held: null
-                // Where it was caught, as a share of its width and height, so the same
-                // point stays under the pointer as the drawing eases out and it shrinks.
-                property point grab: Qt.point(0, 0)
-                property point pointer: Qt.point(0, 0)
-                readonly property point topLeft: drag.active ? caughtAt(pointer) : held !== null ? Qt.point(held.x, held.y) : rect !== null ? Qt.point(rect.x, rect.y) : Qt.point(0, 0)
 
                 function activate() {
                     page.selectedName = modelData;
                 }
 
-                // Its top left in the layout with the pointer at a point of the preview.
-                function caughtAt(point) {
-                    const at = preview.toLayout(point.x, point.y);
-                    return Qt.point(at.x - grab.x * rect.width, at.y - grab.y * rect.height);
-                }
-
-                visible: rect !== null
-                x: preview.toPreview(topLeft.x, topLeft.y).x + 2
-                y: preview.toPreview(topLeft.x, topLeft.y).y + 2
-                z: drag.active ? 1 : 0
-                width: rect !== null ? rect.width * preview.factor - 4 : 0
-                height: rect !== null ? rect.height * preview.factor - 4 : 0
+                visible: box !== null
+                x: box === null ? 0 : carried ? preview.pointer.x - preview.grab.x * (width + 4) + 2 : preview.width / 2 + box.x * preview.factor + 2
+                y: box === null ? 0 : carried ? preview.pointer.y - preview.grab.y * (height + 4) + 2 : preview.height / 2 + box.y * preview.factor + 2
+                // The one you picked or dragged passes over the others.
+                z: chosen ? 1 : 0
+                width: box !== null ? box.width * preview.factor - 4 : 0
+                height: box !== null ? box.height * preview.factor - 4 : 0
                 activeFocusOnTab: true
-                onRectChanged: held = null
                 Keys.onPressed: (event) => {
                     const direction = Navigation.direction(event);
-                    if (!(event.modifiers & Qt.ShiftModifier) || direction === null)
+                    if (!(event.modifiers & Qt.ShiftModifier) || direction === null || preview.held !== null)
                         return ;
 
                     page.selectedName = modelData;
@@ -438,31 +534,37 @@ SettingsPage {
                     id: drag
 
                     target: null
-                    enabled: page.names.length > 1 && !Displays.busy
+                    enabled: page.names.length > 1 && !Displays.busy && preview.held === null
                     onCentroidChanged: {
                         if (!active)
                             return ;
 
-                        screenRect.pointer = preview.mapFromItem(null, centroid.scenePosition);
-                        const at = screenRect.caughtAt(screenRect.pointer);
-                        preview.target = page.nearest(screenRect.modelData, at.x, at.y);
+                        preview.pointer = preview.mapFromItem(null, centroid.scenePosition);
+                        // Its place where it's drawn, in the layout's pixels.
+                        preview.target = page.nearest(screenRect.modelData, (screenRect.x - 2 - preview.width / 2) / preview.factor + preview.to.middleX, (screenRect.y - 2 - preview.height / 2) / preview.factor + preview.to.middleY);
                     }
                     onActiveChanged: {
                         if (active) {
-                            // Its drawn edge is 2 px inside its place.
-                            screenRect.grab = Qt.point((centroid.pressPosition.x + 2) / (screenRect.width + 4), (centroid.pressPosition.y + 2) / (screenRect.height + 4));
-                            screenRect.pointer = preview.mapFromItem(null, centroid.scenePressPosition);
+                            preview.grab = Qt.point((centroid.pressPosition.x + 2) / (screenRect.width + 4), (centroid.pressPosition.y + 2) / (screenRect.height + 4));
+                            preview.pointer = preview.mapFromItem(null, centroid.scenePressPosition);
+                            preview.carried = screenRect.modelData;
                             page.selectedName = screenRect.modelData;
                             preview.dragged = screenRect.modelData;
                             return ;
                         }
                         const spot = preview.target;
                         preview.target = null;
+                        if (spot !== null && (spot.x !== screenRect.rect.x || spot.y !== screenRect.rect.y))
+                            preview.dropped = {
+                            "name": screenRect.modelData,
+                            "spot": spot,
+                            "asked": false,
+                            "rects": preview.rects
+                        };
+
+                        // Let go last: the glide to its place sets off from the pointer.
                         preview.dragged = "";
-                        if (spot !== null && (spot.x !== screenRect.rect.x || spot.y !== screenRect.rect.y)) {
-                            screenRect.held = spot;
-                            page.place(screenRect.modelData, spot);
-                        }
+                        preview.carried = "";
                     }
                 }
 
