@@ -188,6 +188,16 @@ Singleton {
         locked = true;
     }
 
+    // The shell reloaded under the lock, which is still up (LockScreens): its screens
+    // come back fully shown, as for sleep, with nothing to play.
+    function resume() {
+        covering = true;
+        instant = true;
+        still = !LockSettings.animation;
+        islandAway = true;
+        locked = true;
+    }
+
     function snapshotFor(screen) {
         return screen ? snapshotDir + "/hyprpunk-lock-" + screen.name + ".ppm" : "";
     }
@@ -210,8 +220,6 @@ Singleton {
         errorHide.restart();
         failed();
     }
-
-
 
     PamContext {
         id: pam

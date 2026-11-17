@@ -33,11 +33,12 @@ Singleton {
         onTriggered: nightLight.now = new Date()
     }
 
-    Process {
+    // Ended with the shell, even crashed: left running, the next shell couldn't stop it.
+    TiedProcess {
         id: hyprsunset
 
         running: nightLight.active
-        command: ["hyprsunset", "-t", String(NightLightSettings.temperature)]
+        program: ["hyprsunset", "-t", String(NightLightSettings.temperature)]
     }
 
     Connections {

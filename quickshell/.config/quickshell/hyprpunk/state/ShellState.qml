@@ -25,13 +25,13 @@ Singleton {
         return (monitor !== null ? forScreen(monitor.name) : null) ?? screens.instances[0] ?? null;
     }
 
-    property bool doNotDisturb: false
+    property alias doNotDisturb: kept.doNotDisturb
 
     // Caffeine keeps the computer awake (no dimming, locking or sleep) for caffeineMinutes,
     // until caffeineUntil (ms since epoch). 0 minutes means until you turn it off.
-    property bool caffeine: false
-    property int caffeineMinutes: 0
-    property real caffeineUntil: 0
+    property alias caffeine: kept.caffeine
+    property alias caffeineMinutes: kept.caffeineMinutes
+    property alias caffeineUntil: kept.caffeineUntil
     // Whole minutes left, rounded up, while caffeine has a time.
     property int caffeineMinutesLeft: 0
 
@@ -59,6 +59,19 @@ Singleton {
         return screens.instances.find((state) => {
             return state.screen.name === name;
         }) ?? null;
+    }
+
+    // What you turned on outlives the shell reloading: a reload would quietly drop
+    // caffeine and let the computer sleep, or let the notifications back in.
+    PersistentProperties {
+        id: kept
+
+        property bool doNotDisturb: false
+        property bool caffeine: false
+        property int caffeineMinutes: 0
+        property real caffeineUntil: 0
+
+        reloadableId: "shellState"
     }
 
     Variants {

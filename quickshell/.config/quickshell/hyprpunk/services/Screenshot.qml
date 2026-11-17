@@ -28,10 +28,14 @@ Singleton {
     // first, for the selection to pick one.
     property var windows: []
     property var monitorInfo: null
-    // The screen being recorded, since recordingStarted (ms since epoch).
+    // The screen being recorded, since recordingStarted (ms since epoch), to its file.
+    // The recording runs on its own (screen-recorder.sh) and tells the shell that
+    // follows it, so one that reloads finds it again.
     property bool recording: false
     property string recordingScreen: ""
     property real recordingStarted: 0
+    property string recordingFile: ""
+    readonly property string recorderScript: Session.scripts + "/screen-recorder.sh"
     // The region being chosen, for the selector: {screen, file, scale, mode,
     // annotatedFile}, null otherwise.
     property var selection: null
@@ -141,15 +145,14 @@ Singleton {
             "microphone": ["--audio=@DEFAULT_SOURCE@"]
         }[CaptureSettings.audio] || [];
         const framerate = CaptureSettings.framerate > 0 ? ["-r", String(CaptureSettings.framerate)] : [];
-        recorder.file = file;
-        recorder.command = ["sh", "-c", 'mkdir -p "$(dirname "$1")" && shift && exec wf-recorder -y -F "crop=trunc(iw/2)*2:trunc(ih/2)*2" -x yuv420p "$@"', "sh", file].concat(audio, framerate, area, ["-f", file]);
+        recorder.program = [recorderScript, "start", screenName, file].concat(audio, framerate, area);
         // Once the selection is gone from the screen.
         recordDelay.restart();
     }
 
     function stopRecording() {
-        if (recorder.running)
-            recorder.signal(2);
+        if (recording)
+            Quickshell.execDetached([recorderScript, "stop"]);
 
     }
 
@@ -169,9 +172,6 @@ Singleton {
         onTriggered: {
             recorder.running = true;
             screenshot.busy = false;
-            screenshot.recordingScreen = screenshot.screenName;
-            screenshot.recordingStarted = Date.now();
-            screenshot.recording = true;
         }
     }
 
@@ -265,24 +265,34 @@ rm -f "$1"
         }
     }
 
-    // SIGINT, so wf-recorder finishes the file properly.
-    Process {
+    // Follows the recording: the one it starts, or as the shell starts, the one a
+    // shell before it left running. It tells what's recorded, then ends with it.
+    TiedProcess {
         id: recorder
 
-        property string file: ""
+        program: [screenshot.recorderScript, "follow"]
+        running: true
+        onExited: {
+            if (!screenshot.recording)
+                return ;
 
-        stderr: StdioCollector {
-            id: recorderErrors
-        }
-
-        onExited: (code) => {
-            const seconds = Math.round((Date.now() - screenshot.recordingStarted) / 1000);
             screenshot.recording = false;
-            posterProcess.duration = seconds;
+            posterProcess.duration = Math.round((Date.now() - screenshot.recordingStarted) / 1000);
             posterProcess.poster = Quickshell.env("XDG_RUNTIME_DIR") + "/hyprpunk-recording-" + Date.now() + ".jpg";
-            posterProcess.command = ["sh", "-c", posterProcess.script, "sh", file, posterProcess.poster];
+            posterProcess.command = ["sh", "-c", posterProcess.script, "sh", screenshot.recordingFile, posterProcess.poster];
             posterProcess.running = true;
         }
+
+        stdout: SplitParser {
+            onRead: (line) => {
+                const [screen, started, file] = line.split("\t");
+                screenshot.recordingScreen = screen;
+                screenshot.recordingStarted = Number(started);
+                screenshot.recordingFile = file;
+                screenshot.recording = true;
+            }
+        }
+
     }
 
     // The recording's first frame, for the island.
@@ -296,18 +306,17 @@ rm -f "$1"
 rm -f "${XDG_RUNTIME_DIR}"/hyprpunk-recording-*.jpg
 ffmpeg -loglevel error -y -i "$1" -frames:v 1 -vf scale=-2:180 "$2"'
 
+        // A recording that failed has nothing to show: screen-recorder.sh says why.
         onExited: (code) => {
-            if (code === 0) {
-                screenshot.taken = {
-                    "screen": screenshot.screenName,
-                    "file": poster,
-                    "video": recorder.file,
-                    "duration": duration
-                };
+            if (code !== 0)
                 return ;
-            }
-            const error = recorderErrors.text.trim().split("\n").pop() || "wf-recorder could not record the screen";
-            Quickshell.execDetached(["notify-send", "-a", "Screen recording", "Recording failed", error]);
+
+            screenshot.taken = {
+                "screen": screenshot.recordingScreen,
+                "file": poster,
+                "video": screenshot.recordingFile,
+                "duration": duration
+            };
         }
     }
 

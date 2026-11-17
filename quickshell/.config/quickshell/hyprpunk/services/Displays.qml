@@ -20,7 +20,7 @@ Singleton {
         "outputs": []
     })
     // Seconds left before the last guarded change reverts, 0 when none.
-    property int revertCountdown: 0
+    property alias revertCountdown: kept.revertCountdown
     readonly property bool busy: applier.running || reader.running
 
     function refresh() {
@@ -56,6 +56,21 @@ Singleton {
             refresh();
         else if (refCount === 0)
             keep();
+    }
+
+    // The countdown goes on through a reload: forgotten, a change you never kept would
+    // stay, even one that left the screen unusable.
+    PersistentProperties {
+        id: kept
+
+        property int revertCountdown: 0
+
+        reloadableId: "displays"
+        onReloaded: {
+            if (revertCountdown > 0)
+                countdown.restart();
+
+        }
     }
 
     Process {

@@ -12,32 +12,38 @@ import qs.config
 Singleton {
     id: idle
 
-    // The OSD stays quiet for the light and brightness changes made here.
-    function muteOsd(device) {
+    // A light lowered while you're away, back as you return. The OSD stays quiet for it.
+    function light(which, on) {
         const until = Date.now() + 2000;
-        if (device === "keyboard")
+        if (which === "keyboard")
             Devices.keyboardOsdMutedUntil = until;
         else
             Devices.screenOsdMutedUntil = until;
+        Quickshell.execDetached([Session.scripts + "/idle-lights.sh", on ? "restore" : "off", which]);
+    }
+
+    function wakeScreens() {
+        Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.dpms({action = \"on\"})"]);
+    }
+
+    // The shell starts with you here: what one that restarted while you were away left
+    // lowered or off comes back, since it never saw you return.
+    Component.onCompleted: {
+        light("keyboard", true);
+        light("screen", true);
+        wakeScreens();
     }
 
     IdleMonitor {
         enabled: timeout > 0
         timeout: Power.delay("keyboard")
-        onIsIdleChanged: {
-            idle.muteOsd("keyboard");
-            Quickshell.execDetached([Session.scripts + "/keyboard-backlight.sh", isIdle ? "off" : "restore"]);
-        }
+        onIsIdleChanged: idle.light("keyboard", !isIdle)
     }
 
-    // brightnessctl saves the brightness before dimming and puts it back.
     IdleMonitor {
         enabled: timeout > 0
         timeout: Power.delay("dim")
-        onIsIdleChanged: {
-            idle.muteOsd("screen");
-            Quickshell.execDetached(["brightnessctl", "-c", "backlight", isIdle ? "-s" : "-r"].concat(isIdle ? ["set", "10"] : []));
-        }
+        onIsIdleChanged: idle.light("screen", !isIdle)
     }
 
     // Through logind, so it knows the session is locked (hypridle shows the lock for it).
@@ -48,7 +54,7 @@ Singleton {
             if (isIdle)
                 Quickshell.execDetached(["sh", "-c", "loginctl lock-session && hyprctl dispatch 'hl.dsp.dpms({action = \"off\"})'"]);
             else
-                Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.dpms({action = \"on\"})"]);
+                idle.wakeScreens();
         }
     }
 
