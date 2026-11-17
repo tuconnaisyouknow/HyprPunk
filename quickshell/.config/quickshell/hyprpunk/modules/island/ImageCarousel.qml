@@ -115,12 +115,12 @@ Item {
                 radius: Metrics.radius.normal
                 color: Colors.crust
 
-                // The whole image, never cropped.
+                // Fills the frame like the wallpaper fills the screen, whatever its shape.
                 Image {
                     anchors.fill: parent
                     visible: slide.item.image !== ""
                     source: slide.item.image !== "" ? "file://" + slide.item.image : ""
-                    fillMode: Image.PreserveAspectFit
+                    fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                     smooth: true
                     mipmap: true
