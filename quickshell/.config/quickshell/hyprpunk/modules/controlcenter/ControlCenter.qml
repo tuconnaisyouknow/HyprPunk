@@ -290,9 +290,6 @@ Card {
                     CaffeinePage {
                     }
 
-                    ChargeLimitPage {
-                    }
-
                     TrayPage {
                         id: trayPage
                     }

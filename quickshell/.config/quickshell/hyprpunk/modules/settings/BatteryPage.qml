@@ -5,13 +5,82 @@ import qs.config
 import qs.services
 import qs.theme
 
-// The settings' battery page: when the island warns you the battery runs out, and what
-// the computer does once it's critical. The charge limit stays in the control center.
+// The settings' battery and power page: how hard the computer works, where the battery
+// stops charging, when the island warns you it runs out, and what the computer does
+// once it's critical.
 SettingsPage {
     id: page
 
-    title: "Battery"
-    description: Battery.present ? "When you're warned it runs out. The charge limit is in the control center." : "This computer has no battery: these only count on one that does."
+    // The profiles this computer has, from saver to performance.
+    readonly property var profiles: PowerProfile.profiles.map((profile) => {
+        return {
+            "value": profile,
+            "icon": Icons.powerProfile(profile),
+            "label": profile === "power-saver" ? "Saver" : profile === "performance" ? "Performance" : "Balanced"
+        };
+    })
+
+    title: "Battery and power"
+    description: Battery.present ? "How hard the computer works, where the battery stops charging, and when you're warned it runs out." : "This computer has no battery: the warnings only count on one that does."
+
+    SettingRow {
+        Layout.fillWidth: true
+        visible: PowerProfile.available
+        icon: Icons.powerProfile(PowerProfile.current)
+        title: "Power profile"
+        description: "How hard the computer works: the saver makes the battery last, performance gives it all it has."
+
+        SegmentedControl {
+            width: parent.width
+            compact: true
+            options: page.profiles
+            value: PowerProfile.current
+            onSelected: (value) => {
+                return PowerProfile.set(value);
+            }
+        }
+
+    }
+
+    // Read only until battery-limit is installed.
+    SettingRow {
+        Layout.fillWidth: true
+        visible: ChargeLimit.current > 0
+        icon: Icons.chargeLimit(ChargeLimit.current)
+        title: "Charge limit"
+        description: "Where the battery stops charging: easier on it over the years, 80 % being the usual choice. Kept after a restart."
+
+        Column {
+            width: parent.width
+            spacing: Metrics.spacing.normal
+
+            SettingChoices {
+                width: parent.width
+                enabled: ChargeLimit.writable
+                values: ChargeLimit.choices
+                // None chosen until the limit is read.
+                value: ChargeLimit.current > 0 ? ChargeLimit.current : null
+                label: (percent) => {
+                    return percent === 100 ? "Off" : percent + " %";
+                }
+                onSelected: (value) => {
+                    return ChargeLimit.set(value);
+                }
+            }
+
+            Text {
+                width: parent.width
+                visible: text !== ""
+                text: !ChargeLimit.writable ? "Read only: install battery-limit (battery/ in the dotfiles) to change it." : ChargeLimit.error
+                color: Colors.peach
+                wrapMode: Text.Wrap
+                font.family: Metrics.font
+                font.pixelSize: Metrics.text.body
+            }
+
+        }
+
+    }
 
     SettingRow {
         Layout.fillWidth: true
@@ -81,6 +150,15 @@ SettingsPage {
             }
         }
 
+    }
+
+    // Read again each time the page opens: another app or the firmware may have changed them.
+    ServiceRef {
+        service: PowerProfile
+    }
+
+    ServiceRef {
+        service: ChargeLimit
     }
 
 }

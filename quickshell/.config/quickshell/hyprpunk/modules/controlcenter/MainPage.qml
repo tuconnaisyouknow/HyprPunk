@@ -118,52 +118,15 @@ ControlPage {
             ControlTile {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                visible: PowerProfile.available
-                icon: Icons.powerProfile(PowerProfile.current)
-                title: "Power"
-                subtitle: PowerProfile.current === "power-saver" ? "Saver" : PowerProfile.current === "performance" ? "Performance" : "Balanced"
-                active: PowerProfile.current !== "balanced"
-                onToggled: PowerProfile.cycle()
+                icon: ShellState.caffeine ? "󰅶" : "󰾪"
+                title: "Caffeine"
+                subtitle: page.caffeineSubtitle()
+                active: ShellState.caffeine
+                expandable: true
+                onToggled: ShellState.toggleCaffeine()
+                onExpandRequested: page.stack.push("caffeine")
             }
 
-        }
-
-    }
-
-    // Below the two columns. Without a charge limit, caffeine spans both
-    // so the grid stays even.
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: tileColumns.spacing
-
-        ControlTile {
-            Layout.fillWidth: true
-            Layout.preferredWidth: tileColumns.columnWidth
-            icon: ShellState.caffeine ? "󰅶" : "󰾪"
-            title: "Caffeine"
-            subtitle: page.caffeineSubtitle()
-            active: ShellState.caffeine
-            expandable: true
-            onToggled: ShellState.toggleCaffeine()
-            onExpandRequested: page.stack.push("caffeine")
-        }
-
-        ControlTile {
-            Layout.fillWidth: true
-            Layout.preferredWidth: tileColumns.columnWidth
-            visible: ChargeLimit.current > 0
-            icon: Icons.chargeLimit(ChargeLimit.current)
-            title: "Charge limit"
-            subtitle: ChargeLimit.current < 100 ? ChargeLimit.current + " %" : "Off"
-            active: ChargeLimit.current < 100
-            expandable: true
-            onToggled: {
-                if (ChargeLimit.writable)
-                    ChargeLimit.toggle();
-                else
-                    page.stack.push("chargeLimit");
-            }
-            onExpandRequested: page.stack.push("chargeLimit")
         }
 
     }
@@ -331,17 +294,6 @@ ControlPage {
 
         }
 
-    }
-
-    // Read again each time the panel opens: another app may have changed them.
-    ServiceRef {
-        service: PowerProfile
-        active: page.stack.opened
-    }
-
-    ServiceRef {
-        service: ChargeLimit
-        active: page.stack.opened
     }
 
 }

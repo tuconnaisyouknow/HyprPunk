@@ -107,7 +107,7 @@ The applications themed and configured by these dotfiles.
 
 - 🪟 **Hyprland** as the main Wayland environment.
 - 🧊 **Quickshell** for the bar, the dynamic island panels (launcher, clipboard, emoji, wallpapers, themes, session), the control center, the notifications (popping out of the island), the OSD, the lock screen (with the player and its lyrics), and screenshots (annotated in place) and screen recordings.
-- 🔋 A battery charge limit set from the control center, on laptops whose battery driver supports one.
+- 🔋 A battery charge limit set in the settings, on laptops whose battery driver supports one.
 - 🪫 Battery warnings at the levels you choose in the settings, and the computer sleeping or shutting down when
   it stays critical.
 - 🔒 **Hypridle**, **hyprsunset** and **awww** for locking around sleep, the night light, and wallpapers with animated
@@ -271,8 +271,8 @@ repository that the update changes, git refuses the pull and nothing changes.
 | `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
 | `Super + Space` | Open the application launcher |
 | `Super + Ctrl + Space` | Open the main menu |
-| `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, battery, background apps…) |
-| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and language, sound, battery, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the main menu |
+| `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, background apps…) |
+| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and language, sound, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the main menu |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
@@ -478,7 +478,7 @@ The installer enables or configures:
 - 📶 `bluetooth`
 - ⚡ `power-profiles-daemon`
 - 🧱 `xwayland-satellite` for X11 apps, started with the session, with Hyprland's own XWayland turned off
-- 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
+- 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the settings and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
 - 📁 Papirus Dark icons, with folders in the wallpaper's accent

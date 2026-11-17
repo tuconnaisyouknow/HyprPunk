@@ -781,7 +781,7 @@ install_frame_clock() {
   sudo make -C "$DOTFILES_DIR/frames" install
 }
 
-# The battery charge limit you set from the control center, on laptops that support one.
+# The battery charge limit you set in the settings, on laptops that support one.
 # The service puts it back at boot and after sleep, and lets the wheel group change it.
 install_battery_limit() {
   local battery_dir="$DOTFILES_DIR/battery"

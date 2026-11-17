@@ -1,4 +1,4 @@
-# Where the chosen charge limit is saved. Empty until you pick one in the control center,
+# Where the chosen charge limit is saved. Empty until you pick one in the settings,
 # the firmware decides until then.
 d /var/lib/battery-limit 0775 root wheel -
 f /var/lib/battery-limit/end_threshold 0664 root wheel -

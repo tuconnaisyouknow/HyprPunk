@@ -7,7 +7,7 @@
 #   battery-limit apply    as root, at boot and after sleep: opens the limit to the
 #                          wheel group and puts the saved one back, as firmwares forget it
 #
-# The control center calls get and set, as a regular user of the wheel group.
+# The settings call get and set, as a regular user of the wheel group.
 
 kept=/var/lib/battery-limit/end_threshold
 

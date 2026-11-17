@@ -2,7 +2,7 @@
 # Saves the battery's warnings: the level where the island warns you it's low, the one
 # where it's critical, and what the computer does a minute after that if you don't plug
 # it in. The shell watches the file (Bar.qml, CriticalBattery.qml); its settings window
-# and `hyprpunk battery` come here. The charge limit is the control center's.
+# and `hyprpunk battery` come here. The charge limit goes through battery-limit.
 #   batteryctl.sh get                                every setting, as key=value
 #   batteryctl.sh set low <percent>                  10 to 30
 #   batteryctl.sh set critical <percent>             2 to 7, under the low one

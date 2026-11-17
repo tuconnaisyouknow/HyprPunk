@@ -40,7 +40,7 @@ Scope {
         "name": "battery",
         "page": "BatteryPage.qml",
         "icon": "󰁹",
-        "label": "Battery"
+        "label": "Battery and power"
     }, {
         "name": "power",
         "page": "PowerPage.qml",

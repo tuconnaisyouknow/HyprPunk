@@ -18,14 +18,8 @@ Singleton {
     // balanced, so fewer means it isn't running.
     readonly property bool available: profiles.length > 1
 
-    // The next profile, back to the first after the last.
-    function cycle() {
-        if (setter.running || profiles.length < 2)
-            return ;
-
-        const next = profiles[(profiles.indexOf(current) + 1) % profiles.length];
-        current = next;
-        setter.command = ["powerprofilesctl", "set", next];
+    function set(profile) {
+        setter.command = ["powerprofilesctl", "set", profile];
         setter.running = true;
     }
 
@@ -59,9 +53,13 @@ Singleton {
                         power.current = match[2];
 
                 }
-                power.profiles = profiles.sort((a, b) => {
+                profiles.sort((a, b) => {
                     return order.indexOf(a) - order.indexOf(b);
                 });
+                // Only when they change, so the control showing them isn't built again.
+                if (profiles.join() !== power.profiles.join())
+                    power.profiles = profiles;
+
             }
         }
 
