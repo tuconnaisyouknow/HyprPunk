@@ -179,6 +179,8 @@ Scope {
                 }
 
                 RowLayout {
+                    id: columns
+
                     anchors.fill: parent
                     anchors.margins: Metrics.spacing.section
                     spacing: Metrics.spacing.section
@@ -189,6 +191,14 @@ Scope {
                         Layout.fillWidth: false
                         Layout.fillHeight: true
                         spacing: Metrics.spacing.small
+                        opacity: question.asked ? 0.5 : 1
+
+                        Behavior on opacity {
+                            Anim {
+                                token: Motion.color.normal
+                            }
+
+                        }
 
                         Text {
                             Layout.leftMargin: Metrics.spacing.normal
@@ -301,6 +311,7 @@ Scope {
                         contentHeight: page.implicitHeight
                         boundsBehavior: Flickable.StopAtBounds
                         clip: true
+                        opacity: question.asked ? 0.5 : 1
 
                         Connections {
                             function onSectionChanged() {
@@ -319,15 +330,97 @@ Scope {
                             source: settings.current.page
                         }
 
+                        Behavior on opacity {
+                            Anim {
+                                token: Motion.color.normal
+                            }
+
+                        }
+
                     }
 
+                }
+
+                // While a page asks its question, the pointer reaches nothing else: the
+                // sections and the page are dimmed, like anything unavailable.
+                MouseArea {
+                    anchors.fill: parent
+                    visible: question.asked
+                    hoverEnabled: true
+                    acceptedButtons: Qt.AllButtons
+                    onWheel: (wheel) => {
+                        return wheel.accepted = true;
+                    }
+                }
+
+                // The page's question, over its foot. It waits under the window's edge,
+                // already drawn so its first frame costs nothing, and comes up from there.
+                Loader {
+                    id: question
+
+                    readonly property bool asked: page.item !== null && page.item.asking
+                    property real risen: 0
+
+                    x: columns.x + scroller.x
+                    y: columns.y + columns.height - height
+                    width: scroller.width
+                    enabled: asked
+                    sourceComponent: page.item !== null ? page.item.question : null
+                    // The keys go to the question, then back to the control they left.
+                    onAskedChanged: Qt.callLater(keyboardFocus.settle)
+
+                    // What it covers doesn't show through its glass.
+                    Rectangle {
+                        anchors.fill: parent
+                        z: -1
+                        radius: Metrics.radius.card
+                        color: Colors.base
+                    }
+
+                    transform: Translate {
+                        y: (1 - question.risen) * (question.height + Metrics.spacing.section)
+                    }
+
+                    states: State {
+                        name: "asked"
+                        when: question.asked
+
+                        PropertyChanges {
+                            question.risen: 1
+                        }
+
+                    }
+
+                    // Up with a touch past its place, and away quicker, like anything
+                    // that leaves.
+                    transitions: [
+                        Transition {
+                            to: "asked"
+
+                            Anim {
+                                property: "risen"
+                                token: Motion.sheet
+                                easing.overshoot: Motion.sheet.overshoot
+                            }
+
+                        },
+                        Transition {
+                            from: "asked"
+
+                            Anim {
+                                property: "risen"
+                                token: Motion.leave.large
+                            }
+
+                        }
+                    ]
                 }
 
                 KeyboardFocus {
                     id: keyboardFocus
 
                     anchors.fill: parent
-                    page: content
+                    page: question.asked ? question : content
                     home: content
                 }
 

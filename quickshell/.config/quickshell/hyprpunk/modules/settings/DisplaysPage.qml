@@ -6,8 +6,8 @@ import qs.theme
 
 // The settings' displays page: your screens drawn to scale, dragged where they go, then
 // the settings of the one you pick, applied straight away through displayctl.sh. A new
-// resolution, refresh rate or scale asks if you want to keep it, and undoes itself if
-// you don't answer; closing the window keeps it.
+// resolution, refresh rate or scale asks if you want to keep it once it's applied, and undoes
+// itself if you don't answer or close the window.
 SettingsPage {
     id: page
 
@@ -16,6 +16,7 @@ SettingsPage {
 
     readonly property var info: Displays.info
     property string selectedName: ""
+    property int secondsLeft: 0
     // The screens' names, only replaced when one comes or goes, so the drawing keeps its
     // screens (and the keyboard on one) when the layout changes.
     property var names: []
@@ -173,6 +174,42 @@ SettingsPage {
     }
 
     onOutputsChanged: follow()
+    asking: Displays.revertCountdown > 0 && !Displays.busy
+
+    // A change that undoes itself unless you keep it.
+    question: SettingRow {
+        icon: "󰔛"
+        title: "Keep these settings?"
+        description: "They go back as they were in " + page.secondsLeft + " s."
+
+        RowLayout {
+            width: parent.width
+            spacing: Metrics.spacing.normal
+
+            ActionRow {
+                Layout.fillWidth: true
+                icon: "󰄬"
+                label: "Keep"
+                onTriggered: Displays.keep()
+            }
+
+            ActionRow {
+                Layout.fillWidth: true
+                icon: "󰕌"
+                label: "Revert"
+                onTriggered: Displays.revert()
+            }
+
+        }
+
+    }
+
+    // Stops at the last second counted, so the question doesn't read 0 as it leaves.
+    Binding on secondsLeft {
+        when: Displays.revertCountdown > 0
+        value: Displays.revertCountdown
+        restoreMode: Binding.RestoreNone
+    }
 
     // The screens at their size and place. A click picks one; dragged, it follows the
     // pointer and shows where it will go against the others, and goes there when dropped.
@@ -256,8 +293,9 @@ SettingsPage {
 
         Layout.fillWidth: true
         clip: true
-        // As tall as the screens' shape asks, within reason.
-        Layout.preferredHeight: Math.max(160, Math.min(320, (width - 2 * padding) * layout.height / layout.width + 2 * padding))
+        // Always as tall: following the screens' shape, it would push every setting
+        // under it up or down when a new scale or resolution changes that shape.
+        Layout.preferredHeight: 320
 
         onDraggedChanged: {
             if (dragged === "")
@@ -428,36 +466,6 @@ SettingsPage {
                     }
                 }
 
-            }
-
-        }
-
-    }
-
-    // A change that undoes itself unless you keep it.
-    SettingRow {
-        Layout.fillWidth: true
-        visible: Displays.revertCountdown > 0
-        icon: "󰔛"
-        title: "Keep these settings?"
-        description: "They go back as they were in " + Displays.revertCountdown + " s."
-
-        RowLayout {
-            width: parent.width
-            spacing: Metrics.spacing.normal
-
-            ActionRow {
-                Layout.fillWidth: true
-                icon: "󰄬"
-                label: "Keep"
-                onTriggered: Displays.keep()
-            }
-
-            ActionRow {
-                Layout.fillWidth: true
-                icon: "󰕌"
-                label: "Revert"
-                onTriggered: Displays.revert()
             }
 
         }

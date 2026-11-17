@@ -6,8 +6,8 @@ import Quickshell.Io
 import qs.config
 
 // Your screens as displayctl.sh sees them, and changing their settings. A new
-// resolution, refresh rate or scale undoes itself unless you keep it in time; once nobody
-// looks (ServiceRef: the settings' displays page closed), it's kept.
+// resolution, refresh rate or scale undoes itself unless you keep it in time, and at once
+// when nobody looks any more (ServiceRef: the settings' displays page closed).
 Singleton {
     id: displays
 
@@ -33,11 +33,11 @@ Singleton {
             return ;
 
         applier.command = [displayctl].concat(guarded ? ["try"] : [], args);
+        applier.running = true;
         if (guarded) {
             revertCountdown = revertSeconds;
             countdown.restart();
         }
-        applier.running = true;
     }
 
     function keep() {
@@ -54,8 +54,8 @@ Singleton {
     onRefCountChanged: {
         if (refCount === 1)
             refresh();
-        else if (refCount === 0)
-            keep();
+        else if (refCount === 0 && revertCountdown > 0)
+            revert();
     }
 
     // The countdown goes on through a reload: forgotten, a change you never kept would

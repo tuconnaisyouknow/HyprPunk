@@ -100,6 +100,14 @@ Singleton {
         "easing": Easing.OutBack
     })
 
+    // A question coming up from a window's edge over what it's about: it lands a touch
+    // past its place and comes back.
+    readonly property var sheet: ({
+        "duration": 450,
+        "easing": Easing.OutBack,
+        "overshoot": 1.7
+    })
+
     // Something breathing on its own while a state lasts (a recording, a wait).
     readonly property QtObject pulse: QtObject {
         readonly property int duration: 700
