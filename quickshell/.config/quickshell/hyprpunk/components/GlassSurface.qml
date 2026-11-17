@@ -18,7 +18,7 @@ Item {
     // shows no cursor yet. Only for fields that share the keyboard with something else.
     property bool focused: false
     property real accent: focused ? 1 : 0
-    // The liquid style, chosen in the control center: the lock screen clock's glass, with
+    // The liquid style, chosen in the settings: the lock screen clock's glass, with
     // see-through colors and a soft rim instead of the ring.
     readonly property bool liquid: Session.glassStyle === "liquid"
     // How much of the background's color stays, at the top and at the bottom. A dark

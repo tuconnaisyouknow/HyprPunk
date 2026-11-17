@@ -1,15 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Quickshell.Networking
 import qs.components
-import qs.config
 import qs.services
 import qs.state
 import qs.theme
 
 // The control center's first page: the tiles you switch with a click (their arrow opens
-// their page), then the display, the sound and the background apps. The keys move
+// their page), then the brightness, the sound and the background apps. The keys move
 // around it as a grid.
 ControlPage {
     id: page
@@ -131,9 +129,10 @@ ControlPage {
 
     }
 
-    // The brightness when the screen has a backlight, and the glass style.
+    // Only when the screen has a backlight to dim.
     ControlBlock {
         Layout.fillWidth: true
+        visible: Devices.hasBacklight
         implicitHeight: brightnessColumn.implicitHeight + 2 * Metrics.spacing.large
 
         ColumnLayout {
@@ -153,29 +152,10 @@ ControlPage {
 
             HorizontalSlider {
                 Layout.fillWidth: true
-                visible: Devices.hasBacklight
                 value: Devices.brightness / 100
                 icon: Icons.brightness(Devices.brightness)
                 onValueRequested: (value) => {
                     return Devices.setBrightness(Math.max(1, Math.round(value * 100)));
-                }
-            }
-
-            SegmentedControl {
-                Layout.fillWidth: true
-                compact: true
-                value: Session.glassStyle
-                options: [{
-                    "value": "classic",
-                    "icon": "󰆧",
-                    "label": "Classic"
-                }, {
-                    "value": "liquid",
-                    "icon": "󰖌",
-                    "label": "Liquid"
-                }]
-                onSelected: (value) => {
-                    return Quickshell.execDetached([Session.scripts + "/glassctl.sh", "set", value]);
                 }
             }
 
