@@ -21,8 +21,11 @@ Item {
     // Enter means the selected entry rather than the folder itself: the first entry is
     // selected at first, and going back up selects the folder you came out of.
     property bool selectsEntry: true
-    // The files marked to pick at once.
+    // The entries marked to pick at once.
     property var marked: []
+    // The entry to select as soon as the folder shows it: one just made or renamed, or
+    // the one next to those sent to the trash.
+    property string wanted: ""
     // The folder the entries are from, behind folder while the new one is read.
     property string shownFolder: ""
     // {name, path, isDir, size, modified}
@@ -39,9 +42,20 @@ Item {
         return folderModel.indexOf(Files.url(path)) >= 0;
     }
 
+    // The entry the selection falls back on once these are gone: the next one down,
+    // else the last one before them.
+    function neighbour(paths) {
+        const stays = (entry) => {
+            return paths.indexOf(entry.path) < 0;
+        };
+        const next = entries.slice(selectedIndex + 1).find(stays) ?? entries.slice(0, Math.max(0, selectedIndex)).reverse().find(stays);
+        return next ? next.path : "";
+    }
+
     // Opening again: last time's entries go, and a slide cut short by closing ends.
     function reset() {
         shownFolder = "";
+        wanted = "";
         entries = [];
         selectedIndex = -1;
         folderIn.stop();
@@ -49,8 +63,8 @@ Item {
         list.opacity = 1;
     }
 
-    // Read again whenever the folder, the file type or what you type changes, keeping
-    // the selection on the same entry while it's still there.
+    // Read again whenever the folder, its entries, the file type or what you type
+    // changes, keeping the selection on the same entry while it's still there.
     function rebuild() {
         if (folderModel.status !== FolderListModel.Ready || decodeURIComponent(String(folderModel.folder)) !== "file://" + folder)
             return ;
@@ -61,6 +75,10 @@ Item {
         const patterns = globs.map(Files.globRegex);
         const search = query.toLowerCase();
         const keep = fresh ? cameFrom : selected ? selected.path : "";
+        // Asked for in the folder you left: forgotten.
+        if (fresh)
+            wanted = "";
+
         const found = [];
         for (let index = 0; index < folderModel.count; index++) {
             const name = folderModel.get(index, "fileName");
@@ -82,9 +100,16 @@ Item {
             });
         }
         entries = found;
-        const kept = found.findIndex((entry) => {
-            return entry.path === keep;
-        });
+        const indexOf = (path) => {
+            return path === "" ? -1 : found.findIndex((entry) => {
+                return entry.path === path;
+            });
+        };
+        const asked = indexOf(wanted);
+        if (asked >= 0)
+            wanted = "";
+
+        const kept = asked >= 0 ? asked : indexOf(keep);
         selectedIndex = kept >= 0 ? kept : selectsEntry && found.length > 0 ? 0 : -1;
         syncList();
         if (fresh) {
@@ -124,6 +149,8 @@ Item {
 
         }
         onCountChanged: Qt.callLater(folderList.rebuild)
+        // A new name or size leaves the count as it was.
+        onDataChanged: Qt.callLater(folderList.rebuild)
     }
 
     ListView {
