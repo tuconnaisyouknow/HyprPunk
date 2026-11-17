@@ -182,7 +182,7 @@ Card {
     parent: cardLayer
     opened: expanded
     // The open card's size, the full size by default. Animate it on your side if it
-    // changes while open (a calendar month with one more week). The room the card needs
+    // changes while open (the calendar taking the notifications beside it). The room the card needs
     // stays at its widest and the card eases inside it.
     cardWidth: width
     cardHeight: height
@@ -305,9 +305,11 @@ Card {
         height: popup.shapeHeight
         visible: popup.frame === null && popup.covering
 
+        // Lit under the pointer as it folds back onto the pill that is.
         GlassSurface {
             radius: card.radius
             tinted: false
+            hovered: !popup.expanded && popup.pill.lit
             backgroundColor: Colors.panel
         }
 

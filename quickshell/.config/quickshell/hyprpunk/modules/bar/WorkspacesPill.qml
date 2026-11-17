@@ -39,7 +39,7 @@ Pill {
         lastWorkspace = shownWorkspace;
         shownWorkspace = activeWorkspace;
     }
-    opacity: workspacePill.bar.pillHidden("workspaces") ? 0 : 1
+    covered: workspacePill.bar.pillHidden("workspaces")
 
     onHoveredChanged: {
         if (!hovered)

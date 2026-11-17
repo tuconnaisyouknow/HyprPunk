@@ -12,7 +12,7 @@ Pill {
     readonly property alias popup: monitorPopup
 
     visible: monitorPill.bar.width >= 1200
-    opacity: monitorPill.bar.pillHidden("monitor") ? 0 : 1
+    covered: monitorPill.bar.pillHidden("monitor")
     clickable: true
     onClicked: monitorPopup.togglePinned()
 

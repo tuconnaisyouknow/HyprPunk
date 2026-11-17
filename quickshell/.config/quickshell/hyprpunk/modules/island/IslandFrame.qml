@@ -36,7 +36,8 @@ Card {
     readonly property real targetTop: owner !== null ? island.top : island.top - island.spreadY
     // The shape it was in when the open card last changed, and how far it has eased from
     // there. It eases from wherever it is, so a card taking over mid-animation never jumps,
-    // and then follows the open card's size as that changes (a month with one more week).
+    // and then follows the open card's size as that changes (the calendar taking the
+    // notifications beside it).
     property real fromWidth: 0
     property real fromHeight: 0
     property real fromRadius: 0
@@ -127,10 +128,11 @@ Card {
         height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travel) + settle.height
 
         // Same look as the island it grows from: base color at 0.9, blurred, with the
-        // glass rim.
+        // glass rim, and lit under the pointer as it folds back onto the island that is.
         GlassSurface {
             radius: shape.radius
             tinted: false
+            hovered: frame.owner === null && frame.island.lit
             backgroundColor: Colors.panel
         }
 
@@ -144,18 +146,19 @@ Card {
 
     // The island as it shows itself (the time and its chips), at its place:
     // it fades as a card grows out, faster than the shape so it's gone before the card's
-    // content shows, and comes back as it folds, whole once it lands. The calendar
-    // carries the time and chips itself, and an OSD has its own way into the island
-    // (Osd.landing).
+    // content shows, and comes back as it folds, whole once it lands. An OSD has its own
+    // way into the island (Osd.landing).
     IslandView {
         id: islandCopy
 
         readonly property Item pill: frame.bar.islandItem
 
         visible: frame.visible && opacity > 0
-        opacity: pill.face === "osd" || pill.face === "clock" && frame.lastOwner !== null && frame.lastOwner.carriesIslandContent ? 0 : Math.pow(frame.islandShare, 3)
-        x: frame.width / 2 + frame.island.centerOffset - width / 2
-        y: frame.island.top + (frame.island.height - height) / 2
+        opacity: pill.face === "osd" ? 0 : Math.pow(frame.islandShare, 3)
+        // On the pixels the island centres its own on, or the time steps aside as the
+        // island takes over.
+        x: frame.width / 2 + frame.island.centerOffset - frame.island.width / 2 + Math.floor((frame.island.width - width) / 2)
+        y: frame.island.top + Math.floor((frame.island.height - height) / 2)
         // Still while covered, like the island's own.
         bar: frame.bar
         face: pill.face

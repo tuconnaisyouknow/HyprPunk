@@ -130,7 +130,8 @@ Item {
     // Where its island and control pill rest in the bar, for the cards growing out of
     // them: centerOffset is how far the island sits from the middle, right and top are
     // the control pill's distances from the screen's edges. spreadX and spreadY are how
-    // far its zoom draws the pill past its place, where a card starts and ends. Each is
+    // far its zoom draws the pill past its place, where a card starts and ends, and lit
+    // tells the pill is lit under the pointer, as a card folding back onto it is. Each is
     // read on its own, so a card only follows what it uses.
     readonly property QtObject islandPill: QtObject {
         readonly property real centerOffset: barContent.x + centerGroup.x + island.x + island.width / 2 - bar.width / 2
@@ -139,6 +140,7 @@ Item {
         readonly property real height: island.height
         readonly property real spreadX: island.spreadX
         readonly property real spreadY: island.spreadY
+        readonly property bool lit: island.lit
     }
     readonly property QtObject controlPill: QtObject {
         readonly property real right: bar.width - barContent.x - rightGroup.x - control.x - control.width
@@ -147,6 +149,7 @@ Item {
         readonly property real height: control.height
         readonly property real spreadX: control.spreadX
         readonly property real spreadY: control.spreadY
+        readonly property bool lit: control.lit
     }
     // The pointer is on the control pill's spot in the control center, which keeps the
     // pill lit (Pill.spotHovered).

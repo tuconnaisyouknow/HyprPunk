@@ -24,6 +24,10 @@ Rectangle {
     // you'll see it.
     property bool spotHovered: false
     readonly property bool lit: clickable && (hovered || spotHovered)
+    // A card grown out of it is drawn over it: it hides, the card's glass would let it
+    // through, and leaves the blur to the card. Both blurring the same place made it
+    // darker under the card, until the card had folded back.
+    property bool covered: false
     // How far its zoom draws it past its place in the row (PillZoom).
     readonly property real spreadX: pillZoom.spreadX
     readonly property real spreadY: pillZoom.spreadY
@@ -38,6 +42,7 @@ Rectangle {
     implicitHeight: Metrics.pillHeight
     radius: height / 2
     color: "transparent"
+    opacity: covered ? 0 : 1
     clip: true
     signal clicked()
 
@@ -60,7 +65,7 @@ Rectangle {
 
     BlurShape {
         radius: pill.radius
-        shown: glass.opacity > 0.5
+        shown: glass.opacity > 0.5 && !pill.covered
     }
 
     HoverHandler {

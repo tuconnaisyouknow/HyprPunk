@@ -7,8 +7,7 @@ Pill {
 
     required property var bar
 
-    // Hidden under the control center's glass, which lets it through.
-    opacity: controlPill.bar.pillHidden("control") ? 0 : 1
+    covered: controlPill.bar.pillHidden("control")
     clickable: true
     spotHovered: controlPill.bar.controlSpotHovered
 

@@ -118,10 +118,12 @@ Card {
             width: panel.shapeWidth
             height: panel.shapeHeight
 
-            // Same look as the pill it grows from, so it feels like the pill itself is growing.
+            // Same look as the pill it grows from, so it feels like the pill itself is
+            // growing: lit under the pointer as it folds back onto the pill that is.
             GlassSurface {
                 radius: panel.radius
                 tinted: false
+                hovered: !controlCenter.opened && controlCenter.pill.lit
                 backgroundColor: Colors.panel
             }
 
