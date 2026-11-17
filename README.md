@@ -140,7 +140,8 @@ the whole look:
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
 terminal and its tools (Catppuccin Mocha tinted with the palette), and Brave's Classic theme, through its policy. The
 shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop and Brave change at once, Qt apps, yazi and fastfetch
-the next time they start. Papirus's folders stay grey, which goes with every palette.
+the next time they start. Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
+theme, built in a moment from Papirus's grey folders.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
 
@@ -217,9 +218,10 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 - 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
   music files, set as the default apps for those files (an update leaves the ones you picked).
-- 📁 **Thunar** for files, with thumbnails of videos, audio covers, PDFs, office documents, EPUBs, RAW photos and
-  fonts (Tumbler), your phone and network shares (gvfs), and an "Open Terminal Here" that opens your terminal.
-  **xarchiver** for archives (7z, RAR, ZIP…), from Thunar's right-click menu too. **Seahorse** for the keyring.
+- 📁 **Nautilus** for files, with thumbnails of videos, audio covers, PDFs, office documents, EPUBs, RAW photos and
+  fonts, a preview on the space bar (Sushi), your phone and network shares (gvfs), archives (7z, RAR, ZIP…) it
+  extracts and compresses itself, and an "Open Terminal Here" that opens your terminal. Sync apps' emblems and menus
+  (Nextcloud…) work through nautilus-python. **Seahorse** for the keyring.
 - 📝 **Neovim** and **Lazygit**, with `cargo` and `npm` for the language servers Neovim's Mason downloads on its first
   start, with their linters and formatters: Bash, Python, HTML, CSS, TypeScript and React, Java, Markdown, Docker,
   JSON and Hyprland.
@@ -243,9 +245,9 @@ It pulls the latest HyprPunk, then runs the installer's steps again with the new
 things should be rather than what to do, so running it again only changes what differs, and a machine installed months
 ago catches up on everything at once.
 
-- 🔁 **Put back as HyprPunk ships it:** the look (GTK, Qt and icon themes, the font, dark mode, Papirus's grey
-  folders), the login screens, the GRUB theme, Brave's policy, the services and system files, and the links into your
-  home, a new module included. Links left broken by a file HyprPunk removed go away.
+- 🔁 **Put back as HyprPunk ships it:** the look (GTK, Qt and icon themes, the font, dark mode), the login screens, the
+  GRUB theme, Brave's policy, the services and system files, and the links into your home, a new module included. Links
+  left broken by a file HyprPunk removed go away.
 - 🎛️ **Kept as you set it:** what you picked in the shell (layout, language, displays, touchpad, wallpaper), the
   default apps, and your personal files (see [Customization](#-customization)). An example HyprPunk adds to
   `~/.config/hypr/personal/` is copied in, the files you have stay.
@@ -330,15 +332,16 @@ without its animation. The lock is held by Hyprland itself, so the screens stay 
 
 ### 🎵 Music player
 
-The bar's spinning record, its player card and the lock screen's player and synced lyrics follow **Spotify only**.
+The island's cover and equalizer, its player card and the lock screen's player and synced lyrics follow **Spotify only**.
 Other players, like a video in the browser or mpv, still work with the media keys but don't show there. This is a
 choice, not something you can switch: picking another music app in the settings, or setting
 `hyprpunk.programs.music`, only changes what `Super + P` opens.
 
-The record spins while the music plays, and a wave moves with it at the bottom of the desktop. Both keep the screen
-redrawing, which a laptop's GPU feels: the settings' Appearance page, or `hyprpunk music set cover spinning|still|off`
-and `hyprpunk music set wave true|false`, keeps the record still or leaves its cover out, and turns the wave off, on
-the lock screen too.
+While Spotify runs, the island holds the track's cover at its left end and an equalizer at its right end: a click on
+either opens the player out of the island. The equalizer dances while the music plays, and a wave moves with it at the
+bottom of the desktop. Both keep the screen redrawing, which a laptop's GPU feels: the settings' Appearance page, or
+`hyprpunk music set equalizer true|false` and `hyprpunk music set wave true|false`, keeps the equalizer still and turns
+the wave off, on the lock screen too.
 
 ### 🎧 AirPods
 
@@ -371,11 +374,12 @@ from other people's nearby.
 ├── gtk4/                # GTK 4 settings
 ├── hypridle/            # Locking for logind, and before sleep
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
-├── kdeglobals/          # Minimal KDE integration for icons and Qt6ct
+├── icons/               # Papirus's Nextcloud sync emblems, centered at full size for Nautilus
 ├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum's theme choice
 ├── matugen/             # Each wallpaper's palette, and the templates matugen fills for the apps, the shell and the terminal tools
+├── nautilus/            # Nautilus's "Open Terminal Here", which opens your terminal
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
@@ -383,14 +387,13 @@ from other people's nearby.
 ├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
 ├── sddm/base/           # What every login screen shares: the layout, its settings and the font
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
-├── thunar/              # Thunar's custom actions, copied in once
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
 ├── yazi/                # Yazi file manager configuration
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, `sddm/`, and `thunar/`, repository, system-wide or copied resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
@@ -478,7 +481,7 @@ The installer enables or configures:
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the control center and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
-- 📁 Papirus Dark icons, with grey folders
+- 📁 Papirus Dark icons, with folders in the wallpaper's accent
 - 🕹️ CyberEXS GRUB theme when GRUB is present
 
 ---
@@ -545,6 +548,7 @@ customize (see [Philosophy](#-philosophy)).
 ## 🙏 Credits
 
 - 🎨 The Kvantum theme is [GabePoel/KvLibadwaita](https://github.com/GabePoel/KvLibadwaita) by Gabriel Perko-Engel, under the GPL-3.0, with its colors swapped for the palette's. GTK 3 apps get libadwaita's look from [adw-gtk3](https://github.com/lassekongo83/adw-gtk3).
+- 🗂️ The Nextcloud sync emblems in `icons/` are [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)'s (GPL-3.0), moved from the icon's corner to the middle.
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
 - 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
 - 🐱 The terminal tools' colors (Kitty, Btop, Yazi, Bat) start from [Catppuccin](https://github.com/catppuccin)'s Mocha themes (MIT), tinted with the wallpaper's palette.
