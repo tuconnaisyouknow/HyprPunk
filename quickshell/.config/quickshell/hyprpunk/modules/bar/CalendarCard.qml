@@ -10,12 +10,14 @@ import qs.theme
 
 // The island's card: the calendar, with the notifications waiting beside it. It grows
 // out of the island, in the shape all the island's cards share (IslandFrame), holding
-// the island like a panel (ScreenState). The wheel goes through the months.
+// the island like a panel (ScreenState). Every month is drawn as six full weeks, the
+// days of the months around it filling the ends, so the card keeps one shape. The wheel
+// goes through the months.
 PillPopup {
     id: calendarPopup
 
     required property var bar
-    // The island it grows out of (IslandPill), whose time it shows.
+    // The island it grows out of (IslandPill), whose clock tells today.
     required property Item island
 
     function capitalized(text) {
@@ -32,18 +34,15 @@ PillPopup {
     readonly property int displayedMonthNumber: displayedMonth.getMonth()
     // Column of the month's first day, the week starting on the locale's first day.
     readonly property int firstWeekday: (displayedMonth.getDay() - Session.regionalFormats.firstDayOfWeek + 7) % 7
-    readonly property int daysInMonth: new Date(displayedYear, displayedMonthNumber + 1, 0).getDate()
-    readonly property int weekRows: Math.ceil((firstWeekday + daysInMonth) / 7)
-    // Card height for the displayed month, measured from the real layout, and
-    // eased when the next month has a week more or less.
-    readonly property real contentHeight: calendarColumn.y + calendarBody.y + calendarBody.implicitHeight + inset
-    property real animatedHeight: contentHeight
-    readonly property int calendarWidth: 322
-    // How far the content and the lines' ends keep from the card's edges.
+    // How far the content and the line's ends keep from the card's edges.
     readonly property int inset: Metrics.spacing.huge
-    // The weekdays' row and each week's, which a month change slides the days by.
+    // A day's circle, and the gap between two, the same both ways. A month change slides
+    // the days by one circle.
+    readonly property int daySize: 34
+    readonly property int dayGap: Metrics.spacing.normal
     readonly property int weekdayHeight: 24
-    readonly property int dayHeight: 28
+    // Seven circles across, which the card is sized around.
+    readonly property int calendarWidth: 2 * inset + 7 * daySize + 6 * dayGap
     readonly property int notificationWidth: 400
     // The notifications open beside the calendar while some are waiting.
     property real animatedWidth: notificationList.shownCount > 0 ? calendarWidth + notificationWidth : calendarWidth
@@ -66,14 +65,9 @@ PillPopup {
     // A password, a file or a screen to share is being asked for on the island.
     blocked: calendarPopup.bar.screenState.prompting()
     align: Qt.AlignHCenter
-    cardHeight: animatedHeight
-    carriesIslandContent: true
     cardWidth: animatedWidth
     implicitWidth: calendarWidth + notificationWidth
-    // Sized for a six-week month so the card can animate without clipping. Not taken
-    // from weekRows: the layout updates a frame late, and the popup would resize twice
-    // (everything shakes).
-    implicitHeight: calendarColumn.y + calendarBody.y + calendarMonthLabel.implicitHeight + calendarBody.spacing + calendarGrid.sixWeekHeight + inset
+    implicitHeight: calendarBody.y + calendarBody.implicitHeight + inset
     // It takes the island: an island panel open there folds back. While it
     // holds it, new notifications land in it instead of popping out of the
     // island, and the AirPods card waits.
@@ -99,92 +93,11 @@ PillPopup {
         target: calendarPopup.bar.screenState
     }
 
-    Item {
-        id: expandedClockHeader
-
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: calendarPopup.island.width
-        height: calendarPopup.island.height
-        // The island's own time, so it stays while the card folds back onto
-        // the island showing the time. Another card taking the island's shape
-        // over, or the island taking an OSD or locking, has no time to meet:
-        // it fades with the rest of the content.
-        opacity: calendarPopup.bar.islandFrame.owner === calendarPopup || calendarPopup.bar.islandFrame.owner === null && calendarPopup.island.face === "clock" ? 1 : 0
-
-        Behavior on opacity {
-            Anim {
-                token: Motion.color.small
-            }
-
-        }
-
-        // The island's row, starting where it sits in it: the music and the chips close
-        // as the time slides to the card's middle, and open again as it slides back,
-        // so the card lands on the island as it is.
-        RowLayout {
-            readonly property real islandX: calendarPopup.island.rowX
-            readonly property real centerX: (parent.width - width) / 2
-
-            anchors.verticalCenter: parent.verticalCenter
-            x: Math.round(islandX + (centerX - islandX) * calendarPopup.progress)
-            spacing: 0
-
-            IslandCover {
-                id: headerCover
-
-                shown: !calendarPopup.expanded && Music.player !== null
-            }
-
-            Label {
-                Layout.leftMargin: Metrics.spacing.normal * headerCover.presence
-                text: Session.clockText(calendarPopup.island.date)
-            }
-
-            IslandChips {
-                id: headerChips
-
-                bar: calendarPopup.bar
-                shown: !calendarPopup.expanded
-                interactive: false
-            }
-
-            IslandEqualizer {
-                shown: !calendarPopup.expanded && Music.player !== null
-                gap: Metrics.spacing.normal
-                live: calendarPopup.mapped
-            }
-
-        }
-
-    }
-
-    Rectangle {
-        id: calendarSeparator
-
-        anchors.top: expandedClockHeader.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: calendarPopup.inset
-        anchors.rightMargin: calendarPopup.inset
-        height: Metrics.stroke
-        color: Colors.surface1
-        opacity: calendarPopup.expanded ? 1 : 0
-
-        Behavior on opacity {
-            Anim {
-                token: Motion.color.small
-            }
-
-        }
-
-    }
-
     // The calendar on the right, the notifications on its left.
     Item {
         id: calendarColumn
 
-        anchors.top: calendarSeparator.bottom
+        anchors.top: parent.top
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         width: calendarPopup.calendarWidth
@@ -202,67 +115,22 @@ PillPopup {
             }
         }
 
-        IconText {
-            id: calendarDate
-
-            anchors.top: parent.top
-            anchors.topMargin: Metrics.spacing.normal
-            anchors.horizontalCenter: parent.horizontalCenter
-            icon: "󰃭"
-            text: Session.regionalFormats.toString(calendarPopup.island.date, Session.regionalFormats.dateFormat(Locale.LongFormat))
-            color: Colors.secondary
-            font.pixelSize: Metrics.text.emphasis
-            opacity: calendarPopup.expanded ? 1 : 0
-
-            Behavior on opacity {
-                Anim {
-                    token: Motion.color.small
-                }
-
-            }
-
-        }
-
-        Rectangle {
-            id: dateSeparator
-
-            anchors.top: calendarDate.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.topMargin: Metrics.spacing.normal
-            anchors.leftMargin: calendarPopup.inset
-            anchors.rightMargin: calendarPopup.inset
-            height: Metrics.stroke
-            color: Colors.surface1
-            opacity: calendarPopup.expanded ? 1 : 0
-
-            Behavior on opacity {
-                Anim {
-                    token: Motion.color.small
-                }
-
-            }
-
-        }
-
         ColumnLayout {
             id: calendarBody
 
             property real monthSlideY: 0
             property real monthTransitionOpacity: 1
 
-            anchors.top: dateSeparator.bottom
+            anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.leftMargin: calendarPopup.inset
             anchors.rightMargin: calendarPopup.inset
-            anchors.topMargin: Metrics.spacing.normal
-            spacing: Metrics.spacing.normal
+            anchors.topMargin: calendarPopup.inset
+            spacing: Metrics.spacing.large
             opacity: (calendarPopup.expanded ? 1 : 0) * monthTransitionOpacity
 
             Label {
-                id: calendarMonthLabel
-
                 Layout.alignment: Qt.AlignHCenter
                 text: calendarPopup.capitalized(Session.regionalFormats.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
                 color: Colors.primary
@@ -270,16 +138,9 @@ PillPopup {
                 font.weight: Font.Bold
             }
 
-            GridLayout {
-                id: calendarGrid
-
-                // The weekdays and six weeks, with their spacing.
-                readonly property real sixWeekHeight: calendarPopup.weekdayHeight + 6 * (calendarPopup.dayHeight + rowSpacing)
-
-                Layout.fillWidth: true
+            Grid {
                 columns: 7
-                columnSpacing: Metrics.spacing.small
-                rowSpacing: Metrics.spacing.small
+                spacing: calendarPopup.dayGap
 
                 Repeater {
                     // From the locale's first day, "Lun" rather than "lun.".
@@ -290,36 +151,36 @@ PillPopup {
                     Label {
                         required property string modelData
 
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: calendarPopup.weekdayHeight
+                        width: calendarPopup.daySize
+                        height: calendarPopup.weekdayHeight
                         text: modelData
                         color: Colors.primary
                         font.pixelSize: Metrics.text.body
                         horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
                     }
 
                 }
 
+                // Six weeks from the one the month starts in: the days before the 1st
+                // and after the last belong to the months around, and read as off.
                 Repeater {
-                    model: calendarPopup.weekRows * 7
+                    model: 42
 
                     Rectangle {
                         required property int index
-                        readonly property int dayNumber: index - calendarPopup.firstWeekday + 1
-                        readonly property bool validDay: dayNumber >= 1 && dayNumber <= calendarPopup.daysInMonth
-                        readonly property bool isToday: validDay && dayNumber === calendarPopup.currentDay && calendarPopup.displayedMonthNumber === calendarPopup.currentMonth && calendarPopup.displayedYear === calendarPopup.currentYear
+                        readonly property date day: new Date(calendarPopup.displayedYear, calendarPopup.displayedMonthNumber, index - calendarPopup.firstWeekday + 1)
+                        readonly property bool inMonth: day.getMonth() === calendarPopup.displayedMonthNumber
+                        readonly property bool isToday: inMonth && day.getDate() === calendarPopup.currentDay && calendarPopup.displayedMonthNumber === calendarPopup.currentMonth && calendarPopup.displayedYear === calendarPopup.currentYear
 
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: calendarPopup.dayHeight
-                        // Round ends, like the pills.
+                        width: calendarPopup.daySize
+                        height: calendarPopup.daySize
                         radius: height / 2
                         color: isToday ? Colors.primary : "transparent"
 
                         Label {
                             anchors.centerIn: parent
-                            text: parent.validDay ? parent.dayNumber : ""
-                            color: parent.isToday ? Colors.base : Colors.primary
+                            text: parent.day.getDate()
+                            color: parent.isToday ? Colors.base : parent.inMonth ? Colors.primary : Colors.alpha(Colors.secondary, 0.5)
                             font.pixelSize: Metrics.text.emphasis
                             font.weight: parent.isToday ? Font.Bold : Font.Medium
                         }
@@ -339,10 +200,10 @@ PillPopup {
     }
 
     Rectangle {
-        anchors.top: calendarSeparator.bottom
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: calendarColumn.left
-        anchors.topMargin: Metrics.spacing.large
+        anchors.topMargin: calendarPopup.inset
         anchors.bottomMargin: calendarPopup.inset
         width: Metrics.stroke
         color: Colors.surface1
@@ -360,10 +221,10 @@ PillPopup {
     NotificationList {
         id: notificationList
 
-        anchors.top: calendarSeparator.bottom
+        anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: calendarColumn.left
-        anchors.topMargin: Metrics.spacing.large
+        anchors.topMargin: calendarPopup.inset
         anchors.bottomMargin: calendarPopup.inset
         anchors.rightMargin: calendarPopup.inset
         width: calendarPopup.notificationWidth - 2 * calendarPopup.inset
@@ -386,7 +247,7 @@ PillPopup {
             Anim {
                 target: calendarBody
                 property: "monthSlideY"
-                to: calendarPopup.pendingMonthDelta > 0 ? -calendarPopup.dayHeight : calendarPopup.dayHeight
+                to: calendarPopup.pendingMonthDelta > 0 ? -calendarPopup.daySize : calendarPopup.daySize
                 token: Motion.leave.small
             }
 
@@ -402,7 +263,7 @@ PillPopup {
         ScriptAction {
             script: {
                 calendarPopup.monthOffset += calendarPopup.pendingMonthDelta;
-                calendarBody.monthSlideY = calendarPopup.pendingMonthDelta > 0 ? calendarPopup.dayHeight : -calendarPopup.dayHeight;
+                calendarBody.monthSlideY = calendarPopup.pendingMonthDelta > 0 ? calendarPopup.daySize : -calendarPopup.daySize;
             }
         }
 
@@ -421,13 +282,6 @@ PillPopup {
                 token: Motion.enter.small
             }
 
-        }
-
-    }
-
-    Behavior on animatedHeight {
-        Anim {
-            token: Motion.resize.large
         }
 
     }

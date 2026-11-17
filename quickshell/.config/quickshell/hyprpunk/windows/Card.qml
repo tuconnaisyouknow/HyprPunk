@@ -12,9 +12,6 @@ Item {
     property bool opened: false
     // Drawn over its pill, from the moment it opens until folded back onto it.
     property bool covering: false
-    // An island card that carries the island's time and chips itself as it opens and
-    // folds back (the calendar), rather than leaving them to the island's shape.
-    property bool carriesIslandContent: false
     // An island card that carries the music's cover and equalizer out of the island and
     // back (the player), drawn in their place meanwhile.
     property bool carriesMusic: false

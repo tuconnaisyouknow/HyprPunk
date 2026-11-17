@@ -18,14 +18,13 @@ Pill {
     // The calendar card it opens, and the player.
     required property Item calendar
     required property Item player
-    // The time, ticking for the calendar's own copy of it too.
+    // The time, which also tells the calendar what day it is.
     readonly property alias date: clock.date
     // What it shows (IslandView.face).
     readonly property string face: bar.islandOsdShown ? "osd" : "clock"
     // Where its time starts, from its left edge.
     readonly property real timeX: view.parent.x + view.x + view.timeX
-    // Where its row starts, and where the music's cover and equalizer are, the same way.
-    readonly property real rowX: view.parent.x + view.x + view.rowX
+    // Where the music's cover and equalizer are, the same way.
     readonly property real coverX: view.parent.x + view.x + view.coverX
     readonly property real equalizerX: view.parent.x + view.x + view.equalizerX
     // Between the time and an OSD.
@@ -38,7 +37,8 @@ Pill {
 
     // Hidden under the lock, which has it, and covered by its relay as the lock goes
     // (Lock.islandAway).
-    opacity: clockPill.bar.pillHidden("island") || Lock.islandAway ? 0 : 1
+    opacity: covered || Lock.islandAway ? 0 : 1
+    covered: clockPill.bar.pillHidden("island")
     // Squeezed under the time landing back from the lock screen, as the lock hands it over
     // (Lock.relays): the bar takes it squeezed, unseen, and springs it back once it draws
     // again.

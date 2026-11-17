@@ -49,9 +49,7 @@ Item {
     readonly property bool swapping: clockFace.moving || osdFace.moving
     // Where the time starts, from the view's left edge.
     readonly property real timeX: clockFace.x + timePart.x
-    // Where the row starts, the cover first, and where the cover and the equalizer's slot
-    // are, all from the view's left edge.
-    readonly property real rowX: clockFace.x
+    // Where the cover and the equalizer's slot are, the same way.
     readonly property real coverX: clockFace.x + coverPart.x
     readonly property real equalizerX: clockFace.x + equalizerPart.x
     readonly property bool stopHovered: chips.stopHovered
