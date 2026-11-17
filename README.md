@@ -146,8 +146,8 @@ theme, built in a moment from Papirus's grey folders.
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
 
 The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
-minutes with a soft rim. Switch between them live from the control center's Display block, the settings' Appearance
-page, or with `hyprpunk glass set classic|liquid|toggle`.
+minutes with a soft rim. Switch between them live from the settings' Appearance page, or with
+`hyprpunk glass set classic|liquid|toggle`.
 
 ---
 
@@ -186,7 +186,7 @@ The rest adapts to the machine on its own:
 - 🖥️ Several monitors are handled by `displayctl.sh` (see Display Settings below).
 
 Some of the looks are heavy for a small machine or a virtual machine: the liquid glass (switch to **Classic** in the
-control center's Display block), the login screen's videos, and the 4-pass blur (`passes` in
+settings' Appearance page), the login screen's videos, and the 4-pass blur (`passes` in
 `~/.config/hypr/looknfeel.lua`).
 
 ### ▶️ Run it
