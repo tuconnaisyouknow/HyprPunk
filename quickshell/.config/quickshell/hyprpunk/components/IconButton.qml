@@ -12,6 +12,8 @@ Item {
     // In the accent even at rest: a main control, or a switch that's on.
     property bool lit: false
     readonly property bool hovered: hover.hovered
+    // Its shape, which the keyboard's ring follows.
+    readonly property real radius: height / 2
 
     signal clicked()
 
@@ -30,7 +32,7 @@ Item {
 
     // Brighter while pressed.
     GlassSurface {
-        radius: button.height / 2
+        radius: button.radius
         hovered: tap.pressed
         opacity: button.hovered ? 1 : 0
 

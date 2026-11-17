@@ -13,6 +13,8 @@ Item {
     property bool accent: false
     property bool active: false
     readonly property bool hovered: hover.hovered
+    // Its shape, which the keyboard's ring follows.
+    readonly property real radius: height / 2
 
     signal clicked()
 
@@ -29,7 +31,7 @@ Item {
     opacity: enabled ? 1 : 0.5
 
     GlassSurface {
-        radius: button.height / 2
+        radius: button.radius
         hovered: button.hovered || button.active
         backgroundColor: button.accent ? Colors.alpha(Colors.primary, button.hovered ? 0.95 : 0.8) : "transparent"
 
