@@ -61,9 +61,15 @@ Item {
     Rectangle {
         id: highlight
 
-        x: control.highlightIndex * control.segmentWidth + 3
+        // The slide ends a touch past its place. The track holds the highlight in: what
+        // would go past an end squashes against it instead.
+        readonly property real start: control.highlightIndex * control.segmentWidth + 3
+        readonly property real leftEdge: Math.max(3, start)
+        readonly property real rightEdge: Math.min(control.width - 3, start + control.segmentWidth - 6)
+
+        x: leftEdge
         y: 3
-        width: control.segmentWidth - 6
+        width: rightEdge - leftEdge
         height: control.height - 6
         radius: 13
         visible: control.currentIndex >= 0
