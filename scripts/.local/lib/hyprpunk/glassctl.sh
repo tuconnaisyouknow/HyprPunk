@@ -4,7 +4,7 @@
 # restyles itself on the spot, and Hyprland is reloaded so its blur reaches the
 # fainter liquid glass (see glass_state.lua).
 #   glassctl.sh get
-#   glassctl.sh set <classic|liquid> | toggle   from the control center
+#   glassctl.sh set <classic|liquid> | toggle   from the settings
 
 set -euo pipefail
 
