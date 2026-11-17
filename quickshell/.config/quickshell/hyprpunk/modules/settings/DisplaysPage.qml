@@ -574,33 +574,13 @@ SettingsPage {
 
     }
 
-    // The screens by name, for the keys; the drawing above does the same.
-    SettingRow {
-        Layout.fillWidth: true
-        visible: page.outputs.length > 1
-        icon: "󰍹"
-        title: "Screen"
-        description: page.selected ? page.selected.description : ""
-
-        SettingChoices {
-            width: parent.width
-            values: page.outputs.map((output) => {
-                return output.name;
-            })
-            value: page.selected ? page.selected.name : null
-            onSelected: (value) => {
-                return page.selectedName = value;
-            }
-        }
-
-    }
-
+    // The settings of the screen picked in the drawing, named under the first of them.
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
         icon: "󰹑"
         title: "Resolution"
-        description: page.outputs.length > 1 || !page.selected ? "" : page.selected.description
+        description: page.selected ? page.selected.description : ""
 
         SettingChoices {
             width: parent.width
