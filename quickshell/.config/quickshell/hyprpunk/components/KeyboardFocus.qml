@@ -5,17 +5,21 @@ import qs.theme
 // keys act on, how they move to another, and the accent ring around it. A control takes
 // part by turning on activeFocusOnTab and giving activate() (its click) and, when it has
 // a small second button, activateAlt(). Fields draw their own ring (drawsFocus).
+// The page is made of columns: up and down never leave one, left and right follow the
+// row you're on, then cross to the next column, where you left it.
 Item {
     id: keyboardFocus
 
     // The page shown, whose controls the keys move through.
     property Item page: null
+    // Its columns, from left to right. A page that names none is one column.
+    property var columns: []
     // What has the keyboard while no control does.
     property Item home: null
     // You've moved with the keys since the panel opened: a new page then hands its
     // control the keyboard at once, the one you left it on or its first.
     property bool navigating: false
-    // The last control of each page.
+    // The last control of each page, and of each column.
     property var memory: new Map()
     // The control with the keyboard, null while the page itself has it.
     readonly property Item current: {
@@ -24,21 +28,35 @@ Item {
     }
 
     onCurrentChanged: {
-        if (current !== null)
-            memory.set(page, current);
+        if (current === null)
+            return ;
 
+        memory.set(page, current);
+        memory.set(columnOf(current), current);
     }
 
-    function contains(item) {
+    function within(item, ancestor) {
         for (let parent = item; parent !== null; parent = parent.parent) {
-            if (parent === page)
+            if (parent === ancestor)
                 return true;
 
         }
         return false;
     }
 
-    function controls() {
+    function contains(item) {
+        return within(item, page);
+    }
+
+    // The column a control is in: the page itself for one outside them all.
+    function columnOf(item) {
+        return columns.find((column) => {
+            return within(item, column);
+        }) || page;
+    }
+
+    // The controls of the page, or of one of its columns.
+    function controls(scope) {
         const found = [];
         const walk = (item) => {
             for (const child of item.children) {
@@ -51,8 +69,8 @@ Item {
                 walk(child);
             }
         };
-        if (page !== null)
-            walk(page);
+        if (scope !== null)
+            walk(scope);
 
         return found;
     }
@@ -61,62 +79,100 @@ Item {
         return item.mapToItem(page, 0, 0, item.width, item.height);
     }
 
-    // In reading order, for Tab and the first key.
-    function ordered() {
-        return controls().map((item) => {
+    // In reading order, one column after the other, for Tab and the first key.
+    function ordered(scope) {
+        return controls(scope).map((item) => {
             return {
                 "item": item,
+                "column": columns.indexOf(columnOf(item)),
                 "rect": rect(item)
             };
         }).sort((a, b) => {
-            return (a.rect.y - b.rect.y) || (a.rect.x - b.rect.x);
+            return (a.column - b.column) || (a.rect.y - b.rect.y) || (a.rect.x - b.rect.x);
         }).map((entry) => {
             return entry.item;
         });
     }
 
-    // The closest control that way, its centre past the current one's: overlapping it
-    // across the move counts most, so down from a tile goes to the one under it.
+    // The control of the column next that way. Those whose centre lies past the current
+    // one's edge are that way: one beside it isn't above it for being a pixel taller.
+    // The closest of them sets the row to land on, and the one of that row most in line
+    // with the current one takes the keys, so down from a tile goes to the one under
+    // it. Left and right, only the controls level with the current one count.
     function neighbour(dx, dy) {
-        const from = rect(current);
-        const centre = (r) => {
-            return Qt.point(r.x + r.width / 2, r.y + r.height / 2);
+        const sign = dx + dy;
+        const span = (r, horizontal) => {
+            return horizontal ? [r.x, r.x + r.width] : [r.y, r.y + r.height];
         };
-        const start = centre(from);
+        const gap = (a, b) => {
+            return Math.max(0, Math.max(a[0], b[0]) - Math.min(a[1], b[1]));
+        };
+        const middle = (s) => {
+            return (s[0] + s[1]) / 2;
+        };
+        const from = rect(current);
+        const fromAlong = span(from, dx !== 0);
+        const fromAcross = span(from, dx === 0);
+        const past = controls(columnOf(current)).filter((item) => {
+            return item !== current;
+        }).map((item) => {
+            const along = span(rect(item), dx !== 0);
+            const across = span(rect(item), dx === 0);
+            return {
+                "item": item,
+                "along": along,
+                "distance": (middle(along) - fromAlong[sign > 0 ? 1 : 0]) * sign,
+                "gap": gap(across, fromAcross),
+                "offset": Math.abs(middle(across) - middle(fromAcross))
+            };
+        }).filter((entry) => {
+            return entry.distance > 0 && (dx === 0 || entry.gap === 0);
+        });
+        if (past.length === 0)
+            return null;
+
+        const closest = past.reduce((a, b) => {
+            return b.distance < a.distance ? b : a;
+        });
+        return past.filter((entry) => {
+            return gap(entry.along, closest.along) === 0;
+        }).reduce((a, b) => {
+            return ((b.gap - a.gap) || (b.offset - a.offset)) < 0 ? b : a;
+        }).item;
+    }
+
+    // The closest column that way with a control to land on.
+    function nextColumn(dx) {
+        const centre = (column) => {
+            return column.mapToItem(page, column.width / 2, 0).x;
+        };
+        const from = columnOf(current);
         let best = null;
-        let bestScore = Infinity;
-        for (const item of controls()) {
-            if (item === current)
-                continue;
-
-            const to = rect(item);
-            const end = centre(to);
-            const along = dx !== 0 ? (end.x - start.x) * dx : (end.y - start.y) * dy;
-            if (along <= 0)
-                continue;
-
-            const gap = dx !== 0 ? Math.max(0, Math.max(from.y, to.y) - Math.min(from.y + from.height, to.y + to.height)) : Math.max(0, Math.max(from.x, to.x) - Math.min(from.x + from.width, to.x + to.width));
-            const across = dx !== 0 ? Math.abs(end.y - start.y) : Math.abs(end.x - start.x);
-            const score = along + 4 * gap + across / 100;
-            if (score < bestScore) {
-                best = item;
-                bestScore = score;
+        let bestAlong = Infinity;
+        for (const column of columns) {
+            const along = column === from ? 0 : (centre(column) - centre(from)) * dx;
+            if (along > 0 && along < bestAlong && controls(column).length > 0) {
+                best = column;
+                bestAlong = along;
             }
         }
         return best;
     }
 
-    // The page's control you were last on, or its first.
-    function landing() {
-        const list = ordered();
-        const remembered = memory.get(page);
+    // The control you were last on in the page or the column, or its first.
+    function landing(scope) {
+        if (scope === null)
+            return null;
+
+        const list = ordered(scope);
+        const remembered = memory.get(scope);
         return list.includes(remembered) ? remembered : list[0];
     }
 
-    // An arrow: to the neighbour that way, or back onto the page while no control has
-    // the keyboard.
+    // An arrow: to the neighbour that way, into the next column past the end of a row,
+    // or back onto the page while no control has the keyboard.
     function move(dx, dy) {
-        const target = current === null ? landing() : neighbour(dx, dy);
+        const target = current === null ? landing(page) : neighbour(dx, dy) || (dx !== 0 ? landing(nextColumn(dx)) : null);
         if (target)
             take(target);
 
@@ -127,7 +183,7 @@ Item {
         if (Window.activeFocusItem !== null && contains(Window.activeFocusItem))
             return ;
 
-        const target = navigating ? landing() : null;
+        const target = navigating ? landing(page) : null;
         if (target)
             take(target);
         else if (home !== null)
@@ -141,7 +197,7 @@ Item {
 
     // Tab and Shift+Tab, round the page.
     function step(delta) {
-        const list = ordered();
+        const list = ordered(page);
         if (list.length === 0)
             return ;
 

@@ -187,6 +187,8 @@ Scope {
 
                     // Its rows fill it, which would make it share the width with the page.
                     ColumnLayout {
+                        id: sidebar
+
                         Layout.preferredWidth: 250
                         Layout.fillWidth: false
                         Layout.fillHeight: true
@@ -421,6 +423,7 @@ Scope {
 
                     anchors.fill: parent
                     page: question.asked ? question : content
+                    columns: [sidebar, scroller]
                     home: content
                 }
 
