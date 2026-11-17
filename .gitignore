@@ -1,7 +1,5 @@
 tmux/.config/tmux/plugins
 zsh/.personalrc
-wallpapers/Pictures/Wallpapers/.nextcloudsync.log
-wallpapers/Pictures/Wallpapers/.sync_*
 gtk3/.config/gtk-3.0/bookmarks
 
 # matugen writes these from the palette (see matugen/.config/matugen/config.toml)
