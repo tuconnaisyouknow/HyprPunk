@@ -238,7 +238,7 @@ Item {
 
         readonly property Item target: keyboardFocus.current !== null && keyboardFocus.current.drawsFocus !== true ? keyboardFocus.current : null
 
-        // Follows the control as the page slides, the list scrolls or it bounces.
+        // Follows the control as the page zooms, the list scrolls or it bounces.
         function follow() {
             const r = target.mapToItem(keyboardFocus, 0, 0, target.width, target.height);
             x = r.x - 3;

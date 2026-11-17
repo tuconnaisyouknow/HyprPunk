@@ -50,9 +50,9 @@ Card {
         if (event.key === Qt.Key_Escape || Navigation.backs(event) || (!grid && direction !== null && direction[0] < 0))
             stack.back();
         else if (Navigation.accepts(event))
-            keyboardFocus.activate((event.modifiers & Qt.ShiftModifier) !== 0);
+            activate((event.modifiers & Qt.ShiftModifier) !== 0);
         else if (!grid && direction !== null && direction[0] > 0 && keyboardFocus.current !== null)
-            keyboardFocus.activate(false);
+            activate(false);
         else if (direction !== null)
             keyboardFocus.move(direction[0], direction[1]);
         else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab)
@@ -60,6 +60,14 @@ Card {
         else
             return ;
         event.accepted = true;
+    }
+
+    // The keys' click: the page it opens is entered through the control you're on.
+    function activate(alternative) {
+        if (keyboardFocus.current !== null)
+            stack.pointAt(keyboardFocus.current);
+
+        keyboardFocus.activate(alternative);
     }
 
     function clickedOutside() {
@@ -223,6 +231,8 @@ Card {
 
                     opened: controlCenter.opened
                     maxHeight: controlCenter.panelMaxHeight - 2 * controlCenter.padding
+                    padding: controlCenter.padding
+                    radius: panel.radius
                     opacity: built && controlCenter.opened ? 1 : 0
                     Component.onCompleted: built = true
                     onCloseRequested: controlCenter.close()
@@ -316,8 +326,9 @@ Card {
                 home: panel
             }
 
+            // A page changing height. Between two pages the stack sets the pace itself.
             Behavior on fullHeight {
-                enabled: panel.heightAnimated
+                enabled: panel.heightAnimated && controlCenter.stack.progress === 1
 
                 Anim {
                     token: Motion.resize.normal

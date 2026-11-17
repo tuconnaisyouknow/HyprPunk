@@ -58,14 +58,18 @@ Singleton {
         readonly property int riseEasing: Easing.InBack
     }
 
-    // Going from one page of a panel to another, like on iOS: the new page slides in
-    // over the old one backing off, and the old one is nearly gone before the new one
-    // shows, so they never mush together (PageStack).
+    // Going from one page of a panel into another, through the glass you opened it from:
+    // that glass opens up to the panel's edges with the new page inside it, the old page
+    // growing past you by as much. The new page shows in the door from the start, as the
+    // old one fades around it (PageStack).
     readonly property QtObject page: QtObject {
-        readonly property int duration: 320
-        // How far each page slides, as a share of the page's width.
-        readonly property real slideIn: 0.3
-        readonly property real backOff: 0.15
+        readonly property int duration: 380
+        // The size the new page comes up from: the old one grows by the same share.
+        readonly property real into: 0.5
+        // The share of the way in over which the door's glass shows on its block, and the
+        // one over which it melts into the panel.
+        readonly property real doorIn: 0.15
+        readonly property real doorOut: 0.3
     }
     // How long the time takes between the island and the lock screen's clock, the same
     // both ways.
