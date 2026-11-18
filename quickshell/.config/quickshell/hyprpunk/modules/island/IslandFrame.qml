@@ -72,10 +72,12 @@ Card {
     // the card lays out beyond its edge (the calendar's notification side, empty) must
     // stay hidden. Never above the island's top either, where the shape starts from the
     // zoomed island: the content stays still while the shape heads to its place.
-    // Only the card in the shape follows it. The others keep their own size, or every
-    // card's content would be laid out again at each step of the island (an OSD).
+    // Every card that's out follows it, the one fading out as another takes the island
+    // too: left at its own size, it cut the bar's pills out from under itself. The closed
+    // ones keep their own size, or every card's content would be laid out again at each
+    // step of the island (an OSD).
     function contentRect(card) {
-        if (!covering || card !== owner && card !== lastOwner)
+        if (!card.covering)
             return Qt.rect(0, 0, card.cardWidth, card.cardHeight);
 
         const top = Math.max(shape.y, Math.round(island.top));
