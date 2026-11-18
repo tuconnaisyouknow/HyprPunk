@@ -105,7 +105,7 @@ readonly -a PACKAGES=(
 
   ttf-ioskeley-mono python-fonttools
   otf-font-awesome
-  ttf-apple-emoji
+  ttf-apple-emoji noto-fonts-cjk
 
   nautilus nautilus-python sushi gst-libav loupe papers
   ffmpegthumbnailer libgsf raw-thumbnailer gnome-epub-thumbnailer gnome-font-viewer
