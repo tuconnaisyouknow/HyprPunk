@@ -64,14 +64,20 @@ RowLayout {
         implicitWidth: statusOsdStateText.implicitWidth + 16
         implicitHeight: 24
         radius: Metrics.radius.normal
-        color: view.content.enabled ? Colors.primary : Colors.surface1
+        color: view.content.enabled ? "transparent" : Colors.surface1
+
+        Light {
+            anchors.fill: parent
+            visible: view.content.enabled
+            radius: parent.radius
+        }
 
         Text {
             id: statusOsdStateText
 
             anchors.centerIn: parent
             text: view.content.enabled ? "On" : "Off"
-            color: view.content.enabled ? Colors.base : Colors.secondary
+            color: view.content.enabled ? Colors.over(Colors.primary) : Colors.secondary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.body
             font.weight: Font.Bold

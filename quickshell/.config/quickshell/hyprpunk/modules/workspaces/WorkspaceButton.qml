@@ -39,7 +39,7 @@ Rectangle {
     Text {
         anchors.centerIn: parent
         text: button.icon
-        color: button.activeForeground ? Colors.base : Colors.primary
+        color: button.activeForeground ? Colors.over(Colors.primary) : Colors.primary
         font.family: button.iconFont
         font.weight: Font.Normal
         font.pixelSize: Metrics.text.title

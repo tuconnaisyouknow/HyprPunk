@@ -125,12 +125,10 @@ IslandPanel {
                     }
 
                     // Accent ring on the theme you're about to pick.
-                    Rectangle {
+                    Light {
                         anchors.fill: parent
                         radius: Metrics.radius.normal
-                        color: "transparent"
-                        border.width: 2
-                        border.color: Colors.primary
+                        hollow: true
                         opacity: themeCard.selected ? 1 : 0
 
                         Behavior on opacity {
@@ -156,12 +154,13 @@ IslandPanel {
                         GlassSurface {
                             radius: parent.radius
                             backgroundColor: Colors.alpha(Colors.primary, 0.9)
+                            lit: true
                         }
 
                         Text {
                             anchors.centerIn: parent
                             text: ""
-                            color: Colors.base
+                            color: Colors.over(Colors.primary)
                             font.family: Metrics.font
                             font.pixelSize: Metrics.text.emphasis
                         }

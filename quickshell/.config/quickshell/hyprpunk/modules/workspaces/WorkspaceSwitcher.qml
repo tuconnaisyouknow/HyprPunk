@@ -77,14 +77,12 @@ Item {
 
     }
 
-    Rectangle {
+    Light {
         z: 0
         x: workspaceSwitcher.activeButtonIndex >= 0 ? workspaceSwitcher.activeButtonIndex * (31 + workspaceRow.spacing) : 0
         y: 0
         width: 44
         height: 31
-        radius: height / 2
-        color: Colors.primary
         visible: workspaceSwitcher.activeButtonIndex >= 0
 
         Behavior on x {

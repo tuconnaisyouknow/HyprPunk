@@ -48,11 +48,12 @@ ControlBlock {
             radius: Metrics.radius.card
             color: "transparent"
 
-            // Accent glass while on, plain glass while off.
+            // Lit in the accent while on, plain glass while off.
             GlassSurface {
                 radius: parent.radius
                 hovered: iconHover.hovered
                 backgroundColor: tile.active ? Colors.alpha(Colors.primary, iconHover.hovered ? 0.95 : 0.8) : "transparent"
+                lit: true
 
                 ColorFade on backgroundColor {
                     token: Motion.color.small
@@ -63,7 +64,7 @@ ControlBlock {
             Text {
                 anchors.centerIn: parent
                 text: tile.icon
-                color: tile.active ? Colors.base : Colors.primary
+                color: tile.active ? Colors.over(Colors.primary) : Colors.primary
                 font.family: Metrics.font
                 font.pixelSize: Metrics.text.title
                 font.weight: Font.Bold

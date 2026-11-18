@@ -97,6 +97,7 @@ IslandPanel {
                         GlassSurface {
                             radius: parent.radius
                             hovered: entryCard.selected
+                            lit: true
                             backgroundColor: entryCard.armed ? Colors.alpha(Colors.red, 0.9) : entryCard.selected ? Colors.alpha(Colors.primary, 0.9) : "transparent"
 
                             ColorFade on backgroundColor {
@@ -110,7 +111,7 @@ IslandPanel {
 
                             anchors.centerIn: parent
                             text: entryCard.modelData.icon
-                            color: entryCard.armed || entryCard.selected ? Colors.base : Colors.primary
+                            color: entryCard.armed ? Colors.over(Colors.red) : entryCard.selected ? Colors.over(Colors.primary) : Colors.primary
                             font.family: Metrics.font
                             font.pixelSize: 24
                             font.weight: Font.Bold
@@ -129,7 +130,7 @@ IslandPanel {
                             text: entryCard.modelData.badge || ""
                             color: entryIcon.color
                             style: Text.Outline
-                            styleColor: entryCard.selected ? Colors.primary : Qt.tint(Colors.base, Colors.alpha(Colors.surface0, 0.6))
+                            styleColor: entryCard.selected && !Colors.emits ? Colors.primary : Qt.tint(Colors.base, Colors.alpha(Colors.surface0, 0.6))
                             font.family: Metrics.font
                             font.pixelSize: Metrics.text.emphasis
                             font.weight: Font.Bold

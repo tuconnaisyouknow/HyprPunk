@@ -295,6 +295,7 @@ Item {
                             hovered: chipHover.hovered
                             opacity: sortChip.selected || chipHover.hovered ? 1 : 0
                             backgroundColor: sortChip.selected ? Colors.alpha(Colors.primary, chipHover.hovered ? 0.95 : 0.8) : "transparent"
+                            lit: true
                         }
 
                         Text {
@@ -302,7 +303,7 @@ Item {
 
                             anchors.centerIn: parent
                             text: sortChip.modelData.label
-                            color: sortChip.selected ? Colors.base : Colors.secondary
+                            color: sortChip.selected ? Colors.over(Colors.primary) : Colors.secondary
                             font.family: Metrics.font
                             font.pixelSize: Metrics.text.small
                             font.weight: Font.Bold

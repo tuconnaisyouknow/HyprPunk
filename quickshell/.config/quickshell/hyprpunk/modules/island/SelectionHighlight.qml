@@ -4,7 +4,7 @@ import qs.theme
 
 // The glass under the selected entry of the island panels' lists and grids, given to
 // the view as its highlight. One per list, jumping to the selection, rather than one
-// waiting hidden in every entry.
+// waiting hidden in every entry. In neon the glass lights up in the accent, from its edge inward.
 Item {
     id: highlight
 
@@ -24,6 +24,9 @@ Item {
         anchors.margins: highlight.inset
         radius: highlight.radius
         hovered: true
+        lit: true
+        inward: true
+        backgroundColor: Colors.emits ? Colors.alpha(Colors.primary, 0.7) : "transparent"
     }
 
 }

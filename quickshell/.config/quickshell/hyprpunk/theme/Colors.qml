@@ -31,6 +31,13 @@ Singleton {
     readonly property color peach: palette.peach
     readonly property color red: palette.red
 
+    // Neon emits its light, daydream receives it. In neon, a state of the machine (on,
+    // chosen, the current one) is a dark tube glowing at its edge rather than a surface
+    // filled with the accent (GlassSurface). A selection that's a pane of glass lights up
+    // inward instead, with no halo, like the button that answers, and an amount stays a
+    // fill.
+    readonly property bool emits: Session.theme === "neon"
+
     // The cards and pills: the base at 0.9, blurred behind by Hyprland where the shell
     // asks (ScreenShell).
     readonly property color panel: alpha(base, 0.9)
@@ -44,6 +51,12 @@ Singleton {
     // A color with its alpha replaced, for the see-through variants above and the like.
     function alpha(color, opacity) {
         return Qt.rgba(color.r, color.g, color.b, opacity);
+    }
+
+    // What's written over something lit in this color: dark on a fill, the light's own
+    // color inside a tube, where dark would vanish.
+    function over(light) {
+        return emits ? light : base;
     }
 
     // Read before the first frame, so the shell never starts in a color it then

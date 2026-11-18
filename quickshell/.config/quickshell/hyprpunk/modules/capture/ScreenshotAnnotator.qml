@@ -474,12 +474,17 @@ Item {
         implicitWidth: 34
         implicitHeight: 34
         radius: 17
-        color: chosen ? Colors.primary : buttonHover.hovered ? Colors.alpha(Colors.light, 0.12) : "transparent"
+        color: !chosen && buttonHover.hovered ? Colors.alpha(Colors.light, 0.12) : "transparent"
+
+        Light {
+            anchors.fill: parent
+            visible: button.chosen
+        }
 
         Text {
             anchors.centerIn: parent
             text: button.icon
-            color: button.chosen ? Colors.base : Colors.primary
+            color: button.chosen ? Colors.over(Colors.primary) : Colors.primary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.title
         }

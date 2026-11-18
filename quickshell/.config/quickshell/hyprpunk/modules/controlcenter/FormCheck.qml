@@ -41,6 +41,7 @@ Item {
                 radius: parent.radius
                 hovered: checkHover.hovered
                 backgroundColor: check.checked ? Colors.alpha(Colors.primary, checkHover.hovered ? 0.95 : 0.8) : "transparent"
+                lit: true
 
                 ColorFade on backgroundColor {
                     token: Motion.color.small
@@ -52,7 +53,7 @@ Item {
                 anchors.centerIn: parent
                 visible: check.checked
                 text: ""
-                color: Colors.base
+                color: Colors.over(Colors.primary)
                 font.family: Metrics.font
                 font.pixelSize: Metrics.text.small
                 font.weight: Font.Bold

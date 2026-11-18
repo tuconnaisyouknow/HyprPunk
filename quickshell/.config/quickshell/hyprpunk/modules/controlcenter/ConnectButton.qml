@@ -32,6 +32,9 @@ Rectangle {
         radius: parent.radius
         hovered: hover.hovered
         backgroundColor: Colors.alpha(Colors.primary, hover.hovered && button.available ? 0.95 : 0.8)
+        lit: true
+        // The answer already picked for you: lit like a selection, not like something on.
+        inward: true
     }
 
     Text {
@@ -39,7 +42,7 @@ Rectangle {
 
         anchors.centerIn: parent
         text: (button.busy ? "󰔟  " : "") + button.label
-        color: Colors.base
+        color: Colors.over(Colors.primary)
         font.family: Metrics.font
         font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Bold

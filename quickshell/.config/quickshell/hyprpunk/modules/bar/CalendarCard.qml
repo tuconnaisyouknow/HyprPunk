@@ -174,13 +174,17 @@ PillPopup {
 
                         width: calendarPopup.daySize
                         height: calendarPopup.daySize
-                        radius: height / 2
-                        color: isToday ? Colors.primary : "transparent"
+                        color: "transparent"
+
+                        Light {
+                            anchors.fill: parent
+                            visible: parent.isToday
+                        }
 
                         Label {
                             anchors.centerIn: parent
                             text: parent.day.getDate()
-                            color: parent.isToday ? Colors.base : parent.inMonth ? Colors.primary : Colors.alpha(Colors.secondary, 0.5)
+                            color: parent.isToday ? Colors.over(Colors.primary) : parent.inMonth ? Colors.primary : Colors.alpha(Colors.secondary, 0.5)
                             font.pixelSize: Metrics.text.emphasis
                             font.weight: parent.isToday ? Font.Bold : Font.Medium
                         }

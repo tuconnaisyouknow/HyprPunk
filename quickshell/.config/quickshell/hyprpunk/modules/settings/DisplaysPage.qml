@@ -494,6 +494,7 @@ SettingsPage {
                     radius: screenRect.radius
                     hovered: screenHover.hovered
                     backgroundColor: screenRect.chosen ? Colors.alpha(Colors.primary, 0.85) : "transparent"
+                    lit: true
                 }
 
                 Column {
@@ -503,7 +504,7 @@ SettingsPage {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: screenRect.rect !== null ? screenRect.rect.output.slot || "?" : ""
-                        color: screenRect.chosen ? Colors.base : Colors.primary
+                        color: screenRect.chosen ? Colors.over(Colors.primary) : Colors.primary
                         font.family: Metrics.font
                         font.pixelSize: Metrics.text.heading
                         font.weight: Font.Bold
@@ -512,7 +513,7 @@ SettingsPage {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: screenRect.modelData
-                        color: screenRect.chosen ? Colors.base : Colors.secondary
+                        color: screenRect.chosen ? Colors.over(Colors.primary) : Colors.secondary
                         font.family: Metrics.font
                         font.pixelSize: Metrics.text.small
                     }

@@ -145,12 +145,10 @@ Item {
             }
 
             // Accent ring on the item in the centre.
-            Rectangle {
+            Light {
                 anchors.fill: parent
                 radius: Metrics.radius.normal
-                color: "transparent"
-                border.width: 2
-                border.color: Colors.primary
+                hollow: true
                 opacity: Math.max(0, 1 - slide.distance * 2)
             }
 
@@ -168,12 +166,13 @@ Item {
                 GlassSurface {
                     radius: parent.radius
                     backgroundColor: Colors.alpha(Colors.primary, 0.9)
+                    lit: true
                 }
 
                 Text {
                     anchors.centerIn: parent
                     text: ""
-                    color: Colors.base
+                    color: Colors.over(Colors.primary)
                     font.family: Metrics.font
                     font.pixelSize: Metrics.text.emphasis
                 }

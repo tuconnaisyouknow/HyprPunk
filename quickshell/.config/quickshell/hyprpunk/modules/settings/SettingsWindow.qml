@@ -238,6 +238,7 @@ Scope {
                                     radius: tab.radius
                                     hovered: tabHover.hovered
                                     backgroundColor: tab.chosen ? Colors.alpha(Colors.primary, 0.85) : "transparent"
+                                    lit: true
                                     opacity: tab.chosen || tabHover.hovered ? 1 : 0
 
                                     Behavior on opacity {
@@ -261,7 +262,7 @@ Scope {
                                         Layout.preferredWidth: 24
                                         horizontalAlignment: Text.AlignHCenter
                                         text: tab.modelData.icon
-                                        color: tab.chosen ? Colors.base : Colors.secondary
+                                        color: tab.chosen ? Colors.over(Colors.primary) : Colors.secondary
                                         font.family: Metrics.font
                                         font.pixelSize: Metrics.text.title
                                     }
@@ -269,7 +270,7 @@ Scope {
                                     Text {
                                         Layout.fillWidth: true
                                         text: tab.modelData.label
-                                        color: tab.chosen ? Colors.base : Colors.secondary
+                                        color: tab.chosen ? Colors.over(Colors.primary) : Colors.secondary
                                         elide: Text.ElideRight
                                         font.family: Metrics.font
                                         font.pixelSize: Metrics.text.emphasis

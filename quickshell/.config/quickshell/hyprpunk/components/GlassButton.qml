@@ -34,6 +34,9 @@ Item {
         radius: button.radius
         hovered: button.hovered || button.active
         backgroundColor: button.accent ? Colors.alpha(Colors.primary, button.hovered ? 0.95 : 0.8) : "transparent"
+        lit: true
+        // The answer already picked for you: lit like a selection, not like something on.
+        inward: true
 
         // Chosen or let go, in the accent or not.
         ColorFade on backgroundColor {
@@ -52,7 +55,7 @@ Item {
         gap: button.icon !== "" ? font.pixelSize / 2 : 0
         text: button.label
         elide: Text.ElideRight
-        color: button.accent ? Colors.base : button.active ? Colors.primary : Colors.secondary
+        color: button.accent ? Colors.over(Colors.primary) : button.active ? Colors.primary : Colors.secondary
         font.pixelSize: Metrics.text.emphasis
         font.weight: button.accent ? Font.Bold : Font.Normal
     }

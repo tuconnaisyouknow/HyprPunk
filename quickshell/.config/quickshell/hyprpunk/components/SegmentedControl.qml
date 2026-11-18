@@ -79,6 +79,7 @@ Item {
             radius: highlight.radius
             hovered: true
             backgroundColor: Colors.alpha(Colors.primary, 0.85)
+            lit: true
         }
 
     }
@@ -111,7 +112,7 @@ Item {
 
                     Text {
                         text: segment.modelData.icon
-                        color: segment.chosen ? Colors.base : Colors.primary
+                        color: segment.chosen ? Colors.over(Colors.primary) : Colors.primary
                         font.family: Metrics.font
                         font.pixelSize: control.compact ? 16 : 20
 
@@ -123,7 +124,7 @@ Item {
 
                     Text {
                         text: segment.modelData.label
-                        color: segment.chosen ? Colors.base : Colors.secondary
+                        color: segment.chosen ? Colors.over(Colors.primary) : Colors.secondary
                         font.family: Metrics.font
                         font.pixelSize: control.compact ? 12 : 10
                         font.weight: segment.chosen ? Font.Bold : Font.Medium
