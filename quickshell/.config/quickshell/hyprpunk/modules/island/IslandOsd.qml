@@ -77,7 +77,7 @@ RowLayout {
 
             anchors.centerIn: parent
             text: view.content.enabled ? "On" : "Off"
-            color: view.content.enabled ? Colors.over(Colors.primary) : Colors.secondary
+            ink: view.content.enabled ? Colors.over(Colors.primary) : Colors.secondary
             font.weight: Font.Bold
         }
 
@@ -210,7 +210,7 @@ RowLayout {
 
         Readout {
             text: view.content.label
-            color: view.batteryColor()
+            ink: view.batteryColor()
             font.pixelSize: Metrics.text.body
             font.weight: Font.Bold
         }

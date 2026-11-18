@@ -120,6 +120,14 @@ Singleton {
         "overshoot": 1.2
     })
 
+    // Words arriving on the machine (Decode): how long they take to settle, how often
+    // they scramble anew on the way, and what they're scrambled into.
+    readonly property QtObject decode: QtObject {
+        readonly property int duration: 350
+        readonly property int pace: 35
+        readonly property string signs: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    }
+
     // Something breathing on its own while a state lasts (a recording, a wait).
     readonly property QtObject pulse: QtObject {
         readonly property int duration: 700

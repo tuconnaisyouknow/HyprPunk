@@ -45,7 +45,7 @@ Item {
 
             Layout.fillWidth: true
             text: iconText.text
-            color: iconText.color
+            color: decode.running ? "transparent" : iconText.color
             font.family: iconText.heading ? Metrics.displayFont : Metrics.font
             font.capitalization: iconText.heading ? Font.AllUppercase : Font.MixedCase
             // Its digits each keep one width, so a value that changes never moves what's
@@ -53,6 +53,14 @@ Item {
             font.features: {
                 "tnum": 1
             }
+
+            Decode {
+                id: decode
+
+                live: iconText.heading
+                color: iconText.color
+            }
+
         }
 
     }
