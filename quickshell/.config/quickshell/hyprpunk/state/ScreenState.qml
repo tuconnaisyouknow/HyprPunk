@@ -92,7 +92,8 @@ QtObject {
         });
     }
 
-    // A surface answers open(), close() and toggle() through requestAction(action, origin).
+    // A surface answers open(), close() and toggle() through requestAction(action, origin),
+    // and "return" when a panel it opened hands the island back.
     function register(name, surface) {
         surfaces[name] = surface;
     }
@@ -103,7 +104,7 @@ QtObject {
 
     }
 
-    // origin: the surface asking (the main menu for its entries). Only the prompts open
+    // origin: the surface asking (the launcher for the menus it lists). Only the prompts open
     // over a fullscreen window. The settings window isn't a screen's: ShellState has it.
     function request(name, action, origin) {
         const surface = surfaces[name] ?? ShellState.surfaces[name];

@@ -4,7 +4,7 @@ import qs.components
 import qs.theme
 
 // An island panel laid out as a row of glass squares, one per entry, with the selected
-// one's name underneath: the main menu, the screenshot menu and the session menu.
+// one's name underneath: the screenshot menu and the session menu.
 // Arrows, Tab or the Vim keys to choose, Enter, Space or a click to pick (chosen()).
 IslandPanel {
     id: menu

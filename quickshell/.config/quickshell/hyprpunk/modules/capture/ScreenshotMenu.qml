@@ -4,7 +4,7 @@ import qs.modules.island
 import qs.services
 import qs.state
 
-// The screenshot menu, laid out like the main menu: capture the screen, a region,
+// The screenshot menu, laid out like the session menu: capture the screen, a region,
 // or a region to annotate, or record the screen or a region (or stop the recording).
 IconMenu {
     id: menu

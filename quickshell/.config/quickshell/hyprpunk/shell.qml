@@ -69,7 +69,7 @@ ShellRoot {
     }
 
     // The settings window, asked for like a panel, as "settings": Super+I through
-    // `qs -c hyprpunk ipc call settings <toggle|open|close>`, and the main menu.
+    // `qs -c hyprpunk ipc call settings <toggle|open|close>`, and the launcher's menus.
     SettingsWindow {
         id: settingsWindow
     }
@@ -139,7 +139,7 @@ ShellRoot {
 
     // One handler per panel: `qs -c hyprpunk ipc call <panel> <toggle|open|close>`, used by the shortcuts.
     Variants {
-        model: ["controlcenter", "notifications", "session", "wallpaper", "theme", "launcher", "clipboard", "emoji", "keybindings", "menu", "config", "workspaces", "systemmonitor", "player", "settings"]
+        model: ["controlcenter", "notifications", "session", "wallpaper", "theme", "launcher", "clipboard", "emoji", "keybindings", "config", "workspaces", "systemmonitor", "player", "settings"]
 
         // Kept around the handler, so ipc show lists only the three functions.
         Scope {

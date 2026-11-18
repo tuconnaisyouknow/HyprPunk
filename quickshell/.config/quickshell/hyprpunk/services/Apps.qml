@@ -7,13 +7,11 @@ import qs.config
 
 // Your apps for the launcher: finding them as you type, ranked by how well they match and
 // how often and lately you launch them (the history in launcher-history.json), and
-// launching them. Also the launcher's calculations, commands and web searches.
+// launching them. Also the launcher's calculations and web searches.
 Singleton {
     id: apps
 
     readonly property string searchUrl: "https://www.startpage.com/sp/search?query="
-    // Runs the command given as $1 in a terminal, which then waits for Enter to close.
-    readonly property string holdScript: "eval \"$1\"; status=$?; printf '\\n\\033[2m[exit %s] Press Enter to close\\033[0m' \"$status\"; read -r _"
     readonly property string historyPath: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk/launcher-history.json"
     // { "<desktop id>": { "count": launches, "last": ms since epoch } }
     property var history: ({
@@ -149,19 +147,6 @@ Singleton {
         if (text !== "")
             Session.launch(["xdg-open", searchUrl + encodeURIComponent(text)]);
 
-    }
-
-    // A command, in a terminal that waits for Enter once it's done.
-    function run(command, inTerminal) {
-        if (command === "")
-            return ;
-
-        // Held by the script, not by kitty's --hold: that drops into a shell after, and
-        // fastfetch would bury the output.
-        if (inTerminal)
-            Session.launchInTerminal(["sh", "-c", holdScript, "sh", command]);
-        else
-            Session.launch(["sh", "-c", command]);
     }
 
     Component.onCompleted: installed = DesktopEntries.applications.values

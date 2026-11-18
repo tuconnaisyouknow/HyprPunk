@@ -71,9 +71,10 @@ in that surface (a card's preview, its pinned state, the page shown).
   `ShellState.focused()` find it.
 - **Opening is a call, not a broadcast.** A surface registers under its name on its
   screen (`register`), and `screenState.open(name)`, `close` and `toggle` reach it
-  through its `requestAction(action, origin)`. The IPC commands, the main menu and the
-  services make the same calls. No request counters, no signal every panel filters.
-  Only the prompts open over a fullscreen window.
+  through its `requestAction(action, origin)`. The IPC commands, the launcher and
+  the services make the same calls. No request counters, no signal every panel filters.
+  Only the prompts open over a fullscreen window. A panel opened from another goes back
+  to it on Escape (`return`), which keeps its own way back.
 - **The island has one owner at a time, by claim.** A surface that wants the island on a
   screen claims it with a rank:
   1. the prompts an app waits on (polkit, file chooser, screen share): first come,

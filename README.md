@@ -49,13 +49,13 @@ The clock's island grows into every panel, the password prompts for admin rights
 
 ![osd](./assets/screenshots/osd.webp)
 
-| Application Launcher | Main Menu |
+| Application Launcher | Session Menu |
 |:-:|:-:|
-| ![launcher](./assets/screenshots/launcher.png) | ![main-menu](./assets/screenshots/main-menu.png) |
+| ![launcher](./assets/screenshots/launcher.png) | ![session-menu](./assets/screenshots/session-menu.png) |
 | Clipboard History | Emoji Picker |
 | ![clipboard](./assets/screenshots/clipboard.png) | ![emoji-picker](./assets/screenshots/emoji-picker.png) |
-| Wallpaper Selector | Session Menu |
-| ![wallpaper-selector](./assets/screenshots/wallpaper-selector.png) | ![session-menu](./assets/screenshots/session-menu.png) |
+
+![wallpaper-selector](./assets/screenshots/wallpaper-selector.png)
 
 #### 🎛️ Control center and bar
 
@@ -270,10 +270,9 @@ repository that the update changes, git refuses the pull and nothing changes.
 | Shortcut | What it does |
 |---|---|
 | `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
-| `Super + Space` | Open the application launcher |
-| `Super + Ctrl + Space` | Open the main menu |
+| `Super + Space` | Open the application launcher, where `>` lists the island's menus |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, background apps…) |
-| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and language, sound, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the main menu |
+| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and language, sound, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
@@ -294,7 +293,6 @@ you'd bind to your own shortcuts.
 | Panel | Shortcut |
 |---|---|
 | `launcher` | `Super + Space` |
-| `menu` | `Super + Ctrl + Space` |
 | `clipboard` | `Super + V` |
 | `emoji` | `Super + .` or `Super + ;` |
 | `keybindings` | `Super + Ctrl + K` |
@@ -307,7 +305,7 @@ you'd bind to your own shortcuts.
 | `workspaces` (preview of the others) | `Super + W` |
 | `systemmonitor` | `Ctrl + Shift + Escape` |
 | `player` (the bar's player card, while Spotify runs) | `Super + Shift + P` |
-| `config`, `screenshot` | From the main menu |
+| `config`, `screenshot` | From the launcher, after `>` |
 
 ### 📸 Screenshots and recordings
 

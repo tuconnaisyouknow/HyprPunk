@@ -11,27 +11,29 @@ import qs.theme
 // narrowed down as you type (Apps). The ones you hid there never show. It does a bit
 // more too:
 //   2+2       a calculation, Enter copies the result
-//   > cmd     runs a command (Shift+Enter in a terminal)
+//   > name    lists the island's menus (Menus), Enter opens one and Escape there
+//             comes back here
 //   ? words   searches the web, also offered when no app matches
 // Tab or a right click shows an app's extra actions.
 SearchPanel {
     id: launcher
 
     readonly property int maxRows: 6
-    // One row for everything listed: the apps, their actions, the calculation.
+    // One row for everything listed: the apps, the menus, an app's actions, the calculation.
     readonly property int rowHeight: 52
     readonly property int rowSpacing: Metrics.spacing.small
     readonly property string trimmedQuery: query.trim()
-    readonly property string mode: trimmedQuery.startsWith(">") ? "command" : trimmedQuery.startsWith("?") ? "web" : "apps"
+    readonly property string mode: trimmedQuery.startsWith(">") ? "menus" : trimmedQuery.startsWith("?") ? "web" : "apps"
     readonly property string modeArgument: mode === "apps" ? trimmedQuery : trimmedQuery.slice(1).trim()
     readonly property var calculation: mode === "apps" ? Apps.calculate(trimmedQuery) : null
     // Built once the shell has settled after startup, then kept: built at the first
     // opening, the list and its icons froze the card for ~300 ms. Not right away either:
     // building the list as the shell starts held up the bar's first values.
     property bool listWanted: false
-    readonly property var results: listWanted && mode === "apps" ? Apps.search(trimmedQuery) : []
-    // calc, command, web or "" when there is no special row.
-    readonly property string special: mode === "command" ? "command" : mode === "web" ? "web" : calculation !== null ? "calc" : trimmedQuery !== "" && results.length === 0 ? "web" : ""
+    // The apps or the menus: a row tells them apart by the panel a menu opens.
+    readonly property var results: !listWanted ? [] : mode === "apps" ? Apps.search(trimmedQuery) : mode === "menus" ? Menus.search(modeArgument) : []
+    // calc, web or "" when there is no special row.
+    readonly property string special: mode === "web" ? "web" : calculation !== null ? "calc" : trimmedQuery !== "" && results.length === 0 ? "web" : ""
     readonly property int listRows: Math.min(maxRows, results.length)
     // Application whose actions are listed, null for the apps.
     property var actionsEntry: null
@@ -60,7 +62,10 @@ SearchPanel {
 
     function launch(entry, action) {
         close();
-        Apps.launch(entry, action);
+        if (entry.panel !== undefined)
+            screenState.open(entry.panel, panelName);
+        else
+            Apps.launch(entry, action);
     }
 
     function activate(shift) {
@@ -69,7 +74,7 @@ SearchPanel {
             return ;
         }
         if (selectedIndex >= 0 && results.length > 0) {
-            if (shift) {
+            if (shift && mode === "apps") {
                 close();
                 Apps.searchWeb(trimmedQuery);
             } else {
@@ -83,14 +88,13 @@ SearchPanel {
         close();
         if (special === "calc" && !shift)
             Quickshell.execDetached(["wl-copy", calculation]);
-        else if (special === "command")
-            Apps.run(modeArgument, shift);
         else
             Apps.searchWeb(modeArgument);
     }
 
     function showActions(entry) {
-        if (!entry || entry.actions.length === 0)
+        // A menu has none.
+        if (!entry || !entry.actions || entry.actions.length === 0)
             return ;
 
         actionsEntry = entry;
@@ -100,15 +104,20 @@ SearchPanel {
     panelName: "launcher"
     searchIcon: actionsEntry ? "󰅂" : "󰍉"
     readOnly: actionsEntry !== null
-    placeholder: actionsEntry ? actionsEntry.name : "Search apps, > command, ? web"
+    placeholder: actionsEntry ? actionsEntry.name : "Search apps, > menus, ? web"
     placeholderColor: actionsEntry ? Colors.secondary : Colors.alpha(Colors.secondary, 0.5)
     // What Enter will do in the current mode.
-    hint: actionsEntry ? "Tab back" : mode === "command" ? "Run" : mode === "web" ? "Web" : special === "calc" ? "Calc" : ""
+    hint: actionsEntry ? "Tab back" : mode === "menus" ? "Menu" : mode === "web" ? "Web" : special === "calc" ? "Calc" : ""
     count: results.length
     view: list
     // The calculation comes first, the web search fallback is the only choice.
     defaultIndex: special === "calc" || results.length === 0 ? -1 : 0
     firstIndex: special !== "" ? -1 : 0
+    // Back from a menu, its row is there again, selected.
+    openingQuery: returnedFrom !== "" ? ">" : ""
+    openingIndex: returnedFrom !== "" ? Math.max(0, results.findIndex((entry) => {
+        return entry.panel === returnedFrom;
+    })) : defaultIndex
     cardWidth: 480
     bodyHeight: actionsEntry ? rowsHeight(actionRows.length) : (special !== "" ? rowHeight : 0) + (special !== "" && listRows > 0 ? sectionSpacing : 0) + (listRows > 0 ? rowsHeight(listRows) : 0)
     // Right on an empty field picks, like in the other lists.
@@ -151,7 +160,7 @@ SearchPanel {
         onTriggered: launcher.listWanted = true
     }
 
-    // Calculation, command or web search.
+    // Calculation or web search.
     Rectangle {
         id: specialRow
 
@@ -177,7 +186,7 @@ SearchPanel {
             anchors.left: parent.left
             anchors.leftMargin: Metrics.spacing.huge
             anchors.verticalCenter: parent.verticalCenter
-            text: launcher.special === "calc" ? "󰃬" : launcher.special === "command" ? "" : "󰖟"
+            text: launcher.special === "calc" ? "󰃬" : "󰖟"
             color: Colors.primary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.heading
@@ -190,7 +199,7 @@ SearchPanel {
             anchors.rightMargin: Metrics.spacing.large
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
-            text: launcher.special === "calc" ? "= " + launcher.calculation : launcher.modeArgument !== "" ? launcher.modeArgument : launcher.special === "command" ? "Type a command" : "Type a search"
+            text: launcher.special === "calc" ? "= " + launcher.calculation : launcher.modeArgument !== "" ? launcher.modeArgument : "Type a search"
             color: launcher.modeArgument !== "" ? Colors.secondary : Colors.alpha(Colors.secondary, 0.5)
             font.family: Metrics.font
             font.pixelSize: launcher.special === "calc" ? Metrics.text.title : Metrics.text.emphasis
@@ -203,7 +212,7 @@ SearchPanel {
             anchors.right: parent.right
             anchors.rightMargin: Metrics.spacing.huge
             anchors.verticalCenter: parent.verticalCenter
-            text: launcher.special === "calc" ? "Enter copies" : launcher.special === "command" ? "Shift+Enter in a terminal" : "Search the web"
+            text: launcher.special === "calc" ? "Enter copies" : "Search the web"
             color: Colors.secondary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.body
@@ -227,7 +236,7 @@ SearchPanel {
 
     }
 
-    // Applications.
+    // The apps, or the menus.
     ListView {
         id: list
 
@@ -235,7 +244,7 @@ SearchPanel {
         anchors.topMargin: specialRow.visible ? launcher.sectionSpacing : 0
         width: parent.width
         height: launcher.rowsHeight(launcher.maxRows)
-        visible: !launcher.actionsEntry && launcher.mode === "apps"
+        visible: !launcher.actionsEntry && launcher.mode !== "web"
         clip: true
         spacing: launcher.rowSpacing
         boundsBehavior: Flickable.StopAtBounds
@@ -244,7 +253,8 @@ SearchPanel {
         highlightResizeDuration: 0
 
         // An app keeps its row as long as it's listed, whatever object stands for it:
-        // Quickshell makes some anew each time it lists the apps again.
+        // Quickshell makes some anew each time it lists the apps again. A menu is
+        // known by the panel it opens.
         model: ScriptModel {
             objectProp: "id"
             values: launcher.results
@@ -262,6 +272,7 @@ SearchPanel {
             required property var modelData
             required property int index
             readonly property bool selected: launcher.selectedIndex === index
+            readonly property bool isMenu: modelData.panel !== undefined
             readonly property real pressScale: rowContent.scale
 
             width: ListView.view.width
@@ -273,20 +284,38 @@ SearchPanel {
                 anchors.fill: parent
                 scale: rowTap.pressed ? 0.97 : 1
 
-                IconImage {
-                    id: appIcon
+                // An app's own icon, or a menu's glyph in its place.
+                Item {
+                    id: rowIcon
 
                     anchors.left: parent.left
                     anchors.leftMargin: Metrics.spacing.huge
                     anchors.verticalCenter: parent.verticalCenter
-                    implicitSize: 32
-                    asynchronous: true
-                    source: Quickshell.iconPath(row.modelData.icon, "application-x-executable")
+                    width: 32
+                    height: 32
+
+                    IconImage {
+                        visible: !row.isMenu
+                        implicitSize: parent.width
+                        asynchronous: true
+                        source: row.isMenu ? "" : Quickshell.iconPath(row.modelData.icon, "application-x-executable")
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        visible: row.isMenu
+                        text: row.isMenu ? row.modelData.icon : ""
+                        color: Colors.primary
+                        font.family: Metrics.font
+                        font.pixelSize: 24
+                        font.weight: Font.Bold
+                    }
+
                 }
 
                 // Centred as a pair, so a name with nothing under it sits in the middle.
                 Column {
-                    anchors.left: appIcon.right
+                    anchors.left: rowIcon.right
                     anchors.leftMargin: Metrics.spacing.large
                     anchors.right: parent.right
                     anchors.rightMargin: Metrics.spacing.huge
@@ -308,7 +337,7 @@ SearchPanel {
                     Item {
                         id: description
 
-                        readonly property string text: row.modelData.comment || row.modelData.genericName
+                        readonly property string text: row.modelData.comment || row.modelData.genericName || ""
                         readonly property bool scrolling: row.selected && descriptionText.implicitWidth > width
 
                         width: parent.width

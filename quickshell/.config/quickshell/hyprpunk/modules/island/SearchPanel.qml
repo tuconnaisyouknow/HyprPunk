@@ -26,6 +26,10 @@ IslandPanel {
     // sits above the results (the launcher's calculation).
     property int defaultIndex: 0
     property int firstIndex: 0
+    // What the field holds and where the selection sits as the panel opens (the
+    // launcher, back from a menu it listed).
+    property string openingQuery: ""
+    property int openingIndex: defaultIndex
     // ListView or GridView of the results, kept scrolled to the selection.
     property var view: null
     property real bodyHeight: 0
@@ -59,11 +63,14 @@ IslandPanel {
 
     cardHeight: 2 * cardPadding + fieldHeight + (bodyHeight > 0 ? sectionSpacing + bodyHeight : 0)
     onOpening: {
-        field.text = "";
-        selectedIndex = defaultIndex;
-        if (view)
+        field.text = openingQuery;
+        selectedIndex = openingIndex;
+        if (view) {
             view.positionViewAtBeginning();
+            if (selectedIndex > 0)
+                view.positionViewAtIndex(selectedIndex, ListView.Contain);
 
+        }
     }
     onOpenedChanged: {
         if (opened)

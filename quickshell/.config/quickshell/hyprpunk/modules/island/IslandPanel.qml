@@ -37,8 +37,11 @@ Card {
     readonly property rect contentRect: islandFrame.contentRect(panel)
     // The Vim left and right keys for the current layout: h/l, or j/m on AZERTY.
     readonly property string keyboardLayout: Session.keyboardLayout
-    // Panel whose request opened this one ("menu" from the main menu), read on opening.
+    // Panel whose request opened this one (the launcher, for the menus it lists),
+    // where Escape goes back to.
     property string openedFrom: ""
+    // Panel that just came back to this one, "" when it was opened afresh.
+    property string returnedFrom: ""
     // It answers an app (a password, a file, a screen to share).
     property bool isPrompt: false
     readonly property var screenState: ShellState.forScreen(screen)
@@ -65,7 +68,11 @@ Card {
             close();
             return ;
         }
-        openedFrom = origin;
+        // Coming back keeps where this one was opened from: the way back goes on.
+        returnedFrom = action === "return" ? origin : "";
+        if (action !== "return")
+            openedFrom = origin;
+
         open();
     }
 
@@ -73,11 +80,11 @@ Card {
         close();
     }
 
-    // Escape or Backspace: back to the main menu when it opened this panel, closed otherwise.
+    // Escape or Backspace: back to the panel that opened this one, closed otherwise.
     function back() {
         close();
-        if (openedFrom === "menu")
-            screenState?.open("menu", panelName);
+        if (openedFrom !== "")
+            screenState?.request(openedFrom, "return", panelName);
 
     }
 
