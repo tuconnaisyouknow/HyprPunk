@@ -10,8 +10,8 @@ SearchPanel {
     id: picker
 
     readonly property string historyPath: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/hyprpunk/emoji-history.json"
-    readonly property int cellSize: 56
-    readonly property int visibleRows: 5
+    readonly property int cellSize: 88
+    readonly property int visibleRows: 4
     readonly property int maxRecent: 30
     // [{ "emoji", "name", "keywords" }]
     property var emojis: []
@@ -77,7 +77,7 @@ SearchPanel {
     placeholder: "Search emojis"
     hint: selectedIndex >= 0 && selectedIndex < results.length ? results[selectedIndex].name : ""
     count: results.length
-    columns: 10
+    columns: 5
     view: grid
     cardWidth: columns * cellSize + 2 * cardPadding
     bodyHeight: results.length > 0 ? Math.min(visibleRows, Math.ceil(results.length / columns)) * cellSize : 40
@@ -140,7 +140,7 @@ SearchPanel {
         highlightMoveDuration: 0
         highlight: SelectionHighlight {
             view: grid
-            inset: 3
+            inset: 4
         }
 
         delegate: Item {
@@ -158,7 +158,7 @@ SearchPanel {
                 id: cellContent
 
                 anchors.fill: parent
-                anchors.margins: 3
+                anchors.margins: 4
                 radius: Metrics.radius.normal
                 color: "transparent"
                 scale: cellTap.pressed ? 0.9 : 1
@@ -167,7 +167,7 @@ SearchPanel {
                     anchors.centerIn: parent
                     text: cell.modelData.emoji
                     font.family: "Apple Color Emoji"
-                    font.pixelSize: 28
+                    font.pixelSize: 48
                 }
 
                 Behavior on scale {
