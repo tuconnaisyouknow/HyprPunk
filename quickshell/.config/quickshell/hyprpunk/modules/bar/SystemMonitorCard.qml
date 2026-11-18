@@ -48,9 +48,6 @@ Item {
         color: Colors.secondary
         font.pixelSize: Metrics.text.body
         font.weight: Font.Normal
-        font.features: {
-            "tnum": 1
-        }
     }
 
     component Detail: Text {

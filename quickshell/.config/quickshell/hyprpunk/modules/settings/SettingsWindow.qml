@@ -165,7 +165,7 @@ Scope {
 
             title: "HyprPunk Settings"
             implicitWidth: 1080
-            implicitHeight: 820
+            implicitHeight: 840
             color: Colors.base
             onClosed: settings.close()
 
@@ -207,9 +207,10 @@ Scope {
                             Layout.bottomMargin: Metrics.spacing.large
                             text: "Settings"
                             color: Colors.primary
-                            font.family: Metrics.font
+                            font.family: Metrics.displayFont
                             font.pixelSize: Metrics.text.heading
                             font.weight: Font.Bold
+                            font.capitalization: Font.AllUppercase
                         }
 
                         Repeater {

@@ -46,7 +46,7 @@ Rectangle {
         text: field.icon
         color: Colors.primary
         font.family: Metrics.font
-        font.pixelSize: 16
+        font.pixelSize: Metrics.text.title
     }
 
     TextInput {
@@ -101,7 +101,7 @@ Rectangle {
         text: field.hint
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
     }
 
 }

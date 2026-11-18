@@ -11,6 +11,8 @@ DOTFILES_DIR="$HOME/.dotfiles"
 BASE_DIR="$DOTFILES_DIR/sddm/base"
 THEMES_DIR="$DOTFILES_DIR/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
+# The shell's fonts, as fontsctl.py builds them
+FONTS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fonts/hyprpunk"
 
 # Catppuccin colors for the output
 C_ACCENT='\033[38;2;203;166;247m'
@@ -55,7 +57,8 @@ validate_theme_files() {
   fi
 }
 
-# The base first, so a theme can replace any of its files with its own
+# The base first, so a theme can replace any of its files with its own. The login
+# screen is written in the shell's fonts, which it gets a copy of.
 copy_theme() {
   local theme_name="$1"
   local target="$SYSTEM_THEMES_DIR/$theme_name"
@@ -63,6 +66,9 @@ copy_theme() {
   sudo mkdir -p "$target"
   sudo cp -r "$BASE_DIR/." "$target/"
   sudo cp -r "$THEMES_DIR/$theme_name/." "$target/"
+  sudo rm -rf "$target/font"
+  sudo install -Dm644 -t "$target/font" \
+    "$FONTS_DIR/HyprPunkText-Regular.ttf" "$FONTS_DIR/HyprPunkText-Bold.ttf" "$FONTS_DIR/HyprPunkDisplay-Bold.ttf"
 }
 
 install_themes() {

@@ -776,19 +776,21 @@ WlSessionLockSurface {
                     text: day.charAt(0).toUpperCase() + day.slice(1)
                     color: Colors.secondary
                     horizontalAlignment: Text.AlignHCenter
-                    font.family: Metrics.font
+                    font.family: Metrics.displayFont
                     // As wide as the time: measured at 40px, then scaled to its width.
                     font.pixelSize: Math.max(12, Math.floor(40 * parent.width / Math.max(1, dateMetrics.advanceWidth)))
-                    font.weight: Font.DemiBold
+                    font.weight: Font.Bold
+                    font.capitalization: Font.AllUppercase
                     opacity: shown
 
                     TextMetrics {
                         id: dateMetrics
 
                         text: dateText.text
-                        font.family: Metrics.font
+                        font.family: Metrics.displayFont
                         font.pixelSize: 40
-                        font.weight: Font.DemiBold
+                        font.weight: Font.Bold
+                        font.capitalization: Font.AllUppercase
                     }
 
                     transform: Translate {
@@ -846,7 +848,7 @@ WlSessionLockSurface {
                             id: minutes
 
                             text: Qt.formatDateTime(clock.date, ":mm")
-                            font.family: Metrics.font
+                            font.family: Metrics.displayFont
                             font.pixelSize: 150
                             font.weight: Font.Bold
                             font.features: {
@@ -861,9 +863,9 @@ WlSessionLockSurface {
                             leftPadding: 14
                             text: Session.meridiemText(clock.date)
                             color: Colors.secondary
-                            font.family: Metrics.font
+                            font.family: Metrics.displayFont
                             font.pixelSize: 40
-                            font.weight: Font.DemiBold
+                            font.weight: Font.Bold
                         }
 
                     }
@@ -873,6 +875,9 @@ WlSessionLockSurface {
                     Label {
                         anchors.centerIn: parent
                         text: Session.clockText(clock.date)
+                        font.features: {
+                            "tnum": 1
+                        }
                         scale: timeBox.width / Math.max(1, implicitWidth)
                         opacity: 1 - surface.ease(surface.flight, 0, 0.35)
                         visible: opacity > 0

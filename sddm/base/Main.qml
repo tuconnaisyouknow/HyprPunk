@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Window
 import Qt5Compat.GraphicalEffects
-import Qt.labs.folderlistmodel
 import SddmComponents 2.0
 
 // The login screen every theme shares, drawn over the theme's own video. sddm.sh
@@ -33,16 +32,22 @@ Rectangle {
     readonly property color topOverlay: Qt.rgba(crust.r, crust.g, crust.b, 0.88)
     readonly property color bottomOverlay: Qt.rgba(crust.r, crust.g, crust.b, 0.96)
 
-    // Whatever font sits in the theme's font folder
-    FolderListModel {
-        id: fontFolder
-        folder: Qt.resolvedUrl("font")
-        nameFilters: ["*.ttf", "*.otf"]
+    // The shell's own fonts, which sddm.sh copies next to the theme: SDDM can't read
+    // the ones in your home. Loading the bold file too gives real bold, not a thickened
+    // regular.
+    FontLoader {
+        id: textFont
+        source: "font/HyprPunkText-Regular.ttf"
     }
 
     FontLoader {
-        id: pf
-        source: fontFolder.count > 0 ? "font/" + fontFolder.get(0, "fileName") : ""
+        source: "font/HyprPunkText-Bold.ttf"
+    }
+
+    // The clock's, as on the lock screen
+    FontLoader {
+        id: displayFont
+        source: "font/HyprPunkDisplay-Bold.ttf"
     }
 
     // Invisible lists, only there to read the session's and the user's names from SDDM
@@ -163,7 +168,7 @@ Rectangle {
         anchors.bottom: loginPanel.top
         anchors.bottomMargin: 6 * s
         color: root.red
-        font.family: pf.name
+        font.family: textFont.name
         font.pixelSize: 10 * s
         font.bold: true
         opacity: text.length > 0 ? 1 : 0
@@ -198,7 +203,7 @@ Rectangle {
                 id: userLabelText
                 text: "USER //"
                 color: root.secondary
-                font.family: pf.name
+                font.family: textFont.name
                 font.pixelSize: 11 * s
                 font.bold: true
                 font.letterSpacing: 1 * s
@@ -210,7 +215,7 @@ Rectangle {
             Text {
                 text: ((userHelper.currentItem && userHelper.currentItem.uName) ? userHelper.currentItem.uName : (userModel.lastUser || "User")).toUpperCase()
                 color: userMouse.containsMouse ? root.primary : root.text
-                font.family: pf.name
+                font.family: textFont.name
                 font.pixelSize: 11 * s
                 font.bold: true
                 font.letterSpacing: 1 * s
@@ -258,7 +263,7 @@ Rectangle {
                 anchors.leftMargin: 10 * s
                 anchors.rightMargin: 10 * s
                 color: root.primary
-                font.family: pf.name
+                font.family: textFont.name
                 font.pixelSize: 12 * s
                 font.letterSpacing: 3 * s
                 echoMode: TextInput.Password
@@ -284,7 +289,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "PASSWORD"
                 color: root.secondary
-                font.family: pf.name
+                font.family: textFont.name
                 font.pixelSize: 9 * s
                 font.letterSpacing: 1 * s
                 opacity: pwd.text.length === 0 ? 0.5 : 0
@@ -339,7 +344,7 @@ Rectangle {
                 anchors.centerIn: parent
                 text: "➔ LOGIN"
                 color: loginMouse.containsMouse ? root.primary : root.text
-                font.family: pf.name
+                font.family: textFont.name
                 font.pixelSize: 9 * s
                 font.letterSpacing: 1 * s
                 font.bold: true
@@ -390,7 +395,7 @@ Rectangle {
                 Text {
                     text: "WELCOME BACK, " + ((userHelper.currentItem && userHelper.currentItem.uName) ? userHelper.currentItem.uName : (userModel.lastUser || "USER")).toUpperCase()
                     color: root.primary
-                    font.family: pf.name
+                    font.family: textFont.name
                     font.pixelSize: 11 * s
                     font.letterSpacing: 2 * s
                     font.bold: true
@@ -405,9 +410,11 @@ Rectangle {
                     id: hourText
                     text: Qt.formatTime(new Date(), "HH")
                     color: root.primary
-                    font.family: pf.name
+                    font.family: displayFont.name
                     font.pixelSize: 60 * s
                     font.bold: true
+                    // Each digit as wide as the others, so the clock never shifts
+                    font.features: { "tnum": 1 }
                     font.letterSpacing: 1 * s
                     Timer {
                         interval: 60000
@@ -437,9 +444,11 @@ Rectangle {
                     id: minuteText
                     text: Qt.formatTime(new Date(), "mm")
                     color: root.secondary
-                    font.family: pf.name
+                    font.family: displayFont.name
                     font.pixelSize: 60 * s
                     font.bold: true
+                    // Each digit as wide as the others, so the clock never shifts
+                    font.features: { "tnum": 1 }
                     font.letterSpacing: 1 * s
                     Timer {
                         interval: 1000
@@ -479,7 +488,7 @@ Rectangle {
                 anchors.centerIn: parent
                 text: Qt.formatDate(new Date(), "dddd, MMMM d").toUpperCase()
                 color: root.secondary
-                font.family: pf.name
+                font.family: textFont.name
                 font.pixelSize: 10 * s
                 font.letterSpacing: 3 * s
                 font.bold: true
@@ -519,7 +528,7 @@ Rectangle {
                         anchors.centerIn: parent
                         text: modelData.l
                         color: pm.containsMouse ? root.primary : root.text
-                        font.family: pf.name
+                        font.family: textFont.name
                         font.pixelSize: 10 * s
                         font.letterSpacing: 1.5 * s
                         font.bold: true

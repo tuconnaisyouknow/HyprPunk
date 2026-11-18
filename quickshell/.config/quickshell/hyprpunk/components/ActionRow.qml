@@ -65,7 +65,7 @@ ControlBlock {
             text: action.armed ? action.confirmLabel : action.label
             color: action.armed ? Colors.base : action.destructive ? Colors.red : Colors.primary
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.Bold
         }
 

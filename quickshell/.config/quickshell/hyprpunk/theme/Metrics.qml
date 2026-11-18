@@ -7,7 +7,12 @@ import Quickshell
 // size comes from here, so the whole shell keeps one rhythm. A value missing here is one
 // the design doesn't know about yet: add it with its reason, don't write it by hand.
 Singleton {
-    readonly property string font: "JetBrainsMono Nerd Font"
+    // Everything you read: Ioskeley Mono, semi-condensed, with the Nerd Font icons the
+    // shell writes in its text. fontsctl.py builds it under this name.
+    readonly property string font: "HyprPunk Text"
+    // A window's titles and the lock's clock, in capitals: Orbitron Bold, which
+    // fontsctl.py builds with digits that all take one width.
+    readonly property string displayFont: "HyprPunk Display"
     // How far the bar's pills sit from the screen's sides, in line with the windows'
     // edges (Hyprland's gaps_out), so it isn't on the spacing grid.
     readonly property int barMargin: 10
@@ -34,11 +39,11 @@ Singleton {
 
     // The text, from the smallest detail to a page's heading.
     readonly property QtObject text: QtObject {
-        readonly property int small: 11
-        readonly property int body: 12
-        readonly property int emphasis: 14
-        readonly property int title: 16
-        readonly property int heading: 20
+        readonly property int small: 12
+        readonly property int body: 13
+        readonly property int emphasis: 15
+        readonly property int title: 17
+        readonly property int heading: 21
     }
 
     // Gaps and insets, on a 4 px grid so everything lines up.

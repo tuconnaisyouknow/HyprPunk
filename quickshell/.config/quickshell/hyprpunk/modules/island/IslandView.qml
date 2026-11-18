@@ -118,6 +118,9 @@ Item {
 
                     opacity: view.timeLifted ? 0 : 1
                     text: Session.clockText(view.date)
+                    font.features: {
+                        "tnum": 1
+                    }
                 }
 
             }
@@ -138,7 +141,7 @@ Item {
                     text: "󰌾"
                     color: Colors.primary
                     font.family: Metrics.font
-                    font.pixelSize: 16
+                    font.pixelSize: Metrics.text.title
                 }
 
             }

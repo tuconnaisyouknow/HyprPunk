@@ -65,7 +65,7 @@ Item {
                 text: area.text
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: 14
+                font.pixelSize: Metrics.text.emphasis
                 font.weight: Font.Medium
             }
 

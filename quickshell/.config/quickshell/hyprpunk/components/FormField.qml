@@ -28,7 +28,7 @@ ColumnLayout {
         text: field.label
         color: Colors.secondary
         font.family: Metrics.font
-        font.pixelSize: 12
+        font.pixelSize: Metrics.text.body
         font.weight: Font.Bold
     }
 
@@ -59,7 +59,7 @@ ColumnLayout {
             selectionColor: Colors.selection
             selectedTextColor: Colors.light
             font.family: Metrics.font
-            font.pixelSize: 14
+            font.pixelSize: Metrics.text.emphasis
             font.letterSpacing: field.secret && !field.revealed ? 3 : 0
             // The control center's keys reach it; the ring above already shows it has them.
             property bool drawsFocus: true

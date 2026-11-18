@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Writes the Qt settings, for qt5ct, qt6ct and KDE apps: Kvantum, the HyprPunk colors
-# matugen writes, the icon theme with the wallpaper's folders and JetBrains Mono. They're
+# matugen writes, the icon theme with the wallpaper's folders and Ioskeley Mono. They're
 # written rather than linked because the apps rewrite their file whenever you touch a
 # setting, which would scribble over the dotfiles, and the icon theme follows the
 # wallpaper (foldersctl.sh writes them again for each new one).
@@ -37,8 +37,8 @@ standard_dialogs=xdgdesktopportal
 style=kvantum
 
 [Fonts]
-fixed="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
-general="JetBrainsMono Nerd Font,9,-1,5,50,0,0,0,0,0,Regular"
+fixed="Ioskeley Mono Term,10,-1,5,50,0,0,0,0,0,Regular"
+general="Ioskeley Mono Term,10,-1,5,50,0,0,0,0,0,Regular"
 
 [Interface]
 activate_item_on_single_click=1
@@ -70,8 +70,8 @@ standard_dialogs=xdgdesktopportal
 style=kvantum
 
 [Fonts]
-fixed="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
-general="JetBrainsMono Nerd Font,9,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+fixed="Ioskeley Mono Term,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+general="Ioskeley Mono Term,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
 
 [Interface]
 activate_item_on_single_click=1

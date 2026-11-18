@@ -103,7 +103,7 @@ readonly -a PACKAGES=(
   rose-pine-cursor
   rose-pine-hyprcursor nwg-look
 
-  ttf-jetbrains-mono-nerd
+  ttf-ioskeley-mono python-fonttools
   otf-font-awesome
   ttf-apple-emoji
 
@@ -510,6 +510,13 @@ stow_dotfiles() {
   cp --update=none "$DOTFILES_DIR/hyprland/.config/hypr/personal.example/"*.lua "$HOME/.config/hypr/personal/"
 }
 
+# The shell's text and titles are cuts of Ioskeley Mono and Orbitron that fontsctl.py
+# builds under names of their own. The terminal and the apps take Ioskeley Mono as
+# packaged.
+build_fonts() {
+  "$LIB_DIR/fontsctl.py" ensure
+}
+
 # qt5ct and qt6ct rewrite their file on every change, so they get a copy written by
 # qt-configctl.sh instead of a link. Their look is HyprPunk's, so it's written again.
 generate_qt_configs() {
@@ -695,9 +702,9 @@ install_tmux_plugins() {
 # here is put back. The colors inside the GTK theme come with the wallpaper, and so does
 # the icon theme, whose folders take its accent (foldersctl.sh).
 apply_themes() {
-  gsettings set org.gnome.desktop.interface font-name 'JetBrainsMono Nerd Font 9'
-  gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrainsMono Nerd Font 9'
-  gsettings set org.gnome.desktop.interface document-font-name 'JetBrainsMono Nerd Font 9'
+  gsettings set org.gnome.desktop.interface font-name 'Ioskeley Mono Term 10'
+  gsettings set org.gnome.desktop.interface monospace-font-name 'Ioskeley Mono Term 10'
+  gsettings set org.gnome.desktop.interface document-font-name 'Ioskeley Mono Term 10'
   gsettings set org.gnome.desktop.interface cursor-theme 'BreezeX-RosePine-Linux'
   gsettings set org.gnome.desktop.interface cursor-size 24
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
@@ -837,6 +844,7 @@ converge() {
   run_step "Downloading the dotfiles" clone_dotfiles
   run_step "Installing the shell's animation clock" install_frame_clock
   run_step "Linking dotfiles" stow_dotfiles
+  run_step "Building the shell's fonts" build_fonts
   run_step "Generating Qt configuration" generate_qt_configs
   run_step "Configuring the keyboard" configure_keyboard
   run_step "Configuring locale profiles" configure_locale_profiles

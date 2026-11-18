@@ -18,9 +18,10 @@ ColumnLayout {
     Text {
         text: page.title
         color: Colors.primary
-        font.family: Metrics.font
+        font.family: Metrics.displayFont
         font.pixelSize: Metrics.text.heading
         font.weight: Font.Bold
+        font.capitalization: Font.AllUppercase
     }
 
     Text {

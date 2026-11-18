@@ -5,7 +5,7 @@ import qs.theme
 Text {
     color: Colors.primary
     font.family: Metrics.font
-    font.pixelSize: 16
+    font.pixelSize: Metrics.text.title
     font.weight: Font.DemiBold
     verticalAlignment: Text.AlignVCenter
 }

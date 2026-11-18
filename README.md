@@ -367,7 +367,7 @@ from other people's nearby.
 ├── btop/                # Btop configuration
 ├── cava/                # Audio visualizer configuration
 ├── fastfetch/           # Fastfetch configuration and logos
-├── fontconfig/          # JetBrainsMono Nerd Font preference
+├── fontconfig/          # Ioskeley Mono for whatever asks for a monospace font
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
 ├── gtk4/                # GTK 4 settings
@@ -384,7 +384,7 @@ from other people's nearby.
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # The hyprpunk command, and the helpers the shell and Hyprland run from ~/.local/lib/hyprpunk
 ├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
-├── sddm/base/           # What every login screen shares: the layout, its settings and the font
+├── sddm/base/           # What every login screen shares: the layout and its settings
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
@@ -554,7 +554,7 @@ customize (see [Philosophy](#-philosophy)).
 - 🔒 The lock screen is inspired by the one in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
-- 🔤 The login screens use [Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) by Stefie Justprince, under the SIL Open Font License 1.1 (`OFL.txt` next to the font).
+- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock's clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's cuts are built on your machine under names of their own (`fontsctl.py`).
 - 💤 The Neovim configuration starts from the [LazyVim starter](https://github.com/LazyVim/starter), under the Apache License 2.0 (`nvim/.config/nvim/LICENSE`).
 
 ---

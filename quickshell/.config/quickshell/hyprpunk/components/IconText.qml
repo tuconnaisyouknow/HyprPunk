@@ -41,6 +41,11 @@ Item {
             Layout.fillWidth: true
             text: iconText.text
             color: iconText.color
+            // Its digits each keep one width, so a value that changes never moves what's
+            // next to it.
+            font.features: {
+                "tnum": 1
+            }
         }
 
     }

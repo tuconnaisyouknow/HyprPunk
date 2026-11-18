@@ -149,6 +149,9 @@ PanelWindow {
                 font.family: Metrics.font
                 font.pixelSize: Metrics.text.body
                 font.weight: Font.Bold
+                font.features: {
+                    "tnum": 1
+                }
             }
 
         }
