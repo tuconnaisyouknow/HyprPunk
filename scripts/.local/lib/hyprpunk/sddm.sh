@@ -11,6 +11,8 @@ DOTFILES_DIR="$HOME/.dotfiles"
 BASE_DIR="$DOTFILES_DIR/sddm/base"
 THEMES_DIR="$DOTFILES_DIR/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
+# Each login screen is a subtheme's: its wallpapers' folder tells which theme it belongs to
+WALLPAPERS_DIR="$DOTFILES_DIR/wallpapers/Pictures/Wallpapers"
 # The shell's fonts, as fontsctl.py builds them
 FONTS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fonts/hyprpunk"
 
@@ -58,7 +60,7 @@ validate_theme_files() {
 }
 
 # The base first, so a theme can replace any of its files with its own. The login
-# screen is written in the shell's fonts, which it gets a copy of.
+# screen is written in the shell's fonts, which it gets a copy of, and told its theme.
 copy_theme() {
   local theme_name="$1"
   local target="$SYSTEM_THEMES_DIR/$theme_name"
@@ -66,6 +68,12 @@ copy_theme() {
   sudo mkdir -p "$target"
   sudo cp -r "$BASE_DIR/." "$target/"
   sudo cp -r "$THEMES_DIR/$theme_name/." "$target/"
+  # Main.qml only glitches at a wrong password in neon
+  local theme_dir
+  theme_dir="$(find "$WALLPAPERS_DIR" -mindepth 2 -maxdepth 2 -type d -name "$theme_name" -print -quit)"
+  if [ -n "$theme_dir" ]; then
+    printf 'theme=%s\n' "$(basename "$(dirname "$theme_dir")")" | sudo tee -a "$target/theme.conf" >/dev/null
+  fi
   sudo rm -rf "$target/font"
   sudo install -Dm644 -t "$target/font" \
     "$FONTS_DIR/HyprPunkText-Regular.ttf" "$FONTS_DIR/HyprPunkText-Bold.ttf" "$FONTS_DIR/HyprPunkDisplay-Bold.ttf"

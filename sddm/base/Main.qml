@@ -107,8 +107,47 @@ Rectangle {
     }
 
     Loader {
+        id: background
         anchors.fill: parent
         source: "BackgroundVideo.qml"
+    }
+
+    // In neon, a wrong password glitches the video for a moment, as it does the lock
+    // screen's background: the machine awake faults, the dream only says no. The video is
+    // only copied into a picture while the glitch plays.
+    ShaderEffectSource {
+        id: videoFrame
+        anchors.fill: parent
+        sourceItem: background
+        live: glitchEffect.visible
+        visible: false
+    }
+
+    ShaderEffect {
+        id: glitchEffect
+
+        // Through the glitch, from 0 to 1: four patterns, each weaker than the last
+        property real phase: 1
+        readonly property int step: Math.floor(phase * 4)
+        readonly property real glitch: 1 - step / 4
+        readonly property real glitchSeed: step + 1
+        readonly property color glitchColor: root.red
+        readonly property vector2d size: Qt.vector2d(width, height)
+        readonly property var source: videoFrame
+
+        anchors.fill: parent
+        visible: phase < 1
+        fragmentShader: "glitch.frag.qsb"
+
+        // As long as the lock screen's, where it lasts the island's shake of the head
+        NumberAnimation {
+            id: glitchAnim
+            target: glitchEffect
+            property: "phase"
+            from: 0
+            to: 1
+            duration: 240
+        }
     }
 
     // Two thin accent lines down the sides
@@ -559,10 +598,16 @@ Rectangle {
     Connections {
         target: typeof sddm !== "undefined" ? sddm : null
         function onLoginFailed() {
-            errText.text = "ACCESS DENIED";
-            pwd.text = "";
-            pwd.focus = true;
+            root.denied();
         }
+    }
+
+    function denied() {
+        errText.text = "ACCESS DENIED";
+        pwd.text = "";
+        pwd.focus = true;
+        if (config.theme === "neon")
+            glitchAnim.restart();
     }
 
     function doLogin() {
