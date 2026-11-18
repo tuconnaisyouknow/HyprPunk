@@ -534,8 +534,17 @@ WlSessionLockSurface {
         // it moves (shaders/lockbackdrop.frag). Under the pills the lock keeps, the bar's
         // blur shows through their glass, under the wallpaper as it comes in: over the screen
         // blurring out, their glass would let the windows through while the bar's other pills
-        // keep the bar's blur.
+        // keep the bar's blur. In neon, a wrong password glitches it while the island shakes its head.
         ShaderEffect {
+            id: backdrop
+
+            // Through the glitch, from 0 to 1: a new pattern with each of the shake's
+            // swings, each weaker than the last.
+            property real glitchPhase: 1
+            readonly property int glitchStep: Math.floor(glitchPhase * Motion.shake.swings.length)
+            readonly property real glitch: glitchPhase < 1 ? 1 - glitchStep / Motion.shake.swings.length : 0
+            readonly property real glitchSeed: glitchStep + 1
+            readonly property color glitchColor: Colors.red
             readonly property vector2d size: Qt.vector2d(width, height)
             readonly property real blur: surface.smooth(surface.stage(0, 0.55))
             readonly property real dim: surface.stage(0, 0.55)
@@ -555,6 +564,28 @@ WlSessionLockSurface {
 
             anchors.fill: parent
             fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/lockbackdrop.frag.qsb"))
+
+            Connections {
+                // Neon only: the machine awake faults, the dream just shakes its head.
+                function onFailed() {
+                    if (Session.theme === "neon")
+                        glitchAnimation.restart();
+
+                }
+
+                target: Lock
+            }
+
+            NumberAnimation {
+                id: glitchAnimation
+
+                target: backdrop
+                property: "glitchPhase"
+                from: 0
+                to: 1
+                duration: Motion.shake.swings.length * Motion.shake.swingDuration
+            }
+
         }
 
         // The music wave, where the desktop's was (VisualizerShell.qml): that one settled into the
