@@ -146,6 +146,11 @@ theme, built in a moment from Papirus's grey folders.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
 
+The two themes also differ in how the shell shows its light. **Daydream receives it**: what's on, chosen or in use
+is filled with the accent. **Neon emits it**: the same things become dark tubes glowing at their edge, like the city's
+signs. The selection in a list and the button that answers light up from their edge inward instead, and levels
+(volume, brightness) stay filled in both themes, so you still read how much.
+
 The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
 minutes with a soft rim. Switch between them live from the settings' Appearance page, or with
 `hyprpunk glass set classic|liquid|toggle`.
