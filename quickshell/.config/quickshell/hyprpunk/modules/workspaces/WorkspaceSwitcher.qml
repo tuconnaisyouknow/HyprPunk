@@ -79,10 +79,10 @@ Item {
 
     Light {
         z: 0
-        x: workspaceSwitcher.activeButtonIndex >= 0 ? workspaceSwitcher.activeButtonIndex * (31 + workspaceRow.spacing) : 0
+        x: workspaceSwitcher.activeButtonIndex >= 0 ? workspaceSwitcher.activeButtonIndex * (32 + workspaceRow.spacing) : 0
         y: 0
         width: 44
-        height: 31
+        height: 32
         visible: workspaceSwitcher.activeButtonIndex >= 0
 
         Behavior on x {

@@ -29,8 +29,8 @@ Rectangle {
         }
     }
     Component.onCompleted: activeForeground = active
-    implicitWidth: active ? 44 : 31
-    implicitHeight: 31
+    implicitWidth: active ? 44 : 32
+    implicitHeight: 32
     radius: height / 2
     color: active && drawActiveBackground ? Colors.primary : mouse.containsMouse && !active ? Colors.surface1 : Colors.alpha(Colors.surface1, 0)
     opacity: occupied || active ? 1 : 0.55
