@@ -239,7 +239,7 @@ Singleton {
                 // The lock screens play their way out, then unlock (unlockNow).
             } else {
                 // pam_faillock tells why once the account is held.
-                locker.fail(messageIsError && message !== "" ? message : result === PamResult.MaxTries ? "Too many tries" : "Wrong password");
+                locker.fail(messageIsError && message !== "" ? message : result === PamResult.MaxTries ? "Locked out" : "Access denied");
             }
         }
         onError: {

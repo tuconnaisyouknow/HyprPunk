@@ -72,14 +72,12 @@ RowLayout {
             radius: parent.radius
         }
 
-        Text {
+        Readout {
             id: statusOsdStateText
 
             anchors.centerIn: parent
             text: view.content.enabled ? "On" : "Off"
             color: view.content.enabled ? Colors.over(Colors.primary) : Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.body
             font.weight: Font.Bold
         }
 
@@ -210,11 +208,10 @@ RowLayout {
         Layout.leftMargin: Metrics.spacing.hairline
         spacing: 0
 
-        Text {
+        Readout {
             text: view.content.label
             color: view.batteryColor()
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.emphasis
+            font.pixelSize: Metrics.text.body
             font.weight: Font.Bold
         }
 

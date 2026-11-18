@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.components
 import qs.theme
 
 // A page of the settings window: its title and what it's about, then its settings
@@ -15,13 +16,9 @@ ColumnLayout {
 
     spacing: Metrics.spacing.large
 
-    Text {
+    Heading {
         text: page.title
-        color: Colors.primary
-        font.family: Metrics.displayFont
         font.pixelSize: Metrics.text.heading
-        font.weight: Font.Bold
-        font.capitalization: Font.AllUppercase
     }
 
     Text {

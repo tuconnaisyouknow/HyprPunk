@@ -19,9 +19,6 @@ ControlPage {
         if (!Networking.wifiEnabled)
             return "Off";
 
-        if (NetworkStatus.activeWifi !== null)
-            return NetworkStatus.activeWifi.name;
-
         return NetworkStatus.wiredConnected ? "Ethernet" : "Not connected";
     }
 
@@ -31,9 +28,6 @@ ControlPage {
 
         if (!BluetoothStatus.enabled)
             return "Off";
-
-        if (BluetoothStatus.connected.length === 1)
-            return BluetoothStatus.connected[0].deviceName;
 
         if (BluetoothStatus.connected.length > 1)
             return BluetoothStatus.connected.length + " devices";
@@ -78,6 +72,7 @@ ControlPage {
                 icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "󰤯") : "󰤭"
                 title: "Wi-Fi"
                 subtitle: page.wifiSubtitle()
+                name: Networking.wifiEnabled && NetworkStatus.activeWifi !== null ? NetworkStatus.activeWifi.name : ""
                 active: Networking.wifiEnabled
                 // Its page also holds the VPNs, Wi-Fi or not.
                 expandable: true
@@ -90,6 +85,7 @@ ControlPage {
                 icon: BluetoothStatus.enabled ? (BluetoothStatus.connected.length > 0 ? "󰂱" : "󰂯") : "󰂲"
                 title: "Bluetooth"
                 subtitle: page.bluetoothSubtitle()
+                name: BluetoothStatus.enabled && BluetoothStatus.connected.length === 1 ? BluetoothStatus.connected[0].deviceName : ""
                 active: BluetoothStatus.enabled
                 expandable: BluetoothStatus.adapter !== null
                 onToggled: BluetoothStatus.toggle()
@@ -142,12 +138,8 @@ ControlPage {
             anchors.margins: Metrics.spacing.large
             spacing: Metrics.spacing.normal
 
-            Text {
+            Heading {
                 text: "Display"
-                color: Colors.primary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.emphasis
-                font.weight: Font.Bold
             }
 
             HorizontalSlider {

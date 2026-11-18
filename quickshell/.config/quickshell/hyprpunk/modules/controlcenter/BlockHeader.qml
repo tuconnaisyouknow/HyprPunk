@@ -24,12 +24,8 @@ RowLayout {
     Layout.fillWidth: true
     activeFocusOnTab: true
 
-    Text {
+    Heading {
         text: header.title
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: Metrics.text.emphasis
-        font.weight: Font.Bold
     }
 
     Text {

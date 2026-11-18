@@ -60,13 +60,10 @@ RowLayout {
 
     }
 
-    Text {
+    Heading {
         Layout.fillWidth: true
         text: header.title
-        color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: Metrics.text.title
-        font.weight: Font.Bold
+        font.pixelSize: Metrics.text.emphasis
     }
 
     ToggleSwitch {

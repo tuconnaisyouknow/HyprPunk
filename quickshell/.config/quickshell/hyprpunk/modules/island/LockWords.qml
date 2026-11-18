@@ -29,14 +29,13 @@ IslandPart {
         }
     }
 
-    Text {
+    Readout {
         id: wordsText
 
         anchors.centerIn: parent
         text: words.shownLabel
         color: Colors.red
-        font.family: Metrics.font
-        font.pixelSize: 15
+        font.pixelSize: Metrics.text.body
         font.weight: Font.Bold
     }
 

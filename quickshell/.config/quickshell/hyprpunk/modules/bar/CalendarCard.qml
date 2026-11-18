@@ -130,12 +130,10 @@ PillPopup {
             spacing: Metrics.spacing.large
             opacity: (calendarPopup.expanded ? 1 : 0) * monthTransitionOpacity
 
-            Label {
+            Heading {
                 Layout.alignment: Qt.AlignHCenter
-                text: calendarPopup.capitalized(Session.regionalFormats.standaloneMonthName(calendarPopup.displayedMonthNumber)) + " " + calendarPopup.displayedYear
-                color: Colors.primary
-                font.pixelSize: Metrics.text.title
-                font.weight: Font.Bold
+                text: Session.regionalFormats.standaloneMonthName(calendarPopup.displayedMonthNumber) + " " + calendarPopup.displayedYear
+                font.pixelSize: Metrics.text.emphasis
             }
 
             Grid {

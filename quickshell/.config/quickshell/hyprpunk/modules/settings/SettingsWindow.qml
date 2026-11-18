@@ -202,15 +202,11 @@ Scope {
 
                         }
 
-                        Text {
+                        Heading {
                             Layout.leftMargin: Metrics.spacing.normal
                             Layout.bottomMargin: Metrics.spacing.large
                             text: "Settings"
-                            color: Colors.primary
-                            font.family: Metrics.displayFont
                             font.pixelSize: Metrics.text.heading
-                            font.weight: Font.Bold
-                            font.capitalization: Font.AllUppercase
                         }
 
                         Repeater {

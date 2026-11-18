@@ -32,6 +32,7 @@ Item {
         active: monitor.active
     }
 
+    // A section's reading, facing its title.
     component SectionTitle: Text {
         color: Colors.primary
         font.family: Metrics.font
@@ -40,7 +41,9 @@ Item {
     }
 
     component IconTitle: IconText {
-        font.pixelSize: Metrics.text.emphasis
+        heading: true
+        iconSize: Metrics.text.emphasis
+        font.pixelSize: Metrics.text.small
         font.weight: Font.Bold
     }
 

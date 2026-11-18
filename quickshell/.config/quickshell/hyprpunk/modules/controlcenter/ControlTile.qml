@@ -10,7 +10,11 @@ ControlBlock {
 
     required property string icon
     required property string title
+    // Its state, read out in capitals.
     property string subtitle: ""
+    // What it's connected to (a network, a device), shown in the state's place, as written.
+    property string name: ""
+    readonly property string detail: name !== "" ? name : subtitle
     property bool active: false
     property bool expandable: false
 
@@ -97,14 +101,10 @@ ControlBlock {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 1
 
-                Text {
+                Heading {
                     width: parent.width
                     text: tile.title
-                    color: Colors.primary
                     elide: Text.ElideRight
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.emphasis
-                    font.weight: Font.Bold
                 }
 
                 // Cut with an ellipsis, scrolling round under the pointer when it
@@ -114,18 +114,16 @@ ControlBlock {
 
                     width: parent.width
                     height: subtitleText.implicitHeight
-                    visible: tile.subtitle !== ""
+                    visible: tile.detail !== ""
 
-                    Text {
+                    Readout {
                         id: subtitleText
 
                         width: parent.width
                         visible: !parent.scrolling
-                        text: tile.subtitle
-                        color: Colors.secondary
+                        named: tile.name !== ""
+                        text: tile.detail
                         elide: Text.ElideRight
-                        font.family: Metrics.font
-                        font.pixelSize: Metrics.text.body
                     }
 
                     MarqueeText {
@@ -134,10 +132,9 @@ ControlBlock {
                         width: parent.width
                         visible: parent.scrolling
                         running: parent.scrolling
-                        text: tile.subtitle
+                        text: tile.detail
                         color: Colors.secondary
-                        font.family: Metrics.font
-                        font.pixelSize: Metrics.text.body
+                        font: subtitleText.font
                     }
 
                 }

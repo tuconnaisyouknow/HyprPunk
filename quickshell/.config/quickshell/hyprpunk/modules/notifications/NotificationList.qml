@@ -84,7 +84,9 @@ ColumnLayout {
             icon: "󰂚"
             text: "Notifications"
             color: Colors.primary
-            font.pixelSize: Metrics.text.title
+            heading: true
+            iconSize: Metrics.text.title
+            font.pixelSize: Metrics.text.emphasis
             font.weight: Font.Bold
         }
 

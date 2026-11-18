@@ -131,13 +131,17 @@ Item {
                 shown: view.padlock
                 animated: view.animated
                 gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence)
-                openWidth: padlockIcon.implicitWidth
+                // A whole, even number of pixels, the glyph on a whole pixel inside: its cell
+                // is a fraction wide, and alone in the island's circle it would be drawn a
+                // pixel to the left of the middle.
+                openWidth: 2 * Math.round(padlockIcon.implicitWidth / 2)
                 openHeight: padlockIcon.implicitHeight
 
                 Text {
                     id: padlockIcon
 
-                    anchors.centerIn: parent
+                    x: Math.round((parent.width - implicitWidth) / 2)
+                    anchors.verticalCenter: parent.verticalCenter
                     text: "󰌾"
                     color: Colors.primary
                     font.family: Metrics.font

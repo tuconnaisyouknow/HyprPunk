@@ -11,8 +11,12 @@ Item {
     property string icon
     property string text
     property color color: Colors.primary
-    // The icon is drawn with the value's font.
+    // The value's font, whose size and weight the icon takes too.
     property alias font: valueLabel.font
+    property real iconSize: font.pixelSize
+    // The value is a title (Heading): capitals in the display font, smaller than its icon,
+    // which stays in the text's font, the only one with the icons.
+    property bool heading: false
     property alias elide: valueLabel.elide
     // From the icon's ink to the value's ink, in pixels.
     property real gap: font.pixelSize / 2
@@ -32,7 +36,8 @@ Item {
 
             text: iconText.icon
             color: iconText.color
-            font: valueLabel.font
+            font.pixelSize: iconText.iconSize
+            font.weight: valueLabel.font.weight
         }
 
         Label {
@@ -41,6 +46,8 @@ Item {
             Layout.fillWidth: true
             text: iconText.text
             color: iconText.color
+            font.family: iconText.heading ? Metrics.displayFont : Metrics.font
+            font.capitalization: iconText.heading ? Font.AllUppercase : Font.MixedCase
             // Its digits each keep one width, so a value that changes never moves what's
             // next to it.
             font.features: {
