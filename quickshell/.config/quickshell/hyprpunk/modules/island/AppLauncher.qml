@@ -6,9 +6,10 @@ import qs.config
 import qs.services
 import qs.theme
 
-// The app launcher in the dynamic island: a grid of your apps, the ones you pinned in
-// the settings first, then the ones you use most, narrowed down as you type (Apps). The
-// ones you hid there never show. It does a bit more too:
+// The app launcher in the dynamic island: a list of your apps, each with what it's for
+// under its name, the ones you pinned in the settings first, then the ones you use most,
+// narrowed down as you type (Apps). The ones you hid there never show. It does a bit
+// more too:
 //   2+2       a calculation, Enter copies the result
 //   > cmd     runs a command (Shift+Enter in a terminal)
 //   ? words   searches the web, also offered when no app matches
@@ -16,10 +17,8 @@ import qs.theme
 SearchPanel {
     id: launcher
 
-    readonly property int columns: 4
-    readonly property int cellWidth: 112
-    readonly property int cellHeight: 104
-    readonly property int maxRows: 3
+    readonly property int maxRows: 6
+    // One row for everything listed: the apps, their actions, the calculation.
     readonly property int rowHeight: 52
     readonly property int rowSpacing: Metrics.spacing.small
     readonly property string trimmedQuery: query.trim()
@@ -27,14 +26,14 @@ SearchPanel {
     readonly property string modeArgument: mode === "apps" ? trimmedQuery : trimmedQuery.slice(1).trim()
     readonly property var calculation: mode === "apps" ? Apps.calculate(trimmedQuery) : null
     // Built once the shell has settled after startup, then kept: built at the first
-    // opening, the grid and its icons froze the card for ~300 ms. Not right away either:
-    // building the grid as the shell starts held up the bar's first values.
+    // opening, the list and its icons froze the card for ~300 ms. Not right away either:
+    // building the list as the shell starts held up the bar's first values.
     property bool listWanted: false
     readonly property var results: listWanted && mode === "apps" ? Apps.search(trimmedQuery) : []
     // calc, command, web or "" when there is no special row.
     readonly property string special: mode === "command" ? "command" : mode === "web" ? "web" : calculation !== null ? "calc" : trimmedQuery !== "" && results.length === 0 ? "web" : ""
-    readonly property int gridRows: Math.min(maxRows, Math.ceil(results.length / columns))
-    // Application whose actions are listed, null for the grid.
+    readonly property int listRows: Math.min(maxRows, results.length)
+    // Application whose actions are listed, null for the apps.
     property var actionsEntry: null
     property int actionIndex: 0
     readonly property var actionRows: actionsEntry ? [{
@@ -49,10 +48,14 @@ SearchPanel {
         };
     })) : []
 
-    // Set by hand: as the apps are narrowed down the grid moves its cells, and keeps its
+    // Set by hand: as the apps are narrowed down the list moves its rows, and keeps its
     // current one on the app it was on.
-    function syncGrid() {
-        grid.currentIndex = selectedIndex;
+    function syncList() {
+        list.currentIndex = selectedIndex;
+    }
+
+    function rowsHeight(rows) {
+        return rows * (rowHeight + rowSpacing) - rowSpacing;
     }
 
     function launch(entry, action) {
@@ -102,17 +105,21 @@ SearchPanel {
     // What Enter will do in the current mode.
     hint: actionsEntry ? "Tab back" : mode === "command" ? "Run" : mode === "web" ? "Web" : special === "calc" ? "Calc" : ""
     count: results.length
-    view: grid
+    view: list
     // The calculation comes first, the web search fallback is the only choice.
     defaultIndex: special === "calc" || results.length === 0 ? -1 : 0
     firstIndex: special !== "" ? -1 : 0
-    cardWidth: columns * cellWidth + 2 * cardPadding
-    bodyHeight: actionsEntry ? actionRows.length * (rowHeight + rowSpacing) - rowSpacing : (special !== "" ? rowHeight : 0) + (special !== "" && gridRows > 0 ? sectionSpacing : 0) + gridRows * cellHeight
+    cardWidth: 480
+    bodyHeight: actionsEntry ? rowsHeight(actionRows.length) : (special !== "" ? rowHeight : 0) + (special !== "" && listRows > 0 ? sectionSpacing : 0) + (listRows > 0 ? rowsHeight(listRows) : 0)
+    // Right on an empty field picks, like in the other lists.
+    onActivated: (index, shift) => {
+        return activate(shift);
+    }
     onOpening: actionsEntry = null
     onDefaultIndexChanged: selectedIndex = defaultIndex
-    onSelectedIndexChanged: syncGrid()
+    onSelectedIndexChanged: syncList()
     // Enter and Tab are the launcher's own; so is every key while an app's actions
-    // are listed, which go up and down and back to the grid.
+    // are listed, which go up and down and back to the apps.
     onKeyPressed: (event) => {
         const shift = (event.modifiers & Qt.ShiftModifier) !== 0;
         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
@@ -221,81 +228,122 @@ SearchPanel {
     }
 
     // Applications.
-    GridView {
-        id: grid
+    ListView {
+        id: list
 
         anchors.top: specialRow.visible ? specialRow.bottom : parent.top
         anchors.topMargin: specialRow.visible ? launcher.sectionSpacing : 0
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: launcher.columns * launcher.cellWidth
-        height: launcher.maxRows * launcher.cellHeight
+        width: parent.width
+        height: launcher.rowsHeight(launcher.maxRows)
         visible: !launcher.actionsEntry && launcher.mode === "apps"
         clip: true
-        cellWidth: launcher.cellWidth
-        cellHeight: launcher.cellHeight
+        spacing: launcher.rowSpacing
         boundsBehavior: Flickable.StopAtBounds
         highlightFollowsCurrentItem: true
         highlightMoveDuration: 0
+        highlightResizeDuration: 0
 
-        // An app keeps its cell as long as it's listed, whatever object stands for it:
+        // An app keeps its row as long as it's listed, whatever object stands for it:
         // Quickshell makes some anew each time it lists the apps again.
         model: ScriptModel {
             objectProp: "id"
             values: launcher.results
-            onValuesChanged: launcher.syncGrid()
+            onValuesChanged: launcher.syncList()
         }
 
         highlight: SelectionHighlight {
-            view: grid
-            radius: Metrics.radius.card
-            inset: Metrics.spacing.small
+            view: list
+            radius: specialRow.radius
         }
 
         delegate: Item {
-            id: cell
+            id: row
 
             required property var modelData
             required property int index
             readonly property bool selected: launcher.selectedIndex === index
-            readonly property real pressScale: cellContent.scale
+            readonly property real pressScale: rowContent.scale
 
-            width: launcher.cellWidth
-            height: launcher.cellHeight
+            width: ListView.view.width
+            height: launcher.rowHeight
 
-            Rectangle {
-                id: cellContent
+            Item {
+                id: rowContent
 
                 anchors.fill: parent
-                anchors.margins: Metrics.spacing.small
-                radius: Metrics.radius.card
-                color: "transparent"
-                scale: cellTap.pressed ? 0.94 : 1
+                scale: rowTap.pressed ? 0.97 : 1
 
                 IconImage {
                     id: appIcon
 
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
-                    anchors.topMargin: Metrics.spacing.large
-                    implicitSize: 48
+                    anchors.left: parent.left
+                    anchors.leftMargin: Metrics.spacing.huge
+                    anchors.verticalCenter: parent.verticalCenter
+                    implicitSize: 32
                     asynchronous: true
-                    source: Quickshell.iconPath(cell.modelData.icon, "application-x-executable")
+                    source: Quickshell.iconPath(row.modelData.icon, "application-x-executable")
                 }
 
-                Text {
-                    anchors.top: appIcon.bottom
-                    anchors.topMargin: Metrics.spacing.normal
-                    anchors.left: parent.left
+                // Centred as a pair, so a name with nothing under it sits in the middle.
+                Column {
+                    anchors.left: appIcon.right
+                    anchors.leftMargin: Metrics.spacing.large
                     anchors.right: parent.right
-                    anchors.leftMargin: Metrics.spacing.small
-                    anchors.rightMargin: Metrics.spacing.small
-                    horizontalAlignment: Text.AlignHCenter
-                    elide: Text.ElideRight
-                    text: cell.modelData.name
-                    color: cell.selected ? Colors.primary : Colors.secondary
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.body
-                    font.weight: cell.selected ? Font.Bold : Font.Normal
+                    anchors.rightMargin: Metrics.spacing.huge
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    Text {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: row.modelData.name
+                        color: row.selected ? Colors.primary : Colors.secondary
+                        font.family: Metrics.font
+                        font.pixelSize: Metrics.text.emphasis
+                        font.weight: row.selected ? Font.Bold : Font.Normal
+                    }
+
+                    // What the app is for, or what kind of app it is when it doesn't say.
+                    // Cut with an ellipsis, scrolling round on the selected app when it
+                    // doesn't fit.
+                    Item {
+                        id: description
+
+                        readonly property string text: row.modelData.comment || row.modelData.genericName
+                        readonly property bool scrolling: row.selected && descriptionText.implicitWidth > width
+
+                        width: parent.width
+                        height: descriptionText.implicitHeight
+                        visible: text !== ""
+
+                        Text {
+                            id: descriptionText
+
+                            width: parent.width
+                            visible: !description.scrolling
+                            elide: Text.ElideRight
+                            text: description.text
+                            textFormat: Text.PlainText
+                            color: Colors.secondary
+                            font.family: Metrics.font
+                            font.pixelSize: Metrics.text.body
+                        }
+
+                        // Only the selected app has one: the list is built at startup.
+                        Loader {
+                            width: parent.width
+                            active: description.scrolling
+
+                            sourceComponent: MarqueeText {
+                                text: description.text
+                                color: Colors.secondary
+                                font.family: Metrics.font
+                                font.pixelSize: Metrics.text.body
+                            }
+
+                        }
+
+                    }
+
                 }
 
                 Behavior on scale {
@@ -312,22 +360,22 @@ SearchPanel {
                 cursorShape: Qt.PointingHandCursor
                 onHoveredChanged: {
                     if (hovered)
-                        launcher.selectedIndex = cell.index;
+                        launcher.selectedIndex = row.index;
 
                 }
             }
 
             TapHandler {
-                id: cellTap
+                id: rowTap
 
-                onTapped: launcher.launch(cell.modelData)
+                onTapped: launcher.launch(row.modelData)
             }
 
             TapHandler {
                 acceptedButtons: Qt.RightButton
                 onTapped: {
-                    launcher.selectedIndex = cell.index;
-                    launcher.showActions(cell.modelData);
+                    launcher.selectedIndex = row.index;
+                    launcher.showActions(row.modelData);
                 }
             }
 

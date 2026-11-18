@@ -21,7 +21,7 @@ Singleton {
     // The installed apps, taken once Quickshell is done listing them. It lists them again
     // at every change in your home folder (a terminal saving its history after each
     // command), taking some out and putting them back on the way: followed step by step,
-    // that rebuilt the launcher's grid several times and froze whatever was moving.
+    // that rebuilt the launcher's list several times and froze whatever was moving.
     property var installed: []
 
     // How well a query matches a text, 0 for not at all. Best is the whole text, then
