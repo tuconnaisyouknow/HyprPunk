@@ -39,10 +39,9 @@ hl.config({
     dim_inactive = true,
     dim_strength = 0.12,
 
-    -- A faint glow around the window you're in (accent.lua colors it), nothing around
-    -- the others
+    -- The glow around the window you're in, nothing around the others. accent.lua colors
+    -- it and lights it in neon only.
     shadow = {
-      enabled = true,
       range = 14,
       render_power = 4,
       color_inactive = "rgba(00000000)",

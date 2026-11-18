@@ -59,7 +59,8 @@ output_path = "~/.local/state/hyprpunk/folder-colors"
 input_path = "./templates/sddm.conf.template"
 output_path = "~/.local/state/hyprpunk/login-colors.conf"
 
-# Hyprland's accent, which accent.lua reads to recolor the borders
+# Hyprland's accent and the wallpaper's theme, which accent.lua reads to recolor the
+# borders and light the glow
 [templates.hyprland]
 input_path = "./templates/hyprland.template"
 output_path = "~/.local/state/hyprpunk/hypr-colors"
