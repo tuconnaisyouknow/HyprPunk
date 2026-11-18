@@ -75,7 +75,9 @@ Scope {
             });
         });
         ready = true;
-        save();
+        // Once the read is over: the file is still reading while it hands its text over,
+        // and writing then would cut that read short.
+        Qt.callLater(save);
     }
 
     onLiveChanged: save()
