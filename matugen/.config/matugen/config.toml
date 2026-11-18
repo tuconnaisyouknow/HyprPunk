@@ -1,6 +1,7 @@
 # The desktop's colors, written by matugen so every app shares them. Every wallpaper
 # has its own palette (palettes.conf names it, palettes/ holds them): the wallpaper's own
-# hues at Catppuccin Mocha's lightness, so the theme stays dark and readable.
+# hues at Catppuccin Mocha's lightness, so the theme stays dark and readable. An accent too
+# dark to read there stays the wallpaper's color: its surfaces go deeper instead.
 # wallpaperctl.sh renders the wallpaper's palette whenever it changes.
 # matugen only expands ~ in its paths, so the shell's and the terminal's colors go to
 # ~/.local/state/hyprpunk, the default $XDG_STATE_HOME that their readers fall back on.

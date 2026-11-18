@@ -2,7 +2,7 @@
   "colors": {
     "primary": {
       "default": {
-        "color": "#cf6eab"
+        "color": "#db79b6"
       }
     },
     "on_primary": {
@@ -12,7 +12,7 @@
     },
     "secondary": {
       "default": {
-        "color": "#57cca0"
+        "color": "#69ddb0"
       }
     },
     "on_surface": {
