@@ -130,7 +130,8 @@ wallpapers, sorted into subthemes in `~/Pictures/Wallpapers/<theme>/<subtheme>/`
 the whole look:
 
 - 🎨 Its own palette, picked by hand (`matugen/.config/matugen/palettes/`): the wallpaper's hues at Catppuccin Mocha's
-  lightness, so the desktop stays dark and readable.
+  lightness, so the desktop stays dark and readable. A deep red stays the wallpaper's red: its surfaces go darker
+  instead, until it reads.
 - ✨ An accent, in Mocha's mauve role, for titles and what's selected or active, and a secondary color, in lavender's
   role, for everything else you read.
 - 🌑 Surfaces and grays tinted with the wallpaper's mood.
