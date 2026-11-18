@@ -262,11 +262,12 @@ palette_of() {
 }
 
 # matugen writes every app's colors from it, Brave's included, kept between sessions.
-# It also gets the palette's name, for what's kept ready for each palette (bat's theme).
+# It also gets the palette's name, for what's kept ready for each palette (bat's theme),
+# and the wallpaper's theme, which the shell takes with its colors: neon emits its light.
 render_colors() {
   local palette
   palette="$(palette_of "$1")"
-  matugen -q --import-json-string "{\"palette\": \"$(basename "$palette" .json)\"}" json "$palette"
+  matugen -q --import-json-string "{\"palette\": \"$(basename "$palette" .json)\", \"theme\": \"$(theme_of "$1")\"}" json "$palette"
 }
 
 # The open apps take the colors matugen wrote, one after another, in the order you'd

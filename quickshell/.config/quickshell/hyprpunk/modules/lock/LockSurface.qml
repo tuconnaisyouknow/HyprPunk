@@ -568,7 +568,7 @@ WlSessionLockSurface {
             Connections {
                 // Neon only: the machine awake faults, the dream just shakes its head.
                 function onFailed() {
-                    if (Session.theme === "neon")
+                    if (Colors.theme === "neon")
                         glitchAnimation.restart();
 
                 }

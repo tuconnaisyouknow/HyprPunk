@@ -36,7 +36,7 @@ output_path = "~/.config/Kvantum/HyprPunk/HyprPunk.kvconfig"
 input_path = "./templates/qt.colors.template"
 output_path = "~/.local/share/color-schemes/HyprPunk.colors"
 
-# The shell's colors, which Quickshell watches and takes at once
+# The shell's colors and the wallpaper's theme, which Quickshell watches and takes at once
 [templates.quickshell]
 input_path = "./templates/quickshell.json.template"
 output_path = "~/.local/state/hyprpunk/colors.json"

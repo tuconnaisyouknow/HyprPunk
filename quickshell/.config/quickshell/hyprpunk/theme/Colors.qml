@@ -36,7 +36,10 @@ Singleton {
     // filled with the accent (GlassSurface). A selection that's a pane of glass lights up
     // inward instead, with no halo, like the button that answers, and an amount stays a
     // fill.
-    readonly property bool emits: Session.theme === "neon"
+    readonly property bool emits: theme === "neon"
+    // "neon" or "daydream", the wallpaper's theme. It comes with the palette, so the
+    // lights change in the same frame as the colors.
+    readonly property string theme: palette.theme
 
     // The cards and pills: the base at 0.9, blurred behind by Hyprland where the shell
     // asks (ScreenShell).
@@ -88,6 +91,7 @@ Singleton {
             property string yellow: "#f9e2af"
             property string peach: "#fab387"
             property string red: "#f38ba8"
+            property string theme: ""
         }
 
     }

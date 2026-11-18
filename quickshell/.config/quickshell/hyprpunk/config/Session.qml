@@ -23,9 +23,6 @@ Singleton {
     property string keyboardLayout: "us"
     // The wallpaper's path, empty until known.
     property string wallpaper: ""
-    // "neon" or "daydream": the wallpaper's folder says it (<theme>/<subtheme>/<image>),
-    // as it does for wallpaperctl.sh. Empty until the wallpaper is known.
-    readonly property string theme: wallpaper.split("/").slice(-3, -2)[0] || ""
     readonly property string languageLocale: localeOf(languageProfile)
     readonly property string regionalLocale: localeOf(regionalProfile)
     // The regional formats as Qt knows them (day and month names, the first day of the
@@ -125,8 +122,6 @@ Singleton {
 
     FileView {
         path: session.stateDir + "/wallpaper.conf"
-        // Read before the first frame: the theme decides how the shell's lights are drawn.
-        blockLoading: true
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
