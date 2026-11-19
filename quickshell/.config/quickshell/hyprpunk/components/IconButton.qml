@@ -77,4 +77,11 @@ Item {
         target: button
     }
 
+    Behavior on opacity {
+        Anim {
+            token: Motion.color.small
+        }
+
+    }
+
 }

@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Services.Mpris
 
 // The music's loudness per pitch, for a music wave (VisualizerWave). The desktop's runs
 // cava while a player plays and streams each frame over a socket; the lock's follows that
@@ -14,15 +13,8 @@ Scope {
     property bool shared: false
     // Off, a shared one stops following.
     property bool active: true
-    // Any player, not only Spotify: whatever is playing moves the wave.
-    readonly property bool playing: {
-        for (const player of Mpris.players.values) {
-            if (player.isPlaying)
-                return true;
-
-        }
-        return false;
-    }
+    // Only the player the shell follows moves the wave.
+    readonly property bool playing: Players.followed !== null && Players.followed.isPlaying
     // From 0 to 1, low notes first. Empty while nothing plays.
     property var levels: []
     // The lock screens following the stream.

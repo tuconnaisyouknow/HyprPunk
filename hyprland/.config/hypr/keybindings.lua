@@ -73,7 +73,7 @@ bind(mainMod .. " + E", launch("files"), "Open the file manager")
 bind(mainMod .. " + B", launch("browser"), "Open the web browser")
 bind(mainMod .. " + O", launch("notes"), "Open the notes")
 bind(mainMod .. " + P", launch("music"), "Open the music player")
--- What's playing, in the bar's card rather than the app. Nothing while Spotify isn't running.
+-- What's playing, in the bar's card rather than the app. Nothing while no player runs.
 bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd(shell .. "player toggle"), "Show the music player card")
 
 -----------
@@ -214,23 +214,26 @@ bind("XF86TouchpadToggle", hl.dsp.exec_cmd(hyprpunk.scripts .. "/touchpadctl.sh 
 -- MEDIA --
 -----------
 
--- Next and previous go through the shell first, so the player's animation follows
+-- Through the shell first, so they reach the player it follows, and its animation
+-- follows the track
+local togglePlayback = shell .. "music toggle || playerctl play-pause"
 local nextTrack = shell .. "music next || playerctl next"
 local previousTrack = shell .. "music previous || playerctl previous"
+local toggleShuffle = shell .. "music shuffle || playerctl shuffle toggle"
 
 -- Media keys
-bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), "Toggle media playback", { locked = true })
-bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), "Toggle media playback", { locked = true })
+bind("XF86AudioPlay", hl.dsp.exec_cmd(togglePlayback), "Toggle media playback", { locked = true })
+bind("XF86AudioPause", hl.dsp.exec_cmd(togglePlayback), "Toggle media playback", { locked = true })
 bind("XF86AudioNext", hl.dsp.exec_cmd(nextTrack), "Play the next track", { locked = true })
 bind("XF86AudioPrev", hl.dsp.exec_cmd(previousTrack), "Play the previous track", { locked = true })
 
 -- The same for keyboards without them, plus shuffle, on the Vim arrows so previous and
 -- next stay left and right whatever the layout
-bind(mainMod .. " + SHIFT + CTRL + " .. keyboard.down, hl.dsp.exec_cmd("playerctl play-pause"),
+bind(mainMod .. " + SHIFT + CTRL + " .. keyboard.down, hl.dsp.exec_cmd(togglePlayback),
   "Toggle media playback", { locked = true })
 bind(mainMod .. " + SHIFT + CTRL + " .. keyboard.right, hl.dsp.exec_cmd(nextTrack), "Play the next track",
   { locked = true })
 bind(mainMod .. " + SHIFT + CTRL + " .. keyboard.left, hl.dsp.exec_cmd(previousTrack), "Play the previous track",
   { locked = true })
-bind(mainMod .. " + SHIFT + CTRL + " .. keyboard.up, hl.dsp.exec_cmd("playerctl shuffle toggle"),
+bind(mainMod .. " + SHIFT + CTRL + " .. keyboard.up, hl.dsp.exec_cmd(toggleShuffle),
   "Toggle shuffle mode", { locked = true })

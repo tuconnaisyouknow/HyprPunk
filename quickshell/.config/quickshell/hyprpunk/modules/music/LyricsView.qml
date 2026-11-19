@@ -5,7 +5,7 @@ import qs.theme
 
 // Lyrics the Apple Music way: the line being sung lit up near the top, the rest dimmer
 // and blurrier the further away they are. Click a line to jump there; scroll by hand
-// and it stops following for a moment.
+// or with the keys, and it stops following for a moment.
 Item {
     id: view
 
@@ -54,6 +54,16 @@ Item {
         }
         followAnimation.to = target;
         followAnimation.restart();
+    }
+
+    // By hand from the keys, a third of the view at a time: -1 up, 1 down.
+    function scroll(direction) {
+        const from = scrollAnimation.running ? scrollAnimation.to : flickable.contentY;
+        handScrolled = true;
+        followAnimation.stop();
+        scrollAnimation.to = Math.max(0, Math.min(from + direction * height / 3, flickable.contentHeight - height));
+        scrollAnimation.restart();
+        resumeFollow.restart();
     }
 
     function show() {
@@ -122,6 +132,7 @@ Item {
         onMovementStarted: {
             view.handScrolled = true;
             followAnimation.stop();
+            scrollAnimation.stop();
             resumeFollow.stop();
         }
         onMovementEnded: resumeFollow.restart()
@@ -180,6 +191,14 @@ Item {
             maskSpreadAtMin: 1
         }
 
+    }
+
+    Anim {
+        id: scrollAnimation
+
+        target: flickable
+        property: "contentY"
+        token: Motion.move.normal
     }
 
     SequentialAnimation {

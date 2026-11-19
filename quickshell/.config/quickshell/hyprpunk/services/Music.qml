@@ -3,28 +3,21 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Services.Mpris
 
-// Spotify, the one player the shell follows (browsers and other MPRIS players are
-// ignored): which track plays and which way it changed, where it is, and its lyrics.
-// Spotify's MPRIS position drifts (it keeps counting from the previous track), so the
-// position and the length come from playerctl, asked every second while a player card
-// shows them (ServiceRef). The cards draw the position between two answers with
+// What the player the shell follows plays (Players.qml): which track and which way it
+// changed, where it is, and its lyrics.
+// Some players' MPRIS position drifts (Spotify keeps counting from the previous track),
+// so the position and the length come from playerctl, asked every second while a player
+// card shows them (ServiceRef). The cards draw the position between two answers with
 // positionAt(), on their own frames.
 Singleton {
     id: music
 
-    readonly property var player: {
-        for (const player of Mpris.players.values) {
-            if (player.dbusName === "org.mpris.MediaPlayer2.spotify")
-                return player;
-
-        }
-        return null;
-    }
+    readonly property var player: Players.followed
     readonly property bool playing: player !== null && player.isPlaying
-    // The track the shell has taken in, by Spotify's id (two tracks with the same title
-    // stay apart). It lags behind playerTrack() while a change is being taken in.
+    // The track the shell has taken in, by its address and its title (two tracks with the
+    // same title stay apart, and so do a player's that gives no address). It lags behind
+    // playerTrack() while a change is being taken in.
     property string currentTrack: ""
     // The tracks played, to tell going back from going on when nobody said which.
     property var history: []
@@ -48,7 +41,8 @@ Singleton {
     // An answer came since something started showing the position: before it, a card
     // waking up would show where the track was before the computer slept.
     property bool positionKnown: false
-    readonly property real length: polledLength > 0 ? polledLength : player !== null ? player.length : 0
+    // 0 for what has no end, like a stream.
+    readonly property real length: polledLength > 0 ? polledLength : player !== null && player.lengthSupported ? player.length : 0
 
     readonly property bool lyricsShown: Lyrics.enabled && player !== null
     // The lyrics asked for are this track's: right after a skip they're still the
@@ -73,14 +67,19 @@ Singleton {
     // Read when asked, not bound: Spotify sends the new cover before it announces the
     // track, and a binding would still hold the old id when the cover comes in.
     function playerTrack() {
-        return player !== null ? (player.metadata["mpris:trackid"] ?? (player.trackTitle + player.trackArtist)) : "";
+        return player !== null ? trackOf(player.metadata["xesam:url"], player.metadata["xesam:title"]) : "";
+    }
+
+    function trackOf(url, title) {
+        return String(url ?? "") + "\n" + String(title ?? "");
     }
 
     // Where the track is at time (ms, like Date.now()). Between two answers it keeps
     // ticking, but only for a second or so: after a sleep it would race ahead by however
     // long the computer slept.
     function positionAt(time) {
-        return Math.min(length, polledPosition + (playing ? Math.max(0, Math.min(1500, time - polledTime)) / 1000 : 0));
+        const position = polledPosition + (playing ? Math.max(0, Math.min(1500, time - polledTime)) / 1000 : 0);
+        return length > 0 ? Math.min(length, position) : position;
     }
 
     // The line being sung at position, a hair early so it doesn't feel late. -1 before
@@ -104,12 +103,25 @@ Singleton {
         skipHint = direction;
         skipUntil = Date.now() + 2000;
         if (direction < 0) {
-            // Spotify doesn't always say it restarted the track instead (no Seeked signal).
+            // Not every player says it restarted the track instead (Spotify sends no
+            // Seeked signal).
             restartProbe.restart();
             player.previous();
         } else {
             player.next();
         }
+    }
+
+    function toggle() {
+        if (player !== null && player.canTogglePlaying)
+            player.togglePlaying();
+
+    }
+
+    function toggleShuffle() {
+        if (player !== null && player.shuffleSupported)
+            player.shuffle = !player.shuffle;
+
     }
 
     function seek(seconds) {
@@ -126,8 +138,14 @@ Singleton {
         if (player === null)
             return ;
 
+        const asked = player;
         prober.createObject(music, {
+            "player": Players.nameOf(asked),
             "onDone": (state) => {
+                // Another player's answer, asked just before you changed source.
+                if (asked !== music.player)
+                    return ;
+
                 const first = !music.positionKnown;
                 music.polledPosition = state.position;
                 music.polledLength = state.length;
@@ -195,8 +213,16 @@ Singleton {
 
     }
 
+    // Another player: drawn from where MPRIS says it is until playerctl answers, so a
+    // card on screen doesn't show the previous player's position meanwhile.
     onPlayerChanged: {
         reset();
+        polledPosition = player !== null ? player.position : 0;
+        polledLength = 0;
+        polledTime = Date.now();
+        if (running)
+            poll();
+
         lyricsRequest.restart();
     }
     onRunningChanged: {
@@ -260,14 +286,19 @@ Singleton {
         id: restartProbe
 
         interval: 350
-        onTriggered: prober.createObject(music, {
-            "onDone": (state) => {
+        onTriggered: {
+            if (music.player !== null)
+                prober.createObject(music, {
+                "player": Players.nameOf(music.player),
+                "onDone": (state) => {
                 // Not yet the new track: a change that hasn't been announced isn't a restart.
-                if (state.track === music.currentTrack)
-                    music.checkRestart(state.position);
+                    if (state.track === music.currentTrack)
+                        music.checkRestart(state.position);
 
-            }
-        })
+                }
+            });
+
+        }
     }
 
     // Asked once the track settles: the title, the artist and the length don't change
@@ -299,22 +330,26 @@ Singleton {
         Process {
             id: process
 
-            // onDone({position, length (both in seconds, length 0 when unknown), track}).
+            // The player asked, as playerctl names it.
+            required property string player
+            // onDone({position, length (both in seconds, 0 when the player gives none), track}).
             property var onDone
 
             // In microseconds, with the track it belongs to, so a change that hasn't been
-            // announced yet isn't taken for this track's.
-            command: ["playerctl", "-p", "spotify", "metadata", "--format", "{{position}} {{mpris:length}} {{mpris:trackid}}"]
+            // announced yet isn't taken for this track's. Between tabs: a player may leave
+            // any of them empty.
+            command: ["playerctl", "-p", player, "metadata", "--format", "{{position}}\t{{mpris:length}}\t{{xesam:url}}\t{{xesam:title}}"]
             running: true
 
             stdout: StdioCollector {
                 onStreamFinished: {
-                    const [position, length, track] = text.trim().split(" ");
-                    if (!isNaN(parseInt(position)))
+                    // Nothing at all: the player has just quit.
+                    const [position, length, url, title] = text.replace(/\n$/, "").split("\t");
+                    if (length !== undefined)
                         process.onDone({
-                        "position": parseInt(position) / 1e6,
-                        "length": isNaN(parseInt(length)) ? 0 : parseInt(length) / 1e6,
-                        "track": track || ""
+                        "position": (parseInt(position) || 0) / 1e6,
+                        "length": (parseInt(length) || 0) / 1e6,
+                        "track": music.trackOf(url, title)
                     });
 
                     process.destroy();

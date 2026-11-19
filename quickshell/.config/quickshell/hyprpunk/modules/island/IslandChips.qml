@@ -41,7 +41,7 @@ RowLayout {
         animated: chips.animated
         openWidth: 8
         openHeight: 8
-        gap: 6 * chips.lead
+        gap: Metrics.spacing.normal * chips.lead
 
         Rectangle {
             anchors.fill: parent

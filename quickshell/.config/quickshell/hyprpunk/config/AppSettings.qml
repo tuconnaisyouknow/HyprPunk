@@ -33,7 +33,7 @@ Singleton {
         "categories": ["Audio", "Player"],
         "icon": "󰝚",
         "title": "Music",
-        "description": "Super+P. The bar's record and the lock screen's player still follow Spotify only."
+        "description": "Super+P. The players the island and the lock screen follow are on the Music page."
     }]
     readonly property var values: file.values
 

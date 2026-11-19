@@ -14,6 +14,8 @@ IslandPart {
     // Off, the bars stand still: the island hidden under a card or the lock, where they
     // would only redraw the screen for nothing.
     property bool live: true
+    // The room the slot leaves before its bars, which counts in the gap before them.
+    readonly property real slack: bars.x
 
     openWidth: Metrics.pillHeight - 2 * Metrics.islandMusicInset
     openHeight: openWidth
@@ -21,6 +23,8 @@ IslandPart {
     // On a whole pixel in its slot, as it is in the player: centred, its thin bars would
     // sit across half pixels.
     Equalizer {
+        id: bars
+
         x: Math.round((parent.width - width) / 2)
         anchors.verticalCenter: parent.verticalCenter
         opacity: part.lifted ? 0 : 1

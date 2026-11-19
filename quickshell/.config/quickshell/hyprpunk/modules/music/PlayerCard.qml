@@ -57,7 +57,7 @@ PillPopup {
     screenState: bar.screenState
     // A password, a file or a screen to share is being asked for on the island.
     blocked: bar.screenState.prompting()
-    // No player to show while Spotify isn't running.
+    // No player to show while none runs.
     requestable: Music.player !== null
     available: Music.player !== null
     align: Qt.AlignHCenter
@@ -74,6 +74,20 @@ PillPopup {
 
     }
 
+    // Opened with its shortcut: left and right (Vim's too) turn the players' pages, up and
+    // down scroll the lyrics.
+    onKeyPressed: (key) => {
+        const keys = Session.vimKeyCodes;
+        if (key === Qt.Key_Left || key === keys[0])
+            musicPlayerCard.turnTo(musicPlayerCard.page - 1);
+        else if (key === Qt.Key_Right || key === keys[1])
+            musicPlayerCard.turnTo(musicPlayerCard.page + 1);
+        else if (key === Qt.Key_Down || key === keys[2])
+            musicPlayerCard.scrollLyrics(1);
+        else if (key === Qt.Key_Up || key === keys[3])
+            musicPlayerCard.scrollLyrics(-1);
+    }
+
     // Something else takes the island (a panel, a prompt): the player folds back.
     Connections {
         function onIslandOwnerChanged() {
@@ -83,6 +97,17 @@ PillPopup {
         }
 
         target: playerPopup.bar.screenState
+    }
+
+    // The last player quit: nothing left to show.
+    Connections {
+        function onPlayerChanged() {
+            if (Music.player === null && playerPopup.expanded)
+                playerPopup.close();
+
+        }
+
+        target: Music
     }
 
     MediaPlayerCard {
@@ -116,7 +141,10 @@ PillPopup {
         CoverArt {
             readonly property real size: playerPopup.slotSize * playerPopup.zoomY + (musicPlayerCard.artSize - playerPopup.slotSize * playerPopup.zoomY) * playerPopup.flight
 
-            x: playerPopup.flyX(playerPopup.island.coverX, musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size)
+            // It turns the page with the title (MediaPlayerCard).
+            x: playerPopup.flyX(playerPopup.island.coverX, musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size) + musicPlayerCard.pageShift
+            opacity: musicPlayerCard.pageOpacity
+            fades: !musicPlayerCard.turning
             y: playerPopup.flyY(musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size)
             width: size
             height: size

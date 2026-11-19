@@ -22,6 +22,8 @@ Item {
     property bool aFront: true
     readonly property Image front: aFront ? artA : artB
     readonly property Image back: aFront ? artB : artA
+    // Off, the next cover takes its place at once: it comes in with a move of its own.
+    property bool fades: true
     // How far the front picture has faded in over the other.
     property real fade: 1
     readonly property bool frontShown: front.status === Image.Ready
@@ -31,7 +33,7 @@ Item {
         if (image !== back || image.source.toString() !== source.toString())
             return ;
 
-        const over = frontShown;
+        const over = frontShown && fades;
         aFront = !aFront;
         fade = over ? 0 : 1;
         if (over)

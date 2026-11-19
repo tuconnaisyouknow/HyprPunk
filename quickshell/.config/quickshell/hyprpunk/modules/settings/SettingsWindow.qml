@@ -37,6 +37,11 @@ Scope {
         "icon": "󰕾",
         "label": "Sound"
     }, {
+        "name": "music",
+        "page": "MusicPage.qml",
+        "icon": "󰝚",
+        "label": "Music"
+    }, {
         "name": "battery",
         "page": "BatteryPage.qml",
         "icon": "󰁹",

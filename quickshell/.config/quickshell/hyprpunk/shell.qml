@@ -79,15 +79,24 @@ ShellRoot {
         id: settingsWindow
     }
 
-    // The previous/next shortcuts go through `qs -c hyprpunk ipc call music <previous|next>`
-    // rather than playerctl, so the bar knows which way the track changed.
+    // The media shortcuts go through `qs -c hyprpunk ipc call music <toggle|previous|next|shuffle>`
+    // rather than playerctl, so they reach the player the shell follows, and the bar knows
+    // which way the track changed.
     IpcHandler {
+        function toggle(): void {
+            Music.toggle();
+        }
+
         function next(): void {
             Music.skip(1);
         }
 
         function previous(): void {
             Music.skip(-1);
+        }
+
+        function shuffle(): void {
+            Music.toggleShuffle();
         }
 
         target: "music"

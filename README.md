@@ -279,7 +279,7 @@ repository that the update changes, git refuses the pull and nothing changes.
 | `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
 | `Super + Space` | Open the application launcher, where `>` lists the island's menus |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, background apps…) |
-| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and region, sound, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
+| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and region, sound, music, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
@@ -312,7 +312,7 @@ you'd bind to your own shortcuts.
 | `notifications` | `Super + N` |
 | `workspaces` (preview of the others) | `Super + W` |
 | `systemmonitor` | `Ctrl + Shift + Escape` |
-| `player` (the bar's player card, while Spotify runs) | `Super + Shift + P` |
+| `player` (the bar's player card, while a player runs) | `Super + Shift + P` |
 | `config`, `screenshot` | From the launcher, after `>` |
 
 ### 📸 Screenshots and recordings
@@ -339,14 +339,18 @@ without its animation. The lock is held by Hyprland itself, so the screens stay 
 
 ### 🎵 Music player
 
-The island's cover and equalizer, its player card and the lock screen's player and synced lyrics follow **Spotify only**.
-Other players, like a video in the browser or mpv, still work with the media keys but don't show there. This is a
-choice, not something you can switch: picking another music app in the settings, or setting
-`hyprpunk.programs.music`, only changes what `Super + P` opens.
+The island's cover and equalizer, its player card, the lock screen's player and synced lyrics and the media keys
+follow **any player**: Spotify, a video in the browser, VLC… With several open, they follow the one that played last,
+and the player card gets a page for each, turned with the wheel, a sideways drag or their dots: the first page follows
+whatever plays, the others hold one player each. Opened with its shortcut, the card takes the keys: left and right
+turn the pages, up and down scroll the lyrics. To keep some players out (a browser's videos, say), the settings' Music
+page, or `hyprpunk music set sources spotify,vlc`, limits the shell to the ones you name, as `playerctl -l` lists them
+without their instance; `hyprpunk music set sources ""` follows them all again. The music app picked in the settings,
+or `hyprpunk.programs.music`, is only what `Super + P` opens.
 
-While Spotify runs, the island holds the track's cover at its left end and an equalizer at its right end: a click on
+While a player runs, the island holds the track's cover at its left end and an equalizer at its right end: a click on
 either opens the player out of the island. The equalizer dances while the music plays, and a wave moves with it at the
-bottom of the desktop. Both keep the screen redrawing, which a laptop's GPU feels: the settings' Appearance page, or
+bottom of the desktop. Both keep the screen redrawing, which a laptop's GPU feels: the settings' Music page, or
 `hyprpunk music set equalizer true|false` and `hyprpunk music set wave true|false`, keeps the equalizer still and turns
 the wave off, on the lock screen too.
 

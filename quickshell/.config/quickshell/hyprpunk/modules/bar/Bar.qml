@@ -11,7 +11,7 @@ import qs.state
 import qs.theme
 
 // The bar along the top of each screen, a row of pills: workspaces and resources on
-// the left, the dynamic island in the middle, with Spotify's cover and equalizer at its
+// the left, the dynamic island in the middle, with the music's cover and equalizer at its
 // ends, updates and the control pill on the right. A click on a pill opens its card, the
 // workspaces also preview on hover. The island's cards hold the calendar with the
 // notifications waiting, and the player.

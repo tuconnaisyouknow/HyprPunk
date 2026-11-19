@@ -17,7 +17,7 @@
 #   hyprpunk sound ...     the volume keys' step and the volume limit (soundctl.sh)
 #   hyprpunk input ...     the mouse and the touchpad (inputctl.sh)
 #   hyprpunk lock ...      what the lock screen shows, and its animation (lockctl.sh)
-#   hyprpunk music ...     the island's equalizer moving or not, and the wave (musicctl.sh)
+#   hyprpunk music ...     the players followed, the equalizer and the wave (musicctl.sh)
 #   hyprpunk osd ...       what the island shows as it happens (osdctl.sh)
 #   hyprpunk apps ...      the terminal, browser, files and music apps (appsctl.sh)
 #   hyprpunk launcher ...  the launcher's pinned and hidden apps (launcherctl.sh)
@@ -45,7 +45,7 @@ Usage: hyprpunk <command> [arguments]
   sound      get, set <step|limit> <percent>
   input      get, set <key> <value>
   lock       get, set <player|animation> <true|false>
-  music      get, set equalizer <true|false>, set wave <true|false>
+  music      get, set sources <spotify,firefox|"">, set <equalizer|wave> <true|false>
   osd        get, set <change> <true|false>, set duration <short|normal|long>
   apps       get, set <terminal|browser|files|music> <command> [desktop entry]
   launcher   get, pin|unpin|hide|show <desktop entry>

@@ -25,7 +25,7 @@ Item {
     // it, the privacy dot and the recording stay until the lock goes.
     property bool timeShown: true
     property bool chipsShown: timeShown
-    // The music's cover and equalizer, while Spotify runs. They leave with the time: the
+    // The music's cover and equalizer, while a player runs. They leave with the time: the
     // lock shows its own player.
     readonly property bool musicShown: timeShown && Music.player !== null
     // The cover and the equalizer drawn elsewhere for now, their places kept: the player's,
@@ -75,7 +75,8 @@ Item {
 
         // Each part opens in the place of the one before it closes: the padlock in the
         // time's, the squares in the padlock's. Each parts itself from what's before it by as
-        // much as something is open there, so the island stays centred on what's left.
+        // much as something is open there, so the island stays centred on what's left: the
+        // same gap between any two, from what one draws to what the next does.
         RowLayout {
             id: clockRow
 
@@ -172,7 +173,7 @@ Item {
                 animated: view.animated
                 lifted: view.musicLifted
                 live: view.live
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + squaresPart.presence + chips.presence)
+                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + squaresPart.presence + chips.presence)
 
                 HoverHandler {
                     id: equalizerHover
