@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# Builds the shell's two fonts into ~/.local/share/fonts/hyprpunk, under names of their
+# Builds the desktop's two fonts into ~/.local/share/fonts/hyprpunk, under names of their
 # own: Qt Quick picks a font by its family alone, so each role gets a family that holds
-# exactly the cut it needs.
+# exactly the cut it needs. The apps write in the text one too.
 #   HyprPunk Text     Ioskeley Mono's Nerd Font, semi-condensed, from regular to bold,
-#                     with its symbols one cell wide like its letters
+#                     upright and italic, with its symbols one cell wide like its letters
 #   HyprPunk Display  Orbitron Bold, with digits that all take one width (tnum): the
 #                     lock's clock would shift every minute without them
 #
@@ -38,12 +38,19 @@ TEXT_WEIGHTS = {
     "SemiBold": "SemiBold",
     "Bold": "Bold",
 }
+# Each weight upright then italic: the shell only writes upright, the apps ask for both
+TEXT_CUTS = [(weight, italic) for weight in TEXT_WEIGHTS for italic in (False, True)]
 TEXT_FAMILY = "HyprPunk Text"
 DISPLAY_FAMILY = "HyprPunk Display"
 
 
-def text_path(weight):
-    return f"{FONTS_DIR}/HyprPunkText-{weight}.ttf"
+# A cut's name as font files spell it: Regular, Italic, Medium, Medium Italic…
+def style(weight, italic):
+    return f"{weight} Italic".removeprefix("Regular ") if italic else weight
+
+
+def text_path(weight, italic):
+    return f"{FONTS_DIR}/HyprPunkText-{style(weight, italic).replace(' ', '')}.ttf"
 
 
 def display_path():
@@ -68,25 +75,26 @@ def download(url, name):
     return path
 
 
-# Regular and Bold are the family's own styles, the weights between them hang on it
-# through the typographic names, as font files do.
-def rename(font, family, weight):
+# Regular and Bold, upright and italic, are the family's own styles. The weights between
+# them hang on it through the typographic names, as font files do.
+def rename(font, family, weight, italic=False):
     names = font["name"]
     for record in list(names.names):
         if record.nameID in (1, 2, 3, 4, 6, 16, 17, 21, 22):
             names.removeNames(nameID=record.nameID)
+    cut = style(weight, italic)
     plain = weight in ("Regular", "Bold")
-    full = family if weight == "Regular" else f"{family} {weight}"
-    postscript = f"{family.replace(' ', '')}-{weight}"
+    full = family if cut == "Regular" else f"{family} {cut}"
+    postscript = f"{family.replace(' ', '')}-{cut.replace(' ', '')}"
     entries = {
-        1: family if plain else full,
-        2: weight if plain else "Regular",
+        1: family if plain else f"{family} {weight}",
+        2: cut if plain else style("Regular", italic),
         3: postscript,
         4: full,
         6: postscript,
     }
     if not plain:
-        entries.update({16: family, 17: weight})
+        entries.update({16: family, 17: cut})
     for name_id, value in entries.items():
         names.setName(value, name_id, 3, 1, 0x409)
 
@@ -105,13 +113,14 @@ def narrow_symbols(font):
 
 def build_text():
     archive = zipfile.ZipFile(download(IOSKELEY, "IoskeleyMono-NerdFont.zip"))
-    for weight, suffix in TEXT_WEIGHTS.items():
+    for weight, italic in TEXT_CUTS:
+        suffix = TEXT_WEIGHTS[weight] + ("Italic" if italic else "")
         member = f"SemiCondensed/IoskeleyMonoNerdFont-SemiCondensed{suffix}.ttf"
         font = TTFont(io.BytesIO(archive.read(member)))
         narrow_symbols(font)
-        rename(font, TEXT_FAMILY, weight)
-        save(font, text_path(weight))
-        print(f"Built {TEXT_FAMILY} {weight}")
+        rename(font, TEXT_FAMILY, weight, italic)
+        save(font, text_path(weight, italic))
+        print(f"Built {TEXT_FAMILY} {style(weight, italic)}")
 
 
 # Each digit copied into a cell as wide as the widest one, centred, and offered as the
@@ -180,7 +189,7 @@ def main():
     os.makedirs(FONTS_DIR, exist_ok=True)
     again = command == "build"
     built = False
-    if again or not all(os.path.exists(text_path(weight)) for weight in TEXT_WEIGHTS):
+    if again or not all(os.path.exists(text_path(*cut)) for cut in TEXT_CUTS):
         build_text()
         built = True
     if again or not os.path.exists(display_path()):

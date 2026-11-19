@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Writes the Qt settings, for qt5ct, qt6ct and KDE apps: Kvantum, the HyprPunk colors
-# matugen writes, the icon theme with the wallpaper's folders and Ioskeley Mono. They're
-# written rather than linked because the apps rewrite their file whenever you touch a
-# setting, which would scribble over the dotfiles, and the icon theme follows the
-# wallpaper (foldersctl.sh writes them again for each new one).
+# matugen writes, the icon theme with the wallpaper's folders and the shell's font.
+# They're written rather than linked because the apps rewrite their file whenever you
+# touch a setting, which would scribble over the dotfiles, and the icon theme follows
+# the wallpaper (foldersctl.sh writes them again for each new one).
 
 set -euo pipefail
 
@@ -37,8 +37,8 @@ standard_dialogs=xdgdesktopportal
 style=kvantum
 
 [Fonts]
-fixed="Ioskeley Mono Term,10,-1,5,50,0,0,0,0,0,Regular"
-general="Ioskeley Mono Term,10,-1,5,50,0,0,0,0,0,Regular"
+fixed="HyprPunk Text,10,-1,5,50,0,0,0,0,0,Regular"
+general="HyprPunk Text,10,-1,5,50,0,0,0,0,0,Regular"
 
 [Interface]
 activate_item_on_single_click=1
@@ -70,8 +70,8 @@ standard_dialogs=xdgdesktopportal
 style=kvantum
 
 [Fonts]
-fixed="Ioskeley Mono Term,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
-general="Ioskeley Mono Term,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+fixed="HyprPunk Text,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
+general="HyprPunk Text,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1,,0,0"
 
 [Interface]
 activate_item_on_single_click=1

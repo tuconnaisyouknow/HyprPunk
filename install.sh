@@ -511,8 +511,8 @@ stow_dotfiles() {
 }
 
 # The shell's text and titles are cuts of Ioskeley Mono and Orbitron that fontsctl.py
-# builds under names of their own. The terminal and the apps take Ioskeley Mono as
-# packaged.
+# builds under names of their own, and the apps write in the text one too. The terminal
+# takes Ioskeley Mono as packaged.
 build_fonts() {
   "$LIB_DIR/fontsctl.py" ensure
 }
@@ -702,9 +702,9 @@ install_tmux_plugins() {
 # here is put back. The colors inside the GTK theme come with the wallpaper, and so does
 # the icon theme, whose folders take its accent (foldersctl.sh).
 apply_themes() {
-  gsettings set org.gnome.desktop.interface font-name 'Ioskeley Mono Term 10'
-  gsettings set org.gnome.desktop.interface monospace-font-name 'Ioskeley Mono Term 10'
-  gsettings set org.gnome.desktop.interface document-font-name 'Ioskeley Mono Term 10'
+  gsettings set org.gnome.desktop.interface font-name 'HyprPunk Text 10'
+  gsettings set org.gnome.desktop.interface monospace-font-name 'HyprPunk Text 10'
+  gsettings set org.gnome.desktop.interface document-font-name 'HyprPunk Text 10'
   gsettings set org.gnome.desktop.interface cursor-theme 'BreezeX-RosePine-Linux'
   gsettings set org.gnome.desktop.interface cursor-size 24
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
