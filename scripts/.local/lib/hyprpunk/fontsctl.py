@@ -2,7 +2,8 @@
 # Builds the shell's two fonts into ~/.local/share/fonts/hyprpunk, under names of their
 # own: Qt Quick picks a font by its family alone, so each role gets a family that holds
 # exactly the cut it needs.
-#   HyprPunk Text     Ioskeley Mono's Nerd Font, semi-condensed, from regular to bold
+#   HyprPunk Text     Ioskeley Mono's Nerd Font, semi-condensed, from regular to bold,
+#                     with its symbols one cell wide like its letters
 #   HyprPunk Display  Orbitron Bold, with digits that all take one width (tnum): the
 #                     lock's clock would shift every minute without them
 #
@@ -49,6 +50,13 @@ def display_path():
     return f"{FONTS_DIR}/HyprPunkDisplay-Bold.ttf"
 
 
+# Written aside then swapped in: a running shell keeps reading the file it opened, and
+# crashes if that one changes under it
+def save(font, path):
+    font.save(path + ".part")
+    os.replace(path + ".part", path)
+
+
 # Kept between runs: Ioskeley's archive is large
 def download(url, name):
     path = f"{CACHE_DIR}/{name}"
@@ -83,13 +91,26 @@ def rename(font, family, weight):
         names.setName(value, name_id, 3, 1, 0x409)
 
 
+# Ioskeley draws its symbols (squares, arrows, ticks…) two cells wide, and keeps a
+# one-cell form of each behind a feature. The shell writes with the narrow ones, so a
+# symbol takes the room of a letter: a password's squares stay close together.
+def narrow_symbols(font):
+    glyphs = set(font.getGlyphOrder())
+    for table in font["cmap"].tables:
+        for code, name in table.cmap.items():
+            narrow = name.removesuffix(".WWID") + ".NWID"
+            if name.endswith(".WWID") and narrow in glyphs:
+                table.cmap[code] = narrow
+
+
 def build_text():
     archive = zipfile.ZipFile(download(IOSKELEY, "IoskeleyMono-NerdFont.zip"))
     for weight, suffix in TEXT_WEIGHTS.items():
         member = f"SemiCondensed/IoskeleyMonoNerdFont-SemiCondensed{suffix}.ttf"
         font = TTFont(io.BytesIO(archive.read(member)))
+        narrow_symbols(font)
         rename(font, TEXT_FAMILY, weight)
-        font.save(text_path(weight))
+        save(font, text_path(weight))
         print(f"Built {TEXT_FAMILY} {weight}")
 
 
@@ -148,7 +169,7 @@ def build_display():
     font["OS/2"].usWeightClass = 700
     font["OS/2"].fsSelection = (font["OS/2"].fsSelection | 0x20) & ~0x41
     font["head"].macStyle |= 0x01
-    font.save(display_path())
+    save(font, display_path())
     print(f"Built {DISPLAY_FAMILY} Bold")
 
 

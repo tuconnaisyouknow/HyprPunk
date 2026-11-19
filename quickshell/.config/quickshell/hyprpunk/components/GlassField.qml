@@ -65,7 +65,7 @@ Rectangle {
         selectedTextColor: Colors.light
         font.family: field.fontFamily
         font.pixelSize: field.secret ? 14 : 15
-        font.letterSpacing: field.secret ? 3 : 0
+        font.letterSpacing: field.secret ? 1 : 0
         clip: true
         cursorDelegate: Item {
         }

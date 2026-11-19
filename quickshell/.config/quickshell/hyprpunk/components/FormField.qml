@@ -60,7 +60,7 @@ ColumnLayout {
             selectedTextColor: Colors.light
             font.family: Metrics.font
             font.pixelSize: Metrics.text.emphasis
-            font.letterSpacing: field.secret && !field.revealed ? 3 : 0
+            font.letterSpacing: field.secret && !field.revealed ? 1 : 0
             // The control center's keys reach it; the ring above already shows it has them.
             property bool drawsFocus: true
 
