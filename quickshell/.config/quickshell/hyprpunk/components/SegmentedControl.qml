@@ -17,9 +17,10 @@ Item {
         return option.value === shownValue;
     })
     readonly property real segmentWidth: width / Math.max(1, options.length)
-    // Where the highlight sits, in segments. Sliding this rather than the highlight's x
-    // lets it follow the layout at once, so it doesn't fly in when the control is built.
-    property real highlightIndex: Math.max(0, currentIndex)
+    // Where the highlight sits, in segments, -1 while nothing is chosen. Sliding this
+    // rather than the highlight's x lets it follow the layout at once, so it doesn't fly
+    // in when the control is built.
+    property real highlightIndex: currentIndex
 
     readonly property real radius: 16
 
@@ -178,7 +179,11 @@ Item {
 
     }
 
+    // It slides from one choice to another. A choice that only now gets known (the
+    // device just answered) isn't a move: the highlight appears on it.
     Behavior on highlightIndex {
+        enabled: control.highlightIndex !== -1 && targetValue !== -1
+
         NumberAnimation {
             duration: 320
             easing.type: Easing.OutBack
