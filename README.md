@@ -112,7 +112,8 @@ The applications themed and configured by these dotfiles.
   it stays critical.
 - 🔒 **Hypridle**, **hyprsunset** and **awww** for locking around sleep, the night light, and wallpapers with animated
   transitions.
-- 🎬 **SDDM** with a video login screen for each subtheme, in the wallpaper's colors.
+- 🎬 **SDDM** with a video login screen for each subtheme, drawn like the lock screen: the same bar, island and clock,
+  in the wallpaper's colors, your glass style and your regional formats.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
 - 🎨 **GTK 3/4**, **Qt5/Qt6** and **Kvantum** with one libadwaita look, the shell and the terminal tools, all in the
@@ -153,7 +154,7 @@ signs. The selection in a list and the button that answers light up from their e
 
 The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liquid**, see-through like the lock screen's
 minutes with a soft rim. Switch between them live from the settings' Appearance page, or with
-`hyprpunk glass set classic|liquid|toggle`.
+`hyprpunk glass set classic|liquid|toggle`. The login screen takes the same glass.
 
 ---
 
@@ -388,8 +389,8 @@ from other people's nearby.
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
 ├── scripts/             # The hyprpunk command, and the helpers the shell and Hyprland run from ~/.local/lib/hyprpunk
-├── sddm/                # The tool that gives the login screen the wallpaper's subtheme and colors, installed system-wide
-├── sddm/base/           # What every login screen shares: the layout and its settings
+├── sddm/                # The tool that gives the login screens the wallpaper's subtheme and the desktop's look, installed system-wide
+├── sddm/base/           # What every login screen shares: the lock screen's layout, with its own copy of the shell's glass, sizes and motion
 ├── sddm/themes/         # Each subtheme's login screen: its own video and name, assembled with the base system-wide
 ├── tmux/                # Tmux configuration
 ├── wallpapers/          # Wallpapers, sorted into the neon and daydream themes and their subthemes
@@ -462,7 +463,8 @@ hyprpunk locale set-regional fr
 The profiles are stored in `$XDG_STATE_HOME/hyprpunk/locale-language` and `locale-regional`. Hyprland, D-Bus, and the
 systemd user environment are refreshed immediately for newly started applications; already running applications need
 to be restarted. The shell follows the regional formats on the spot: the clocks run on 12 hours with AM/PM with `us`
-and on 24 hours with `fr`, and the calendar starts the week on the right day.
+and on 24 hours with `fr`, and the calendar starts the week on the right day. The login screen's date and clock
+follow them from the next login.
 
 ---
 
@@ -554,12 +556,11 @@ customize (see [Philosophy](#-philosophy)).
 - 🎨 The Kvantum theme is [GabePoel/KvLibadwaita](https://github.com/GabePoel/KvLibadwaita) by Gabriel Perko-Engel, under the GPL-3.0, with its colors swapped for the palette's. GTK 3 apps get libadwaita's look from [adw-gtk3](https://github.com/lassekongo83/adw-gtk3).
 - 🗂️ The Nextcloud sync emblems in `icons/` are [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)'s (GPL-3.0), moved from the icon's corner to the middle.
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
-- 🎬 The SDDM themes are inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock).
 - 🐱 The terminal tools' colors (Kitty, Btop, Yazi, Bat) start from [Catppuccin](https://github.com/catppuccin)'s Mocha themes (MIT), tinted with the wallpaper's palette.
-- 🔒 The lock screen is inspired by the one in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
+- 🔒 The lock screen, and the login screen drawn like it, are inspired by the lock screen in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
-- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock's clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's cuts are built on your machine under names of their own (`fontsctl.py`).
+- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock and login screens' clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's cuts are built on your machine under names of their own (`fontsctl.py`).
 - 💤 The Neovim configuration starts from the [LazyVim starter](https://github.com/LazyVim/starter), under the Apache License 2.0 (`nvim/.config/nvim/LICENSE`).
 
 ---
