@@ -1,6 +1,8 @@
 -- How windows look and move: gaps, borders, blur, shadows, animations and the
 -- tiling layout. Loaded by hyprland.lua.
 
+local transparency = __require("transparency_state") -- Which windows are see-through
+
 -------------------
 -- LOOK AND FEEL --
 -------------------
@@ -31,9 +33,9 @@ hl.config({
     rounding = 19,
     rounding_power = 2,
 
-    -- Slightly see-through, so the wallpaper shows behind the blur
-    active_opacity = 0.9,
-    inactive_opacity = 0.9,
+    -- See-through when the settings say all windows are, so the wallpaper shows behind the blur
+    active_opacity = transparency.windows,
+    inactive_opacity = transparency.windows,
 
     -- The windows you're not in fade back a little
     dim_inactive = true,

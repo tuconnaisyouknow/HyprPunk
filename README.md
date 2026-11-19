@@ -156,6 +156,9 @@ The shell's glass comes in two styles: **Classic**, with crisp rims, and **Liqui
 minutes with a soft rim. Switch between them live from the settings' Appearance page, or with
 `hyprpunk glass set classic|liquid|toggle`. The login screen takes the same glass.
 
+Windows can let the wallpaper show through, blurred: **all** of them, your **terminal** alone (the default), or
+**none**. Pick it on the same page, or with `hyprpunk transparency set all|terminal|none`.
+
 ---
 
 ## ✅ Installation
@@ -505,7 +508,7 @@ The installer enables or configures:
 Everything you're meant to change lives outside the dotfiles, so an [update](#-updating) brings you every change
 without touching your preferences:
 
-- 🎛️ **The shell's settings** (keyboard layout, Vim keys, displays, the mouse and touchpad, glass style, regional formats, when the
+- 🎛️ **The shell's settings** (keyboard layout, Vim keys, displays, the mouse and touchpad, glass style, see-through windows, regional formats, when the
   computer dims, locks and sleeps, which apps' notifications pop up, what the island shows, the default apps, the
   launcher's pinned and hidden apps, how screenshots and recordings are kept, the clipboard history, the night light,
   the volume limit…) are saved in `~/.local/state/hyprpunk/` as you pick them, in the control center or the settings

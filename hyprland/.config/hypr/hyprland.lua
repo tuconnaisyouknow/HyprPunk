@@ -30,3 +30,14 @@ end
 -- your files, so a change you make there counts.
 hl.env("TERMINAL", hyprpunk.programs.terminal)
 hl.env("EDITOR", hyprpunk.programs.editor)
+
+-- The terminal alone see-through, when the settings ask for it. Its windows are known
+-- by its command's name, which most terminals give them (kitty, com.mitchellh.ghostty).
+local see_through = __require("transparency_state").terminal
+local terminal = hyprpunk.programs.terminal:match("^%S*"):match("[^/]*$")
+if see_through and terminal ~= "" then
+  hl.window_rule({
+    match = { class = "(?i)^(.*\\.)?" .. terminal:gsub("%p", "\\%0") .. "$" },
+    opacity = see_through .. " " .. see_through,
+  })
+end

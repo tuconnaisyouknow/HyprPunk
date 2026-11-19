@@ -6,6 +6,7 @@
 #   hyprpunk check         exits 0 when an update is waiting
 #   hyprpunk apply         applies the repository as it is, after you edit it
 #   hyprpunk glass ...     the shell's glass (glassctl.sh)
+#   hyprpunk transparency ...  which windows are see-through (transparencyctl.sh)
 #   hyprpunk keyboard ...  the keyboard layout and its Vim keys (keyboard-layoutctl.sh)
 #   hyprpunk locale ...    the regional formats (locale-profilectl.sh)
 #   hyprpunk display ...   screens, resolutions and layout (displayctl.sh)
@@ -34,6 +35,7 @@ Usage: hyprpunk <command> [arguments]
   check      exit 0 when an update is waiting
   apply      apply the repository as it is, after you edit it
   glass      the shell's glass: get, set <classic|liquid>, toggle
+  transparency  the see-through windows: get, set <all|terminal|none>
   keyboard   the keyboard layout and the Vim keys: get, list, set <layout> [variant], keys <vim|home>
   locale     the regional formats: get, list, set <us|fr>
   display    screens, resolutions and layout (run it alone to list its commands)
@@ -60,6 +62,7 @@ command="${1:-}"
 case "$command" in
 update | check | apply) exec "$HOME/.dotfiles/install.sh" "$command" "$@" ;;
 glass) exec "$LIB_DIR/glassctl.sh" "$@" ;;
+transparency) exec "$LIB_DIR/transparencyctl.sh" "$@" ;;
 keyboard) exec "$LIB_DIR/keyboard-layoutctl.sh" "$@" ;;
 locale) exec "$LIB_DIR/locale-profilectl.sh" "$@" ;;
 display) exec "$LIB_DIR/displayctl.sh" "$@" ;;

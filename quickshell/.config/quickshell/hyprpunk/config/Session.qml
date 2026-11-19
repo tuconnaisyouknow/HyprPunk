@@ -5,8 +5,9 @@ import Quickshell
 import Quickshell.Io
 
 // The settings the scripts save: the regional formats (locale-profilectl.sh), the glass
-// style (glassctl.sh), the keyboard layout (keyboard-layoutctl.sh) and the wallpaper
-// (wallpaperctl.sh). And how the shell launches things.
+// style (glassctl.sh), the see-through windows (transparencyctl.sh), the keyboard layout
+// (keyboard-layoutctl.sh) and the wallpaper (wallpaperctl.sh). And how the shell
+// launches things.
 // The shell keeps the environment it started with, so after a change of formats anything
 // it launched itself would still write the old ones: apps are started through Hyprland
 // instead, which follows the change.
@@ -18,6 +19,9 @@ Singleton {
     // "classic" or "liquid", the lock screen clock's glass. Switching it restyles every
     // glass surface on the spot, no restart needed.
     property string glassStyle: "classic"
+    // Which windows are see-through: "all", "terminal" or "none". Hyprland's to apply,
+    // the settings' to show.
+    property string transparency: "terminal"
     // The keyboard layout as XKB names it ("fr"), and its variant ("bepo"), often none.
     property string keyboardLayout: "us"
     property string keyboardVariant: ""
@@ -128,6 +132,17 @@ Singleton {
         printErrors: false
         onFileChanged: reload()
         onLoaded: session.glassStyle = text().trim() === "liquid" ? "liquid" : "classic"
+    }
+
+    FileView {
+        path: session.stateDir + "/transparency"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            const choice = text().trim();
+            session.transparency = choice === "all" || choice === "none" ? choice : "terminal";
+        }
     }
 
     FileView {
