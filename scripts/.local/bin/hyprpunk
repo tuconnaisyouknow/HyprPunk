@@ -40,7 +40,7 @@ Usage: hyprpunk <command> [arguments]
   power      idle and sleep: get, set <key> <seconds|true|false>
   notifications  get, set duration <seconds>, mute|unmute|forget <app>
   capture    screenshots and recordings: get, set <key> <value>
-  history    get, set <clipboard|size> <value>, clear <clipboard|launcher|emoji>
+  history    get, set <clipboard|size> <value>, clear <clipboard|launcher|emoji>, count
   nightlight  get, set <mode|temperature|from|to> <value>
   sound      get, set <step|limit> <percent>
   input      get, set <key> <value>

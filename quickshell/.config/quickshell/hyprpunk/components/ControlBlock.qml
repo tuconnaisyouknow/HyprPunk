@@ -2,7 +2,7 @@ import QtQuick
 import qs.theme
 
 // A glass block of the control center. It grows a little under the pointer and
-// bounces when pressed (call bounce()).
+// bounces when pressed (call bounce()). One that's off doesn't answer the pointer.
 Item {
     id: block
 
@@ -27,6 +27,8 @@ Item {
 
     HoverHandler {
         id: blockHover
+
+        enabled: block.enabled
     }
 
     BounceAnimation {

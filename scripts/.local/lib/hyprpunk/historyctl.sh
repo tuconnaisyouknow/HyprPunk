@@ -8,6 +8,7 @@
 #   historyctl.sh set size <items>            how many copies it keeps
 #   historyctl.sh store                       what wl-paste --watch runs on each copy
 #   historyctl.sh clear <clipboard|launcher|emoji>
+#   historyctl.sh count                       how much each history holds, as key=value
 #   historyctl.sh ensure                      fills in what's missing (install.sh)
 set -euo pipefail
 
@@ -57,6 +58,12 @@ clear)
     exit 1
     ;;
   esac
+  ;;
+# A history that was never written holds nothing
+count)
+  echo "clipboard=$(cliphist list 2>/dev/null | wc -l)"
+  echo "launcher=$(jq length "$STATE_DIR/launcher-history.json" 2>/dev/null || echo 0)"
+  echo "emoji=$(jq length "$STATE_DIR/emoji-history.json" 2>/dev/null || echo 0)"
   ;;
 *) settings_main "$@" ;;
 esac

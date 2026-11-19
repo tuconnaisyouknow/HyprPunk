@@ -5,9 +5,19 @@ import qs.config
 import qs.theme
 
 // The settings' clipboard and history page: whether what you copy is kept, how much of
-// it, and wiping what the shell remembers.
+// it, and wiping what the shell remembers. Each clear shows what its history holds, so
+// an emptied one says so itself and has nothing left to press.
 SettingsPage {
     id: page
+
+    // What a history holds, in its own unit: "56 copies", "empty", nothing until counted.
+    function held(history, one, many) {
+        const count = HistorySettings.counts[history];
+        if (count === undefined)
+            return "";
+
+        return count === 0 ? "empty" : count + " " + (count === 1 ? one : many);
+    }
 
     title: "Clipboard and history"
     description: "What the shell remembers of what you do. It all stays on this computer."
@@ -59,6 +69,8 @@ SettingsPage {
                 icon: "󰅌"
                 label: "Clear the clipboard history"
                 destructive: true
+                detail: page.held("clipboard", "copy", "copies")
+                enabled: HistorySettings.counts.clipboard !== 0
                 onTriggered: HistorySettings.clear("clipboard")
             }
 
@@ -67,6 +79,8 @@ SettingsPage {
                 icon: "󰀻"
                 label: "Clear the launcher's recent apps"
                 destructive: true
+                detail: page.held("launcher", "app", "apps")
+                enabled: HistorySettings.counts.launcher !== 0
                 onTriggered: HistorySettings.clear("launcher")
             }
 
@@ -75,6 +89,8 @@ SettingsPage {
                 icon: "󰞅"
                 label: "Clear the recent emojis"
                 destructive: true
+                detail: page.held("emoji", "emoji", "emojis")
+                enabled: HistorySettings.counts.emoji !== 0
                 onTriggered: HistorySettings.clear("emoji")
             }
 
@@ -82,4 +98,5 @@ SettingsPage {
 
     }
 
+    Component.onCompleted: HistorySettings.count()
 }
