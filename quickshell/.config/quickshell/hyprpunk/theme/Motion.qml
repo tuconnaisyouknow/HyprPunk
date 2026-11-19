@@ -85,12 +85,24 @@ Singleton {
         "overshoot": 0.7
     })
     // Its way back home into the island: it sets off gently and falls into its place,
-    // still moving as it lands, without going past. The island takes the impact
-    // (IslandPill).
+    // still moving as it lands, without going past. The island takes the impact.
     readonly property var clockReturn: ({
         "duration": clockTravel,
         "easing": Easing.InQuad
     })
+    // The island under the time as it lands: it gives by as much as under a press and
+    // springs back a touch too far, in one move. No finger holds it at the bottom, so it
+    // turns back there without stopping, and comes to rest by itself.
+    readonly property QtObject impact: QtObject {
+        readonly property int duration: 450
+
+        // How far it has given along the way: 1 at its deepest, below 0 past its size,
+        // 0 at rest.
+        function give(progress) {
+            return Math.sin(2 * Math.PI * progress) * (1 - progress) / 0.766;
+        }
+
+    }
 
     // No, with a shake of the head (a wrong password, a name you can't save under): each
     // swing smaller than the last, where the element goes from its place (Shake).

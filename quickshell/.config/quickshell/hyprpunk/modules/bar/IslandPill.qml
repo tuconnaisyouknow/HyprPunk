@@ -5,7 +5,6 @@ import qs.components
 import qs.config
 import qs.modules.island
 import qs.services
-import qs.theme
 
 // The dynamic island in the bar: the time and its chips between the music's cover and
 // equalizer, or an OSD that takes it over (IslandView). A click opens the calendar, the
@@ -39,10 +38,6 @@ Pill {
     // (Lock.islandAway).
     opacity: covered || Lock.islandAway ? 0 : 1
     covered: clockPill.bar.pillHidden("island")
-    // Squeezed under the time landing back from the lock screen, as the lock hands it over
-    // (Lock.relays): the bar takes it squeezed, unseen, and springs it back once it draws
-    // again.
-    scale: Lock.relays[clockPill.bar.screen.name] !== undefined ? Motion.squeeze(width) : 1
     // Not under the recording chip, which answers the pointer itself.
     clickable: (face === "clock" && !clockPill.bar.lockShown || face === "osd" && clockPill.bar.osdShown.kind === "screenshot") && !view.stopHovered
     // A click opens the calendar card, or closes it, or the player from the music's
@@ -67,17 +62,6 @@ Pill {
     // never lands on a half pixel and the content stops shaking as it resizes.
     Layout.preferredWidth: 2 * Math.round(implicitWidth / 2)
     Layout.preferredHeight: 2 * Math.round(implicitHeight / 2)
-
-    Behavior on scale {
-        enabled: !clockPill.bar.sessionLocked
-
-        NumberAnimation {
-            duration: Motion.bounce.releaseDuration
-            easing.type: Motion.bounce.releaseEasing
-            easing.overshoot: Motion.bounce.overshoot
-        }
-
-    }
 
     IslandView {
         id: view

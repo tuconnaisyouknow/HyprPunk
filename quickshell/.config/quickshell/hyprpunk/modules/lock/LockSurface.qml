@@ -96,7 +96,7 @@ WlSessionLockSurface {
         waveUp = true;
     }
 
-    // The island has its time back, squeezed under it: it goes to its relay as the lock
+    // The island has its time back and rests again: it goes to its relay as the lock
     // shows it.
     function handOver() {
         if (!island.visible) {
@@ -104,8 +104,7 @@ WlSessionLockSurface {
             return ;
         }
         const ratio = scene.Screen.devicePixelRatio;
-        // Squeezed around its middle, as it shows.
-        const rect = Qt.rect(island.x + island.width * (1 - island.scale) / 2, island.y + island.height * (1 - island.scale) / 2, island.width * island.scale, island.height * island.scale);
+        const rect = Qt.rect(island.x, island.y, island.width, island.height);
         const size = Qt.size(Math.ceil(rect.width * ratio), Math.ceil(rect.height * ratio));
         islandSpot.width = rect.width;
         islandSpot.height = rect.height;
@@ -241,8 +240,9 @@ WlSessionLockSurface {
     // Locking's moves the other way: the screen clears while the pills move (the blur's
     // long, unseen tail would hold back the desktop and its wave, which only come back
     // once the screens unlock), and the clock flies home into the time's place. It becomes
-    // the island's time as it lands. The island gives under it, and goes to the bar
-    // squeezed, which springs it back (IslandPill).
+    // the island's time as it lands. The island gives under it and springs back, and goes
+    // to the bar once it rests: nothing can move through the lock going, which stalls
+    // the shell a moment.
     SequentialAnimation {
         id: revealOut
 
@@ -288,14 +288,15 @@ WlSessionLockSurface {
         }
 
         ScriptAction {
-            script: {
-                surface.timeAway = false;
-                island.squeezed = true;
-            }
+            script: surface.timeAway = false
         }
 
-        PauseAnimation {
-            duration: Motion.bounce.pressDuration
+        NumberAnimation {
+            target: island
+            property: "impact"
+            from: 0
+            to: 1
+            duration: Motion.impact.duration
         }
 
         ScriptAction {
@@ -305,7 +306,7 @@ WlSessionLockSurface {
     }
 
     // Without the animation, only the island plays its way out: the time comes back in
-    // the padlock's place, and the island gives under it.
+    // the padlock's place, and the island gives under it and springs back.
     SequentialAnimation {
         id: stillOut
 
@@ -314,14 +315,15 @@ WlSessionLockSurface {
         }
 
         ScriptAction {
-            script: {
-                surface.timeAway = false;
-                island.squeezed = true;
-            }
+            script: surface.timeAway = false
         }
 
-        PauseAnimation {
-            duration: Motion.bounce.pressDuration
+        NumberAnimation {
+            target: island
+            property: "impact"
+            from: 0
+            to: 1
+            duration: Motion.impact.duration
         }
 
         ScriptAction {
@@ -551,7 +553,7 @@ WlSessionLockSurface {
             readonly property real wall: wallpaper.status === Image.Ready ? surface.smooth(surface.stage(0.25, 1)) : 0
             readonly property real zoom: 1.04 - 0.04 * surface.stage(0.25, 1)
             readonly property vector4d pill0: Qt.vector4d(resourcesPill.x, resourcesPill.y, resourcesPill.width, resourcesPill.height)
-            // Squeezed too, around its middle, as the time lands.
+            // Giving too, around its middle, as the time lands.
             readonly property vector4d pill1: Qt.vector4d(island.x + island.width * (1 - island.scale) / 2, island.y + island.height * (1 - island.scale) / 2, island.width * island.scale, island.height * island.scale)
             readonly property vector4d pill2: Qt.vector4d(controlPill.x, controlPill.y, controlPill.width, controlPill.height)
             readonly property vector3d pillOpacity: Qt.vector3d(resourcesPill.visible ? resourcesPill.opacity : 0, island.visible ? island.opacity : 0, controlPill.visible ? controlPill.opacity : 0)
@@ -680,8 +682,9 @@ WlSessionLockSurface {
 
                 readonly property real startCenter: surface.from !== null ? surface.from.island.x + surface.from.island.width / 2 : surface.width / 2
                 property real shake: 0
-                // Under the time landing back, by as much as the bar's (IslandPill).
-                property bool squeezed: false
+                // How far along it is in giving under the time landing back, from 0 to 1
+                // (Motion.impact).
+                property real impact: 0
 
                 // Even, like the bar's, so its content lands on the same pixels.
                 width: 2 * Math.round(implicitWidth / 2)
@@ -692,15 +695,7 @@ WlSessionLockSurface {
                 visible: surface.bar !== null
                 horizontalPadding: 0
                 implicitHeight: islandView.item !== null ? islandView.item.implicitHeight : Metrics.pillHeight
-                scale: squeezed ? Motion.squeeze(width) : 1
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: Motion.bounce.pressDuration
-                        easing.type: Motion.bounce.pressEasing
-                    }
-
-                }
+                scale: 1 - (1 - Motion.squeeze(width)) * Motion.impact.give(impact)
 
                 Loader {
                     id: islandView
