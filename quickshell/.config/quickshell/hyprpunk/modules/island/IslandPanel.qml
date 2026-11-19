@@ -35,8 +35,8 @@ Card {
     readonly property var island: bar.islandPill
     readonly property Item shape: islandFrame.shape
     readonly property rect contentRect: islandFrame.contentRect(panel)
-    // The Vim left and right keys for the current layout: h/l, or j/m on AZERTY.
-    readonly property string keyboardLayout: Session.keyboardLayout
+    // The Vim keys as Qt names them, left, right, down, up: h/l/j/k, or the home row's.
+    readonly property var vimKeyCodes: Session.vimKeyCodes
     // Panel whose request opened this one (the launcher, for the menus it lists),
     // where Escape goes back to.
     property string openedFrom: ""
@@ -88,23 +88,21 @@ Card {
 
     }
 
-    // -1 or 1 for the layout's left/right keys (no modifier), 0 otherwise.
+    // -1 or 1 for the Vim left/right keys (no modifier), 0 otherwise.
     function horizontalKey(event) {
         if (event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier))
             return 0;
 
-        const left = keyboardLayout === "fr" ? Qt.Key_J : Qt.Key_H;
-        const right = keyboardLayout === "fr" ? Qt.Key_M : Qt.Key_L;
-        return event.key === left ? -1 : event.key === right ? 1 : 0;
+        return event.key === vimKeyCodes[0] ? -1 : event.key === vimKeyCodes[1] ? 1 : 0;
     }
 
-    // [dx, dy] for Ctrl + the Vim keys (Ctrl+h/j/k/l, or j/k/l/m on AZERTY), null
+    // [dx, dy] for Ctrl + the Vim keys (Ctrl+h/j/k/l, or the home row's), null
     // otherwise. For the panels with a search field, where the letters alone are typed.
     function controlMove(event) {
         if (!(event.modifiers & Qt.ControlModifier))
             return null;
 
-        const keys = keyboardLayout === "fr" ? [Qt.Key_J, Qt.Key_M, Qt.Key_K, Qt.Key_L] : [Qt.Key_H, Qt.Key_L, Qt.Key_J, Qt.Key_K];
+        const keys = vimKeyCodes;
         const moves = [[-1, 0], [1, 0], [0, 1], [0, -1]];
         const index = keys.indexOf(event.key);
         return index >= 0 ? moves[index] : null;

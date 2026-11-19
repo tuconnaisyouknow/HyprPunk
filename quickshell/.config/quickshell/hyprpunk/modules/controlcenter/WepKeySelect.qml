@@ -1,4 +1,5 @@
 import QtQuick
+import qs.components
 
 // What a WEP password is, for the fields that ask one: the key itself, or the
 // passphrase some routers make it from. The two can't be told apart by looking.

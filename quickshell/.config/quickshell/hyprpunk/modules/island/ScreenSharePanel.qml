@@ -133,9 +133,9 @@ IslandPanel {
                 grid.moveCurrentIndexLeft();
             else if (event.key === Qt.Key_Right || move > 0)
                 grid.moveCurrentIndexRight();
-            else if (event.key === Qt.Key_Up || event.key === (picker.keyboardLayout === "fr" ? Qt.Key_L : Qt.Key_K))
+            else if (event.key === Qt.Key_Up || event.key === picker.vimKeyCodes[3])
                 grid.moveCurrentIndexUp();
-            else if (event.key === Qt.Key_Down || event.key === (picker.keyboardLayout === "fr" ? Qt.Key_K : Qt.Key_J))
+            else if (event.key === Qt.Key_Down || event.key === picker.vimKeyCodes[2])
                 grid.moveCurrentIndexDown();
             else
                 return ;

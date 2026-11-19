@@ -34,7 +34,7 @@ Usage: hyprpunk <command> [arguments]
   check      exit 0 when an update is waiting
   apply      apply the repository as it is, after you edit it
   glass      the shell's glass: get, set <classic|liquid>, toggle
-  keyboard   the keyboard layout: get, list, set <fr|us>, toggle
+  keyboard   the keyboard layout and the Vim keys: get, list, set <layout> [variant], keys <vim|home>
   locale     the regional formats: get, list, set <us|fr>
   display    screens, resolutions and layout (run it alone to list its commands)
   power      idle and sleep: get, set <key> <seconds|true|false>

@@ -202,9 +202,9 @@ settings' Appearance page), the login screen's videos, and the 4-pass blur (`pas
 bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)
 ```
 
-The script asks for the keyboard layout and regional formats first, then your password once.
+The script asks for the keyboard layout, where the Vim keys sit and the regional formats first, then your password once.
 After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. Left empty, the
-answers give a US layout and US formats (`en_US.UTF-8`). French formats (`fr_FR.UTF-8`) are generated during
+answers give the layout your system already has (US when it has none), the Vim keys on `h j k l` and US formats (`en_US.UTF-8`). French formats (`fr_FR.UTF-8`) are generated during
 installation too, so you can switch later in the settings (`Super + I`). If the installation stops, run the
 same command again and it picks up where it left off.
 
@@ -212,8 +212,8 @@ Reboot after the installation completes.
 
 > [!NOTE]
 > HyprPunk is in **English only**, by choice: the shell is written in it, and the session sets every app to it so
-> the whole desktop speaks one language. Only two keyboard layouts are supported, **QWERTY US** and **AZERTY FR**,
-> and only two regional formats, **United States (`en_US`)** and **France (`fr_FR`)**.
+> the whole desktop speaks one language. Every Latin keyboard layout is supported, but only two regional formats,
+> **United States (`en_US`)** and **France (`fr_FR`)**.
 
 ### 📦 What gets installed
 
@@ -256,7 +256,7 @@ ago catches up on everything at once.
 - 🔁 **Put back as HyprPunk ships it:** the look (GTK, Qt and icon themes, the font, dark mode), the login screens, the
   GRUB theme, Brave's policy, the services and system files, and the links into your home, a new module included. Links
   left broken by a file HyprPunk removed go away.
-- 🎛️ **Kept as you set it:** what you picked in the shell (layout, regional formats, displays, touchpad, wallpaper), the
+- 🎛️ **Kept as you set it:** what you picked in the shell (layout, Vim keys, regional formats, displays, touchpad, wallpaper), the
   default apps, and your personal files (see [Customization](#-customization)). An example HyprPunk adds to
   `~/.config/hypr/personal/` is copied in, the files you have stay.
 - 📦 **Packages:** the system and the AUR are upgraded, and only the packages new to HyprPunk's list since your last
@@ -289,8 +289,9 @@ repository that the update changes, git refuses the pull and nothing changes.
 | `Super + Escape` | Open the session menu (lock, log out, reboot, shut down) |
 | `Super + Ctrl + K` | Show all the keybindings |
 
-`Super` is the Windows key. The arrows follow Vim, `h j k l` on QWERTY and `j k l m` on AZERTY: `Super` with one of
-them, or with a real arrow, moves the focus, and adding `Shift` moves the window.
+`Super` is the Windows key. The arrows follow Vim, on `h j k l` or on the home row (`j k l m` on AZERTY, see
+[Keyboard Layout](#️-keyboard-layout)): `Super` with one of them, or with a real arrow, moves the focus, and adding
+`Shift` moves the window.
 
 ### 🏝️ Shell panels
 
@@ -381,7 +382,7 @@ from other people's nearby.
 ├── hypridle/            # Locking for logind, and before sleep
 ├── hyprland/            # Hyprland Lua config, keybindings, and monitors
 ├── icons/               # Papirus's Nextcloud sync emblems, centered at full size for Nautilus
-├── keyboard/            # Layout-specific application keymaps and the keymap polkit rule
+├── keyboard/            # Yazi's keymap, rewritten when the Vim keys move, and the keymap polkit rule
 ├── kitty/               # Kitty terminal configuration
 ├── kvantum/             # Kvantum's theme choice
 ├── matugen/             # Each wallpaper's palette, and the templates matugen fills for the apps, the shell and the terminal tools
@@ -405,48 +406,51 @@ Every top-level directory is a GNU Stow module that symlinks into `$HOME`, excep
 
 ## ⌨️ Keyboard Layout
 
-> [!NOTE]
-> Only **AZERTY FR** and **QWERTY US** are supported. Any other layout would leave the Vim-style keys in the wrong place.
+Every layout XKB knows that writes the Latin alphabet is supported, with its variants: QWERTY, AZERTY, QWERTZ,
+Dvorak, Colemak, BÉPO and the rest. Two settings, independent of each other:
 
-The installer offers two keyboard profiles:
+- **The layout**, what the keys write. The installer proposes the one your system already has.
+- **The Vim keys**, the arrows of every window, panel and terminal app:
+  - `vim` (the default): Vim's own letters, `h j k l`, wherever the layout puts them.
+  - `home`: the home row, by position. The key your right index rests on, then the three to its right, whatever
+    the layout writes there: `j k l m` on AZERTY, `j k l ö` on QWERTZ, `j k l ;` on QWERTY, `h t n s` on Dvorak.
 
-- `FR` — AZERTY layout with Vim-style movements remapped from `h j k l` to `j k l m`.
-- `US` — QWERTY layout with the standard `h j k l` Vim-style movements.
+On the home row the arrows take keys that did something else. Each of those jobs moves to a letter of `h j k l`
+the arrows left free: on AZERTY, `m` moves right, so `h` sets Vim's marks. The same goes for a `Super` shortcut
+the arrows land on (`Super + T` on Dvorak opens the terminal with `Super + J` instead). `Ctrl` + a key the terminal
+has no code for (`Ctrl + M` is Enter, `Ctrl + ö` doesn't exist) is sent by Kitty as `F9` to `F12`, left to right.
 
-`US` is the default when no profile has been selected yet or when the installer prompt is left empty.
-
-The active profile can be changed later in the settings (`Super + I`, Keyboard and region), or from the command
-line:
+Both are changed in the settings (`Super + I`, Keyboard and region), or from the command line:
 
 ```bash
-hyprpunk keyboard set us
-hyprpunk keyboard set fr
+hyprpunk keyboard list            # the layouts: code, variant, name
+hyprpunk keyboard set de
+hyprpunk keyboard set fr bepo
+hyprpunk keyboard keys home
 ```
 
-The selection is stored in `$XDG_STATE_HOME/hyprpunk/keyboard-layout` (or `~/.local/state/hyprpunk/keyboard-layout`).
-It also becomes the system keymap through `localectl`, for the SDDM login screen and the TTYs, without asking for a
-password: the installer adds a polkit rule (`keyboard/polkit/`) that lets the session change the keymap, and only that.
-Hyprland, Kitty, and tmux pick up the change immediately. New Zsh and Yazi processes use it on startup;
+The choice is stored in `$XDG_STATE_HOME/hyprpunk/keyboard-layout` (or `~/.local/state/hyprpunk/keyboard-layout`),
+and what's worked out from it (the four keys, read from the layout with `xkbcli`) in `keyboard/keys` beside it.
+The layout also becomes the system keymap through `localectl`, for the SDDM login screen and the TTYs, without asking
+for a password: the installer adds a polkit rule (`keyboard/polkit/`) that lets the session change the keymap, and only that.
+Hyprland, the shell, Kitty, and tmux pick up the change immediately. New Zsh and Yazi processes use it on startup;
 an existing Neovim instance can reload its movement mappings with `:KeyboardLayoutReload` (restart Neovim to
 also rebuild plugin-specific mappings such as Snacks Explorer).
 
-The layout integration covers:
+What follows the Vim keys:
 
-- 🪟 `hyprland/.config/hypr/input.lua`
-- ⌨️ `hyprland/.config/hypr/keybindings.lua`
-- 📖 `scripts/.local/lib/hyprpunk/keyboard-layoutctl.sh` (generated less bindings)
+- 🪟 `hyprland/.config/hypr/keyboard_state.lua`, read by `input.lua` and `keybindings.lua`
+- 🏝️ The shell's panels and settings (`quickshell/.config/quickshell/hyprpunk/config/Session.qml`)
 - 📝 `nvim/.config/nvim/lua/config/keymaps.lua`
-- 💻 `tmux/.config/tmux/tmux.conf`
-- 📁 `keyboard/yazi/fr.toml`
-- ⌨️ `kitty/.config/kitty/kitty.conf`
-- 🐚 `zsh/.bindingrc` and `zsh/.zshrc`
-- 🔑 The system keymap (SDDM and TTYs), set with `localectl set-x11-keymap`
+- 🐚 `zsh/.bindingrc` and `zsh/.zshrc` (fzf)
+- 💻 `tmux/.config/tmux/tmux.conf` (copy mode, panes, the session picker), generated
+- ⌨️ `kitty/.config/kitty/kitty.conf` (the `Ctrl` stand-ins), generated
+- 📁 Yazi, from `keyboard/yazi/keymap.toml`, generated
+- 📖 less, generated
 
-Hyprland reads the selected XKB layout dynamically instead of hard-coding:
-
-```lua
-kb_layout = keyboard.xkb
-```
+> [!NOTE]
+> Layouts that don't write Latin letters (Russian, Greek, Arabic…) aren't supported yet: they'd need a second
+> layout to switch to, for `h j k l` and the shortcuts named after a letter (`Super + T`).
 
 ### 🌍 Language and regional formats
 
@@ -497,7 +501,7 @@ The installer enables or configures:
 Everything you're meant to change lives outside the dotfiles, so an [update](#-updating) brings you every change
 without touching your preferences:
 
-- 🎛️ **The shell's settings** (keyboard layout, displays, the mouse and touchpad, glass style, regional formats, when the
+- 🎛️ **The shell's settings** (keyboard layout, Vim keys, displays, the mouse and touchpad, glass style, regional formats, when the
   computer dims, locks and sleeps, which apps' notifications pop up, what the island shows, the default apps, the
   launcher's pinned and hidden apps, how screenshots and recordings are kept, the clipboard history, the night light,
   the volume limit…) are saved in `~/.local/state/hyprpunk/` as you pick them, in the control center or the settings

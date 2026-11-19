@@ -69,7 +69,7 @@ return {
                 [keyboard.down] = 'list_down',
                 [keyboard.up] = 'list_up',
                 [keyboard.right] = 'confirm',
-                [keyboard.extra] = 'explorer_move'
+                [keyboard.key('m')] = 'explorer_move'
               },
             },
           },

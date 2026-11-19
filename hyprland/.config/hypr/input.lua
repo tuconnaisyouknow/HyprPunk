@@ -10,8 +10,8 @@ local mouse = __require("input_state")       -- The settings' mouse and touchpad
 
 hl.config({
   input = {
-    kb_layout = keyboard.xkb,
-    kb_variant = "",
+    kb_layout = keyboard.layout,
+    kb_variant = keyboard.variant,
     kb_model = "",
     kb_options = "",
     kb_rules = "",

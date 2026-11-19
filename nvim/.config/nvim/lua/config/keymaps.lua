@@ -5,48 +5,55 @@
 -- KEYBOARD LAYOUT --
 ---------------------
 
--- Moves and pane switching follow the layout (see keyboard.lua).
+-- Moves and pane switching follow where the Vim keys sit (see keyboard.lua).
 -- :KeyboardLayoutReload runs it again when you switch, no need to restart Neovim.
+local applied = {}
+
 local function apply_keyboard_layout()
   package.loaded['config.keyboard'] = nil
   local keyboard = require('config.keyboard')
 
-  for _, key in ipairs({ 'h', 'j', 'k', 'l', 'm' }) do
+  for _, mapping in ipairs(applied) do
+    pcall(vim.keymap.del, mapping[1], mapping[2])
+  end
+  applied = {}
+  for _, key in ipairs({ 'h', 'j', 'k', 'l' }) do
     pcall(vim.keymap.del, 'n', key)
     pcall(vim.keymap.del, 'v', key)
   end
 
-  -- On AZERTY, jklm do what hjkl do, and h sets marks
-  if keyboard.name == 'fr' then
-    vim.keymap.set('n', keyboard.left, 'h', { silent = true, desc = "Left" })
-    vim.keymap.set('n', keyboard.down, 'j', { silent = true, desc = "Down" })
-    vim.keymap.set('n', keyboard.up, 'k', { silent = true, desc = "Up" })
-    vim.keymap.set('n', keyboard.right, 'l', { silent = true, desc = "Right" })
-    vim.keymap.set('n', keyboard.extra, 'm', { silent = true, desc = "Mark" })
+  local function map(mode, key, action, description)
+    vim.keymap.set(mode, key, action, { silent = true, desc = description })
+    table.insert(applied, { mode, key })
+  end
 
-    vim.keymap.set('v', keyboard.left, 'h', { silent = true, desc = "Left" })
-    vim.keymap.set('v', keyboard.down, 'j', { silent = true, desc = "Down" })
-    vim.keymap.set('v', keyboard.up, 'k', { silent = true, desc = "Up" })
-    vim.keymap.set('v', keyboard.right, 'l', { silent = true, desc = "Right" })
+  -- Each key does what the letter of Vim's it replaces did, and nothing when it's the same
+  local moves = {
+    { keyboard.left,  'h', "Left" },
+    { keyboard.down,  'j', "Down" },
+    { keyboard.up,    'k', "Up" },
+    { keyboard.right, 'l', "Right" },
+  }
+  for _, spare in ipairs(keyboard.spare) do
+    table.insert(moves, { spare[1], spare[2], "What " .. spare[2] .. " did" })
+  end
+  for _, move in ipairs(moves) do
+    if move[1] ~= move[2] then
+      map('n', keyboard.lhs(move[1]), keyboard.lhs(move[2]), move[3])
+      map('v', keyboard.lhs(move[1]), keyboard.lhs(move[2]), move[3])
+    end
   end
 
   -- Ctrl + the arrows moves between Neovim splits and tmux panes alike
-  for _, key in ipairs({ '<C-h>', '<C-j>', '<C-k>', '<C-l>', '<F12>' }) do
-    pcall(vim.keymap.del, 'n', key)
-  end
-  vim.keymap.set('n', keyboard.pane_left, ':TmuxNavigateLeft<CR>',
-    { silent = true, desc = "Switch to left window" })
-  vim.keymap.set('n', keyboard.pane_down, ':TmuxNavigateDown<CR>',
-    { silent = true, desc = "Switch to lower window" })
-  vim.keymap.set('n', keyboard.pane_up, ':TmuxNavigateUp<CR>',
-    { silent = true, desc = "Switch to upper window" })
-  vim.keymap.set('n', keyboard.pane_right, ':TmuxNavigateRight<CR>',
-    { silent = true, desc = "Switch to right window" })
+  map('n', keyboard.pane_left, ':TmuxNavigateLeft<CR>', "Switch to left window")
+  map('n', keyboard.pane_down, ':TmuxNavigateDown<CR>', "Switch to lower window")
+  map('n', keyboard.pane_up, ':TmuxNavigateUp<CR>', "Switch to upper window")
+  map('n', keyboard.pane_right, ':TmuxNavigateRight<CR>', "Switch to right window")
 end
 
 apply_keyboard_layout()
 vim.api.nvim_create_user_command('KeyboardLayoutReload', apply_keyboard_layout,
-  { desc = 'Reload the active keyboard layout' })
+  { desc = 'Reload where the Vim keys sit' })
 
 -- Ctrl+\ goes back to the last pane, whatever the layout
 vim.api.nvim_set_keymap('n', '<C-\\>', ':TmuxNavigatePrevious<CR>',

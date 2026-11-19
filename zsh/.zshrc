@@ -26,12 +26,16 @@ source $ZSH/oh-my-zsh.sh
 # HYPRPUNK'S OWN BITS #
 #######################
 
-# The keyboard layout picked in the shell, read once for .bindingrc's Vim keys and the
-# tools below
+# Where the Vim keys sit, picked in the shell and worked out by keyboard-layoutctl.sh,
+# read once for .bindingrc and the tools below. Vim's letters until it has run.
 hyprpunk_state="${XDG_STATE_HOME:-$HOME/.local/state}/hyprpunk"
-keyboard_layout="us"
-[[ -r "$hyprpunk_state/keyboard-layout" ]] &&
-  IFS= read -r keyboard_layout <"$hyprpunk_state/keyboard-layout"
+typeset -A vim_keys=(left h down j up k right l ctrl_left h ctrl_down j ctrl_up k ctrl_right l)
+if [[ -r "$hyprpunk_state/keyboard/keys" ]]; then
+  while IFS= read -r line; do
+    vim_keys[${line%%=*}]="${line#*=}"
+  done <"$hyprpunk_state/keyboard/keys"
+  unset line
+fi
 
 source ~/.aliasrc
 source ~/.functionrc
@@ -47,16 +51,20 @@ source <(fzf --zsh)
 export FZF_CTRL_T_OPTS="--preview 'bat --color=always -n --line-range :500 {}'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=always {} | head -200'"
 
-# fzf, less and yazi move with the Vim keys of the current layout (jklm on AZERTY)
-if [[ "$keyboard_layout" != "fr" ]]; then
-  export FZF_DEFAULT_OPTS="--bind=ctrl-j:down,ctrl-k:up"
-else
-  export FZF_DEFAULT_OPTS="--bind=ctrl-k:down,ctrl-l:up"
-fi
+# fzf, less and yazi move with the Vim keys. Ctrl + a key the terminal has no code for
+# arrives as a function key, sent by kitty.
+() {
+  local name key
+  local -a binds
+  for name key in down "$vim_keys[ctrl_down]" up "$vim_keys[ctrl_up]"; do
+    [[ "$key" == F* ]] && binds+=("${key:l}:$name") || binds+=("ctrl-$key:$name")
+  done
+  export FZF_DEFAULT_OPTS="--bind=${(j:,:)binds}"
+}
 unset LESSKEY
 export LESSKEYIN="$hyprpunk_state/keyboard/lesskey"
 export YAZI_CONFIG_HOME="$hyprpunk_state/keyboard/yazi"
-unset keyboard_layout hyprpunk_state
+unset vim_keys hyprpunk_state
 
 # z to jump to the folders you visit most
 eval "$(zoxide init zsh)"

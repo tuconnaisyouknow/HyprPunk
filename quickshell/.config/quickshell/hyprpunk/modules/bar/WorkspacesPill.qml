@@ -94,10 +94,9 @@ Pill {
             if (card === null)
                 return ;
 
-            const french = Session.keyboardLayout === "fr";
-            if (key === Qt.Key_Left || key === Qt.Key_Backtab || key === (french ? Qt.Key_J : Qt.Key_H))
+            if (key === Qt.Key_Left || key === Qt.Key_Backtab || key === Session.vimKeyCodes[0])
                 card.step(-1);
-            else if (key === Qt.Key_Right || key === Qt.Key_Tab || key === (french ? Qt.Key_M : Qt.Key_L))
+            else if (key === Qt.Key_Right || key === Qt.Key_Tab || key === Session.vimKeyCodes[1])
                 card.step(1);
             else if (key === Qt.Key_Return || key === Qt.Key_Enter || key === Qt.Key_Space)
                 card.choose();

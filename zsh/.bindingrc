@@ -3,29 +3,28 @@ bindkey -v
 bindkey -M viins '^[^?' backward-kill-word
 bindkey -M viins '^[^H' backward-kill-word
 
-# hjkl in normal and visual mode, moved to jklm on AZERTY so they stay under the right hand.
-# .zshrc reads the layout before loading this file.
-if [[ "$keyboard_layout" != "fr" ]]; then
-  bindkey -M vicmd 'h' backward-char
-  bindkey -M vicmd 'j' down-line-or-history
-  bindkey -M vicmd 'k' up-line-or-history
-  bindkey -M vicmd 'l' forward-char
-  bindkey -M vicmd 'm' vi-set-mark
-  bindkey -M visual 'h' backward-char
-  bindkey -M visual 'j' down-line-or-history
-  bindkey -M visual 'k' up-line-or-history
-  bindkey -M visual 'l' forward-char
-else
-  bindkey -M vicmd 'j' backward-char
-  bindkey -M vicmd 'k' down-line-or-history
-  bindkey -M vicmd 'l' up-line-or-history
-  bindkey -M vicmd 'm' forward-char
-  bindkey -M vicmd 'h' vi-set-mark
-  bindkey -M visual 'j' backward-char
-  bindkey -M visual 'k' down-line-or-history
-  bindkey -M visual 'l' up-line-or-history
-  bindkey -M visual 'm' forward-char
-fi
+# The four Vim keys in normal and visual mode, on Vim's letters or on the home row
+# (j k l m on AZERTY). .zshrc reads them before loading this file. A letter the move left
+# free takes what the key the arrows landed on did, read before anything is rebound.
+() {
+  local name key widget
+  local -A keys taken
+  # bindkey reads ^ and \ as the start of a code: escaped, they're typed as they are
+  for name key in "${(@kv)vim_keys}"; do
+    key=${key//'\'/'\\'}
+    keys[$name]=${key//'^'/'\^'}
+  done
+  for name in ${(k)keys[(I)spare_*]}; do
+    taken[${name#spare_}]=${"$(bindkey -M vicmd -- "$keys[$name]")"##* }
+  done
+  for name widget in left backward-char down down-line-or-history up up-line-or-history right forward-char; do
+    bindkey -M vicmd -- "$keys[$name]" $widget
+    bindkey -M visual -- "$keys[$name]" $widget
+  done
+  for key widget in "${(@kv)taken}"; do
+    bindkey -M vicmd -- $key $widget
+  done
+}
 
 # Ctrl+Space takes the suggestion, Alt+L and Alt+K go through the history
 # of what starts like the current line

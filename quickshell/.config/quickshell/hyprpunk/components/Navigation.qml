@@ -22,13 +22,13 @@ Singleton {
         return plain(event) && event.key === Qt.Key_Backspace && !event.isAutoRepeat;
     }
 
-    // [dx, dy] for the arrows and the Vim keys (h/j/k/l, or j/k/l/m on AZERTY), null
+    // [dx, dy] for the arrows and the Vim keys (h/j/k/l, or the home row's), null
     // otherwise. A text field types the letters before they get here.
     function direction(event) {
         if (!plain(event))
             return null;
 
-        const keys = Session.keyboardLayout === "fr" ? [Qt.Key_J, Qt.Key_M, Qt.Key_K, Qt.Key_L] : [Qt.Key_H, Qt.Key_L, Qt.Key_J, Qt.Key_K];
+        const keys = Session.vimKeyCodes;
         const arrows = [Qt.Key_Left, Qt.Key_Right, Qt.Key_Down, Qt.Key_Up];
         const moves = [[-1, 0], [1, 0], [0, 1], [0, -1]];
         const index = Math.max(keys.indexOf(event.key), arrows.indexOf(event.key));

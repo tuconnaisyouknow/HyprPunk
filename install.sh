@@ -23,7 +23,10 @@ PACKAGES_FILE="$LOG_DIR/packages"
 current_step="Initialisation"
 sudo_keepalive_pid=""
 keyboard_layout=""
+vim_keys=""
 locale_regional=""
+# A layout as it's typed and saved: XKB's code, then its variant if any ("fr bepo")
+readonly KEYBOARD_LAYOUT_FORMAT='^[A-Za-z0-9_/-]+( [A-Za-z0-9_.-]+)?$'
 
 # What HyprPunk takes over in your home. Finding any of it means the system isn't fresh.
 readonly -a USER_CONFIG_PATHS=(
@@ -139,6 +142,7 @@ save_state() {
   {
     printf 'version=1\n'
     printf 'keyboard_layout=%s\n' "$keyboard_layout"
+    printf 'vim_keys=%s\n' "$vim_keys"
     printf 'locale_regional=%s\n' "$locale_regional"
   } >"$state_tmp"
   mv -f "$state_tmp" "$STATE_FILE"
@@ -151,6 +155,7 @@ load_state() {
     case "$key" in
     version) version="$value" ;;
     keyboard_layout) keyboard_layout="$value" ;;
+    vim_keys) vim_keys="$value" ;;
     locale_regional) locale_regional="$value" ;;
     esac
   done <"$STATE_FILE"
@@ -159,8 +164,12 @@ load_state() {
     echo "Unsupported installation state version: ${version:-missing}" >&2
     return 1
   }
-  [[ -z "$keyboard_layout" || "$keyboard_layout" == "us" || "$keyboard_layout" == "fr" ]] || {
+  [[ -z "$keyboard_layout" || "$keyboard_layout" =~ $KEYBOARD_LAYOUT_FORMAT ]] || {
     echo "Invalid keyboard layout in installation state: $keyboard_layout" >&2
+    return 1
+  }
+  [[ -z "$vim_keys" || "$vim_keys" == "vim" || "$vim_keys" == "home" ]] || {
+    echo "Invalid Vim keys in installation state: $vim_keys" >&2
     return 1
   }
   [[ -z "$locale_regional" || "$locale_regional" == "us" || "$locale_regional" == "fr" ]] || {
@@ -305,21 +314,51 @@ require_installed() {
   fi
 }
 
-# The two questions, asked once at the start
+# The three questions, asked once at the start. The layout is any of XKB's that writes
+# the Latin alphabet, by its code and its variant if it has one ("us", "de", "fr bepo"),
+# and the one the system already has when you just press Enter. On a system too bare to list them yet, it's only
+# checked once the packages are in (see seed_answers).
 ask_keyboard_layout() {
+  local answer layout variant default="us"
+
+  layout="$(localectl status 2>/dev/null | sed -n 's/^ *X11 Layout: //p')"
+  variant="$(localectl status 2>/dev/null | sed -n 's/^ *X11 Variant: //p')"
+  [[ "$layout${variant:+ $variant}" =~ $KEYBOARD_LAYOUT_FORMAT ]] && default="$layout${variant:+ $variant}"
+
   while true; do
-    read -rp "Keyboard layout [us/fr] (default: us): " keyboard_layout
-    keyboard_layout="${keyboard_layout,,}"
-    case "$keyboard_layout" in
-    "" | us)
-      keyboard_layout="us"
+    read -rp "Keyboard layout, with its variant if any (default: $default): " answer
+    answer="${answer:-$default}"
+    read -r layout variant <<<"$answer"
+    if [[ "$answer" =~ $KEYBOARD_LAYOUT_FORMAT ]] && known_keyboard_layout "$layout" "$variant"; then
+      keyboard_layout="$layout${variant:+ $variant}"
+      break
+    fi
+    echo "Unknown layout, or not a Latin one. Enter its XKB code, like 'us', 'de' or 'fr bepo'."
+  done
+}
+
+# True too when the system can't list its layouts yet
+known_keyboard_layout() {
+  local layouts
+  layouts="$("$DOTFILES_DIR/scripts/.local/lib/hyprpunk/keyboard-layoutctl.sh" list 2>/dev/null)" || return 0
+  [[ -n "$layouts" ]] || return 0
+  grep -qxF -- "$1"$'\t'"$2" <(cut -f 1,2 <<<"$layouts")
+}
+
+ask_vim_keys() {
+  while true; do
+    read -rp "Vim keys, on Vim's letters (h j k l) or on the home row, from your right index [vim/home] (default: vim): " vim_keys
+    vim_keys="${vim_keys,,}"
+    case "$vim_keys" in
+    "" | vim)
+      vim_keys="vim"
       break
       ;;
-    fr)
+    home)
       break
       ;;
     *)
-      echo "Invalid layout. Please enter 'fr' or 'us'."
+      echo "Invalid answer. Please enter 'vim' or 'home'."
       ;;
     esac
   done
@@ -498,7 +537,7 @@ generate_qt_configs() {
 }
 
 # The polkit rule lets the shell send a new layout to the login screen and the TTYs
-# without a password. The files generated from your layout are written again.
+# without a password. The files generated from your layout and Vim keys are written again.
 configure_keyboard() {
   sudo install -Dm644 "$DOTFILES_DIR/keyboard/polkit/50-hyprpunk-keymap.rules" \
     /etc/polkit-1/rules.d/50-hyprpunk-keymap.rules
@@ -572,9 +611,16 @@ configure_wallpaper() {
   "$LIB_DIR/wallpaperctl.sh" ensure
 }
 
-# Your answers, given once: the shell is where you change them afterwards
+# Your answers, given once: the shell is where you change them afterwards. A layout
+# nobody could check when you typed it and that can't be picked leaves you on US.
 seed_answers() {
-  "$LIB_DIR/keyboard-layoutctl.sh" init "$keyboard_layout"
+  local layout variant
+
+  read -r layout variant <<<"$keyboard_layout"
+  "$LIB_DIR/keyboard-layoutctl.sh" init "$layout" "$variant" "$vim_keys" || {
+    echo "Warning: the keyboard layout '$keyboard_layout' couldn't be set, US kept. Pick yours in the settings."
+    "$LIB_DIR/keyboard-layoutctl.sh" init us "" "$vim_keys"
+  }
   "$LIB_DIR/locale-profilectl.sh" init "$locale_regional"
 }
 
@@ -857,6 +903,8 @@ install_hyprpunk() {
   initialize_state
 
   [[ -n "$keyboard_layout" ]] || run_step "Selecting the keyboard layout" ask_keyboard_layout
+  save_state
+  [[ -n "$vim_keys" ]] || run_step "Placing the Vim keys" ask_vim_keys
   save_state
   [[ -n "$locale_regional" ]] || run_step "Selecting regional formats" ask_locale_regional
   save_state

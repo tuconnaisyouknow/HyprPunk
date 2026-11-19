@@ -31,7 +31,10 @@ local menu = "qs -c hyprpunk ipc call launcher toggle"
 local keyboard = __require("keyboard_state")
 
 local binds = require("lib.bind")
-local bind = binds.bind
+-- On the home row the arrows can land on a letter a shortcut below uses: it moves aside
+local function bind(keys, ...)
+  return binds.bind(keyboard.beside_arrows(keys), ...)
+end
 hyprpunk.bind = binds.bind
 hyprpunk.rebind = binds.rebind
 hyprpunk.unbind = binds.unbind
@@ -123,8 +126,8 @@ bind(mainMod .. " + SHIFT + F", hl.dsp.window.float({ action = "toggle" }),
   "Toggle floating mode for the focused window")
 bind(mainMod .. " + S", hl.dsp.layout("togglesplit"), "Toggle the split direction")
 
--- Vim-style arrows, shifted one key right on AZERTY (see keyboard_state.lua), and the
--- real arrows for whoever doesn't think in Vim. Add Shift to move the window instead.
+-- Vim-style arrows, on Vim's letters or on the home row (see keyboard_state.lua), and
+-- the real arrows for whoever doesn't think in Vim. Add Shift to move the window instead.
 local directions = {
   { keys = { keyboard.left, "left" },   direction = "l", delta = { x = -30, y = 0 }, focus = "Focus the window on the left",  move = "Move the active window left" },
   { keys = { keyboard.right, "right" }, direction = "r", delta = { x = 30, y = 0 },  focus = "Focus the window on the right", move = "Move the active window right" },
@@ -148,7 +151,7 @@ bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), "Drag to resize a window
 -- WORKSPACES --
 ----------------
 
--- The number row, read by position so it works on AZERTY too (code:10 is 1, code:19 is 0)
+-- The number row, read by position so it works on every layout (code:10 is 1, code:19 is 0)
 for number = 1, 10 do
   bind(mainMod .. " + code:" .. (number + 9), hl.dsp.focus({ workspace = number }),
     "Switch to workspace " .. number)

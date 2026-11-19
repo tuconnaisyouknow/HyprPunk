@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
 // Every Hyprland shortcut that has a description, with its keys as you'd write them, and
 // running one for you (through run_keybinding in lib/bind.lua). Read each time someone
@@ -50,10 +51,16 @@ Singleton {
             "XF86AudioPlay": "Play",
             "XF86AudioPrev": "Previous"
         };
+        // Bound by position: the number row, and the Vim keys on the home row, shown
+        // as what the layout writes there.
         if (bind.key === "") {
-            // Workspace binds are set by keycode, the number is in the description.
-            const match = bind.description.match(/workspace (\d+)$/);
-            return match ? (match[1] === "10" ? "0" : match[1]) : "?";
+            if (bind.keycode >= 10 && bind.keycode <= 19)
+                return String((bind.keycode - 9) % 10);
+
+            if (bind.keycode >= 44 && bind.keycode <= 47)
+                return Session.homeKeys[bind.keycode - 44].toUpperCase();
+
+            return "?";
         }
         if (names[bind.key])
             return names[bind.key];
