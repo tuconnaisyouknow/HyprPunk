@@ -6,7 +6,7 @@ import Quickshell.Io
 
 // The names and availability of the sound cards' outputs and inputs, which PipeWire's
 // nodes don't tell: an HDMI output with nothing plugged in isn't there. Read from pactl
-// each time someone looks (ServiceRef), and followed meanwhile.
+// at startup and each time someone looks (ServiceRef), and followed meanwhile.
 Singleton {
     id: ports
 
@@ -48,6 +48,7 @@ Singleton {
             probe();
 
     }
+    Component.onCompleted: probe()
 
     Process {
         id: sinks

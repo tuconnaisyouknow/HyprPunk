@@ -35,8 +35,8 @@ ShellRoot {
 
     // Singletons are only made when first used: these have work to do from the start
     // (answering apps, the idle steps, the night light, the OSD, the battery's alerts and
-    // the captive portals), or decide which settings this computer has (the power
-    // profiles, the charge limit): read as their page opens, its rows would pop in.
+    // the captive portals), or fill a settings page (the screens, the power profiles, the
+    // charge limit, what the histories hold): read as the page opens, its rows would pop in.
     Component.onCompleted: {
         Notifications.server;
         Polkit.agent;
@@ -50,6 +50,8 @@ ShellRoot {
         NetworkStatus.device;
         PowerProfile.current;
         ChargeLimit.current;
+        Displays.info;
+        HistorySettings.counts;
         startWave();
     }
 

@@ -8,8 +8,8 @@ import qs.config
 // The pending package updates, official repos and AUR counted together, for the bar's
 // updates pill. Checked at startup, as often as the settings say (UpdateSettings), and
 // after anything pacman does, from the pill or from a terminal. Turned off there, it
-// counts nothing and the pill stays hidden. And the HyprPunk you have, read each time
-// someone looks (ServiceRef: the settings' updates page).
+// counts nothing and the pill stays hidden. And the HyprPunk you have, read at startup
+// and each time someone looks (ServiceRef: the settings' updates page).
 Singleton {
     id: updates
 
@@ -47,6 +47,7 @@ Singleton {
         id: versionReader
 
         command: [Session.scripts + "/updatesctl.sh", "version"]
+        running: true
 
         stdout: StdioCollector {
             onStreamFinished: updates.version = text.trim()

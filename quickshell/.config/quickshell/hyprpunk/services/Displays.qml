@@ -5,9 +5,10 @@ import Quickshell
 import Quickshell.Io
 import qs.config
 
-// Your screens as displayctl.sh sees them, and changing their settings. A new
+// Your screens as displayctl.sh sees them, and changing their settings. Read at startup,
+// then again each time someone looks (ServiceRef: the settings' displays page). A new
 // resolution, refresh rate or scale undoes itself unless you keep it in time, and at once
-// when nobody looks any more (ServiceRef: the settings' displays page closed).
+// when nobody looks any more.
 Singleton {
     id: displays
 
@@ -77,6 +78,7 @@ Singleton {
         id: reader
 
         command: [displays.displayctl, "info"]
+        running: true
 
         stdout: StdioCollector {
             onStreamFinished: {

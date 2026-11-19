@@ -13,8 +13,8 @@ Singleton {
     readonly property bool clipboard: file.values.clipboard !== "false"
     // null until the file is read, so it's never mistaken for a size of its own.
     readonly property var size: file.values.size ? parseInt(file.values.size) : null
-    // { "clipboard", "launcher", "emoji" }: how many entries each holds. Empty until
-    // counted, and counted only when asked: nothing tells when a history grows.
+    // { "clipboard", "launcher", "emoji" }: how many entries each holds. Counted at
+    // startup, then only when asked: nothing tells when a history grows.
     property var counts: ({
     })
 
@@ -34,6 +34,8 @@ Singleton {
             "running": true
         });
     }
+
+    Component.onCompleted: count()
 
     SettingsFile {
         id: file
