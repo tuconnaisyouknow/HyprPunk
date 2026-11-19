@@ -29,11 +29,6 @@ Pill {
     // Between the time and an OSD.
     readonly property bool swapping: view.swapping
 
-    // Another OSD over the one shown.
-    function fadeContent() {
-        view.fadeOsd();
-    }
-
     // Hidden under the lock, which has it, and covered by its relay as the lock goes
     // (Lock.islandAway).
     opacity: covered || Lock.islandAway ? 0 : 1

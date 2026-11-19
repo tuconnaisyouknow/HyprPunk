@@ -718,18 +718,6 @@ WlSessionLockSurface {
                         typed: Lock.password.length
                         checking: Lock.authenticating
                         lockError: Lock.error
-
-                        // Another OSD over the one shown.
-                        Connections {
-                            function onOsdIdentityChanged() {
-                                if (surface.osdShown)
-                                    lockIslandView.fadeOsd();
-
-                            }
-
-                            target: surface.bar
-                        }
-
                     }
 
                 }

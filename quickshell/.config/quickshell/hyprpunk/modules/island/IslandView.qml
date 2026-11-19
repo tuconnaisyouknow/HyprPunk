@@ -57,12 +57,6 @@ Item {
     readonly property bool musicHovered: coverHover.hovered || equalizerHover.hovered
     readonly property real presence: clockFace.presence + osdFace.presence
 
-    // Another OSD over the one shown: its content fades in again, while the face eases
-    // to its size.
-    function fadeOsd() {
-        osdFade.restart();
-    }
-
     // Each face's size, weighed by how much it's there.
     implicitWidth: (clockFace.presence * clockFace.islandWidth + osdFace.presence * osdFace.islandWidth) / Math.max(presence, 0.001)
     implicitHeight: (clockFace.presence * clockFace.islandHeight + osdFace.presence * osdFace.islandHeight) / Math.max(presence, 0.001)
@@ -198,8 +192,8 @@ Item {
 
     }
 
-    // Its content changes at once from one OSD to the next, so the face eases to the new
-    // size itself.
+    // Its content changes at once from one OSD to the next, never fading out for it: the
+    // face eases to the new size itself, and the pill around it cuts what doesn't fit yet.
     IslandFace {
         id: osdFace
 
@@ -226,30 +220,6 @@ Item {
                 token: Motion.resize.normal
             }
 
-        }
-
-    }
-
-    SequentialAnimation {
-        id: osdFade
-
-        PropertyAction {
-            target: osdContent
-            property: "opacity"
-            value: 0
-        }
-
-        // Halfway through the resize the face is ~90% of its new size, so the new
-        // content isn't drawn over its old edges.
-        PauseAnimation {
-            duration: Motion.resize.normal.duration / 2
-        }
-
-        Anim {
-            target: osdContent
-            property: "opacity"
-            to: 1
-            token: Motion.color.small
         }
 
     }

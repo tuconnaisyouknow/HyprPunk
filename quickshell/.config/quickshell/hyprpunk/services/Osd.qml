@@ -44,12 +44,6 @@ Singleton {
     }
     property bool endHeld: false
 
-    // What tells one OSD from another: its switch or level, its screenshot, or its kind.
-    // The same one changing state stays in place, another one fades in (IslandView).
-    function identity(content) {
-        return content.kind === "" ? content.label : content.kind + content.file;
-    }
-
     // How long an OSD stays, its usual time stretched as the settings ask (OsdSettings).
     function time(milliseconds) {
         return Math.round(milliseconds * OsdSettings.pace);
