@@ -393,6 +393,13 @@ Card {
                     onTapped: popup.togglePinned()
                 }
 
+                // The shared shape shows the island's content itself.
+                PillContent {
+                    pill: popup.pill
+                    active: popup.frame === null && popup.covering
+                    share: 1 - popup.progress
+                }
+
             }
 
         }

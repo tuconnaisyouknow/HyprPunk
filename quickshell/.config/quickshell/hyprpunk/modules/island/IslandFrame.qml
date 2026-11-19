@@ -11,8 +11,9 @@ import qs.windows
 // card folding back behind the other. The cards draw their content clipped to it.
 // It eases where it sits too: the island moves and changes height when it takes an OSD
 // (Bar.islandOsdShown), which happens as soon as the last card closes.
-// The island itself is hidden while a card covers it, so the shape draws its content
-// while it's still the island's: nothing pops as a card grows out or folds back.
+// The island itself is hidden while a card covers it, so the shape shows its content
+// while it's still the island's (PillContent): nothing pops as a card grows out or folds
+// back.
 Card {
     id: frame
 
@@ -146,37 +147,14 @@ Card {
 
     }
 
-    // The island as it shows itself (the time and its chips), at its place:
-    // it fades as a card grows out, faster than the shape so it's gone before the card's
-    // content shows, and comes back as it folds, whole once it lands. An OSD has its own
+    // The island's own content (the time and its chips), at its place. An OSD has its own
     // way into the island (Osd.landing).
-    IslandView {
-        id: islandCopy
-
-        readonly property Item pill: frame.bar.islandItem
-
-        visible: frame.visible && opacity > 0
-        opacity: pill.face === "osd" ? 0 : Math.pow(frame.islandShare, 3)
-        // On the pixels the island centres its own on, or the time steps aside as the
-        // island takes over.
-        x: frame.width / 2 + frame.island.centerOffset - frame.island.width / 2 + Math.floor((frame.island.width - width) / 2)
-        y: frame.island.top + Math.floor((frame.island.height - height) / 2)
-        // Still while covered, like the island's own.
-        bar: frame.bar
-        face: pill.face
-        animated: false
-        interactive: false
-        musicLifted: frame.lastOwner !== null && frame.lastOwner.carriesMusic
-        date: pill.date
-
-        // Zoomed with the island, past its place under the pointer.
-        transform: Scale {
-            origin.x: islandCopy.width / 2
-            origin.y: islandCopy.height / 2
-            xScale: 1 + 2 * frame.island.spreadX / Math.max(frame.island.width, 1)
-            yScale: 1 + 2 * frame.island.spreadY / Math.max(frame.island.height, 1)
-        }
-
+    PillContent {
+        pill: frame.bar.islandItem
+        active: frame.covering
+        share: pill.face === "osd" ? 0 : frame.islandShare
+        x: frame.width / 2 + frame.island.centerOffset - frame.island.width / 2
+        y: frame.island.top
     }
 
     CardSettle {

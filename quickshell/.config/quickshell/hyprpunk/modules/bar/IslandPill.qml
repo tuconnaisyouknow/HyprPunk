@@ -70,6 +70,8 @@ Pill {
         face: clockPill.face
         animated: clockPill.bar.islandAnimated
         live: clockPill.bar.islandAnimated
+        // The player has them while it covers the island.
+        musicLifted: clockPill.covered && clockPill.bar.islandFrame.lastOwner !== null && clockPill.bar.islandFrame.lastOwner.carriesMusic
         date: clock.date
 
         // Ticks every second though it shows minutes: its timer stands still

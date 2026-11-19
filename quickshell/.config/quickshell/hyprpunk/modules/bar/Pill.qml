@@ -28,6 +28,9 @@ Rectangle {
     // through, and leaves the blur to the card. Both blurring the same place made it
     // darker under the card, until the card had folded back.
     property bool covered: false
+    // Where that card shows the pill's content meanwhile (PillContent): the content moves
+    // there, so what you see as the card grows out and folds back is still the pill's own.
+    property Item carrier: null
     // How far its zoom draws it past its place in the row (PillZoom).
     readonly property real spreadX: pillZoom.spreadX
     readonly property real spreadY: pillZoom.spreadY
@@ -85,6 +88,7 @@ Rectangle {
     RowLayout {
         id: contentRow
 
+        parent: pill.covered && pill.carrier !== null ? pill.carrier : pill
         anchors.centerIn: parent
         spacing: pill.spacing
     }

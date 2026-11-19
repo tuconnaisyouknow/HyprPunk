@@ -9,8 +9,8 @@ import qs.theme
 // time between the music's cover and equalizer at its round ends, or the padlock in its
 // place while the lock has it, the password's squares in the padlock's place as you type,
 // the time's chips and why a try failed, or an OSD over it as another face (IslandFace). Its size follows its content as it changes, so
-// the island around it needs no animation of its own. The bar's island, the lock's, and
-// the shape a card folds back into all draw it, so each picks up the island as it is.
+// the island around it needs no animation of its own. The bar's island and the lock's
+// both draw it, so each picks up the island as it is.
 Item {
     id: view
 

@@ -67,8 +67,10 @@ Item {
     property int recordingElapsed: 0
     // What the pills are drawn in, for the workspace previews' snapshot of the bar.
     readonly property Item content: barContent
-    // The island itself, for the shape that draws its content while a card covers it.
+    // The island and the control pill themselves, for the cards that show their content
+    // while they cover them (PillContent).
     readonly property alias islandItem: island
+    readonly property alias controlItem: control
 
     // Where each pill sits on screen, so the lock screen can start from there: the ones it
     // keeps (resources, island, control pill) and the ones it lets go. Where they rest,

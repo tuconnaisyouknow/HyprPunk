@@ -205,6 +205,12 @@ Card {
                     onTapped: controlCenter.close()
                 }
 
+                PillContent {
+                    pill: controlCenter.bar.controlItem
+                    active: controlCenter.covering
+                    share: 1 - controlCenter.progress
+                }
+
             }
 
             // Built bit by bit soon after the shell starts and kept, so the panel opens as
