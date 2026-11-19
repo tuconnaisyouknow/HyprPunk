@@ -79,7 +79,7 @@ Column {
                 Rectangle {
                     anchors.fill: parent
                     radius: Metrics.radius.normal
-                    color: entry.current ? Colors.alpha(Colors.primary, 0.16) : "transparent"
+                    color: Colors.alpha(Colors.primary, entry.current ? 0.16 : 0)
 
                     ColorFade on color {
                         token: Motion.color.small

@@ -40,7 +40,7 @@ Item {
             GlassSurface {
                 radius: parent.radius
                 hovered: checkHover.hovered
-                backgroundColor: check.checked ? Colors.alpha(Colors.primary, checkHover.hovered ? 0.95 : 0.8) : "transparent"
+                backgroundColor: Colors.alpha(Colors.primary, !check.checked ? 0 : checkHover.hovered ? 0.95 : 0.8)
                 lit: true
 
                 ColorFade on backgroundColor {

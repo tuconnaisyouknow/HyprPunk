@@ -23,7 +23,8 @@ Item {
     property bool focused: false
     property real accent: focused ? 1 : 0
     // Its background is a light. It follows the background's own alpha, so a light that
-    // fades in or out needs nothing more.
+    // fades in or out needs nothing more. Off is the light's color at no opacity, never
+    // "transparent": that one is black, and the light would darken on its way out.
     property bool lit: false
     readonly property real emitted: lit && Colors.emits ? backgroundColor.a : 0
     // A frame around something to look at: no light stays inside, where it would recolor
@@ -32,9 +33,10 @@ Item {
     // A selection that's a whole pane of glass, or the button that answers: the glass
     // lights up from its edge inward rather than glowing around itself, which says on.
     property bool inward: false
-    // The frost's color: the pale glass, or the light itself inside a glass lit inward,
-    // where the pale frost would grey it.
-    readonly property color frost: emitted > 0 && inward ? shineColor : Colors.light
+    // The frost's color: the pale glass, taking the light's color as much as a glass lit
+    // inward is lit, where the pale frost would grey it. A light fading out then leaves
+    // the frost with it rather than all at once.
+    readonly property color frost: emitted > 0 && inward ? Qt.tint(Colors.light, backgroundColor) : Colors.light
     // The background as drawn: whole, or the tint left inside a tube.
     readonly property color fill: emitted > 0 ? Colors.alpha(backgroundColor, hollow ? 0 : backgroundColor.a * 0.16) : backgroundColor
     // How much of the rim is colored, by the focus or by the light, and in what.

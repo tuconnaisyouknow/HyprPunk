@@ -33,7 +33,7 @@ Item {
     GlassSurface {
         radius: button.radius
         hovered: button.hovered || button.active
-        backgroundColor: button.accent ? Colors.alpha(Colors.primary, button.hovered ? 0.95 : 0.8) : "transparent"
+        backgroundColor: Colors.alpha(Colors.primary, !button.accent ? 0 : button.hovered ? 0.95 : 0.8)
         lit: true
         // The answer already picked for you: lit like a selection, not like something on.
         inward: true

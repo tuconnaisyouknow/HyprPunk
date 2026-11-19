@@ -56,7 +56,7 @@ ControlBlock {
             GlassSurface {
                 radius: parent.radius
                 hovered: iconHover.hovered
-                backgroundColor: tile.active ? Colors.alpha(Colors.primary, iconHover.hovered ? 0.95 : 0.8) : "transparent"
+                backgroundColor: Colors.alpha(Colors.primary, !tile.active ? 0 : iconHover.hovered ? 0.95 : 0.8)
                 lit: true
 
                 ColorFade on backgroundColor {

@@ -493,7 +493,7 @@ SettingsPage {
                 GlassSurface {
                     radius: screenRect.radius
                     hovered: screenHover.hovered
-                    backgroundColor: screenRect.chosen ? Colors.alpha(Colors.primary, 0.85) : "transparent"
+                    backgroundColor: Colors.alpha(Colors.primary, screenRect.chosen ? 0.85 : 0)
                     lit: true
                 }
 

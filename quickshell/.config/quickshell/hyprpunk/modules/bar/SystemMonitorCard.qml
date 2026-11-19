@@ -297,7 +297,7 @@ Item {
                             radius: parent.radius
                             hovered: chipHover.hovered
                             opacity: sortChip.selected || chipHover.hovered ? 1 : 0
-                            backgroundColor: sortChip.selected ? Colors.alpha(Colors.primary, chipHover.hovered ? 0.95 : 0.8) : "transparent"
+                            backgroundColor: Colors.alpha(Colors.primary, !sortChip.selected ? 0 : chipHover.hovered ? 0.95 : 0.8)
                             lit: true
                         }
 

@@ -233,7 +233,7 @@ Scope {
                                 GlassSurface {
                                     radius: tab.radius
                                     hovered: tabHover.hovered
-                                    backgroundColor: tab.chosen ? Colors.alpha(Colors.primary, 0.85) : "transparent"
+                                    backgroundColor: Colors.alpha(Colors.primary, tab.chosen ? 0.85 : 0)
                                     lit: true
                                     opacity: tab.chosen || tabHover.hovered ? 1 : 0
 

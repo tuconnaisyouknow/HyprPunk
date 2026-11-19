@@ -93,12 +93,14 @@ IslandPanel {
                         color: "transparent"
                         scale: entryTap.pressed ? 0.92 : 1
 
-                        // Plain glass, accent when selected, red once armed.
+                        // Plain glass, accent when selected, red once armed. A selection:
+                        // in neon the glass lights up from its edge inward.
                         GlassSurface {
                             radius: parent.radius
                             hovered: entryCard.selected
                             lit: true
-                            backgroundColor: entryCard.armed ? Colors.alpha(Colors.red, 0.9) : entryCard.selected ? Colors.alpha(Colors.primary, 0.9) : "transparent"
+                            inward: true
+                            backgroundColor: entryCard.armed ? Colors.alpha(Colors.red, 0.9) : Colors.alpha(Colors.primary, entryCard.selected ? 0.9 : 0)
 
                             ColorFade on backgroundColor {
                                 token: Motion.color.small

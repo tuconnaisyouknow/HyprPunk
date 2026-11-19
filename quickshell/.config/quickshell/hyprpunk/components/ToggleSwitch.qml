@@ -25,7 +25,7 @@ Rectangle {
     GlassSurface {
         radius: parent.radius
         hovered: switchHover.hovered
-        backgroundColor: toggleSwitch.checked ? Colors.alpha(Colors.primary, switchHover.hovered ? 0.95 : 0.8) : "transparent"
+        backgroundColor: Colors.alpha(Colors.primary, !toggleSwitch.checked ? 0 : switchHover.hovered ? 0.95 : 0.8)
         lit: true
 
         ColorFade on backgroundColor {
