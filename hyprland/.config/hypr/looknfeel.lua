@@ -75,21 +75,32 @@ hl.config({
   },
 })
 
+-- Windows move like the shell's cards (theme/Motion.qml). The spring runs on real time
+-- and keeps its momentum, so a move cut short by another flows on into it.
+
+-- Straight into place, never past it: no bounce
+hl.curve("glide", { type = "spring", mass = 1, stiffness = 400, damping = 40 })
+-- Appearing decelerates, going away accelerates
+hl.curve("enter", { type = "bezier", points = { { 0.215, 0.61 }, { 0.355, 1 } } })
+hl.curve("leave", { type = "bezier", points = { { 0.55, 0.055 }, { 0.675, 0.19 } } })
 hl.curve("easeOutQuint", { type = "bezier", points = { { 0.23, 1 }, { 0.32, 1 } } })
-hl.curve("easeInOutCubic", { type = "bezier", points = { { 0.65, 0.05 }, { 0.36, 1 } } })
 hl.curve("linear", { type = "bezier", points = { { 0, 0 }, { 1, 1 } } })
 hl.curve("almostLinear", { type = "bezier", points = { { 0.5, 0.5 }, { 0.75, 1.0 } } })
 hl.curve("quick", { type = "bezier", points = { { 0.15, 0 }, { 0.1, 1 } } })
 
--- Snappy on the way in, quicker on the way out
+-- A spring takes the time its physics give it: its speed is only there because
+-- Hyprland asks for one
 hl.animation({ leaf = "global", enabled = true, speed = 10, bezier = "default" })
 hl.animation({ leaf = "border", enabled = true, speed = 5.39, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windows", enabled = true, speed = 4.79, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windowsIn", enabled = true, speed = 4.1, bezier = "easeOutQuint", style = "popin 87%" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.49, bezier = "linear", style = "popin 87%" })
-hl.animation({ leaf = "fadeIn", enabled = true, speed = 1.73, bezier = "almostLinear" })
-hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.46, bezier = "almostLinear" })
+-- A window grows out into its place from half its size, and shrinks back quicker than
+-- it came, gone as it gets small. The ones around it make room on the same spring.
+hl.animation({ leaf = "windows", enabled = true, speed = 1, spring = "glide" })
+hl.animation({ leaf = "windowsIn", enabled = true, speed = 1, spring = "glide", style = "popin 55%" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 2, bezier = "leave", style = "popin 50%" })
+hl.animation({ leaf = "fadeIn", enabled = true, speed = 1.4, bezier = "enter" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 2, bezier = "leave" })
 hl.animation({ leaf = "fade", enabled = true, speed = 3.03, bezier = "quick" })
+-- Snappy on the way in, quicker on the way out
 hl.animation({ leaf = "layers", enabled = true, speed = 3.81, bezier = "easeOutQuint" })
 hl.animation({ leaf = "layersIn", enabled = true, speed = 4, bezier = "easeOutQuint", style = "fade" })
 hl.animation({ leaf = "layersOut", enabled = true, speed = 1.5, bezier = "linear", style = "fade" })
@@ -98,9 +109,9 @@ hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.39, bezier = "a
 -- Popups close at once. The shell already folds its cards back into their pill, and
 -- Hyprland's fade, drawn without the blur, flashed the liquid glass darker after it
 hl.animation({ leaf = "fadePopupsOut", enabled = false })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1.21, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
+-- The workspaces lie side by side like their buttons in the bar: you travel along them
+-- the way three fingers swipe, the one you leave and the one you reach moving as one
+hl.animation({ leaf = "workspaces", enabled = true, speed = 1, spring = "glide", style = "slide" })
 
 hl.config({
   dwindle = {
