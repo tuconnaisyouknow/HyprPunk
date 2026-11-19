@@ -155,6 +155,9 @@ ControlPage {
         }
 
         implicitHeight: contentHeight
+        // Out of its column while empty: it would still take the gap to its neighbour,
+        // and push a message alone with it off its block's middle.
+        visible: count > 0
         interactive: false
         spacing: Metrics.spacing.normal
 
