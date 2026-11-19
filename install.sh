@@ -71,7 +71,7 @@ readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard sddm)
 
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
-  zsh kitty starship zoxide
+  zsh kitty shader-slang starship zoxide
   fzf eza bat fd
   ripgrep fastfetch btop tmux
   yazi cava bc stow brightnessctl jq pacman-contrib xdg-user-dirs

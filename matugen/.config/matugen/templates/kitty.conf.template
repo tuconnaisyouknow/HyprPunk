@@ -17,8 +17,8 @@ background              {{colors.surface.default.hex}}
 selection_foreground    {{colors.surface.default.hex}}
 selection_background    #f5e0dc
 
-# Cursor colors
-cursor                  #f5e0dc
+# Cursor colors: the accent, like what you type in the shell's fields
+cursor                  {{colors.primary.default.hex}}
 cursor_text_color       {{colors.surface.default.hex}}
 
 # URL underline color when hovering with mouse
