@@ -36,8 +36,6 @@ ControlPage {
     // Why the last password didn't connect, until another network asks.
     property string wifiError: ""
 
-    // A password went out, so the prompt can hand the keyboard back to the panel.
-    signal passwordSent()
     signal detailsRequested(var network)
     // An enterprise network: its sign-in has a page of its own.
     signal enterpriseRequested(var network)
@@ -325,12 +323,10 @@ ControlPage {
                                         "wepKeyType": wepKeyType.value
                                     }, (ok, error) => {
                                         page.wifiError = error;
-                                        if (ok) {
+                                        if (ok)
                                             page.passwordNetwork = null;
-                                            page.passwordSent();
-                                        } else {
+                                        else
                                             passwordField.input.forceActiveFocus();
-                                        }
                                     });
 
                                 }
@@ -450,7 +446,6 @@ ControlPage {
                                     if (Vpn.passwordUuid !== "" && text !== "") {
                                         Vpn.connect(Vpn.passwordUuid, text);
                                         text = "";
-                                        page.passwordSent();
                                     }
                                 }
                             }

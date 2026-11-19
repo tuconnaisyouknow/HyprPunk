@@ -6,7 +6,8 @@ import qs.theme
 // part by turning on activeFocusOnTab and giving activate() (its click) and, when it has
 // a small second button, activateAlt(). Fields draw their own ring (drawsFocus).
 // The page is made of columns: up and down never leave one, left and right follow the
-// row you're on, then cross to the next column, where you left it.
+// row you're on, then cross to the next column, where you left it. A control hidden
+// while it has the keyboard hands it back to the last one you were on that's still there.
 Item {
     id: keyboardFocus
 
@@ -19,20 +20,33 @@ Item {
     // You've moved with the keys since the panel opened: a new page then hands its
     // control the keyboard at once, the one you left it on or its first.
     property bool navigating: false
-    // The last control of each page, and of each column.
+    // The controls you were on in each page and each column, the latest first.
     property var memory: new Map()
-    // The control with the keyboard, null while the page itself has it.
+    // The control with the keyboard, null while the page itself has it. One you can't
+    // see doesn't count: Qt leaves the keyboard to what gets hidden.
     readonly property Item current: {
         const item = Window.activeFocusItem;
-        return item !== null && item.activeFocusOnTab && contains(item) ? item : null;
+        return item !== null && item.activeFocusOnTab && item.visible && contains(item) ? item : null;
     }
 
     onCurrentChanged: {
-        if (current === null)
+        if (current !== null) {
+            remember(page, current);
+            remember(columnOf(current), current);
             return ;
+        }
+        // Hidden with the keyboard still on it (a prompt you gave up): the keys go back
+        // to where you were.
+        const item = Window.activeFocusItem;
+        if (item !== null && !item.visible && contains(item))
+            Qt.callLater(settle);
 
-        memory.set(page, current);
-        memory.set(columnOf(current), current);
+    }
+
+    function remember(scope, item) {
+        memory.set(scope, [item].concat((memory.get(scope) || []).filter((other) => {
+            return other !== item;
+        })));
     }
 
     function within(item, ancestor) {
@@ -159,14 +173,16 @@ Item {
         return best;
     }
 
-    // The control you were last on in the page or the column, or its first.
+    // The last control you were on in the page or the column that's still there, or its
+    // first.
     function landing(scope) {
         if (scope === null)
             return null;
 
         const list = ordered(scope);
-        const remembered = memory.get(scope);
-        return list.includes(remembered) ? remembered : list[0];
+        return (memory.get(scope) || []).find((item) => {
+            return list.includes(item);
+        }) || list[0];
     }
 
     // An arrow: to the neighbour that way, into the next column past the end of a row,
@@ -178,9 +194,10 @@ Item {
 
     }
 
-    // Once a new page is shown. One that gave a field the keyboard itself keeps it.
+    // Once a new page is shown, or the control with the keyboard is hidden. A page that
+    // gave a field the keyboard itself keeps it.
     function settle() {
-        if (Window.activeFocusItem !== null && contains(Window.activeFocusItem))
+        if (current !== null)
             return ;
 
         const target = navigating ? landing(page) : null;

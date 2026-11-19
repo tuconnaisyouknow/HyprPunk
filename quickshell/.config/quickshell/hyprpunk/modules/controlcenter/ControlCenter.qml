@@ -253,7 +253,6 @@ Card {
                     WifiPage {
                         id: wifiPage
 
-                        onPasswordSent: panel.forceActiveFocus()
                         onHiddenRequested: hiddenPage.show()
                         onDetailsRequested: (network) => {
                             return wifiDetailPage.show(network);
