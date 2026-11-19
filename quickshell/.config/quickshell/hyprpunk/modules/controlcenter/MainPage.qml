@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Networking
 import qs.components
 import qs.services
@@ -245,7 +246,10 @@ ControlPage {
                 spacing: Metrics.spacing.small
 
                 Repeater {
-                    model: Tray.items
+                    // The icons stay as apps come and go.
+                    model: ScriptModel {
+                        values: Tray.items
+                    }
 
                     TrayItem {
                         required property var modelData

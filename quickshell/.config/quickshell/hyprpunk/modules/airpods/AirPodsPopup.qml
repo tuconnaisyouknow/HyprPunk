@@ -273,12 +273,16 @@ Card {
                             spacing: Metrics.spacing.huge
 
                             Repeater {
-                                model: popup.podBatteries
+                                // One ring per place: each keeps living as its level
+                                // changes, and eases to it.
+                                model: ScriptModel {
+                                    values: Array.from(popup.podBatteries.keys())
+                                }
 
                                 BatteryRing {
-                                    required property var modelData
+                                    required property int modelData
 
-                                    battery: modelData
+                                    battery: popup.podBatteries[modelData] ?? null
                                 }
 
                             }

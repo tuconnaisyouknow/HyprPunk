@@ -34,7 +34,7 @@ Item {
     readonly property var osd: Osd.current !== null && (Osd.current.screen === "" || Osd.current.screen === screen.name) ? Osd.current : null
     readonly property bool osdVisible: osd !== null
     property var osdShown: Osd.blank
-    readonly property string osdLabel: osdShown.label
+    readonly property string osdIdentity: Osd.identity(osdShown)
     // While the session is locked, the lock's island shows the OSD and the bar's own one
     // stays still. It isn't drawn under the lock, so it would only catch up on its
     // animations once the lock is gone.
@@ -116,7 +116,7 @@ Item {
     }
     onOsdVisibleChanged: sideOsd.follow()
 
-    onOsdLabelChanged: island.fadeContent()
+    onOsdIdentityChanged: island.fadeContent()
     Component.onCompleted: {
         if (screenState !== null)
             screenState.bar = bar;

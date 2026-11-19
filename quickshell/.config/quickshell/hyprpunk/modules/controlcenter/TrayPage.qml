@@ -92,7 +92,10 @@ ControlPage {
                 spacing: Metrics.spacing.normal
 
                 Repeater {
-                    model: Tray.items
+                    // The icons stay as apps come and go.
+                    model: ScriptModel {
+                        values: Tray.items
+                    }
 
                     ColumnLayout {
                         id: app

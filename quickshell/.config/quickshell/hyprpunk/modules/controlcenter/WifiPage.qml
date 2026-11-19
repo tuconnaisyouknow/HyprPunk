@@ -379,20 +379,28 @@ ControlPage {
                         spacing: Metrics.spacing.small
 
                         Repeater {
-                            model: Vpn.profiles
+                            // Keyed by uuid: nmcli gives new profiles every time, and a
+                            // VPN changing state would otherwise build every row again.
+                            model: ScriptModel {
+                                values: Vpn.profiles.map((profile) => {
+                                    return profile.uuid;
+                                })
+                            }
 
                             ListRow {
                                 required property var modelData
+                                // Empty for the moment a removed VPN's row outlives it.
+                                readonly property var profile: Vpn.profile(modelData) || {}
 
                                 Layout.fillWidth: true
                                 icon: "󰖂"
-                                title: modelData.name
-                                subtitle: Vpn.status(modelData)
-                                trailing: modelData.state === "activated" ? "󰄬" : ""
-                                highlighted: modelData.state === "activated"
+                                title: profile.name || ""
+                                subtitle: Vpn.status(profile)
+                                trailing: profile.state === "activated" ? "󰄬" : ""
+                                highlighted: profile.state === "activated"
                                 detailsAvailable: true
-                                onClicked: Vpn.toggle(modelData.uuid)
-                                onDetailsRequested: page.vpnDetailsRequested(modelData.uuid)
+                                onClicked: Vpn.toggle(modelData)
+                                onDetailsRequested: page.vpnDetailsRequested(modelData)
                             }
 
                         }

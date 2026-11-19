@@ -726,7 +726,7 @@ WlSessionLockSurface {
 
                         // Another OSD over the one shown.
                         Connections {
-                            function onOsdLabelChanged() {
+                            function onOsdIdentityChanged() {
                                 if (surface.osdShown)
                                     lockIslandView.fadeOsd();
 

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.components
 import qs.theme
 import qs.services
@@ -15,6 +16,7 @@ ControlBlock {
     readonly property var controls: device.controls || {}
     readonly property var images: device.images || null
     readonly property bool headphones: device.kind === "headphones"
+    readonly property var podBatteries: AirPods.podBatteries(device)
     readonly property bool caseShown: !headphones && device["case"] !== undefined && device["case"].level !== null
     readonly property bool noiseControl: AirPods.hasNoiseControl(device)
     readonly property var listeningModes: [{
@@ -84,12 +86,16 @@ ControlBlock {
                     spacing: Metrics.spacing.huge
 
                     Repeater {
-                        model: AirPods.podBatteries(panel.device)
+                        // One ring per place: each keeps living as its level changes,
+                        // and eases to it.
+                        model: ScriptModel {
+                            values: Array.from(panel.podBatteries.keys())
+                        }
 
                         BatteryRing {
-                            required property var modelData
+                            required property int modelData
 
-                            battery: modelData
+                            battery: panel.podBatteries[modelData] ?? null
                         }
 
                     }

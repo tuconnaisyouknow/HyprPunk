@@ -146,6 +146,14 @@ ControlPage {
     // A list at full height (the page scrolls, not the list). Rows fade in as they come,
     // fade out as they go, and the rest slide into place.
     component AnimatedList: ListView {
+        // Its rows, which keep living as others come and go: a plain list would build
+        // them all again each time.
+        required property var rows
+
+        model: ScriptModel {
+            values: rows
+        }
+
         implicitHeight: contentHeight
         interactive: false
         spacing: Metrics.spacing.normal
@@ -337,7 +345,7 @@ ControlPage {
 
                     AnimatedList {
                         Layout.fillWidth: true
-                        model: page.outputs
+                        rows: page.outputs
 
                         delegate: OutputRow {
                         }
@@ -423,7 +431,7 @@ ControlPage {
 
                     AnimatedList {
                         Layout.fillWidth: true
-                        model: page.inputs
+                        rows: page.inputs
 
                         delegate: InputRow {
                         }
@@ -458,7 +466,7 @@ ControlPage {
                             AnimatedList {
                                 Layout.fillWidth: true
                                 spacing: Metrics.spacing.normal
-                                model: page.streams
+                                rows: page.streams
 
                                 delegate: AppRow {
                                 }
