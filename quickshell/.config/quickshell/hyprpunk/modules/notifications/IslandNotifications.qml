@@ -13,9 +13,11 @@ import qs.windows
 
 // New notifications (Notifications.arrived), in a card that grows out of the dynamic
 // island of the screen you're on when they arrive. They leave after the time set in the
-// settings unless hovered or critical. They claim the island like a card that comes on its own (ScreenState), so
-// they wait while a panel or a prompt holds it, and they fold back into it when the
-// notification center opens.
+// settings unless hovered or critical, and the card holds three: the ones that arrive
+// while it's full wait their turn, the oldest popup leaving for the next one, so each is
+// shown however fast they come. They claim the island like a card that comes on its own
+// (ScreenState), so they wait while a panel or a prompt holds it, and they fold back
+// into it when the notification center opens.
 Card {
     id: popups
 
@@ -31,7 +33,10 @@ Card {
     // The card's margin around the notifications.
     readonly property int cardPadding: Metrics.spacing.small
     readonly property int maxVisible: 3
-    readonly property int stayingCount: popupList.staying
+    // The ones that arrived while the card was full, oldest first, as the card's entries.
+    property var waiting: []
+    // Everything left to show: the card stays out between a popup and the next.
+    readonly property int toShow: popupList.staying + waiting.length
     readonly property var screenState: ShellState.forScreen(screen)
     property real progress: opened ? 1 : 0
     // The card's full height, kept while it folds: shrinking with the last popup's gap,
@@ -56,28 +61,50 @@ Card {
             return ;
 
         const id = notification.id;
-        joining = opened;
-        popupList.add([notification]);
+        waiting = waiting.concat([{
+            "id": id,
+            "notification": notification
+        }]);
         notification.closed.connect(() => {
-            return popupList.leave([id]);
+            popups.waiting = popups.waiting.filter((entry) => {
+                return entry.id !== id;
+            });
+            popupList.leave([id]);
         });
-        // Overflowing popups leave with the regular animation instead of vanishing.
-        popupList.leave(popupList.entries.filter((entry) => {
-            return !popupList.leaving(entry.id);
-        }).slice(maxVisible).map((entry) => {
-            return entry.id;
-        }));
+        admit();
     }
 
-    // Every popup at once, critical ones too: they're all listed in the open center.
+    // The next ones waiting come in while the card has room. Listed before it leaves the
+    // queue, so the card never reads as having nothing left to show in between.
+    function admit() {
+        while (waiting.length > 0 && popupList.inSight < maxVisible) {
+            joining = opened;
+            popupList.add([waiting[0].notification]);
+            waiting = waiting.slice(1);
+        }
+    }
+
+    // The oldest popup leaves, its room going to the next one waiting.
+    function passOn() {
+        const staying = popupList.entries.filter((entry) => {
+            return !popupList.leaving(entry.id);
+        });
+        if (staying.length > 0)
+            popupList.leave([staying[staying.length - 1].id]);
+
+    }
+
+    // Every popup at once, critical ones and those waiting too: they're all listed in the
+    // open center.
     function leaveAll() {
+        waiting = [];
         popupList.leave(popupList.entries.map((entry) => {
             return entry.id;
         }));
     }
 
     anchors.fill: parent
-    opened: stayingCount > 0 && screenState !== null && screenState.islandOwner === "popups"
+    opened: toShow > 0 && screenState !== null && screenState.islandOwner === "popups"
     cardWidth: 400
     cardHeight: openHeight
     openRadius: Metrics.cardRadius
@@ -89,19 +116,20 @@ Card {
     cardRadius: card.radius
 
     // Wants the island while something stays to show, and gives it back once it's gone.
-    onStayingCountChanged: {
-        if (stayingCount > 0)
+    onToShowChanged: {
+        if (toShow > 0)
             screenState?.claim("popups", 3);
         else
             screenState?.release("popups");
     }
     Component.onDestruction: screenState?.release("popups")
-    // Folded with nothing left to show: drops whatever is still leaving, so no stray
-    // entry keeps its folded card over the island.
+    // Folded with no popup staying: drops whatever is still leaving, so no stray entry
+    // keeps its folded card over the island, and the ones waiting take the room.
     onProgressChanged: {
-        if (progress === 0 && stayingCount === 0)
+        if (progress === 0 && popupList.staying === 0) {
             popupList.clear();
-
+            admit();
+        }
     }
 
     // The last popup's gap below it is the card's bottom padding.
@@ -111,6 +139,16 @@ Card {
         value: column.height + popups.cardPadding
         when: popups.opened
         restoreMode: Binding.RestoreNone
+    }
+
+    // While others wait, the popups pass one at a time: the oldest gives its place every
+    // beat, long enough to read the one that just came in, a critical one like the rest.
+    // Left to their own time, the three would go together and three more come at once.
+    Timer {
+        interval: 1500
+        repeat: true
+        running: popups.waiting.length > 0 && popups.opened && !cardHover.hovered
+        onTriggered: popups.passOn()
     }
 
     Connections {
@@ -245,6 +283,15 @@ Card {
                             token: Motion.leave.normal
                         }
 
+                        // Its room goes to the next one waiting, which opens its own as
+                        // this one closes: the card keeps its height between the two.
+                        ScriptAction {
+                            script: {
+                                popups.popupList.vanish(popup.modelData.id);
+                                popups.admit();
+                            }
+                        }
+
                         // Then close the gap so the card shrinks around the others.
                         Anim {
                             target: popup
@@ -254,7 +301,7 @@ Card {
                         }
 
                         ScriptAction {
-                            script: popups.popupList.drop(popup.modelData.id)
+                            script: popups.popupList.drop([popup.modelData.id])
                         }
 
                     }

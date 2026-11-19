@@ -11,7 +11,18 @@ QtObject {
     property var entries: []
     // The ones playing their exit animation.
     property var leavingIds: []
-    readonly property int staying: entries.length - leavingIds.length
+    // The leaving ones already out of sight, their gap still closing.
+    property var vanishedIds: []
+    // Both counted once a change is whole: read between two of its lists, they would
+    // step through a count that never was, and the card following them would start over.
+    property int staying: 0
+    // Still in sight, those on their way out included: the room that's taken.
+    property int inSight: 0
+
+    function count() {
+        staying = entries.length - leavingIds.length;
+        inSight = entries.length - vanishedIds.length;
+    }
 
     function includes(id) {
         return entries.some((entry) => {
@@ -25,12 +36,16 @@ QtObject {
 
     // On top, newest first.
     function add(notifications) {
+        if (notifications.length === 0)
+            return ;
+
         entries = notifications.map((notification) => {
             return {
                 "id": notification.id,
                 "notification": notification
             };
         }).concat(entries);
+        count();
     }
 
     // Starts their exit animation: they're dropped once it's over.
@@ -38,23 +53,40 @@ QtObject {
         const fresh = ids.filter((id) => {
             return includes(id) && !leaving(id);
         });
-        if (fresh.length > 0)
-            leavingIds = leavingIds.concat(fresh);
+        if (fresh.length === 0)
+            return ;
 
+        leavingIds = leavingIds.concat(fresh);
+        count();
     }
 
-    function drop(id) {
+    // Out of sight: what's left of its exit only gives its room back.
+    function vanish(id) {
+        vanishedIds = vanishedIds.concat([id]);
+        count();
+    }
+
+    function drop(ids) {
+        if (ids.length === 0)
+            return ;
+
+        const gone = new Set(ids);
+        const kept = (id) => {
+            return !gone.has(id);
+        };
+        vanishedIds = vanishedIds.filter(kept);
+        leavingIds = leavingIds.filter(kept);
         entries = entries.filter((entry) => {
-            return entry.id !== id;
+            return kept(entry.id);
         });
-        leavingIds = leavingIds.filter((leavingId) => {
-            return leavingId !== id;
-        });
+        count();
     }
 
     function clear() {
-        entries = [];
+        vanishedIds = [];
         leavingIds = [];
+        entries = [];
+        count();
     }
 
 }

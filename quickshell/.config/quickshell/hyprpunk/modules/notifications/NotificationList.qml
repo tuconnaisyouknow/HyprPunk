@@ -5,8 +5,9 @@ import qs.components
 import qs.theme
 import qs.services
 
-// Every notification still waiting, newest first, with a button to clear them all.
-// It sits next to the calendar, in the card that grows out of the island.
+// Every notification still waiting, newest first, with a button to clear them all: the
+// ones in view leave one after another, the rest just goes. It sits next to the
+// calendar, in the card that grows out of the island.
 ColumnLayout {
     id: list
 
@@ -18,59 +19,77 @@ ColumnLayout {
     property var clearQueue: []
     // Waiting, not counting the ones on their way out.
     readonly property int count: listed.staying
-    // The ones already slid out of sight, their gap still closing.
-    property var slidOutIds: []
     // Still in sight, those sliding out included: the card only narrows once the last one
     // has slid out, or the calendar would come sliding in under it.
-    readonly property int shownCount: listed.entries.length - slidOutIds.length
+    readonly property int shownCount: listed.inSight
+    // While the ones out of view are dismissed together: they're already off the list,
+    // and going through it again for each would stall a long one.
+    property bool dismissing: false
 
-    // Dismisses the notifications one after another, from top to bottom.
+    // Dismisses the notifications in view one after another, from top to bottom. The
+    // others have no exit to show, and waiting for each would never end: they just go.
     function clearAll() {
-        clearQueue = listed.entries.filter((entry) => {
+        const entries = listed.entries;
+        const first = view.indexAt(0, view.contentY);
+        if (first < 0)
+            return ;
+
+        // Nothing under the view's bottom edge: the list ends inside it.
+        const atBottom = view.indexAt(0, view.contentY + view.height - 1);
+        const last = atBottom < 0 ? entries.length - 1 : atBottom;
+        const staying = (entry) => {
             return !listed.leaving(entry.id);
-        });
+        };
+        const outOfView = entries.slice(0, first).concat(entries.slice(last + 1));
+        const toDismiss = outOfView.filter(staying);
+        clearQueue = entries.slice(first, last + 1).filter(staying);
+        listed.drop(outOfView.map((entry) => {
+            return entry.id;
+        }));
+        dismissing = true;
+        for (const entry of toDismiss) entry.notification.dismiss()
+        dismissing = false;
         clearStep.restart();
     }
 
     function sync() {
         const waiting = Notifications.waiting;
-        const ids = waiting.map((notification) => {
+        const ids = new Set(waiting.map((notification) => {
             return notification.id;
-        });
+        }));
+        const listedIds = new Set(listed.entries.map((entry) => {
+            return entry.id;
+        }));
         listed.add(waiting.filter((notification) => {
-            return !listed.includes(notification.id);
+            return !listedIds.has(notification.id);
         }).reverse());
         const gone = listed.entries.filter((entry) => {
-            return !ids.includes(entry.id) && !listed.leaving(entry.id);
+            return !ids.has(entry.id) && !listed.leaving(entry.id);
         }).map((entry) => {
             return entry.id;
         });
         // Hidden, the card draws no frames and its animations stand still: they would
         // all play at once the next time it opens. The ones closed meanwhile just go.
         if (!shown)
-            for (const id of gone) drop(id)
+            listed.drop(gone);
         else
             listed.leave(gone);
-    }
-
-    function drop(id) {
-        listed.drop(id);
-        slidOutIds = slidOutIds.filter((slidId) => {
-            return slidId !== id;
-        });
     }
 
     // Closing the card: the ones still leaving go at once, for the same reason.
     onShownChanged: {
         if (!shown)
-            for (const id of listed.leavingIds.slice()) drop(id)
+            listed.drop(listed.leavingIds);
+
     }
     Component.onCompleted: sync()
     spacing: Metrics.spacing.large
 
     Connections {
         function onWaitingChanged() {
-            list.sync();
+            if (!list.dismissing)
+                list.sync();
+
         }
 
         target: Notifications
@@ -100,6 +119,8 @@ ColumnLayout {
     }
 
     ListView {
+        id: view
+
         Layout.fillWidth: true
         Layout.fillHeight: true
         // The gap is part of each entry, so it closes with the exit animation.
@@ -138,7 +159,7 @@ ColumnLayout {
                 if (leaving) {
                     const id = notificationId;
                     Qt.callLater(() => {
-                        return list.drop(id);
+                        return list.listed.drop([id]);
                     });
                 }
             }
@@ -165,7 +186,7 @@ ColumnLayout {
                 }
 
                 ScriptAction {
-                    script: list.slidOutIds = list.slidOutIds.concat([entry.notificationId])
+                    script: list.listed.vanish(entry.notificationId)
                 }
 
                 Anim {
@@ -176,7 +197,7 @@ ColumnLayout {
                 }
 
                 ScriptAction {
-                    script: list.drop(entry.notificationId)
+                    script: list.listed.drop([entry.notificationId])
                 }
 
             }

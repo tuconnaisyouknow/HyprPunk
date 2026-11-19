@@ -54,7 +54,7 @@ Scope {
         restored = restored.filter((entry) => {
             return entry.id !== id;
         });
-        save();
+        Qt.callLater(save);
     }
 
     // Same Quickshell (a reload): the live ones are still there. A new one: they all
@@ -80,7 +80,8 @@ Scope {
         Qt.callLater(save);
     }
 
-    onLiveChanged: save()
+    // Once for all that changed together: clearing a long list writes the file once.
+    onLiveChanged: Qt.callLater(save)
 
     FileView {
         id: file
