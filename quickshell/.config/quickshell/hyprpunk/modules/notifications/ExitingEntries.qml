@@ -1,8 +1,8 @@
 import QtQuick
 
 // Notifications listed until their exit animation is over, so several can leave at once
-// and a closed one keeps its card while it goes: the island's popups and the notification
-// center's list. An entry is { id, notification }: the id is kept apart because a closed
+// and a closed one keeps its card while it goes: the notification center's list (the
+// island's popups have their own stack, Popups). An entry is { id, notification }: the id is kept apart because a closed
 // notification is destroyed, and lingers as an empty object with no id to tell it by.
 QtObject {
     id: exiting
@@ -79,13 +79,6 @@ QtObject {
         entries = entries.filter((entry) => {
             return kept(entry.id);
         });
-        count();
-    }
-
-    function clear() {
-        vanishedIds = [];
-        leavingIds = [];
-        entries = [];
         count();
     }
 
