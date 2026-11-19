@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
-# Makes one of the installed login screens the active one, in the wallpaper's colors.
-# wallpaperctl.sh runs it through pkexec on every new wallpaper, and the polkit rule lets
-# it skip the password. sddm.sh installs it in /usr/local/bin, owned by root, so nothing
-# else can change it.
-#   hyprpunk-login-screen <theme> < colors
-# The colors come as key=#rrggbb lines, and land in the theme's theme.conf.user, which
-# SDDM reads over its theme.conf.
+# Makes one of the installed login screens the active one, and gives them all your
+# desktop's look. wallpaperctl.sh runs it through pkexec on every new wallpaper, glass or
+# regional format, and the polkit rule lets it skip the password. sddm.sh installs it in
+# /usr/local/bin, owned by root, so nothing else can change it.
+#   hyprpunk-login-screen <theme> < look
+# The look comes as key=value lines: the wallpaper's colors (#rrggbb), the glass and the
+# regional formats. It's the desktop's, not a theme's, so it's kept once: every login
+# screen's theme.conf.user is a link to it (sddm.sh), which SDDM reads over theme.conf.
 set -euo pipefail
 
 THEMES_DIR="/usr/share/sddm/themes"
 CONF_DIR="/etc/sddm.conf.d"
-COLOR_KEYS="crust|mantle|surface0|primary|secondary|red"
+# Where sddm.sh points every login screen: keep both alike
+LOOK_FILE="/var/lib/hyprpunk/login-look.conf"
+# What the login screen reads, each with the only values it takes
+LOOK="(crust|base|primary|secondary|red)=#[0-9a-fA-F]{6}|glass=(classic|liquid)|region=(us|fr)"
 
 # Only a theme already installed: a name, nothing that could point elsewhere
 theme="${1:-}"
@@ -19,21 +23,22 @@ theme="${1:-}"
   exit 1
 }
 
-# Only the colors Main.qml reads, each a plain hex color. Anyone can run this without a
-# password, so nothing else gets through, and only the first few kilobytes are read.
-colors="$(mktemp --tmpdir="$THEMES_DIR/$theme" theme.conf.user.XXXXXX)"
-trap 'rm -f "$colors"' EXIT
-printf '[General]\n' >"$colors"
+# Anyone can run this without a password, so nothing else gets through, and only the
+# first few kilobytes are read.
+mkdir -p "$(dirname "$LOOK_FILE")"
+look="$(mktemp --tmpdir="$(dirname "$LOOK_FILE")" login-look.conf.XXXXXX)"
+trap 'rm -f "$look"' EXIT
+printf '[General]\n' >"$look"
 while IFS= read -r line; do
   [[ -z "$line" || "$line" == \#* ]] && continue
-  [[ "$line" =~ ^($COLOR_KEYS)=#[0-9a-fA-F]{6}$ ]] || {
-    echo "Not a login screen color: $line" >&2
+  [[ "$line" =~ ^($LOOK)$ ]] || {
+    echo "Not part of the login screen's look: $line" >&2
     exit 1
   }
-  printf '%s\n' "$line" >>"$colors"
+  printf '%s\n' "$line" >>"$look"
 done < <(head -c 4096)
-chmod 644 "$colors"
-mv -f "$colors" "$THEMES_DIR/$theme/theme.conf.user"
+chmod 644 "$look"
+mv -f "$look" "$LOOK_FILE"
 
 # This drop-in is ours alone, so it's written whole, and swapped in at once
 mkdir -p "$CONF_DIR"

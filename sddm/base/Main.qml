@@ -1,122 +1,252 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Window
-import Qt5Compat.GraphicalEffects
-import SddmComponents 2.0
 
-// The login screen every theme shares, drawn over the theme's own video. sddm.sh
-// copies it into each theme.
+// The login screen every theme shares: the lock screen over the theme's own video,
+// before anyone's there. Who logs in on the left of the bar, the session and the power on
+// the right, the island in the middle, where a padlock waits and your password comes as
+// dots, and the date and the time where the lock screen has them. sddm.sh copies it into
+// each theme.
 Rectangle {
     id: root
+
+    // All is drawn at the shell's sizes, a 1080p screen's, and grows with the screen:
+    // SDDM knows nothing of the scale Hyprland gives it.
+    readonly property real zoom: Screen.height / 1080
+    property int userIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
+    property int sessionIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
+    readonly property QtObject user: users.count > 0 ? users.objectAt(userIndex) : null
+    readonly property QtObject session: sessions.count > 0 ? sessions.objectAt(sessionIndex) : null
+    // SDDM is checking the password.
+    property bool checking: false
+    // Told in the island after a failed try, "" otherwise.
+    property string error: ""
+    // Past its first frames: laid out, so what follows a change eases to it.
+    property bool drawn: false
+    property date now: new Date()
+    // The clock follows the regional formats you picked for the desktop: 12 h in us,
+    // 24 h in fr.
+    readonly property var formats: Qt.locale(config.region === "fr" ? "fr_FR" : "en_US")
+    readonly property bool twelveHour: /a/i.test(formats.timeFormat(Locale.ShortFormat))
+
+    // The hour on its own, AM/PM being a text of its own. Done by hand: Qt only counts
+    // to 12 in a format that shows AM/PM too.
+    function hourText(date) {
+        const hour = date.getHours();
+        return twelveHour ? String(hour % 12 || 12) : String(hour).padStart(2, "0");
+    }
+
+    // "AM" or "PM" in us, nothing in fr.
+    function meridiemText(date) {
+        if (!twelveHour)
+            return "";
+
+        return date.getHours() < 12 ? formats.amText : formats.pmText;
+    }
+
+    function submit() {
+        if (input.text === "" || checking || user === null)
+            return ;
+
+        error = "";
+        checking = true;
+        sddm.login(user.name, input.text, sessionIndex);
+    }
+
+    // A wrong password: the island shakes its head and says why. In neon the video
+    // glitches too, as the lock screen's background does: the machine awake faults, the
+    // dream only says no.
+    function refuse() {
+        checking = false;
+        input.text = "";
+        error = "Access denied";
+        refusal.restart();
+        shakeAnimation.restart();
+        if (Colors.emits)
+            glitchAnimation.restart();
+
+    }
+
     width: Screen.width
     height: Screen.height
-    color: root.crust
+    color: Colors.crust
+    Component.onCompleted: keyboard.numLock = true
 
-    // Everything is drawn for a 768 px tall screen and scaled from there
-    readonly property real s: Screen.height / 768
-    // Outside SDDM (a preview), there is no session to pick nor anyone to log in
-    property bool isQuickshell: typeof sddm === "undefined" || sddm.hostName === undefined
-    property int sessionIndex: (typeof sessionModel !== "undefined" && sessionModel.lastIndex >= 0) ? sessionModel.lastIndex : 0
-    property int userIndex: (typeof userModel !== "undefined" && userModel.lastIndex >= 0) ? userModel.lastIndex : 0
-    property real ui: 0 // Fades the interface in, 0 to 1
+    // A pill holding one icon, a circle.
+    component IconPill: Pill {
+        id: iconPill
 
-    // The wallpaper's palette: wallpaperctl.sh writes it to theme.conf.user, which SDDM
-    // reads over theme.conf and its Catppuccin Mocha.
-    readonly property color crust: config.crust
-    readonly property color mantle: config.mantle
-    readonly property color surface0: config.surface0
-    readonly property color primary: config.primary
-    readonly property color secondary: config.secondary
-    readonly property color red: config.red
-    readonly property color text: "#cdd6f4"
-    readonly property color shadow: "#80000000"
-    readonly property color topOverlay: Qt.rgba(crust.r, crust.g, crust.b, 0.88)
-    readonly property color bottomOverlay: Qt.rgba(crust.r, crust.g, crust.b, 0.96)
+        property alias icon: glyph.text
+        property alias ink: glyph.color
 
-    // The shell's own fonts, which sddm.sh copies next to the theme: SDDM can't read
-    // the ones in your home. Loading the bold file too gives real bold, not a thickened
-    // regular.
+        width: height
+        clickable: true
+
+        // A whole, even number of pixels, the glyph on a whole pixel inside: its cell is a
+        // fraction wide, and alone in the circle it would be drawn off the middle.
+        Item {
+            implicitWidth: 2 * Math.round(glyph.implicitWidth / 2)
+            implicitHeight: glyph.implicitHeight
+
+            Text {
+                id: glyph
+
+                x: Math.round((parent.width - implicitWidth) / 2)
+                color: iconPill.hovered ? Colors.primary : Colors.secondary
+                font.family: Metrics.font
+                font.pixelSize: Metrics.text.title
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Motion.color.duration
+                        easing.type: Motion.color.easing
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    // Restarting and shutting down ask for a second click, as in the shell's session
+    // menu: the first one arms the pill, lit in red, for a few seconds or until the
+    // pointer leaves it.
+    component PowerPill: IconPill {
+        id: powerPill
+
+        property bool armed: false
+
+        signal confirmed()
+
+        ink: armed ? Colors.over(Colors.red) : hovered ? Colors.primary : Colors.secondary
+        // Its halo reaches past the pill in neon.
+        clip: false
+        onHoveredChanged: {
+            if (!hovered)
+                armed = false;
+
+        }
+        onClicked: {
+            if (armed)
+                confirmed();
+            else
+                armed = true;
+        }
+
+        Timer {
+            interval: Motion.armed
+            running: powerPill.armed
+            onTriggered: powerPill.armed = false
+        }
+
+        underlay: Light {
+            anchors.fill: parent
+            color: Colors.alpha(Colors.red, 0.9)
+            opacity: powerPill.armed ? 1 : 0
+            visible: opacity > 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Motion.color.duration
+                    easing.type: Motion.color.easing
+                }
+
+            }
+
+        }
+
+    }
+
+    // The shell's fonts, which sddm.sh copies next to the theme: SDDM can't read the ones
+    // in your home. Each weight has its own file, so none is a thickened regular.
     FontLoader {
-        id: textFont
         source: "font/HyprPunkText-Regular.ttf"
+    }
+
+    FontLoader {
+        source: "font/HyprPunkText-SemiBold.ttf"
     }
 
     FontLoader {
         source: "font/HyprPunkText-Bold.ttf"
     }
 
-    // The clock's, as on the lock screen
     FontLoader {
-        id: displayFont
         source: "font/HyprPunkDisplay-Bold.ttf"
     }
 
-    // Invisible lists, only there to read the session's and the user's names from SDDM
-    ListView {
-        id: sessionHelper
-        model: typeof sessionModel !== "undefined" ? sessionModel : null
-        currentIndex: root.sessionIndex
-        opacity: 0
-        width: 100
-        height: 100
-        z: -100
-        delegate: Item {
-            property string sName: model.name || ""
+    // Never shown, only there to read the users' and the sessions' names from SDDM.
+    Instantiator {
+        id: users
+
+        model: userModel
+
+        QtObject {
+            required property string name
+            required property string realName
         }
+
     }
 
-    ListView {
-        id: userHelper
-        model: typeof userModel !== "undefined" ? userModel : null
-        currentIndex: root.userIndex
-        opacity: 0
-        width: 100
-        height: 100
-        z: -100
-        delegate: Item {
-            property string uName: model.realName || model.name || ""
-            property string uLogin: model.name || ""
+    Instantiator {
+        id: sessions
+
+        model: sessionModel
+
+        QtObject {
+            required property string name
         }
+
     }
 
-    // Ready to type, once SDDM has settled
     Timer {
-        interval: 300
+        interval: 1000
         running: true
-        onTriggered: pwd.forceActiveFocus()
+        repeat: true
+        onTriggered: root.now = new Date()
     }
 
-    Component.onCompleted: {
-        fadeAnim.start();
-        keyboard.numLock = true;
+    Timer {
+        id: refusal
+
+        interval: Motion.refusal
+        onTriggered: root.error = ""
     }
 
-    NumberAnimation {
-        id: fadeAnim
-        target: root
-        property: "ui"
-        from: 0
-        to: 1
-        duration: 800
-        easing.type: Easing.OutCubic
+    Connections {
+        function onLoginFailed() {
+            root.refuse();
+        }
+
+        target: sddm
     }
 
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.ArrowCursor
-        z: -1
+    // The first frames come late, while SDDM builds the screen: a move started with them
+    // would skip its start. Everything comes from the third one.
+    FrameAnimation {
+        running: true
+        onTriggered: {
+            if (currentFrame < 2)
+                return ;
+
+            stop();
+            root.drawn = true;
+            arrival.start();
+        }
     }
 
-    Loader {
+    BackgroundVideo {
         id: background
+
         anchors.fill: parent
-        source: "BackgroundVideo.qml"
     }
 
-    // In neon, a wrong password glitches the video for a moment, as it does the lock
-    // screen's background: the machine awake faults, the dream only says no. The video is
-    // only copied into a picture while the glitch plays.
+    // The glitch tears a picture of the video, only taken while it plays.
     ShaderEffectSource {
         id: videoFrame
+
         anchors.fill: parent
         sourceItem: background
         live: glitchEffect.visible
@@ -126,12 +256,13 @@ Rectangle {
     ShaderEffect {
         id: glitchEffect
 
-        // Through the glitch, from 0 to 1: four patterns, each weaker than the last
+        // Through the glitch, from 0 to 1: a new pattern with each of the island's
+        // swings, each weaker than the last.
         property real phase: 1
-        readonly property int step: Math.floor(phase * 4)
-        readonly property real glitch: 1 - step / 4
+        readonly property int step: Math.floor(phase * Motion.shake.swings.length)
+        readonly property real glitch: 1 - step / Motion.shake.swings.length
         readonly property real glitchSeed: step + 1
-        readonly property color glitchColor: root.red
+        readonly property color glitchColor: Colors.red
         readonly property vector2d size: Qt.vector2d(width, height)
         readonly property var source: videoFrame
 
@@ -139,480 +270,427 @@ Rectangle {
         visible: phase < 1
         fragmentShader: "glitch.frag.qsb"
 
-        // As long as the lock screen's, where it lasts the island's shake of the head
         NumberAnimation {
-            id: glitchAnim
+            id: glitchAnimation
+
             target: glitchEffect
             property: "phase"
             from: 0
             to: 1
-            duration: 240
+            duration: Motion.shake.duration
         }
+
     }
 
-    // Two thin accent lines down the sides
-    Rectangle {
-        anchors.fill: parent
-        z: 1
-        opacity: 0.08
-        color: "transparent"
-        visible: root.ui > 0
-
-        Rectangle {
-            width: 2 * s
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            anchors.leftMargin: 20 * s
-            color: root.primary
-        }
-        Rectangle {
-            width: 2 * s
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.rightMargin: 20 * s
-            color: root.primary
-        }
-    }
-
-    // Darken the top and the bottom so the text stays readable over the video
-    Rectangle {
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 120 * s
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: root.topOverlay }
-            GradientStop { position: 1.0; color: "transparent" }
-        }
-    }
-
-    Rectangle {
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 300 * s
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "transparent" }
-            GradientStop { position: 1.0; color: root.bottomOverlay }
-        }
-    }
-
-    // Shown above the login when the password is wrong
-    Text {
-        id: errText
-        text: ""
-        anchors.horizontalCenter: loginPanel.horizontalCenter
-        anchors.bottom: loginPanel.top
-        anchors.bottomMargin: 6 * s
-        color: root.red
-        font.family: textFont.name
-        font.pixelSize: 10 * s
-        font.bold: true
-        opacity: text.length > 0 ? 1 : 0
-    }
-
-    // Login, at the bottom center
-    Row {
-        id: loginPanel
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 6 * s
-        height: 28 * s
-        spacing: 8 * s
-        opacity: root.ui
-
-        // User, click to cycle through them
-        Item {
-            width: 140 * s
-            height: 28 * s
-
-            // Background
-            Rectangle {
-                anchors.fill: parent
-                color: root.mantle
-                opacity: 0.85
-                border.color: userMouse.containsMouse ? root.primary : root.secondary
-                border.width: 1 * s
-                Behavior on border.color { ColorAnimation { duration: 120 } }
-            }
-
-            Text {
-                id: userLabelText
-                text: "USER //"
-                color: root.secondary
-                font.family: textFont.name
-                font.pixelSize: 11 * s
-                font.bold: true
-                font.letterSpacing: 1 * s
-                anchors.left: parent.left
-                anchors.leftMargin: 12 * s
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            Text {
-                text: ((userHelper.currentItem && userHelper.currentItem.uName) ? userHelper.currentItem.uName : (userModel.lastUser || "User")).toUpperCase()
-                color: userMouse.containsMouse ? root.primary : root.text
-                font.family: textFont.name
-                font.pixelSize: 11 * s
-                font.bold: true
-                font.letterSpacing: 1 * s
-                anchors.left: userLabelText.right
-                anchors.leftMargin: 6 * s
-                anchors.right: parent.right
-                anchors.rightMargin: 12 * s
-                anchors.verticalCenter: parent.verticalCenter
-                elide: Text.ElideRight
-                Behavior on color { ColorAnimation { duration: 120 } }
-            }
-
-            MouseArea {
-                id: userMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    if (typeof userModel !== "undefined" && userModel.rowCount() > 0)
-                        root.userIndex = (root.userIndex + 1) % userModel.rowCount()
-                }
-            }
-        }
-
-        // Password
-        Item {
-            width: 180 * s
-            height: 28 * s
-
-            // Background
-            Rectangle {
-                anchors.fill: parent
-                color: root.mantle
-                opacity: 0.85
-                border.color: pwd.focus ? root.primary : root.secondary
-                border.width: 1 * s
-                Behavior on border.color { ColorAnimation { duration: 150 } }
-            }
-
-            TextInput {
-                id: pwd
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: 10 * s
-                anchors.rightMargin: 10 * s
-                color: root.primary
-                font.family: textFont.name
-                font.pixelSize: 12 * s
-                font.letterSpacing: 3 * s
-                echoMode: TextInput.Password
-                passwordCharacter: "■"
-                onTextEdited: errText.text = ""
-                focus: true
-                clip: true
-                verticalAlignment: TextInput.AlignVCenter
-                cursorVisible: false
-                cursorDelegate: Item { width: 0; height: 0 }
-                selectionColor: root.primary
-
-                property bool wasClicked: false
-                onActiveFocusChanged: if (!activeFocus && text.length === 0) wasClicked = false
-
-                Keys.onReturnPressed: doLogin()
-                Keys.onEnterPressed: doLogin()
-            }
-
-            Text {
-                anchors.left: parent.left
-                anchors.leftMargin: 10 * s
-                anchors.verticalCenter: parent.verticalCenter
-                text: "PASSWORD"
-                color: root.secondary
-                font.family: textFont.name
-                font.pixelSize: 9 * s
-                font.letterSpacing: 1 * s
-                opacity: pwd.text.length === 0 ? 0.5 : 0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
-            }
-
-            // A blinking block, like a terminal
-            Rectangle {
-                id: customCursor
-                width: 8 * s
-                height: pwd.cursorRectangle.height
-                color: root.primary
-                y: pwd.y + pwd.cursorRectangle.y
-                x: pwd.x + pwd.cursorRectangle.x
-                visible: pwd.focus && (pwd.text.length > 0 || pwd.wasClicked)
-
-                SequentialAnimation {
-                    loops: Animation.Infinite
-                    running: customCursor.visible
-                    NumberAnimation { target: customCursor; property: "opacity"; from: 1; to: 0.1; duration: 400 }
-                    NumberAnimation { target: customCursor; property: "opacity"; from: 0.1; to: 1; duration: 400 }
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    pwd.forceActiveFocus()
-                    pwd.wasClicked = true
-                }
-            }
-        }
-
-        // Login button
-        Item {
-            width: 80 * s
-            height: 28 * s
-
-            // Background
-            Rectangle {
-                anchors.fill: parent
-                color: root.mantle
-                opacity: loginMouse.containsMouse ? 0.95 : 0.85
-                border.color: loginMouse.containsMouse ? root.primary : root.secondary
-                border.width: 1 * s
-                Behavior on opacity { NumberAnimation { duration: 120 } }
-                Behavior on border.color { ColorAnimation { duration: 120 } }
-            }
-
-            Text {
-                id: btnText
-                anchors.centerIn: parent
-                text: "➔ LOGIN"
-                color: loginMouse.containsMouse ? root.primary : root.text
-                font.family: textFont.name
-                font.pixelSize: 9 * s
-                font.letterSpacing: 1 * s
-                font.bold: true
-                Behavior on color { ColorAnimation { duration: 120 } }
-            }
-
-            MouseArea {
-                id: loginMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: doLogin()
-            }
-        }
-    }
-
-    // Clock, date and actions along the top
     Item {
-        id: topHud
-        anchors.top: parent.top
-        anchors.topMargin: 40 * s
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.leftMargin: 60 * s
-        anchors.rightMargin: 60 * s
-        height: 80 * s
-        opacity: root.ui
+        id: bar
 
-        // Clock
-        Column {
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 4 * s
+        width: root.width / root.zoom
+        height: root.height / root.zoom
+        scale: root.zoom
+        transformOrigin: Item.TopLeft
 
-            Row {
-                spacing: 8 * s
-                Rectangle {
-                    width: 6 * s
-                    height: 6 * s
-                    color: root.primary
-                    anchors.verticalCenter: parent.verticalCenter
-                    SequentialAnimation on opacity {
-                        loops: Animation.Infinite
-                        NumberAnimation { from: 1.0; to: 0.3; duration: 600 }
-                        NumberAnimation { from: 0.3; to: 1.0; duration: 600 }
-                    }
-                }
-                Text {
-                    text: "WELCOME BACK, " + ((userHelper.currentItem && userHelper.currentItem.uName) ? userHelper.currentItem.uName : (userModel.lastUser || "USER")).toUpperCase()
-                    color: root.primary
-                    font.family: textFont.name
-                    font.pixelSize: 11 * s
-                    font.letterSpacing: 2 * s
-                    font.bold: true
-                }
-            }
+        // The video under the bar, blurred as Hyprland blurs the wallpaper under the
+        // shell's pills (the lock screen's values).
+        VideoBlur {
+            id: barBlur
 
-            Row {
-                spacing: 12 * s
-                anchors.left: parent.left
-
-                Text {
-                    id: hourText
-                    text: Qt.formatTime(new Date(), "HH")
-                    color: root.primary
-                    font.family: displayFont.name
-                    font.pixelSize: 60 * s
-                    font.bold: true
-                    // Each digit as wide as the others, so the clock never shifts
-                    font.features: { "tnum": 1 }
-                    font.letterSpacing: 1 * s
-                    Timer {
-                        interval: 60000
-                        running: true
-                        repeat: true
-                        onTriggered: hourText.text = Qt.formatTime(new Date(), "HH")
-                    }
-                    layer.enabled: true
-                    layer.effect: DropShadow {
-                        color: root.shadow
-                        radius: 6
-                        samples: 8
-                        horizontalOffset: 2 * s
-                        verticalOffset: 2 * s
-                    }
-                }
-
-                Rectangle {
-                    width: 3 * s
-                    height: 48 * s
-                    color: root.secondary
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: 2 * s
-                }
-
-                Text {
-                    id: minuteText
-                    text: Qt.formatTime(new Date(), "mm")
-                    color: root.secondary
-                    font.family: displayFont.name
-                    font.pixelSize: 60 * s
-                    font.bold: true
-                    // Each digit as wide as the others, so the clock never shifts
-                    font.features: { "tnum": 1 }
-                    font.letterSpacing: 1 * s
-                    Timer {
-                        interval: 1000
-                        running: true
-                        repeat: true
-                        onTriggered: minuteText.text = Qt.formatTime(new Date(), "mm")
-                    }
-                    layer.enabled: true
-                    layer.effect: DropShadow {
-                        color: root.shadow
-                        radius: 6
-                        samples: 8
-                        horizontalOffset: 2 * s
-                        verticalOffset: 2 * s
-                    }
-                }
-            }
+            width: parent.width
+            height: Metrics.barHeight
+            video: background
+            zoom: root.zoom
+            blurMax: 24
+            brightness: -0.015
+            saturation: 0.2
         }
 
-        // Date
-        Item {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            width: dateText.implicitWidth + 30 * s
-            height: 28 * s
+        // And under the clock's minutes, blurred and dimmed as the lock screen has its
+        // wallpaper.
+        VideoBlur {
+            id: clockBlur
 
-            Rectangle {
-                anchors.fill: parent
-                color: root.surface0
-                opacity: 0.3
-                border.color: root.secondary
-                border.width: 1 * s
+            x: clockBlock.x + timeRow.x + minutes.x
+            y: clockBlock.y + timeRow.y + minutes.y
+            width: minutes.width
+            height: minutes.height
+            video: background
+            zoom: root.zoom
+            blurMax: 64
+            brightness: -0.12
+        }
+
+        // Who logs in. With several users, a click goes to the next one.
+        Pill {
+            id: userPill
+
+            x: Metrics.barMargin
+            lift: Motion.drop.height
+            backdrop: barBlur
+            clickable: users.count > 1
+            onClicked: root.userIndex = (root.userIndex + 1) % users.count
+
+            Label {
+                text: "󰀄"
             }
+
+            Label {
+                text: root.user !== null ? root.user.realName || root.user.name : ""
+            }
+
+            Behavior on width {
+                enabled: root.drawn
+
+                NumberAnimation {
+                    duration: Motion.move.duration
+                    easing.type: Motion.move.easing
+                }
+
+            }
+
+        }
+
+        // The island, the lock screen's: a padlock while the session is closed. Your
+        // password replaces it as dots, and a wrong one makes it shake its head and say so.
+        Pill {
+            id: island
+
+            property real shake: 0
+
+            // Even, so its content lands on whole pixels around the middle, and never
+            // narrower than tall: around the padlock alone, a circle.
+            width: Math.max(2 * Math.round(implicitWidth / 2), height)
+            x: (bar.width - width) / 2 + shake
+            lift: Motion.drop.height
+            backdrop: barBlur
+            spacing: 0
+
+            // Each part opens in the place of the one before it closes, and parts itself
+            // from it by as much as it's still there.
+            IslandPart {
+                id: padlockPart
+
+                shown: input.text === "" && !root.checking
+                openWidth: 2 * Math.round(padlock.implicitWidth / 2)
+                openHeight: padlock.implicitHeight
+
+                Label {
+                    id: padlock
+
+                    x: Math.round((parent.width - implicitWidth) / 2)
+                    text: "󰌾"
+                    font.weight: Font.Normal
+                }
+
+            }
+
+            PasswordDots {
+                id: dotsPart
+
+                gap: Metrics.spacing.normal * padlockPart.presence
+                count: input.text.length
+                checking: root.checking
+                alert: root.error !== "" && input.text === ""
+            }
+
+            // Why the try failed, in the machine's capitals: decoded once the shake is
+            // over, and kept while its place closes.
+            IslandPart {
+                id: words
+
+                property string label: ""
+
+                gap: Metrics.spacing.normal * Math.min(1, padlockPart.presence + dotsPart.presence)
+                shown: root.error !== ""
+                openWidth: wordsText.implicitWidth
+                openHeight: wordsText.implicitHeight
+
+                Connections {
+                    function onErrorChanged() {
+                        if (root.error !== "")
+                            words.label = root.error;
+
+                    }
+
+                    target: root
+                }
+
+                Text {
+                    id: wordsText
+
+                    text: words.label
+                    color: decode.running ? "transparent" : Colors.red
+                    font.family: Metrics.font
+                    font.pixelSize: Metrics.text.body
+                    font.weight: Font.Bold
+                    font.capitalization: Font.AllUppercase
+                    font.letterSpacing: 1
+
+                    Decode {
+                        id: decode
+
+                        color: Colors.red
+                        wait: Motion.shake.duration
+                    }
+
+                }
+
+            }
+
+        }
+
+        SequentialAnimation {
+            id: shakeAnimation
+
+            NumberAnimation {
+                target: island
+                property: "shake"
+                to: Motion.shake.swings[0]
+                duration: Motion.shake.swingDuration
+            }
+
+            NumberAnimation {
+                target: island
+                property: "shake"
+                to: Motion.shake.swings[1]
+                duration: Motion.shake.swingDuration
+            }
+
+            NumberAnimation {
+                target: island
+                property: "shake"
+                to: Motion.shake.swings[2]
+                duration: Motion.shake.swingDuration
+            }
+
+            NumberAnimation {
+                target: island
+                property: "shake"
+                to: Motion.shake.swings[3]
+                duration: Motion.shake.swingDuration
+            }
+
+        }
+
+        // The session you log into. With several, a click goes to the next one.
+        Pill {
+            id: sessionPill
+
+            x: restartPill.x - Metrics.spacing.normal - width
+            lift: shutDownPill.lift
+            backdrop: barBlur
+            clickable: sessions.count > 1
+            onClicked: root.sessionIndex = (root.sessionIndex + 1) % sessions.count
+
+            Label {
+                text: "󰍹"
+            }
+
+            Label {
+                text: root.session !== null ? root.session.name : ""
+            }
+
+            Behavior on width {
+                enabled: root.drawn
+
+                NumberAnimation {
+                    duration: Motion.move.duration
+                    easing.type: Motion.move.easing
+                }
+
+            }
+
+        }
+
+        PowerPill {
+            id: restartPill
+
+            x: shutDownPill.x - Metrics.spacing.normal - width
+            lift: shutDownPill.lift
+            backdrop: barBlur
+            icon: "󰑓"
+            onConfirmed: sddm.reboot()
+        }
+
+        PowerPill {
+            id: shutDownPill
+
+            x: bar.width - Metrics.barMargin - width
+            lift: Motion.drop.height
+            backdrop: barBlur
+            icon: "\uf011"
+            onConfirmed: sddm.powerOff()
+        }
+
+        // The date and the time in the middle, as the lock screen draws them: the date as
+        // wide as the time, the hours in the accent, the minutes in glass like the pills.
+        Item {
+            id: clockBlock
+
+            // How much the time, then the date, are there as they come.
+            property real timeIn: 0
+            property real dateIn: 0
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Math.round((bar.height - height) / 2)
+            width: timeRow.implicitWidth
+            height: dateText.height + timeRow.implicitHeight
 
             Text {
                 id: dateText
-                anchors.centerIn: parent
-                text: Qt.formatDate(new Date(), "dddd, MMMM d").toUpperCase()
-                color: root.secondary
-                font.family: textFont.name
-                font.pixelSize: 10 * s
-                font.letterSpacing: 3 * s
-                font.bold: true
+
+                width: parent.width
+                text: root.formats.toString(root.now, "dddd d MMMM")
+                color: Colors.secondary
+                horizontalAlignment: Text.AlignHCenter
+                font.family: Metrics.displayFont
+                // As wide as the time: measured at 40px, then scaled to its width.
+                font.pixelSize: Math.max(12, Math.floor(40 * parent.width / Math.max(1, dateMetrics.advanceWidth)))
+                font.weight: Font.Bold
+                font.capitalization: Font.AllUppercase
+                opacity: clockBlock.dateIn
+
+                TextMetrics {
+                    id: dateMetrics
+
+                    text: dateText.text
+                    font.family: Metrics.displayFont
+                    font.pixelSize: 40
+                    font.weight: Font.Bold
+                    font.capitalization: Font.AllUppercase
+                }
+
+                transform: Translate {
+                    y: -12 * (1 - clockBlock.dateIn)
+                }
+
             }
-        }
 
-        // Session (click to cycle), reboot and shutdown
-        Row {
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 12 * s
+            Row {
+                id: timeRow
 
-            Repeater {
-                model: [
-                    { l: (sessionHelper.currentItem && sessionHelper.currentItem.sName ? sessionHelper.currentItem.sName : "Session").toUpperCase(), a: 2 },
-                    { l: "REBOOT", a: 0 },
-                    { l: "SHUTDOWN", a: 1 }
-                ]
+                y: dateText.height
+                opacity: clockBlock.timeIn
+                scale: 0.96 + 0.04 * clockBlock.timeIn
 
-                delegate: Item {
-                    visible: modelData.a === 2 ? !root.isQuickshell : true
-                    width: pmt.implicitWidth + 30 * s
-                    height: 28 * s
+                Text {
+                    id: hours
 
-                    // Panel
-                    Rectangle {
-                        anchors.fill: parent
-                        color: root.surface0
-                        opacity: pm.containsMouse ? 0.45 : 0.25
-                        border.color: pm.containsMouse ? root.primary : root.secondary
-                        border.width: 1 * s
-                        Behavior on opacity { NumberAnimation { duration: 120 } }
-                    }
+                    text: root.hourText(root.now)
+                    color: Colors.primary
+                    font: minutes.font
+                }
 
-                    Text {
-                        id: pmt
-                        anchors.centerIn: parent
-                        text: modelData.l
-                        color: pm.containsMouse ? root.primary : root.text
-                        font.family: textFont.name
-                        font.pixelSize: 10 * s
-                        font.letterSpacing: 1.5 * s
-                        font.bold: true
+                GlassText {
+                    id: minutes
 
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                    }
-
-                    MouseArea {
-                        id: pm
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (modelData.a === 0) {
-                                if (typeof sddm !== "undefined") sddm.reboot()
-                            } else if (modelData.a === 1) {
-                                if (typeof sddm !== "undefined") sddm.powerOff()
-                            } else if (typeof sessionModel !== "undefined" && sessionModel.rowCount() > 0) {
-                                root.sessionIndex = (root.sessionIndex + 1) % sessionModel.rowCount()
-                            }
-                        }
+                    backdrop: clockBlur
+                    text: Qt.formatDateTime(root.now, ":mm")
+                    font.family: Metrics.displayFont
+                    font.pixelSize: 150
+                    font.weight: Font.Bold
+                    // Each digit as wide as the others, so the clock never shifts.
+                    font.features: {
+                        "tnum": 1
                     }
                 }
+
+                // AM or PM in us, small on the digits' baseline.
+                Text {
+                    visible: text !== ""
+                    anchors.baseline: hours.baseline
+                    leftPadding: 14
+                    text: root.meridiemText(root.now)
+                    color: Colors.secondary
+                    font.family: Metrics.displayFont
+                    font.pixelSize: 40
+                    font.weight: Font.Bold
+                }
+
+                transform: Translate {
+                    y: 24 * (1 - clockBlock.timeIn)
+                }
+
             }
+
         }
-    }
 
-    Connections {
-        target: typeof sddm !== "undefined" ? sddm : null
-        function onLoginFailed() {
-            root.denied();
+        // The pills fall into place, the island first, then the time comes, and the date
+        // once it's there.
+        ParallelAnimation {
+            id: arrival
+
+            SequentialAnimation {
+                NumberAnimation {
+                    target: clockBlock
+                    property: "timeIn"
+                    to: 1
+                    duration: Motion.enter.duration
+                    easing.type: Motion.enter.easing
+                }
+
+                NumberAnimation {
+                    target: clockBlock
+                    property: "dateIn"
+                    to: 1
+                    duration: Motion.enter.duration
+                    easing.type: Motion.enter.easing
+                }
+
+            }
+
+            NumberAnimation {
+                target: island
+                property: "lift"
+                to: 0
+                duration: Motion.drop.fallDuration
+                easing.type: Motion.drop.fallEasing
+            }
+
+            SequentialAnimation {
+                PauseAnimation {
+                    duration: Motion.stagger
+                }
+
+                NumberAnimation {
+                    targets: [userPill, shutDownPill]
+                    property: "lift"
+                    to: 0
+                    duration: Motion.drop.fallDuration
+                    easing.type: Motion.drop.fallEasing
+                }
+
+            }
+
         }
+
+        // Takes the keys for the island's dots, never drawn.
+        TextInput {
+            id: input
+
+            focus: true
+            opacity: 0
+            readOnly: root.checking
+            echoMode: TextInput.Password
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                    root.submit();
+                else if (event.key === Qt.Key_Escape)
+                    input.text = "";
+                else
+                    return ;
+                event.accepted = true;
+            }
+
+            // SDDM gives the screen the keyboard a moment after showing it: the input
+            // takes it then.
+            Timer {
+                interval: 300
+                running: true
+                onTriggered: input.forceActiveFocus()
+            }
+
+        }
+
     }
 
-    function denied() {
-        errText.text = "ACCESS DENIED";
-        pwd.text = "";
-        pwd.focus = true;
-        if (config.theme === "neon")
-            glitchAnim.restart();
-    }
-
-    function doLogin() {
-        var u = (userHelper.currentItem && userHelper.currentItem.uLogin) ? userHelper.currentItem.uLogin : (typeof userModel !== "undefined" ? userModel.lastUser : "");
-        if (typeof sddm !== "undefined")
-            sddm.login(u, pwd.text, root.sessionIndex)
-    }
 }

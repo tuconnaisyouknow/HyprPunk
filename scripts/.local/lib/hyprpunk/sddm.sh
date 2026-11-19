@@ -2,9 +2,10 @@
 # Installs the login screen themes, one per subtheme, and what lets your wallpaper pick
 # among them. Each theme is the shared base (sddm/base) with its own video and name on
 # top. They're copied rather than linked: SDDM runs as its own user and can't read your home.
-#   sddm.sh install   copies every theme again, as the repository has it (install.sh)
-#   sddm.sh update    the same after you edited one, and puts your wallpaper's login
-#                     screen and colors back, which the copies replaced
+# Your desktop's look isn't in the copies: each one links to where the login screen's
+# tool keeps it, so they all have it, and copying them again loses nothing.
+#   sddm.sh install   copies every theme again, as the repository has it (install.sh,
+#                     or after you edited one)
 set -euo pipefail
 
 DOTFILES_DIR="$HOME/.dotfiles"
@@ -13,8 +14,11 @@ THEMES_DIR="$DOTFILES_DIR/sddm/themes"
 SYSTEM_THEMES_DIR="/usr/share/sddm/themes"
 # Each login screen is a subtheme's: its wallpapers' folder tells which theme it belongs to
 WALLPAPERS_DIR="$DOTFILES_DIR/wallpapers/Pictures/Wallpapers"
-# The shell's fonts, as fontsctl.py builds them
+# The shell's fonts, as fontsctl.py builds them, and the shader that draws its glass's rim
 FONTS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fonts/hyprpunk"
+GLASS_RIM="$DOTFILES_DIR/quickshell/.config/quickshell/hyprpunk/shaders/glassrim.frag.qsb"
+# Where hyprpunk-login-screen writes the desktop's look: keep both alike
+LOOK_FILE="/var/lib/hyprpunk/login-look.conf"
 
 # Catppuccin colors for the output
 C_ACCENT='\033[38;2;203;166;247m'
@@ -45,7 +49,6 @@ error() {
 usage() {
   printf "Usage:\n" >&2
   printf "  %s install\n" "$(basename "$0")" >&2
-  printf "  %s update\n" "$(basename "$0")" >&2
 }
 
 # SDDM needs these three files to load a theme: the base brings two, the theme its name
@@ -60,7 +63,8 @@ validate_theme_files() {
 }
 
 # The base first, so a theme can replace any of its files with its own. The login
-# screen is written in the shell's fonts, which it gets a copy of, and told its theme.
+# screen is written in the shell's fonts and draws the shell's glass: it gets a copy of
+# both, and is told its theme.
 copy_theme() {
   local theme_name="$1"
   local target="$SYSTEM_THEMES_DIR/$theme_name"
@@ -68,7 +72,7 @@ copy_theme() {
   sudo mkdir -p "$target"
   sudo cp -r "$BASE_DIR/." "$target/"
   sudo cp -r "$THEMES_DIR/$theme_name/." "$target/"
-  # Main.qml only glitches at a wrong password in neon
+  # Neon glitches at a wrong password and emits its lights
   local theme_dir
   theme_dir="$(find "$WALLPAPERS_DIR" -mindepth 2 -maxdepth 2 -type d -name "$theme_name" -print -quit)"
   if [ -n "$theme_dir" ]; then
@@ -76,7 +80,11 @@ copy_theme() {
   fi
   sudo rm -rf "$target/font"
   sudo install -Dm644 -t "$target/font" \
-    "$FONTS_DIR/HyprPunkText-Regular.ttf" "$FONTS_DIR/HyprPunkText-Bold.ttf" "$FONTS_DIR/HyprPunkDisplay-Bold.ttf"
+    "$FONTS_DIR/HyprPunkText-Regular.ttf" "$FONTS_DIR/HyprPunkText-SemiBold.ttf" "$FONTS_DIR/HyprPunkText-Bold.ttf" \
+    "$FONTS_DIR/HyprPunkDisplay-Bold.ttf"
+  sudo install -m644 "$GLASS_RIM" "$target/glassrim.frag.qsb"
+  # SDDM reads it over theme.conf, once the tool has written it
+  sudo ln -s "$LOOK_FILE" "$target/theme.conf.user"
 }
 
 install_themes() {
@@ -126,13 +134,6 @@ install)
   info "Installing the themes"
   install_themes
   install_login_screen_access
-  ;;
-update)
-  info "Installing the themes"
-  install_themes
-  install_login_screen_access
-  # The copies lost the wallpaper's colors
-  "$HOME/.local/lib/hyprpunk/wallpaperctl.sh" login
   ;;
 *)
   usage

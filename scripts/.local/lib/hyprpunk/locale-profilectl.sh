@@ -2,7 +2,8 @@
 # Picks the language of the interface and, separately, the regional formats (dates,
 # numbers, money), so you can have an English desktop with French dates.
 # Saved for Hyprland's env.lua, and passed on to systemd and D-Bus so the apps they
-# start follow too. Apps already open keep theirs until restarted.
+# start follow too. Apps already open keep theirs until restarted. The login screen's
+# clock follows the regional formats.
 #   locale-profilectl.sh get-language | get-regional | list
 #   locale-profilectl.sh set-language <us|fr> | set-regional <us|fr>   from the shell
 #   locale-profilectl.sh init [language] [regional]                    from install.sh
@@ -144,6 +145,9 @@ set-regional)
     exit 2
   }
   apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$2"
+  # The login screen's clock follows too
+  "$HOME/.local/lib/hyprpunk/wallpaperctl.sh" login ||
+    echo "Warning: the login screen keeps its old clock." >&2
   ;;
 init)
   [[ $# -le 3 ]] || {

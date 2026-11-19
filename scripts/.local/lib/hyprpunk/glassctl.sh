@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Picks the shell's glass: classic, with its crisp rim, or liquid, the lock screen
 # clock's see-through glass with a soft rim. The shell watches the saved choice and
-# restyles itself on the spot, and Hyprland is reloaded so its blur reaches the
-# fainter liquid glass (see glass_state.lua).
+# restyles itself on the spot, Hyprland is reloaded so its blur reaches the fainter
+# liquid glass (see glass_state.lua), and the login screen is told.
 #   glassctl.sh get
 #   glassctl.sh set <classic|liquid> | toggle   from the settings
 
@@ -32,6 +32,8 @@ write_style() {
   printf '%s\n' "$1" >"$temporary"
   mv -f "$temporary" "$STATE_FILE"
   hyprctl reload >/dev/null 2>&1 || true
+  "$HOME/.local/lib/hyprpunk/wallpaperctl.sh" login ||
+    echo "Warning: the login screen keeps its old glass." >&2
 }
 
 case "${1:-}" in

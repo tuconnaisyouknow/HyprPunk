@@ -10,7 +10,8 @@
 #   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order, their thumbnails and their palette's accent,
 #                                  secondary and surface (the current theme's by default)
 #   wallpaperctl.sh reset          back to the current theme's first wallpaper
-#   wallpaperctl.sh login          puts the saved one's login screen and colors back (sddm.sh, after an update)
+#   wallpaperctl.sh login          gives the login screens the saved one's video and your desktop's look again
+#                                  (a new glass or regional format)
 #   wallpaperctl.sh ensure         gives the saved one's look again without showing it (the default one's the
 #                                  first time), and makes every thumbnail (install.sh)
 #   wallpaperctl.sh status         prints the saved one and its theme
@@ -25,6 +26,7 @@ DEFAULT_THEME="neon"
 MATUGEN_DIR="$HOME/.config/matugen"
 PALETTES="$MATUGEN_DIR/palettes.conf"
 THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
+LIB_DIR="$HOME/.local/lib/hyprpunk"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
 LOGIN_COLORS="$STATE_DIR/login-colors.conf"
 # The new wallpaper grows as a circle out of the island, where the selector opens
@@ -296,9 +298,14 @@ TELL
 }
 
 # pkexec, since the login screen is the system's, and polkit lets this tool through. It
-# gets the colors matugen wrote for it on its input.
+# gets the desktop's look on its input: the colors matugen wrote for it, the glass and
+# the regional formats its clock follows.
 set_login_screen() {
-  pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")" <"$LOGIN_COLORS"
+  {
+    cat "$LOGIN_COLORS"
+    printf 'glass=%s\n' "$("$LIB_DIR/glassctl.sh" get)"
+    printf 'region=%s\n' "$("$LIB_DIR/locale-profilectl.sh" get-regional)"
+  } | pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")"
 }
 
 # A new wallpaper and its look. A wallpaper without a palette stops here, before

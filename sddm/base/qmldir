@@ -1,0 +1,5 @@
+# The login screen's own colors, sizes and motion, each one object for every file here,
+# as in the shell.
+singleton Colors Colors.qml
+singleton Metrics Metrics.qml
+singleton Motion Motion.qml
