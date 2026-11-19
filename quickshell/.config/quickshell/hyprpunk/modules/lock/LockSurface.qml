@@ -21,7 +21,7 @@ import qs.theme
 // leaves the island and grows into the clock in the middle, the bar's pills leave, move
 // or stay, and everything blurs into the wallpaper. A padlock opens in the island in the
 // time's place, the notifications leave with the time, the privacy dot and the recording
-// stay, and your password comes as dots in the padlock's place. Unlocking plays it all
+// stay, and your password comes as squares in the padlock's place. Unlocking plays it all
 // backwards: the padlock gives the time its place back, the clock flies home into it and
 // becomes the island's time again, and the lock hands the island over to a relay that
 // shows it as the lock goes (Lock.relay). With the animation off, only the island moves.
@@ -672,7 +672,7 @@ WlSessionLockSurface {
 
             // The island, the bar's as it was: the time leaves it for the clock with the
             // notifications and a padlock takes its place, the privacy dot and the recording
-            // stay, and your password replaces the padlock as dots, or an OSD takes it over.
+            // stay, and your password replaces the padlock as squares, or an OSD takes it over.
             // It moves to the middle and back with the other pills, and shakes its head at a
             // wrong password.
             Pill {
@@ -1024,7 +1024,7 @@ WlSessionLockSurface {
 
             }
 
-            // Takes the keys for the island's dots (PasswordDots), never drawn. Always focused:
+            // Takes the keys for the island's squares (PasswordSquares), never drawn. Always focused:
             // the first key typed opens them.
             TextInput {
                 id: input

@@ -45,7 +45,7 @@ QtObject {
         readonly property int swingDuration: 60
         readonly property int duration: swings.length * swingDuration
     }
-    // Something taking its size with a touch past it, then settling: a password's dot.
+    // Something taking its size with a touch past it, then settling: a password's square.
     readonly property var pop: ({
         "duration": 200,
         "easing": Easing.OutBack

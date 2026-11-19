@@ -5,7 +5,7 @@ import QtQuick.Window
 // The login screen every theme shares: the lock screen over the theme's own video,
 // before anyone's there. Who logs in on the left of the bar, the session and the power on
 // the right, the island in the middle, where a padlock waits and your password comes as
-// dots, and the date and the time where the lock screen has them. sddm.sh copies it into
+// squares, and the date and the time where the lock screen has them. sddm.sh copies it into
 // each theme.
 Rectangle {
     id: root
@@ -350,7 +350,7 @@ Rectangle {
         }
 
         // The island, the lock screen's: a padlock while the session is closed. Your
-        // password replaces it as dots, and a wrong one makes it shake its head and say so.
+        // password replaces it as squares, and a wrong one makes it shake its head and say so.
         Pill {
             id: island
 
@@ -383,8 +383,8 @@ Rectangle {
 
             }
 
-            PasswordDots {
-                id: dotsPart
+            PasswordSquares {
+                id: squaresPart
 
                 gap: Metrics.spacing.normal * padlockPart.presence
                 count: input.text.length
@@ -399,7 +399,7 @@ Rectangle {
 
                 property string label: ""
 
-                gap: Metrics.spacing.normal * Math.min(1, padlockPart.presence + dotsPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, padlockPart.presence + squaresPart.presence)
                 shown: root.error !== ""
                 openWidth: wordsText.implicitWidth
                 openHeight: wordsText.implicitHeight
@@ -663,7 +663,7 @@ Rectangle {
 
         }
 
-        // Takes the keys for the island's dots, never drawn.
+        // Takes the keys for the island's squares, never drawn.
         TextInput {
             id: input
 

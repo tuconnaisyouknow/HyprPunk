@@ -4,7 +4,7 @@ import qs.components
 import qs.theme
 
 // A part of the island that comes and goes beside the others: the time, the padlock, the
-// password's dots and why it failed (IslandView), a chip after them (IslandChips). Its place in
+// password's squares and why it failed (IslandView), a chip after them (IslandChips). Its place in
 // the row opens and closes, and the part grows out of its own middle at the same rate, so
 // it always fills that place whole: it shrinks into itself as it goes, never cut by an
 // edge.

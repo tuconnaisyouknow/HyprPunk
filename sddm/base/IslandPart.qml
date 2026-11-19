@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 
 // A part of the island that comes and goes beside the others, as in the shell's: the
-// padlock, the password's dots, why a try failed. Its place in the row opens and closes,
+// padlock, the password's squares, why a try failed. Its place in the row opens and closes,
 // and the part grows out of its own middle at the same rate, so it always fills that place
 // whole: it shrinks into itself as it goes, never cut by an edge.
 Item {
@@ -41,7 +41,7 @@ Item {
 
     }
 
-    // More dots, other words. Closed, it takes its new size at once and opens to it.
+    // More squares, other words. Closed, it takes its new size at once and opens to it.
     Behavior on openWidth {
         enabled: part.visible
 

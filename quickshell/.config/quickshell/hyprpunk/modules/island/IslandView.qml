@@ -7,7 +7,7 @@ import qs.theme
 
 // What the island shows: one row of parts that open and close in place (IslandPart), the
 // time between the music's cover and equalizer at its round ends, or the padlock in its
-// place while the lock has it, the password's dots in the padlock's place as you type,
+// place while the lock has it, the password's squares in the padlock's place as you type,
 // the time's chips and why a try failed, or an OSD over it as another face (IslandFace). Its size follows its content as it changes, so
 // the island around it needs no animation of its own. The bar's island, the lock's, and
 // the shape a card folds back into all draw it, so each picks up the island as it is.
@@ -38,7 +38,7 @@ Item {
     // The time drawn elsewhere for now, its place kept: the lock's clock, as it leaves
     // from there.
     property bool timeLifted: false
-    // The password typed on the lock screen (PasswordDots), and why the last try failed
+    // The password typed on the lock screen (PasswordSquares), and why the last try failed
     // (LockWords).
     property int typed: 0
     property bool checking: false
@@ -80,7 +80,7 @@ Item {
         islandHeight: Metrics.pillHeight
 
         // Each part opens in the place of the one before it closes: the padlock in the
-        // time's, the dots in the padlock's. Each parts itself from what's before it by as
+        // time's, the squares in the padlock's. Each parts itself from what's before it by as
         // much as something is open there, so the island stays centred on what's left.
         RowLayout {
             id: clockRow
@@ -150,8 +150,8 @@ Item {
 
             }
 
-            PasswordDots {
-                id: dotsPart
+            PasswordSquares {
+                id: squaresPart
 
                 count: view.typed
                 checking: view.checking
@@ -168,7 +168,7 @@ Item {
                 notificationsShown: view.chipsShown && view.timeShown
                 animated: view.animated
                 interactive: view.interactive && clockFace.shown
-                lead: Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + dotsPart.presence)
+                lead: Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + squaresPart.presence)
             }
 
             IslandEqualizer {
@@ -178,7 +178,7 @@ Item {
                 animated: view.animated
                 lifted: view.musicLifted
                 live: view.live
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + dotsPart.presence + chips.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + squaresPart.presence + chips.presence)
 
                 HoverHandler {
                     id: equalizerHover
@@ -191,7 +191,7 @@ Item {
             LockWords {
                 label: view.lockError
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + dotsPart.presence + chips.presence + equalizerPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + timePart.presence + padlockPart.presence + squaresPart.presence + chips.presence + equalizerPart.presence)
             }
 
         }
