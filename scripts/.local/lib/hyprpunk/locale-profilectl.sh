@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
-# Picks the language of the interface and, separately, the regional formats (dates,
-# numbers, money), so you can have an English desktop with French dates.
+# Picks the regional formats (dates, numbers, money). The interface is in English,
+# whatever the formats: HyprPunk speaks one language, and so do the apps around it.
 # Saved for Hyprland's env.lua, and passed on to systemd and D-Bus so the apps they
 # start follow too. Apps already open keep theirs until restarted. The login screen's
-# clock follows the regional formats.
-#   locale-profilectl.sh get-language | get-regional | list
-#   locale-profilectl.sh set-language <us|fr> | set-regional <us|fr>   from the shell
-#   locale-profilectl.sh init [language] [regional]                    from install.sh
-#   locale-profilectl.sh ensure                                        re-applies the saved ones
+# clock follows the formats too.
+#   locale-profilectl.sh get | list
+#   locale-profilectl.sh set <us|fr>    from the shell
+#   locale-profilectl.sh init [us|fr]   from install.sh
+#   locale-profilectl.sh ensure         re-applies the saved one
 
 set -euo pipefail
 
 STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 STATE_DIR="$STATE_HOME/hyprpunk"
-LANGUAGE_FILE="$STATE_DIR/locale-language"
+# The one language of the interface
+LANGUAGE_LOCALE="en_US.UTF-8"
 REGIONAL_FILE="$STATE_DIR/locale-regional"
 
 usage() {
-  echo "Usage: $0 {get-language|get-regional|list|set-language <us|fr>|set-regional <us|fr>|init [us|fr] [us|fr]|ensure}"
+  echo "Usage: $0 {get|list|set <us|fr>|init [us|fr]|ensure}"
 }
 
-# The saved choice, or the fallback when there's none (English for both)
+# The saved choice, or the United States' when there's none
 read_profile() {
-  local file="$1" fallback="$2"
-  local profile="$fallback"
-  if [[ -r "$file" ]]; then
-    IFS= read -r profile <"$file" || true
+  local profile="us"
+  if [[ -r "$REGIONAL_FILE" ]]; then
+    IFS= read -r profile <"$REGIONAL_FILE" || true
   fi
   case "$profile" in
   us | fr) printf '%s\n' "$profile" ;;
-  *) printf '%s\n' "$fallback" ;;
+  *) printf 'us\n' ;;
   esac
 }
 
@@ -42,18 +42,18 @@ profile_locale() {
 }
 
 write_profile() {
-  local target="$1" profile="$2" temporary
-  temporary=$(mktemp --tmpdir="$STATE_DIR" "$(basename "$target").XXXXXX")
-  printf '%s\n' "$profile" >"$temporary"
-  mv -f "$temporary" "$target"
+  local temporary
+  temporary=$(mktemp --tmpdir="$STATE_DIR" "$(basename "$REGIONAL_FILE").XXXXXX")
+  printf '%s\n' "$1" >"$temporary"
+  mv -f "$temporary" "$REGIONAL_FILE"
 }
 
 export_locale_environment() {
-  local language_locale="$1" regional_locale="$2"
+  local regional_locale="$1"
   local -a assignments
 
-  export LANG="$language_locale"
-  export LC_MESSAGES="$language_locale"
+  export LANG="$LANGUAGE_LOCALE"
+  export LC_MESSAGES="$LANGUAGE_LOCALE"
   export LC_CTYPE="$regional_locale"
   export LC_NUMERIC="$regional_locale"
   export LC_TIME="$regional_locale"
@@ -106,58 +106,42 @@ reload_hyprland() {
   fi
 }
 
-apply_profiles() {
-  local language="$1" regional="$2" language_locale regional_locale
-  profile_locale "$language" >/dev/null || {
-    echo "Unsupported interface language: $language" >&2
-    exit 2
-  }
-  profile_locale "$regional" >/dev/null || {
-    echo "Unsupported regional format: $regional" >&2
+apply_profile() {
+  local regional="$1" regional_locale
+  regional_locale=$(profile_locale "$regional") || {
+    echo "Unsupported regional formats: $regional" >&2
     exit 2
   }
 
-  language_locale=$(profile_locale "$language")
-  regional_locale=$(profile_locale "$regional")
   mkdir -p "$STATE_DIR"
-  write_profile "$LANGUAGE_FILE" "$language"
-  write_profile "$REGIONAL_FILE" "$regional"
-  export_locale_environment "$language_locale" "$regional_locale"
+  write_profile "$regional"
+  export_locale_environment "$regional_locale"
   reload_hyprland
-  printf 'Locale profiles: interface %s, regional formats %s\n' \
-    "$language_locale" "$regional_locale"
+  printf 'Locale: interface %s, regional formats %s\n' "$LANGUAGE_LOCALE" "$regional_locale"
 }
 
 case "${1:-}" in
-get-language) read_profile "$LANGUAGE_FILE" us ;;
-get-regional) read_profile "$REGIONAL_FILE" us ;;
+get) read_profile ;;
 list) printf 'us\nfr\n' ;;
-set-language)
+set)
   [[ $# -eq 2 ]] || {
     usage >&2
     exit 2
   }
-  apply_profiles "$2" "$(read_profile "$REGIONAL_FILE" us)"
-  ;;
-set-regional)
-  [[ $# -eq 2 ]] || {
-    usage >&2
-    exit 2
-  }
-  apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$2"
+  apply_profile "$2"
   # The login screen's clock follows too
   "$HOME/.local/lib/hyprpunk/wallpaperctl.sh" login ||
     echo "Warning: the login screen keeps its old clock." >&2
   ;;
 init)
-  [[ $# -le 3 ]] || {
+  [[ $# -le 2 ]] || {
     usage >&2
     exit 2
   }
-  apply_profiles "${2:-us}" "${3:-us}"
+  apply_profile "${2:-us}"
   ;;
 ensure)
-  apply_profiles "$(read_profile "$LANGUAGE_FILE" us)" "$(read_profile "$REGIONAL_FILE" us)"
+  apply_profile "$(read_profile)"
   ;;
 *)
   usage >&2

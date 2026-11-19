@@ -27,10 +27,10 @@ Scope {
         "icon": "󰍽",
         "label": "Mouse and touchpad"
     }, {
-        "name": "language",
-        "page": "LanguagePage.qml",
+        "name": "region",
+        "page": "RegionPage.qml",
         "icon": "󰌌",
-        "label": "Keyboard and language"
+        "label": "Keyboard and region"
     }, {
         "name": "sound",
         "page": "VolumePage.qml",

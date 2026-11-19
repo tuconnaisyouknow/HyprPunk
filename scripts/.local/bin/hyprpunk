@@ -7,7 +7,7 @@
 #   hyprpunk apply         applies the repository as it is, after you edit it
 #   hyprpunk glass ...     the shell's glass (glassctl.sh)
 #   hyprpunk keyboard ...  the keyboard layout and its Vim keys (keyboard-layoutctl.sh)
-#   hyprpunk locale ...    the language and regional formats (locale-profilectl.sh)
+#   hyprpunk locale ...    the regional formats (locale-profilectl.sh)
 #   hyprpunk display ...   screens, resolutions and layout (displayctl.sh)
 #   hyprpunk power ...     when the computer dims, locks and sleeps (powerctl.sh)
 #   hyprpunk notifications ...  how long they stay, which apps pop up (notificationctl.sh)
@@ -35,7 +35,7 @@ Usage: hyprpunk <command> [arguments]
   apply      apply the repository as it is, after you edit it
   glass      the shell's glass: get, set <classic|liquid>, toggle
   keyboard   the keyboard layout: get, list, set <fr|us>, toggle
-  locale     the language and formats: list, set-language <us|fr>, set-regional <us|fr>
+  locale     the regional formats: get, list, set <us|fr>
   display    screens, resolutions and layout (run it alone to list its commands)
   power      idle and sleep: get, set <key> <seconds|true|false>
   notifications  get, set duration <seconds>, mute|unmute|forget <app>

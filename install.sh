@@ -23,7 +23,6 @@ PACKAGES_FILE="$LOG_DIR/packages"
 current_step="Initialisation"
 sudo_keepalive_pid=""
 keyboard_layout=""
-locale_language=""
 locale_regional=""
 
 # What HyprPunk takes over in your home. Finding any of it means the system isn't fresh.
@@ -140,7 +139,6 @@ save_state() {
   {
     printf 'version=1\n'
     printf 'keyboard_layout=%s\n' "$keyboard_layout"
-    printf 'locale_language=%s\n' "$locale_language"
     printf 'locale_regional=%s\n' "$locale_regional"
   } >"$state_tmp"
   mv -f "$state_tmp" "$STATE_FILE"
@@ -153,7 +151,6 @@ load_state() {
     case "$key" in
     version) version="$value" ;;
     keyboard_layout) keyboard_layout="$value" ;;
-    locale_language) locale_language="$value" ;;
     locale_regional) locale_regional="$value" ;;
     esac
   done <"$STATE_FILE"
@@ -164,10 +161,6 @@ load_state() {
   }
   [[ -z "$keyboard_layout" || "$keyboard_layout" == "us" || "$keyboard_layout" == "fr" ]] || {
     echo "Invalid keyboard layout in installation state: $keyboard_layout" >&2
-    return 1
-  }
-  [[ -z "$locale_language" || "$locale_language" == "us" || "$locale_language" == "fr" ]] || {
-    echo "Invalid language locale in installation state: $locale_language" >&2
     return 1
   }
   [[ -z "$locale_regional" || "$locale_regional" == "us" || "$locale_regional" == "fr" ]] || {
@@ -312,7 +305,7 @@ require_installed() {
   fi
 }
 
-# The three questions, asked once at the start
+# The two questions, asked once at the start
 ask_keyboard_layout() {
   while true; do
     read -rp "Keyboard layout [us/fr] (default: us): " keyboard_layout
@@ -327,25 +320,6 @@ ask_keyboard_layout() {
       ;;
     *)
       echo "Invalid layout. Please enter 'fr' or 'us'."
-      ;;
-    esac
-  done
-}
-
-ask_locale_language() {
-  while true; do
-    read -rp "Interface language [us/fr] (default: us): " locale_language
-    locale_language="${locale_language,,}"
-    case "$locale_language" in
-    "" | us)
-      locale_language="us"
-      break
-      ;;
-    fr)
-      break
-      ;;
-    *)
-      echo "Invalid language. Please enter 'fr' or 'us'."
       ;;
     esac
   done
@@ -532,7 +506,7 @@ configure_keyboard() {
 }
 
 # Each script applies what you picked in the shell again, or its default the first time
-configure_locale_profiles() {
+configure_regional_formats() {
   "$LIB_DIR/locale-profilectl.sh" ensure
 }
 
@@ -601,7 +575,7 @@ configure_wallpaper() {
 # Your answers, given once: the shell is where you change them afterwards
 seed_answers() {
   "$LIB_DIR/keyboard-layoutctl.sh" init "$keyboard_layout"
-  "$LIB_DIR/locale-profilectl.sh" init "$locale_language" "$locale_regional"
+  "$LIB_DIR/locale-profilectl.sh" init "$locale_regional"
 }
 
 # Which app opens folders, images, PDFs, videos and documents. A type you gave an app
@@ -711,8 +685,8 @@ apply_themes() {
   gsettings set org.gnome.desktop.interface gtk-theme 'HyprPunk'
 }
 
-# Generate both locales the shell can switch between
-install_locale() {
+# English for the interface, and French beside it for the regional formats
+install_locales() {
   local locale
   for locale in en_US.UTF-8 fr_FR.UTF-8; do
     if ! grep -q "^[[:space:]]*${locale}[[:space:]]\\+UTF-8" /etc/locale.gen; then
@@ -847,7 +821,7 @@ converge() {
   run_step "Building the shell's fonts" build_fonts
   run_step "Generating Qt configuration" generate_qt_configs
   run_step "Configuring the keyboard" configure_keyboard
-  run_step "Configuring locale profiles" configure_locale_profiles
+  run_step "Configuring the regional formats" configure_regional_formats
   run_step "Configuring idle and sleep" configure_power
   run_step "Configuring notifications" configure_notifications
   run_step "Configuring screenshots and recordings" configure_capture
@@ -864,7 +838,7 @@ converge() {
   run_step "Configuring the update checks" configure_updates
   run_step "Installing tmux plugins" install_tmux_plugins
   run_step "Applying themes" apply_themes
-  run_step "Installing the locale" install_locale
+  run_step "Installing the locales" install_locales
   run_step "Installing the SDDM theme" install_sddm_theme
   run_step "Installing the Brave policy" install_brave_policy
   run_step "Configuring the wallpaper" configure_wallpaper
@@ -883,8 +857,6 @@ install_hyprpunk() {
   initialize_state
 
   [[ -n "$keyboard_layout" ]] || run_step "Selecting the keyboard layout" ask_keyboard_layout
-  save_state
-  [[ -n "$locale_language" ]] || run_step "Selecting the interface language" ask_locale_language
   save_state
   [[ -n "$locale_regional" ]] || run_step "Selecting regional formats" ask_locale_regional
   save_state

@@ -6,8 +6,8 @@
 -- ENVIRONMENT VARIABLES --
 ---------------------------
 
--- Language for the interface, regional formats (dates, numbers, money) for the rest,
--- both picked from the shell and saved in ~/.local/state/hyprpunk
+-- English for the interface, regional formats (dates, numbers, money) for the rest,
+-- those picked from the shell and saved in ~/.local/state/hyprpunk
 local locale = __require("locale_state")
 hl.env("LANG", locale.language)
 hl.env("LC_MESSAGES", locale.language)

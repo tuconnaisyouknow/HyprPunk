@@ -4,17 +4,16 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// The settings the scripts save: the language (locale-profilectl.sh), the glass style
-// (glassctl.sh), the keyboard layout (keyboard-layoutctl.sh) and the wallpaper
+// The settings the scripts save: the regional formats (locale-profilectl.sh), the glass
+// style (glassctl.sh), the keyboard layout (keyboard-layoutctl.sh) and the wallpaper
 // (wallpaperctl.sh). And how the shell launches things.
-// The shell keeps the environment it started with, so after a language change anything
-// it launched itself would still speak the old one: apps are started through Hyprland
+// The shell keeps the environment it started with, so after a change of formats anything
+// it launched itself would still write the old ones: apps are started through Hyprland
 // instead, which follows the change.
 Singleton {
     id: session
 
     // "us" or "fr".
-    property string languageProfile: "us"
     property string regionalProfile: "us"
     // "classic" or "liquid", the lock screen clock's glass. Switching it restyles every
     // glass surface on the spot, no restart needed.
@@ -23,7 +22,6 @@ Singleton {
     property string keyboardLayout: "us"
     // The wallpaper's path, empty until known.
     property string wallpaper: ""
-    readonly property string languageLocale: localeOf(languageProfile)
     readonly property string regionalLocale: localeOf(regionalProfile)
     // The regional formats as Qt knows them (day and month names, the first day of the
     // week), though the shell keeps the locale it started with.
@@ -86,14 +84,6 @@ Singleton {
         while (line.includes("]" + level + "]"))
             level += "=";
         Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd([" + level + "[" + line + "]" + level + "])"]);
-    }
-
-    FileView {
-        path: session.stateDir + "/locale-language"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: session.languageProfile = text().trim() || "us"
     }
 
     FileView {

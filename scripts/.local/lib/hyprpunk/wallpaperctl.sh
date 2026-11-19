@@ -304,7 +304,7 @@ set_login_screen() {
   {
     cat "$LOGIN_COLORS"
     printf 'glass=%s\n' "$("$LIB_DIR/glassctl.sh" get)"
-    printf 'region=%s\n' "$("$LIB_DIR/locale-profilectl.sh" get-regional)"
+    printf 'region=%s\n' "$("$LIB_DIR/locale-profilectl.sh" get)"
   } | pkexec "$LOGIN_SCREEN" "$(subtheme_of "$1")"
 }
 

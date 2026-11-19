@@ -202,17 +202,18 @@ settings' Appearance page), the login screen's videos, and the 4-pass blur (`pas
 bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/refs/heads/master/install.sh)
 ```
 
-The script asks for the keyboard layout, interface language, and regional formats first, then your password once.
+The script asks for the keyboard layout and regional formats first, then your password once.
 After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. Left empty, the
-answers give a US layout and English for both the interface and the formats (`en_US.UTF-8`). English and French
-(`fr_FR.UTF-8`) are both generated during installation, so you can switch later in the settings (`Super + I`). If the installation stops, run the
+answers give a US layout and US formats (`en_US.UTF-8`). French formats (`fr_FR.UTF-8`) are generated during
+installation too, so you can switch later in the settings (`Super + I`). If the installation stops, run the
 same command again and it picks up where it left off.
 
 Reboot after the installation completes.
 
 > [!NOTE]
-> Only two keyboard layouts are supported, **QWERTY US** and **AZERTY FR**, and only two languages and regional
-> formats, **English (`en_US`)** and **French (`fr_FR`)**. Other layouts and locales aren't handled.
+> HyprPunk is in **English only**, by choice: the shell is written in it, and the session sets every app to it so
+> the whole desktop speaks one language. Only two keyboard layouts are supported, **QWERTY US** and **AZERTY FR**,
+> and only two regional formats, **United States (`en_US`)** and **France (`fr_FR`)**.
 
 ### 📦 What gets installed
 
@@ -255,7 +256,7 @@ ago catches up on everything at once.
 - 🔁 **Put back as HyprPunk ships it:** the look (GTK, Qt and icon themes, the font, dark mode), the login screens, the
   GRUB theme, Brave's policy, the services and system files, and the links into your home, a new module included. Links
   left broken by a file HyprPunk removed go away.
-- 🎛️ **Kept as you set it:** what you picked in the shell (layout, language, displays, touchpad, wallpaper), the
+- 🎛️ **Kept as you set it:** what you picked in the shell (layout, regional formats, displays, touchpad, wallpaper), the
   default apps, and your personal files (see [Customization](#-customization)). An example HyprPunk adds to
   `~/.config/hypr/personal/` is copied in, the files you have stay.
 - 📦 **Packages:** the system and the AUR are upgraded, and only the packages new to HyprPunk's list since your last
@@ -278,7 +279,7 @@ repository that the update changes, git refuses the pull and nothing changes.
 | `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
 | `Super + Space` | Open the application launcher, where `>` lists the island's menus |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, background apps…) |
-| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and language, sound, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
+| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and region, sound, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
@@ -414,7 +415,7 @@ The installer offers two keyboard profiles:
 
 `US` is the default when no profile has been selected yet or when the installer prompt is left empty.
 
-The active profile can be changed later in the settings (`Super + I`, Keyboard and language), or from the command
+The active profile can be changed later in the settings (`Super + I`, Keyboard and region), or from the command
 line:
 
 ```bash
@@ -447,20 +448,19 @@ Hyprland reads the selected XKB layout dynamically instead of hard-coding:
 kb_layout = keyboard.xkb
 ```
 
-### 🌍 Locale profiles
+### 🌍 Language and regional formats
 
-The interface language (`LANG` and `LC_MESSAGES`) and regional formats (the other `LC_*` categories) are independent,
-and each is either English (`us`, `en_US.UTF-8`) or French (`fr`, `fr_FR.UTF-8`), the only two locales installed.
-They can be changed after installation from the command line:
+The interface is in English, and only in English: the session sets `LANG` and `LC_MESSAGES` to `en_US.UTF-8`, with
+no setting to change it. The regional formats (the other `LC_*` categories: dates, times, numbers, money) are
+yours to pick, United States (`us`, `en_US.UTF-8`) or France (`fr`, `fr_FR.UTF-8`), in the settings (`Super + I`,
+Keyboard and region) or from the command line:
 
 ```bash
-hyprpunk locale set-language us
-hyprpunk locale set-language fr
-hyprpunk locale set-regional us
-hyprpunk locale set-regional fr
+hyprpunk locale set us
+hyprpunk locale set fr
 ```
 
-The profiles are stored in `$XDG_STATE_HOME/hyprpunk/locale-language` and `locale-regional`. Hyprland, D-Bus, and the
+The choice is stored in `$XDG_STATE_HOME/hyprpunk/locale-regional`. Hyprland, D-Bus, and the
 systemd user environment are refreshed immediately for newly started applications; already running applications need
 to be restarted. The shell follows the regional formats on the spot: the clocks run on 12 hours with AM/PM with `us`
 and on 24 hours with `fr`, and the calendar starts the week on the right day. The login screen's date and clock
@@ -497,7 +497,7 @@ The installer enables or configures:
 Everything you're meant to change lives outside the dotfiles, so an [update](#-updating) brings you every change
 without touching your preferences:
 
-- 🎛️ **The shell's settings** (keyboard layout, displays, the mouse and touchpad, glass style, language, when the
+- 🎛️ **The shell's settings** (keyboard layout, displays, the mouse and touchpad, glass style, regional formats, when the
   computer dims, locks and sleeps, which apps' notifications pop up, what the island shows, the default apps, the
   launcher's pinned and hidden apps, how screenshots and recordings are kept, the clipboard history, the night light,
   the volume limit…) are saved in `~/.local/state/hyprpunk/` as you pick them, in the control center or the settings
@@ -516,7 +516,7 @@ without touching your preferences:
   - 🖱️ `input.lua` for the mouse, touchpad and gestures, over what the settings set. The keyboard layout comes
     from the shell's settings.
   - 🌱 `env.lua` for environment variables, like a bigger cursor. Your own scripts go in `~/.local/bin`, already in
-    your `PATH`. The language comes from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
+    your `PATH`. The interface stays in English, the formats come from the shell's settings, and the terminal and editor from `hyprpunk.programs`.
   - 🚀 `autostart.lua` to start more with the session with `hyprpunk.autostart.add`, or drop a default with
     `hyprpunk.autostart.remove`.
 - 🖥️ **Your tmux and Kitty settings** go in `~/.config/tmux/personal.conf` and `~/.config/kitty/personal.conf`,

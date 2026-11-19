@@ -3,8 +3,9 @@
 -- ~/.config/hypr/personal/ once; edit that copy.
 -- Uncomment what you want, it all does nothing as it stands.
 
--- Leave the language and formats to the shell's settings, and set your terminal and
--- editor with hyprpunk.programs in keybindings.lua: both would be written over here.
+-- The interface stays in English and the formats come from the shell's settings, and
+-- your terminal and editor from hyprpunk.programs in keybindings.lua: all of them would
+-- be written over here.
 
 -- A bigger cursor, for X11 and Wayland apps alike
 -- hl.env("XCURSOR_SIZE", "32")
