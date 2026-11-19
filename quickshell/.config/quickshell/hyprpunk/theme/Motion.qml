@@ -7,6 +7,8 @@ import Quickshell
 // element does, so two moves of the same kind feel the same everywhere and the shell's
 // rhythm changes in one place. Anim and ColorFade read these for you.
 Singleton {
+    id: motion
+
     // Something going somewhere, or a shape changing size, starting fast so it answers
     // right away. Large is a card unfolding out of its pill.
     readonly property var move: tokens(Easing.OutCubic, 1)
@@ -119,6 +121,17 @@ Singleton {
         "easing": Easing.OutBack,
         "overshoot": 1.2
     })
+
+    // A light going from one place to another (the workspace you're on): its front edge
+    // sets off at once and its back lingers before catching up, so it stretches toward
+    // where it's going.
+    readonly property QtObject stretch: QtObject {
+        readonly property var front: motion.move.normal
+        readonly property var back: ({
+            "duration": 340,
+            "easing": Easing.InOutQuad
+        })
+    }
 
     // Words arriving on the machine (Decode): how long they take to settle, how often
     // they scramble anew on the way, and what they're scrambled into.
