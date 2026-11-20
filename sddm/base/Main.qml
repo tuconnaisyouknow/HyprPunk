@@ -5,7 +5,7 @@ import QtQuick.Window
 // The login screen every theme shares: the lock screen over the theme's own video,
 // before anyone's there. Who logs in on the left of the bar, the session and the power on
 // the right, the island in the middle, where a padlock waits and your password comes as
-// squares, and the date and the time where the lock screen has them. sddm.sh copies it into
+// squares, and the time where the lock screen has it. sddm.sh copies it into
 // each theme.
 Rectangle {
     id: root
@@ -521,56 +521,34 @@ Rectangle {
             onConfirmed: sddm.powerOff()
         }
 
-        // The date and the time in the middle, as the lock screen draws them: the date as
-        // wide as the time, the hours in the accent, the minutes in glass like the pills.
+        // The time in the middle, as the lock screen draws it alone: the hours in the accent,
+        // the minutes in glass like the pills, the digits centered on the screen.
         Item {
             id: clockBlock
 
-            // How much the time, then the date, are there as they come.
+            // How much the time is there as it comes.
             property real timeIn: 0
-            property real dateIn: 0
+            // The digits from their top to the baseline: the font's line has room above and
+            // below them, which would pull them off the middle.
+            readonly property real inkTop: hours.baselineOffset + digitInk.tightBoundingRect.y
+            readonly property real inkBottom: inkTop + digitInk.tightBoundingRect.height
 
             anchors.horizontalCenter: parent.horizontalCenter
-            y: Math.round((bar.height - height) / 2)
+            y: Math.round((bar.height - (inkBottom - inkTop)) / 2 - inkTop)
             width: timeRow.implicitWidth
-            height: dateText.height + timeRow.implicitHeight
+            height: timeRow.implicitHeight
+            opacity: timeIn
+            scale: 0.96 + 0.04 * timeIn
 
-            Text {
-                id: dateText
+            TextMetrics {
+                id: digitInk
 
-                width: parent.width
-                text: root.formats.toString(root.now, "dddd d MMMM")
-                color: Colors.secondary
-                horizontalAlignment: Text.AlignHCenter
-                font.family: Metrics.displayFont
-                // As wide as the time: measured at 40px, then scaled to its width.
-                font.pixelSize: Math.max(12, Math.floor(40 * parent.width / Math.max(1, dateMetrics.advanceWidth)))
-                font.weight: Font.Bold
-                font.capitalization: Font.AllUppercase
-                opacity: clockBlock.dateIn
-
-                TextMetrics {
-                    id: dateMetrics
-
-                    text: dateText.text
-                    font.family: Metrics.displayFont
-                    font.pixelSize: 40
-                    font.weight: Font.Bold
-                    font.capitalization: Font.AllUppercase
-                }
-
-                transform: Translate {
-                    y: -12 * (1 - clockBlock.dateIn)
-                }
-
+                text: "0123456789"
+                font: minutes.font
             }
 
             Row {
                 id: timeRow
-
-                y: dateText.height
-                opacity: clockBlock.timeIn
-                scale: 0.96 + 0.04 * clockBlock.timeIn
 
                 Text {
                     id: hours
@@ -586,7 +564,7 @@ Rectangle {
                     backdrop: clockBlur
                     text: Qt.formatDateTime(root.now, ":mm")
                     font.family: Metrics.displayFont
-                    font.pixelSize: 150
+                    font.pixelSize: 250
                     font.weight: Font.Bold
                     // Each digit as wide as the others, so the clock never shifts.
                     font.features: {
@@ -594,48 +572,37 @@ Rectangle {
                     }
                 }
 
-                // AM or PM in us, small on the digits' baseline.
-                Text {
-                    visible: text !== ""
-                    anchors.baseline: hours.baseline
-                    leftPadding: 14
-                    text: root.meridiemText(root.now)
-                    color: Colors.secondary
-                    font.family: Metrics.displayFont
-                    font.pixelSize: 40
-                    font.weight: Font.Bold
-                }
+            }
 
-                transform: Translate {
-                    y: 24 * (1 - clockBlock.timeIn)
-                }
+            // AM or PM in us, small on the digits' baseline. Out of the row: the digits
+            // alone stand in the middle, as on the lock screen.
+            Text {
+                x: timeRow.width + 18
+                y: hours.baselineOffset - baselineOffset
+                visible: text !== ""
+                text: root.meridiemText(root.now)
+                color: Colors.secondary
+                font.family: Metrics.displayFont
+                font.pixelSize: 52
+                font.weight: Font.Bold
+            }
 
+            transform: Translate {
+                y: 24 * (1 - clockBlock.timeIn)
             }
 
         }
 
-        // The pills fall into place, the island first, then the time comes, and the date
-        // once it's there.
+        // The pills fall into place, the island first, and the time comes.
         ParallelAnimation {
             id: arrival
 
-            SequentialAnimation {
-                NumberAnimation {
-                    target: clockBlock
-                    property: "timeIn"
-                    to: 1
-                    duration: Motion.enter.duration
-                    easing.type: Motion.enter.easing
-                }
-
-                NumberAnimation {
-                    target: clockBlock
-                    property: "dateIn"
-                    to: 1
-                    duration: Motion.enter.duration
-                    easing.type: Motion.enter.easing
-                }
-
+            NumberAnimation {
+                target: clockBlock
+                property: "timeIn"
+                to: 1
+                duration: Motion.enter.duration
+                easing.type: Motion.enter.easing
             }
 
             NumberAnimation {

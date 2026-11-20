@@ -1,8 +1,8 @@
 #version 440
 
 // The lock screen's background in one pass (LockSurface): the screen as it was blurs
-// and darkens, then the blurred wallpaper comes over it, and under the lock's pills the
-// bar's blur shows through their glass until the wallpaper covers it. Every blur is worked
+// and darkens, then the blurred wallpaper comes over it, and under the island the bar's
+// blur shows through its glass until the wallpaper covers it. Every blur is worked
 // out once as the lock comes, a few times smaller than the screen: each frame only
 // blends them. In neon, a wrong password glitches it for a moment: bands torn sideways,
 // their colors pulled apart, and thin lines of the error's red. After editing, rebuild
@@ -22,11 +22,9 @@ layout(std140, binding = 0) uniform buf {
     float dim;
     float wall;
     float zoom;
-    // The pills the lock keeps, in pixels, and how much each is there.
-    vec4 pill0;
-    vec4 pill1;
-    vec4 pill2;
-    vec3 pillOpacity;
+    // The island, in pixels, and how much it's there.
+    vec4 pill;
+    float pillOpacity;
     // The glitch: how strong, 0 for none, a number that changes its pattern, and the
     // color of its lines.
     float glitch;
@@ -71,7 +69,7 @@ vec4 backdrop(vec2 uv) {
     screen.rgb = max(screen.rgb - 0.12 * dim * screen.a, 0.0);
 
     vec2 point = uv * size;
-    float underPill = max(max(pillOpacity.x * coverage(point, pill0), pillOpacity.y * coverage(point, pill1)), pillOpacity.z * coverage(point, pill2));
+    float underPill = pillOpacity * coverage(point, pill);
     screen = mix(screen, texture(pillBlur, uv), underPill);
 
     vec4 wallColor = texture(wallpaperBlur, (uv - 0.5) / zoom + 0.5);

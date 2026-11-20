@@ -17,7 +17,9 @@ Item {
     // Off while the card is not shown: no blur layers, no follow animation.
     property bool active: true
     // The line being sung sits this far down the view.
-    readonly property real anchorRatio: 0.3
+    property real anchorRatio: 0.3
+    // On the lock screen's axis: the lines centered under the clock, not along a card's edge.
+    property bool centered: false
     // Scrolled by hand: the view stops following until resumeFollow runs out.
     property bool handScrolled: false
     // The LRCLIB credit: dim on a card, brighter straight over a wallpaper.
@@ -169,6 +171,7 @@ Item {
                 topPadding: Metrics.spacing.normal
                 // Not alone while the lines are looked for.
                 visible: view.shownLines.length > 0
+                horizontalAlignment: view.centered ? Text.AlignHCenter : Text.AlignLeft
                 text: view.shownSynced ? "Lyrics from LRCLIB" : "Not synced · Lyrics from LRCLIB"
                 color: view.creditColor
                 font.family: Metrics.font
@@ -295,13 +298,14 @@ Item {
 
         width: column.width
         wrapMode: Text.WordWrap
+        horizontalAlignment: view.centered ? Text.AlignHCenter : Text.AlignLeft
         text: pause ? "• • •" : (modelData.text || " ")
         color: lit ? Colors.primary : Colors.secondary
         font.family: Metrics.font
         font.pixelSize: view.shownSynced ? Metrics.text.heading : Metrics.text.title
         font.weight: Font.Bold
         lineHeight: 1.1
-        transformOrigin: Item.Left
+        transformOrigin: view.centered ? Item.Center : Item.Left
         scale: !view.shownSynced || lit ? 1 : 0.95
         opacity: (!view.shownSynced ? 0.85 : lit ? 1 : Math.max(0.18, 0.5 - 0.08 * (distance - 1))) * arrive
         // Blurred only near the view: the lines out of sight need no layer.

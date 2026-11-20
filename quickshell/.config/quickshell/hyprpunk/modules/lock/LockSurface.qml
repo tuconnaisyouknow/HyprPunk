@@ -13,18 +13,19 @@ import qs.services
 import qs.state
 import qs.theme
 
-// The lock screen on one display: a slimmed-down bar, the clock with the player, and the
+// The lock screen on one display: the clock with the player and its lyrics, and the
 // island, where you type your password.
 //
 // The lock starts from the screen exactly as it was, nothing moving. From its second
 // frame (the first comes late, while the shell builds it and Hyprland shows it), the time
-// leaves the island and grows into the clock in the middle, the bar's pills leave, move
-// or stay, and everything blurs into the wallpaper. A padlock opens in the island in the
-// time's place, the notifications leave with the time, the privacy dot and the recording
-// stay, and your password comes as squares in the padlock's place. Unlocking plays it all
-// backwards: the padlock gives the time its place back, the clock flies home into it and
-// becomes the island's time again, and the lock hands the island over to a relay that
-// shows it as the lock goes (Lock.relay). With the animation off, only the island moves.
+// leaves the island and grows into the clock in the middle, the bar's other pills leave,
+// the island moves to the middle, and everything blurs into the wallpaper. A padlock
+// opens in the island in the time's place, the notifications leave with the time, the
+// privacy dot and the recording stay, and your password comes as squares in the
+// padlock's place. Unlocking plays it all backwards: the padlock gives the time its place
+// back, the clock flies home into it and becomes the island's time again, and the lock
+// hands the island over to a relay that shows it as the lock goes (Lock.relay). With the
+// animation off, only the island moves.
 WlSessionLockSurface {
     id: surface
 
@@ -52,6 +53,8 @@ WlSessionLockSurface {
     // and lyrics) drops a frame. Kept at this, they're built with the first frame, which
     // comes late anyway, and show nothing: under half a level of any color.
     readonly property real unseen: 0.0015
+    // The music wave's height along the bottom, which the lyrics stay above.
+    readonly property int waveHeight: 110
     // The island is busy with your password: typed, checked, refused or right.
     readonly property bool answering: Lock.password !== "" || Lock.authenticating || Lock.error !== "" || Lock.unlocking
     // The bar's OSDs (volume, brightness, battery...) show in the island too, once the time
@@ -374,8 +377,8 @@ WlSessionLockSurface {
     }
 
     // The wallpaper as Hyprland blurs it under the bar (looknfeel.lua's blur, matched
-    // against recordings of the bar), seen through the lock's pills: over the plain
-    // wallpaper, their see-through glass would change the moment the lock takes over.
+    // against recordings of the bar), seen through the island: over the plain
+    // wallpaper, its see-through glass would change the moment the lock takes over.
     MultiEffect {
         id: barBlur
 
@@ -430,9 +433,7 @@ WlSessionLockSurface {
         }
 
         Repeater {
-            model: surface.from !== null && snapshot.status === Image.Ready ? [surface.from.monitor, surface.from.island, surface.from.control].concat(surface.from.others).filter((pill) => {
-                return pill !== null;
-            }) : []
+            model: surface.from !== null && snapshot.status === Image.Ready ? [surface.from.island].concat(surface.from.others) : []
 
             ClippingRectangle {
                 id: pillHole
@@ -533,10 +534,10 @@ WlSessionLockSurface {
         anchors.fill: parent
 
         // The background, in one pass over the screen: only the mix of the blurs changes as
-        // it moves (shaders/lockbackdrop.frag). Under the pills the lock keeps, the bar's
-        // blur shows through their glass, under the wallpaper as it comes in: over the screen
-        // blurring out, their glass would let the windows through while the bar's other pills
-        // keep the bar's blur. In neon, a wrong password glitches it while the island shakes its head.
+        // it moves (shaders/lockbackdrop.frag). Under the island, the bar's blur shows through
+        // its glass, under the wallpaper as it comes in: over the screen blurring out, its
+        // glass would let the windows through while the bar's other pills keep the bar's
+        // blur. In neon, a wrong password glitches it while the island shakes its head.
         ShaderEffect {
             id: backdrop
 
@@ -552,11 +553,9 @@ WlSessionLockSurface {
             readonly property real dim: surface.stage(0, 0.55)
             readonly property real wall: wallpaper.status === Image.Ready ? surface.smooth(surface.stage(0.25, 1)) : 0
             readonly property real zoom: 1.04 - 0.04 * surface.stage(0.25, 1)
-            readonly property vector4d pill0: Qt.vector4d(resourcesPill.x, resourcesPill.y, resourcesPill.width, resourcesPill.height)
             // Giving too, around its middle, as the time lands.
-            readonly property vector4d pill1: Qt.vector4d(island.x + island.width * (1 - island.scale) / 2, island.y + island.height * (1 - island.scale) / 2, island.width * island.scale, island.height * island.scale)
-            readonly property vector4d pill2: Qt.vector4d(controlPill.x, controlPill.y, controlPill.width, controlPill.height)
-            readonly property vector3d pillOpacity: Qt.vector3d(resourcesPill.visible ? resourcesPill.opacity : 0, island.visible ? island.opacity : 0, controlPill.visible ? controlPill.opacity : 0)
+            readonly property vector4d pill: Qt.vector4d(island.x + island.width * (1 - island.scale) / 2, island.y + island.height * (1 - island.scale) / 2, island.width * island.scale, island.height * island.scale)
+            readonly property real pillOpacity: island.visible ? island.opacity : 0
             readonly property var sharp: sharpLevel
             readonly property var soft: softLevel
             readonly property var mid: midLevel
@@ -598,7 +597,7 @@ WlSessionLockSurface {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             width: Math.round(parent.width * 0.5)
-            height: 110
+            height: surface.waveHeight
             visible: MusicSettings.wave
             music: Lock.music
             presence: surface.waveUp ? 1 : 0
@@ -644,30 +643,6 @@ WlSessionLockSurface {
                         sourceRect: Qt.rect(fadingPill.modelData.x, fadingPill.modelData.y, fadingPill.modelData.width, fadingPill.modelData.height)
                     }
 
-                }
-
-            }
-
-            // The resources: from their place after the workspaces to the left edge.
-            Pill {
-                id: resourcesPill
-
-                readonly property var start: surface.from !== null ? surface.from.monitor : null
-
-                x: start !== null ? surface.between(start.x, Metrics.barMargin) : Metrics.barMargin
-                y: start !== null ? start.y : 6
-                visible: surface.bar !== null && surface.width >= 1200
-                // Not in the bar (a narrow screen): it fades in instead.
-                opacity: start !== null ? 1 : surface.morph
-
-                IconText {
-                    icon: ""
-                    text: SystemStats.memoryText
-                }
-
-                IconText {
-                    icon: ""
-                    text: Math.round(SystemStats.cpuUsage * 100) + "%"
                 }
 
             }
@@ -740,36 +715,26 @@ WlSessionLockSurface {
 
             }
 
-            // Status only, where the bar has it: the control center does not open while locked.
-            Pill {
-                id: controlPill
-
-                readonly property var start: surface.from !== null ? surface.from.control : null
-
-                x: start !== null ? surface.between(start.x, surface.width - Metrics.barMargin - width) : surface.width - Metrics.barMargin - width
-                y: start !== null ? start.y : 6
-                visible: surface.bar !== null
-
-                ControlStatus {
-                }
-
-            }
-
-            // The date and time in the middle, the date as wide as the time. Hours in the accent,
-            // minutes in glass like the pills: see-through over the blur, with the glass rim.
-            // The time flies here from the island and back, the date comes once it's landed.
+            // The clock, the player and the lyrics on one axis, under the island, centered on
+            // the screen as one block of what shows: the time alone, with the player, or with
+            // the lyrics too. The lyrics give up height on a short screen to stay clear of the
+            // bar and the wave. The gaps run between what's drawn: the digits, the card's glass
+            // and the lyrics' view.
             Item {
-                id: clockBlock
+                id: stack
 
-                // With the player under it, one block centered on the screen.
-                readonly property real blockHeight: height + (playerBlock.visible ? playerBlock.anchors.topMargin + playerBlock.height : 0)
+                readonly property int gap: 80
+                readonly property bool playerShown: playerBlock.visible
+                readonly property bool lyricsShown: playerShown && playerBlock.lyricsShown
+                readonly property real areaTop: Metrics.barTop + Metrics.pillHeight
+                readonly property real room: surface.height - surface.waveHeight - areaTop
+                readonly property real clockRoom: clockBlock.inkBottom - clockBlock.inkTop
+                readonly property real lyricsRoom: Math.max(80, Math.min(180, room - clockRoom - lockPlayer.height - 4 * gap))
 
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: Math.round((surface.height - blockHeight) / 2)
-                width: timeRow.implicitWidth
-                height: dateText.height + timeRow.implicitHeight
+                y: Math.round((surface.height - (clockRoom + (playerShown ? gap + lockPlayer.height : 0) + (lyricsShown ? gap + lyricsRoom : 0))) / 2)
+                width: parent.width
 
-                // The player shows or goes: the block moves to stay centered.
+                // The player or the lyrics come or go: the block eases to its new middle.
                 Behavior on y {
                     enabled: surface.drawn
 
@@ -780,37 +745,28 @@ WlSessionLockSurface {
 
                 }
 
-                Text {
-                    id: dateText
+            }
 
-                    readonly property string day: Session.regionalFormats.toString(clock.date, "dddd d MMMM")
-                    readonly property real shown: surface.ease(surface.flight, 0.8, 1)
+            // The time. Hours in the accent, minutes in glass like the pills: see-through over
+            // the blur, with the glass rim. It flies here from the island and back.
+            Item {
+                id: clockBlock
 
-                    width: parent.width
-                    text: day.charAt(0).toUpperCase() + day.slice(1)
-                    color: Colors.secondary
-                    horizontalAlignment: Text.AlignHCenter
-                    font.family: Metrics.displayFont
-                    // As wide as the time: measured at 40px, then scaled to its width.
-                    font.pixelSize: Math.max(12, Math.floor(40 * parent.width / Math.max(1, dateMetrics.advanceWidth)))
-                    font.weight: Font.Bold
-                    font.capitalization: Font.AllUppercase
-                    opacity: shown
+                // The digits from their top to the baseline: the font's line has room above
+                // and below them, which would count in the gaps.
+                readonly property real inkTop: hours.baselineOffset + digitInk.tightBoundingRect.y
+                readonly property real inkBottom: inkTop + digitInk.tightBoundingRect.height
 
-                    TextMetrics {
-                        id: dateMetrics
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: stack.y - inkTop
+                width: timeRow.implicitWidth
+                height: timeRow.implicitHeight
 
-                        text: dateText.text
-                        font.family: Metrics.displayFont
-                        font.pixelSize: 40
-                        font.weight: Font.Bold
-                        font.capitalization: Font.AllUppercase
-                    }
+                TextMetrics {
+                    id: digitInk
 
-                    transform: Translate {
-                        y: -12 * (1 - dateText.shown)
-                    }
-
+                    text: "0123456789"
+                    font: minutes.font
                 }
 
                 // The time, from the island's to its place here: shrunk to the island's time and
@@ -826,7 +782,6 @@ WlSessionLockSurface {
                     readonly property real homeX: surface.flightHome.x + surface.flightHome.width / 2 - (clockBlock.x + x + width / 2)
                     readonly property real homeY: surface.flightHome.y + surface.flightHome.height / 2 - (clockBlock.y + y + height / 2)
 
-                    y: dateText.height
                     width: timeRow.implicitWidth
                     height: timeRow.implicitHeight
                     // Unseen while the island has the time: it's the island's own time from the
@@ -863,25 +818,27 @@ WlSessionLockSurface {
 
                             text: Qt.formatDateTime(clock.date, ":mm")
                             font.family: Metrics.displayFont
-                            font.pixelSize: 150
+                            font.pixelSize: 250
                             font.weight: Font.Bold
                             font.features: {
                                 "tnum": 1
                             }
                         }
 
-                        // AM or PM in us, small on the digits' baseline.
-                        Text {
-                            visible: text !== ""
-                            anchors.baseline: hours.baseline
-                            leftPadding: 14
-                            text: Session.meridiemText(clock.date)
-                            color: Colors.secondary
-                            font.family: Metrics.displayFont
-                            font.pixelSize: 40
-                            font.weight: Font.Bold
-                        }
+                    }
 
+                    // AM or PM in us, small on the digits' baseline. Out of the row: the digits
+                    // alone stand on the axis.
+                    Text {
+                        x: timeRow.width + 18
+                        y: hours.baselineOffset - baselineOffset
+                        visible: text !== ""
+                        opacity: timeRow.opacity
+                        text: Session.meridiemText(clock.date)
+                        color: Colors.secondary
+                        font.family: Metrics.displayFont
+                        font.pixelSize: 52
+                        font.weight: Font.Bold
                     }
 
                     // The island's time as the island draws it, as wide as the clock: at the
@@ -901,18 +858,17 @@ WlSessionLockSurface {
 
             }
 
-            // The player under the time, its lyrics beside it.
+            // The player under the time, and the lyrics under it.
             Item {
                 id: playerBlock
 
-                // Kept while the next track's lyrics load, so the player only moves for a track
+                // Kept while the next track's lyrics load, so the block only moves for a track
                 // that has none, not every time lyrics are looked up.
                 property bool lyricsShown: lockPlayer.lyricsFound
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: clockBlock.bottom
-                anchors.topMargin: 110
-                width: lockPlayer.width + (lyricsShown ? 40 + lockLyrics.width : 0)
+                y: clockBlock.y + clockBlock.inkBottom + stack.gap
+                width: lockPlayer.width
                 height: lockPlayer.height
                 // Waits to know where the track is: a fresh card starts at 0:00 with its lyrics
                 // at the top until playerctl answers, which would jump right after waking.
@@ -965,11 +921,14 @@ WlSessionLockSurface {
                 LyricsView {
                     id: lockLyrics
 
-                    anchors.left: lockPlayer.right
-                    anchors.leftMargin: 40
-                    anchors.verticalCenter: lockPlayer.verticalCenter
-                    width: 460
-                    height: 280
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    // Under the card's glass, following it as the pages' dots open in it.
+                    y: lockPlayer.height + stack.gap
+                    width: 640
+                    height: stack.lyricsRoom
+                    // The line sung a little above the middle, the next ones fading under it.
+                    anchorRatio: 0.38
+                    centered: true
                     visible: opacity > 0
                     // On a skip, fades out once the lines have slid away and back in with the
                     // next ones, keeping its place.
@@ -989,14 +948,6 @@ WlSessionLockSurface {
                             duration: 220
                         }
 
-                    }
-
-                }
-
-                Behavior on width {
-                    NumberAnimation {
-                        duration: 300
-                        easing.type: Easing.OutCubic
                     }
 
                 }

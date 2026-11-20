@@ -71,9 +71,8 @@ Item {
     readonly property alias islandItem: island
     readonly property alias controlItem: control
 
-    // Where each pill sits on screen, so the lock screen can start from there: the ones it
-    // keeps (resources, island, control pill) and the ones it lets go. Where they rest,
-    // like islandPill and controlPill.
+    // Where each pill sits on screen, so the lock screen can start from there: the island it
+    // keeps and the ones it lets go. Where they rest, like islandPill and controlPill.
     function lockGeometry() {
         const rect = (item) => {
             const origin = item.parent.mapToItem(null, item.x, item.y);
@@ -88,7 +87,7 @@ Item {
         const others = [];
         for (const group of [leftGroup, centerGroup, rightGroup]) {
             for (const child of group.children) {
-                if (child === monitor || child === island || child === control || !child.visible || child.width <= 0)
+                if (child === island || !child.visible || child.width <= 0)
                     continue;
 
                 // A drop-in slot: the pill inside it.
@@ -96,9 +95,7 @@ Item {
             }
         }
         return {
-            "monitor": monitor.visible ? rect(monitor) : null,
             "island": rect(island),
-            "control": rect(control),
             "others": others
         };
     }

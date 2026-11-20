@@ -35,7 +35,7 @@ Everything below is drawn by the Quickshell configuration in [`quickshell/`](./q
 
 #### 🔒 Lock screen
 
-The screen blurs into the lock, with the date and time over the player and its synced lyrics, and the bar's pills carried over. Typing shows the password prompt, and the island turns into a padlock that opens on the right password.
+The screen blurs into the lock, with a big clock over the player and its synced lyrics, and the bar's island carried over to the middle. Typing shows the password prompt, and the island turns into a padlock that opens on the right password.
 
 ![lock-animation](./assets/screenshots/lock-animation.webp)
 
@@ -112,7 +112,7 @@ The applications themed and configured by these dotfiles.
   it stays critical.
 - 🔒 **Hypridle**, **hyprsunset** and **awww** for locking around sleep, the night light, and wallpapers with animated
   transitions.
-- 🎬 **SDDM** with a video login screen for each subtheme, drawn like the lock screen: the same bar, island and clock,
+- 🎬 **SDDM** with a video login screen for each subtheme, drawn like the lock screen: the same island and clock,
   in the wallpaper's colors, your glass style and your regional formats.
 - 💻 **Kitty**, **Zsh**, **Starship**, **Tmux**, and **Yazi** for the terminal workflow.
 - 📝 **Neovim** with a Lua-based configuration.
@@ -474,8 +474,8 @@ hyprpunk locale set fr
 The choice is stored in `$XDG_STATE_HOME/hyprpunk/locale-regional`. Hyprland, D-Bus, and the
 systemd user environment are refreshed immediately for newly started applications; already running applications need
 to be restarted. The shell follows the regional formats on the spot: the clocks run on 12 hours with AM/PM with `us`
-and on 24 hours with `fr`, and the calendar starts the week on the right day. The login screen's date and clock
-follow them from the next login.
+and on 24 hours with `fr`, and the calendar starts the week on the right day. The login screen's clock
+follows them from the next login.
 
 ---
 
@@ -568,7 +568,7 @@ customize (see [Philosophy](#-philosophy)).
 - 🗂️ The Nextcloud sync emblems in `icons/` are [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)'s (GPL-3.0), moved from the icon's corner to the middle.
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
 - 🐱 The terminal tools' colors (Kitty, Btop, Yazi, Bat) start from [Catppuccin](https://github.com/catppuccin)'s Mocha themes (MIT), tinted with the wallpaper's palette.
-- 🔒 The lock screen, and the login screen drawn like it, are inspired by the lock screen in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): the date over a big clock with see-through minutes, and the island holding a padlock.
+- 🔒 The lock screen, and the login screen drawn like it, are inspired by the lock screen in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
 - 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock and login screens' clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's cuts are built on your machine under names of their own (`fontsctl.py`).

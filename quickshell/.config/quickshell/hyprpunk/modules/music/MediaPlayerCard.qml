@@ -25,7 +25,7 @@ Rectangle {
     property bool glassVisible: true
     property bool coverVisible: true
     property bool equalizerVisible: true
-    // Off when the lyrics are shown somewhere else (beside the card on the lock screen),
+    // Off when the lyrics are shown somewhere else (under the card on the lock screen),
     // which then uses lyricsLine.
     property bool lyricsInside: true
     // Where the artwork and the equalizer sit, for the island's player flying them in.

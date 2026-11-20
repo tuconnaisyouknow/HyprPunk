@@ -155,7 +155,7 @@ in that surface (a card's preview, its pinned state, the page shown).
   - only in the new view: it enters.
 
   A view never fades out whole to bring the next one in. When a shared element has to
-  cross into another surface (the bar's pills into the lock), its twin starts exactly
+  cross into another surface (the bar's island into the lock), its twin starts exactly
   where it is, in the same frame, and it crosses while at rest. Coming back, the bar
   can't draw under the lock and would show a stale frame as it goes: the lock hands
   its island, at rest, to a window made for that moment (LockRelay), whose first frame
