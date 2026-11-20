@@ -209,8 +209,9 @@ Item {
             id: osdContent
 
             anchors.centerIn: parent
-            // Kept whole while the face goes.
-            shown: osdFace.visible
+            // Kept whole while the face goes, and while a card hides the island: the card
+            // folds back onto the OSD's size, not an empty island's.
+            shown: osdFace.presence > 0
             content: view.bar.osdShown
         }
 

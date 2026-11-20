@@ -15,8 +15,10 @@ Item {
 
     width: pill.width
     height: pill.height
+    // Never hidden, only clear: Qt doesn't lay out what's hidden, and the pill's content
+    // would keep its old size under the card (the island turning into an OSD there, which
+    // the card folds onto).
     opacity: Math.pow(share, 3)
-    visible: opacity > 0
     // The card has the pointer, and the pill's spot in it the clicks.
     enabled: false
 
