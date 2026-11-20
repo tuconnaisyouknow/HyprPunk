@@ -14,8 +14,9 @@ Singleton {
     // "Intel(R) Core(TM) i7-1065G7 CPU @ 1.30GHz", read once.
     property string model: ""
     property string frequency: ""
-    // Every process of the last sample: {cpu, memory (KiB), name}. Kept between
-    // openings, so a card shows the last one at once while the next is measured.
+    // Every process of the last sample: {cpu, memory (KiB), pid, name}. Kept between
+    // openings, so a card shows the last one at once while the next is measured. The pid
+    // lets a card follow each process from one sample to the next.
     property var processes: []
 
     function parseCpuinfo(text) {
@@ -38,11 +39,12 @@ Singleton {
         const list = [];
         for (const line of text.trim().split("\n")) {
             const parts = line.trim().split(/\s+/);
-            if (parts.length >= 3)
+            if (parts.length >= 4)
                 list.push({
                 "cpu": Number(parts[0]),
                 "memory": Number(parts[1]),
-                "name": parts.slice(2).join(" ")
+                "pid": Number(parts[2]),
+                "name": parts.slice(3).join(" ")
             });
 
         }
@@ -72,7 +74,7 @@ Singleton {
         id: sample
 
         running: true
-        command: ["sh", "-c", "LC_ALL=C top -b -n 2 -d 1 -e k -w 512 | awk '/^top -/ {n++} n == 2 && /^ *[0-9]+ / && $12 != \"top\" {print $9, $6, $12}'"]
+        command: ["sh", "-c", "LC_ALL=C top -b -n 2 -d 1 -e k -w 512 | awk '/^top -/ {n++} n == 2 && /^ *[0-9]+ / && $12 != \"top\" {print $9, $6, $1, $12}'"]
 
         stdout: StdioCollector {
             onStreamFinished: details.parseProcesses(text)

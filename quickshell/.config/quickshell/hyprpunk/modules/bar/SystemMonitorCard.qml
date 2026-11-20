@@ -20,16 +20,60 @@ Item {
         return b[processSort] - a[processSort];
     }).slice(0, 5)
 
+    // Brings the rows to the new ranking a process at a time: one that stays moves to
+    // its place rather than being dropped and added again, so its row can glide there.
+    function syncRows() {
+        for (let i = rows.count - 1; i >= 0; i--) {
+            const pid = rows.get(i).pid;
+            if (!processes.some((process) => {
+                return process.pid === pid;
+            }))
+                rows.remove(i);
+
+        }
+        processes.forEach((process, index) => {
+            let from = index;
+            while (from < rows.count && rows.get(from).pid !== process.pid) {
+                from++;
+            }
+            if (from === rows.count) {
+                rows.insert(index, process);
+            } else {
+                if (from !== index)
+                    rows.move(from, index, 1);
+
+                rows.set(index, process);
+            }
+        });
+    }
+
     function formatKiB(kib) {
         const gib = kib / 1048576;
         return gib >= 1 ? gib.toFixed(1) + "G" : Math.round(kib / 1024) + "M";
     }
 
+    // A process's row: as tall as its name.
+    readonly property real rowHeight: Math.ceil(rowFont.height)
+
     implicitWidth: 380
+    onProcessesChanged: syncRows()
+    Component.onCompleted: syncRows()
     implicitHeight: column.implicitHeight + 28
     ServiceRef {
         service: SystemDetails
         active: monitor.active
+    }
+
+    // The busiest processes, in the order shown.
+    ListModel {
+        id: rows
+    }
+
+    FontMetrics {
+        id: rowFont
+
+        font.family: Metrics.font
+        font.pixelSize: Metrics.text.emphasis
     }
 
     // A section's reading, facing its title.
@@ -78,6 +122,73 @@ Item {
             anchors.fill: parent
             anchors.margins: Metrics.spacing.large
             spacing: Metrics.spacing.normal
+        }
+
+    }
+
+    // A column to sort the processes by. The light behind the chosen one is the
+    // section's, so it can travel between them.
+    component SortChip: Item {
+        id: chip
+
+        required property string label
+        required property bool chosen
+        readonly property bool hovered: chipHover.hovered
+
+        signal picked()
+
+        implicitWidth: chipLabel.implicitWidth + 18
+        implicitHeight: 22
+
+        // Plain glass under the pointer, on the column not chosen.
+        GlassSurface {
+            radius: height / 2
+            hovered: true
+            opacity: chip.hovered && !chip.chosen ? 1 : 0
+
+            Behavior on opacity {
+                Anim {
+                    token: Motion.color.small
+                }
+
+            }
+
+        }
+
+        Text {
+            id: chipLabel
+
+            anchors.centerIn: parent
+            text: chip.label
+            color: chip.chosen ? Colors.over(Colors.primary) : Colors.secondary
+            font.family: Metrics.font
+            font.pixelSize: Metrics.text.small
+            font.weight: Font.Bold
+
+            ColorFade on color {
+                token: Motion.color.normal
+            }
+
+        }
+
+        HoverHandler {
+            id: chipHover
+
+            cursorShape: Qt.PointingHandCursor
+        }
+
+        TapHandler {
+            gesturePolicy: TapHandler.ReleaseWithinBounds
+            onTapped: {
+                chipBounce.restart();
+                chip.picked();
+            }
+        }
+
+        BounceAnimation {
+            id: chipBounce
+
+            target: chipLabel
         }
 
     }
@@ -272,55 +383,75 @@ Item {
                     text: "Processes"
                 }
 
-                Repeater {
-                    model: [{
-                        "key": "cpu",
-                        "label": "CPU"
-                    }, {
-                        "key": "memory",
-                        "label": "RAM"
-                    }]
+                // One light for the column the processes are sorted by. Each edge goes
+                // from 0 on the first chip to 1 on the second: the one ahead sets off at
+                // once and the other lingers, so it stretches over like the workspaces'.
+                Item {
+                    id: sortChoice
 
-                    Rectangle {
-                        id: sortChip
+                    readonly property int chosen: monitor.processSort === "cpu" ? 0 : 1
+                    property real leftEdge: chosen
+                    property real rightEdge: chosen
 
-                        required property var modelData
-                        readonly property bool selected: monitor.processSort === modelData.key
+                    implicitWidth: sortChips.implicitWidth
+                    implicitHeight: sortChips.implicitHeight
 
-                        implicitWidth: chipLabel.implicitWidth + 18
-                        implicitHeight: 22
-                        radius: height / 2
-                        color: "transparent"
+                    Item {
+                        x: cpuChip.x + (memoryChip.x - cpuChip.x) * sortChoice.leftEdge
+                        width: cpuChip.x + cpuChip.width + (memoryChip.x + memoryChip.width - cpuChip.x - cpuChip.width) * sortChoice.rightEdge - x
+                        height: parent.height
 
-                        // Accent glass when selected, plain glass on hover otherwise.
                         GlassSurface {
-                            radius: parent.radius
-                            hovered: chipHover.hovered
-                            opacity: sortChip.selected || chipHover.hovered ? 1 : 0
-                            backgroundColor: Colors.alpha(Colors.primary, !sortChip.selected ? 0 : chipHover.hovered ? 0.95 : 0.8)
+                            radius: height / 2
+                            hovered: cpuChip.chosen ? cpuChip.hovered : memoryChip.hovered
+                            backgroundColor: Colors.alpha(Colors.primary, hovered ? 0.95 : 0.8)
                             lit: true
+
+                            ColorFade on backgroundColor {
+                                token: Motion.color.small
+                            }
+
                         }
 
-                        Text {
-                            id: chipLabel
+                    }
 
-                            anchors.centerIn: parent
-                            text: sortChip.modelData.label
-                            color: sortChip.selected ? Colors.over(Colors.primary) : Colors.secondary
-                            font.family: Metrics.font
-                            font.pixelSize: Metrics.text.small
-                            font.weight: Font.Bold
+                    Row {
+                        id: sortChips
+
+                        spacing: Metrics.spacing.normal
+
+                        SortChip {
+                            id: cpuChip
+
+                            chosen: monitor.processSort === "cpu"
+                            onPicked: monitor.processSort = "cpu"
+                            label: "CPU"
                         }
 
-                        HoverHandler {
-                            id: chipHover
+                        SortChip {
+                            id: memoryChip
 
-                            cursorShape: Qt.PointingHandCursor
+                            chosen: monitor.processSort === "memory"
+                            onPicked: monitor.processSort = "memory"
+                            label: "RAM"
                         }
 
-                        TapHandler {
-                            gesturePolicy: TapHandler.ReleaseWithinBounds
-                            onTapped: monitor.processSort = sortChip.modelData.key
+                    }
+
+                    Behavior on leftEdge {
+                        id: leftSlide
+
+                        Anim {
+                            token: leftSlide.targetValue === 1 ? Motion.stretch.back : Motion.stretch.front
+                        }
+
+                    }
+
+                    Behavior on rightEdge {
+                        id: rightSlide
+
+                        Anim {
+                            token: rightSlide.targetValue === 1 ? Motion.stretch.front : Motion.stretch.back
                         }
 
                     }
@@ -329,24 +460,34 @@ Item {
 
             }
 
-            // Always five rows, so the card keeps its height while the list loads.
-            Repeater {
-                model: 5
+            // Each row follows its process: it glides to its new place when the sort or
+            // the load reorders them, and fades as its process comes or goes. Five rows'
+            // room even while the list loads, so the card keeps its height.
+            ListView {
+                Layout.fillWidth: true
+                implicitHeight: 5 * monitor.rowHeight + 4 * spacing
+                interactive: false
+                spacing: Metrics.spacing.normal
 
-                RowLayout {
-                    required property int index
-                    readonly property var process: monitor.processes[index] ?? null
+                model: rows
 
-                    Layout.fillWidth: true
+                delegate: RowLayout {
+                    id: row
+
+                    required property string name
+                    required property real cpu
+                    required property real memory
+
+                    width: ListView.view.width
+                    height: monitor.rowHeight
                     spacing: Metrics.spacing.normal
 
                     Text {
                         Layout.fillWidth: true
-                        text: parent.process !== null ? parent.process.name : ""
+                        text: row.name
                         color: Colors.primary
                         elide: Text.ElideRight
-                        font.family: Metrics.font
-                        font.pixelSize: Metrics.text.emphasis
+                        font: rowFont.font
                     }
 
                     // The sorted column in the accent, the other one in the secondary color.
@@ -354,15 +495,72 @@ Item {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
                         // top counts a share of one core, the card a share of the whole CPU like btop.
-                        text: parent.process !== null ? (parent.process.cpu / Math.max(1, SystemStats.coreUsage.length)).toFixed(1) + "%" : ""
+                        text: (row.cpu / Math.max(1, SystemStats.coreUsage.length)).toFixed(1) + "%"
                         color: monitor.processSort === "cpu" ? Colors.primary : Colors.secondary
+
+                        ColorFade on color {
+                            token: Motion.color.normal
+                        }
+
                     }
 
                     Detail {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
-                        text: parent.process !== null ? monitor.formatKiB(parent.process.memory) : ""
+                        text: monitor.formatKiB(row.memory)
                         color: monitor.processSort === "memory" ? Colors.primary : Colors.secondary
+
+                        ColorFade on color {
+                            token: Motion.color.normal
+                        }
+
+                    }
+                }
+
+                // A newcomer waits for what leaves its place, so two names never cross
+                // over each other.
+                add: Transition {
+                    SequentialAnimation {
+                        PropertyAction {
+                            property: "opacity"
+                            value: 0
+                        }
+
+                        PauseAnimation {
+                            duration: Motion.leave.small.duration
+                        }
+
+                        Anim {
+                            property: "opacity"
+                            to: 1
+                            token: Motion.enter.normal
+                        }
+
+                    }
+
+                }
+
+                remove: Transition {
+                    Anim {
+                        property: "opacity"
+                        to: 0
+                        token: Motion.leave.small
+                    }
+
+                }
+
+                move: Transition {
+                    Anim {
+                        property: "y"
+                        token: Motion.move.large
+                    }
+
+                }
+
+                displaced: Transition {
+                    Anim {
+                        property: "y"
+                        token: Motion.move.large
                     }
 
                 }
