@@ -550,12 +550,13 @@ Rectangle {
             Row {
                 id: timeRow
 
-                Text {
+                RollingText {
                     id: hours
 
                     text: root.hourText(root.now)
-                    color: Colors.primary
                     font: minutes.font
+                    // After the minutes' two digits: they always turn from 59 to 00.
+                    wait: 2 * Motion.stagger
                 }
 
                 GlassText {

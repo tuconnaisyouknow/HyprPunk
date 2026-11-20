@@ -50,6 +50,13 @@ QtObject {
         "duration": 200,
         "easing": Easing.OutBack
     })
+    // A character of the clock turning to the next (RollingText): the new one rises from
+    // below and lands a touch past its place.
+    readonly property var roll: ({
+        "duration": 450,
+        "easing": Easing.OutBack,
+        "overshoot": 1
+    })
     // Words arriving on the machine (Decode): how long they take to settle, how often
     // they scramble anew on the way, and what they're scrambled into.
     readonly property QtObject decode: QtObject {

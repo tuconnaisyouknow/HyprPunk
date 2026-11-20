@@ -3,7 +3,8 @@ import QtQuick.Effects
 
 // Text cut out of glass, like the pills (the shell's components/GlassText.qml):
 // see-through over the video blurred behind it, with the glass rim along the edges of its
-// glyphs. The clock's minutes are drawn with it, as on the lock screen.
+// glyphs. The clock's minutes are drawn with it, rolling as they change, as on the lock
+// screen.
 Item {
     id: glass
 
@@ -23,7 +24,7 @@ Item {
         visible: false
         layer.enabled: true
 
-        Text {
+        RollingText {
             id: label
 
             color: "white"
