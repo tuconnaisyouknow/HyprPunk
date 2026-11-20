@@ -57,6 +57,10 @@ Item {
     // The OSD is going into the island under a card folding back onto it: its time
     // running out waits for the card to land (Osd.landing).
     readonly property bool osdLanding: islandOsdShown && islandCovered
+    // The pills in the place of the OSD beside a card have faded out, so it can drop in.
+    readonly property bool osdRoomClear: ![workspaces, monitor].some((pill) => {
+        return inOsdWay(pill) && !pill.madeWay;
+    })
     // The island resizes at once while hidden under a card: animating it there made the
     // bar and the blur behind the card redraw every frame for nothing, and the card's own
     // animations drop frames (the calendar while a notification slides out of it). Under
@@ -98,6 +102,12 @@ Item {
             "island": rect(island),
             "others": others
         };
+    }
+
+    // On the bar's left, reaching into the place of the OSD beside a card (SideOsd): it
+    // makes way while the OSD is there.
+    function inOsdWay(pill) {
+        return pill.visible && barContent.x + leftGroup.x + pill.x + pill.width + Metrics.spacing.normal > sideOsd.restX;
     }
 
     // Hidden under a card grown out of it: the card's glass would let it through.
@@ -176,12 +186,14 @@ Item {
                 id: workspaces
 
                 bar: bar
+                makingWay: sideOsd.holdsRoom && bar.inOsdWay(workspaces)
             }
 
             MonitorPill {
                 id: monitor
 
                 bar: bar
+                makingWay: sideOsd.holdsRoom && bar.inOsdWay(monitor)
             }
 
         }

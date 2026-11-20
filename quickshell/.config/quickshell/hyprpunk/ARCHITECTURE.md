@@ -88,7 +88,8 @@ in that surface (a card's preview, its pinned state, the page shown).
   panel is open exactly while it owns the island, so it can't disagree with the state.
   `IslandFrame` follows the open card. The OSD and the chips aren't claims: they never
   wait their turn, they're the island at rest. The OSD shows in the island while nobody
-  holds it, and beside the card that does otherwise.
+  holds it, and beside the card that does otherwise, where the bar's pills in its place
+  fade out until it's gone (`Pill.makingWay`).
 
 ## Surfaces and windows
 
