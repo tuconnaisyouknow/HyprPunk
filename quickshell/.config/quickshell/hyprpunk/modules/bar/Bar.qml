@@ -29,9 +29,11 @@ Item {
     property var cards: []
     // The notifications waiting, from before a restart too.
     readonly property int notificationCount: Notifications.count
-    // This screen's OSD (Osd), null while none shows here. The last one shown stays in
-    // osdShown, so the island still draws it as it goes away.
-    readonly property var osd: Osd.current !== null && (Osd.current.screen === "" || Osd.current.screen === screen.name) ? Osd.current : null
+    // This screen's OSD, null while none shows here (OsdTimeline): the lock's island
+    // shows it as it comes. The last one shown stays in osdShown, so the island still
+    // draws it as it goes away.
+    readonly property var osd: osdTimeline.current
+    readonly property alias osdTimeline: osdTimeline
     readonly property bool osdVisible: osd !== null
     property var osdShown: Osd.blank
     // While the session is locked, the lock's island shows the OSD and the bar's own one
@@ -45,21 +47,17 @@ Item {
     // A card is drawn over the island (the calendar, an island panel, the notifications,
     // the AirPods), opening or folding back.
     readonly property bool islandCovered: pillHidden("island")
-    // The island shows the OSD while nobody holds it (ScreenState). Held, the OSD shows
-    // beside the card instead (sideOsd). As soon as the card lets go the island takes it
-    // back, hidden, so the card folds straight into the OSD's shape.
-    readonly property bool islandOsdShown: osdVisible && !lockShown && screenState !== null && screenState.islandOwner === ""
+    // The OSD claims the island like anything that happens (ScreenState, placeOsd), and
+    // the island shows it once given it. A card on the island then folds straight into
+    // the OSD's shape.
+    readonly property bool osdClaimed: screenState !== null && screenState.claims.some((claim) => {
+        return claim.name === "osd";
+    })
+    readonly property bool islandOsdShown: osdClaimed && !lockShown && screenState.islandOwner === "osd"
     // Nothing moving that the lock would freeze: no card folding back (but the prompts,
     // which stay), the island not between two faces. The lock waits for it (Lock.resting).
     readonly property bool resting: !island.swapping && !cards.some((card) => {
         return card.covering && !card.keptUnderFullscreen;
-    })
-    // The OSD is going into the island under a card folding back onto it: its time
-    // running out waits for the card to land (Osd.landing).
-    readonly property bool osdLanding: islandOsdShown && islandCovered
-    // The pills in the place of the OSD beside a card have faded out, so it can drop in.
-    readonly property bool osdRoomClear: ![workspaces, monitor].some((pill) => {
-        return inOsdWay(pill) && !pill.madeWay;
     })
     // The island resizes at once while hidden under a card: animating it there made the
     // bar and the blur behind the card redraw every frame for nothing, and the card's own
@@ -104,10 +102,18 @@ Item {
         };
     }
 
-    // On the bar's left, reaching into the place of the OSD beside a card (SideOsd): it
-    // makes way while the OSD is there.
-    function inOsdWay(pill) {
-        return pill.visible && barContent.x + leftGroup.x + pill.x + pill.width + Metrics.spacing.normal > sideOsd.restX;
+    // Each OSD claims the island, on top of what happened before it. One that won't come
+    // back (Osd.comesBack) is passing: under a panel or a prompt, or once a card that
+    // happened after it takes its place, it's gone. The others wait under the card. While
+    // the lock has the island, nothing claims it.
+    function placeOsd() {
+        if (screenState === null)
+            return ;
+
+        if (osd === null)
+            screenState.release("osd");
+        else if (!lockShown)
+            screenState.claim("osd", 3, !Osd.comesBack(osd));
     }
 
     // Hidden under a card grown out of it: the card's glass would let it through.
@@ -121,8 +127,8 @@ Item {
         if (osd !== null)
             osdShown = osd;
 
+        placeOsd();
     }
-    onOsdVisibleChanged: sideOsd.follow()
 
     Component.onCompleted: {
         if (screenState !== null)
@@ -186,14 +192,12 @@ Item {
                 id: workspaces
 
                 bar: bar
-                makingWay: sideOsd.holdsRoom && bar.inOsdWay(workspaces)
             }
 
             MonitorPill {
                 id: monitor
 
                 bar: bar
-                makingWay: sideOsd.holdsRoom && bar.inOsdWay(monitor)
             }
 
         }
@@ -215,13 +219,6 @@ Item {
 
             }
 
-        }
-
-        SideOsd {
-            id: sideOsd
-
-            parent: bar.cardLayer
-            bar: bar
         }
 
         RowLayout {
@@ -309,9 +306,13 @@ Item {
         onTriggered: bar.recordingElapsed = Math.max(0, Math.round((Date.now() - Screenshot.recordingStarted) / 1000))
     }
 
-    ServiceRef {
-        service: Osd.landing
-        active: bar.osdLanding
+    // The OSD waits under a card for the island, or lands in it under one folding back:
+    // its time waits too, so you see all of it.
+    OsdTimeline {
+        id: osdTimeline
+
+        screenName: bar.screen.name
+        held: bar.osdClaimed && bar.islandCovered
     }
 
     // Caffeine, or media playing when you asked for it (Power), keeps the computer

@@ -116,6 +116,13 @@ ControlPage {
     pageName: "sound"
     spacing: Metrics.spacing.large
 
+    // The input tab shows the microphone muted or not as it changes: no OSD for it while
+    // you see it.
+    ServiceRef {
+        service: Osd.microphoneInSight
+        active: page.active && page.tab === "input"
+    }
+
     // One tab, side by side with the others: only the one shown is opaque and clickable,
     // the others fade as they slide away.
     component TabColumn: ColumnLayout {

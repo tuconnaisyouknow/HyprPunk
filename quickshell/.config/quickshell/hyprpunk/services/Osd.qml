@@ -7,16 +7,16 @@ import qs.theme
 
 // What the island briefly shows as things happen: a level (volume, brightness), an on/off
 // switch, the screenshot just taken, the battery and the AirPods. Decided once for the
-// whole shell; each island shows it when it's meant for every screen or for its own
-// (Bar, LockSurface). Always on: the changes come whether or not you look.
+// whole shell and announced to every island, which shows it for as long as it says when
+// it's meant for every screen or for its own (OsdTimeline). Always on: the changes come
+// whether or not you look.
 Singleton {
     id: osd
 
-    // What shows, null when nothing does: {kind, screen, icon, label, enabled, level,
-    // maxLevel, image, title, file, ringLevel, ringCharging}. kind is "" for a level or a
-    // switch, "battery", "screenshot" or "airpods"; screen is "" for every screen.
-    property var current: null
     // Every field an OSD has, empty: what the islands draw before the first one.
+    // {kind, screen, icon, label, enabled, level, maxLevel, image, title, file, ringLevel,
+    // ringCharging}. kind is "" for a level or a switch, "battery", "screenshot" or
+    // "airpods"; screen is "" for every screen.
     readonly property var blank: ({
         "kind": "",
         "screen": "",
@@ -31,18 +31,22 @@ Singleton {
         "ringLevel": null,
         "ringCharging": false
     })
-    // The OSD it interrupted, shown again for the rest of its time afterwards (a volume
-    // change over a screenshot's thumbnail): {content, remaining in ms}, or null.
-    property var resume: null
-    property real endsAt: 0
-    // Unplugged, the battery's OSD waits for the time left, then gives a moment to read it.
-    readonly property bool estimating: current !== null && current.kind === "battery" && current.label === "On battery" && Battery.timeLeft <= 0
-    // Islands where the OSD is landing under a card folding back onto it (ServiceRef):
-    // its time running out waits for them, so it gets all the way in before it goes.
-    readonly property QtObject landing: QtObject {
+    // Back in sight after something else had its place, an OSD stays at least this long.
+    readonly property int backTime: 1500
+    // What a surface already shows you while it's in sight (ServiceRef): the control
+    // center's sliders. The change shows there, so its OSD doesn't.
+    readonly property QtObject volumeInSight: QtObject {
         property int refCount: 0
     }
-    property bool endHeld: false
+    readonly property QtObject brightnessInSight: QtObject {
+        property int refCount: 0
+    }
+    readonly property QtObject microphoneInSight: QtObject {
+        property int refCount: 0
+    }
+
+    // An OSD, whole, and how long it stays in ms (-1 until something replaces it).
+    signal announced(var content, int duration)
 
     // How long an OSD stays, its usual time stretched as the settings ask (OsdSettings).
     function time(milliseconds) {
@@ -97,105 +101,19 @@ Singleton {
     }
 
     function show(content, duration) {
-        keepInterrupted(content.kind || "");
-        current = Object.assign({}, blank, content);
-        restart(duration);
+        announced(Object.assign({}, blank, content), duration);
     }
 
-    // Before another OSD replaces the one showing: a screenshot, battery or AirPods OSD
-    // with time left comes back afterwards. A level or a switch just goes, and so does an
-    // OSD replaced by a newer one of its kind.
-    function keepInterrupted(kind) {
-        if (current === null || current.kind === "" || kind === current.kind || Battery.critical)
-            return ;
-
-        const remaining = endsAt - Date.now();
-        if (remaining >= 800)
-            resume = {
-            "content": current,
-            "remaining": Math.max(1500, remaining)
-        };
-
+    // Whether an OSD comes back once something else had its place (another OSD, a card
+    // on the island): a screenshot, the battery or the AirPods do, for the rest of their
+    // time. A level or a switch only said what you just did: shown later, it'd be stale.
+    function comesBack(content) {
+        return content.kind !== "";
     }
 
-    // A negative duration stays until something replaces it.
-    function restart(duration) {
-        endHeld = false;
-        if (duration < 0) {
-            hideDelay.stop();
-            return ;
-        }
-        hideDelay.interval = duration;
-        endsAt = Date.now() + duration;
-        hideDelay.restart();
-    }
-
-    // Ends the OSD now, as its delay would. Another OSD over the critical battery alert
-    // goes back to the alert, and one over a screenshot, battery or AirPods OSD goes back
-    // to it for the rest of its time.
-    function end() {
-        hideDelay.stop();
-        endHeld = false;
-        if (Battery.critical) {
-            showBattery("Battery critical");
-        } else if (resume !== null) {
-            const interrupted = resume;
-            resume = null;
-            current = interrupted.content;
-            restart(interrupted.remaining);
-        } else {
-            current = null;
-        }
-    }
-
-    // Gone without coming back to what it interrupted (its screenshot opened, or the lock
-    // screen already showed it), except the critical battery alert, which stays.
-    function dismiss() {
-        resume = null;
-        if (Battery.critical) {
-            showBattery("Battery critical");
-            return ;
-        }
-        hideDelay.stop();
-        current = null;
-    }
-
-    onCurrentChanged: {
-        if (current === null)
-            resume = null;
-
-    }
-    // The time left as soon as it's known, then the usual moment to read it.
-    onEstimatingChanged: {
-        if (!estimating && current !== null && current.label === "On battery")
-            restart(time(2500));
-
-    }
-
-    ServiceRef {
-        service: Battery
-        active: osd.estimating
-    }
-
-    Timer {
-        id: hideDelay
-
-        onTriggered: {
-            if (osd.landing.refCount > 0)
-                osd.endHeld = true;
-            else
-                osd.end();
-        }
-    }
-
-    Connections {
-        function onRefCountChanged() {
-            if (osd.landing.refCount === 0 && osd.endHeld)
-                osd.end();
-
-        }
-
-        target: osd.landing
+    // Unplugged, the battery's OSD waits for the time left, then gives a moment to read it.
+    function estimating(content) {
+        return content !== null && content.kind === "battery" && content.label === "On battery" && Battery.timeLeft <= 0;
     }
 
     Connections {
@@ -221,13 +139,13 @@ Singleton {
     Connections {
         function onVolumeAdjusted() {
             // Muted, the gauge keeps its level and turns to the secondary color.
-            if (OsdSettings.shows("volume"))
+            if (OsdSettings.shows("volume") && osd.volumeInSight.refCount === 0)
                 osd.showLevel(Icons.volume(Audio.volume, Audio.muted), "Volume", !Audio.muted, Audio.volume, 100);
 
         }
 
         function onMicToggled() {
-            if (OsdSettings.shows("microphone"))
+            if (OsdSettings.shows("microphone") && osd.microphoneInSight.refCount === 0)
                 osd.showLevel(Audio.micMuted ? "󰍭" : "󰍬", "Microphone", !Audio.micMuted);
 
         }
@@ -255,7 +173,7 @@ Singleton {
         }
 
         function onBrightnessShown(percent) {
-            if (OsdSettings.shows("brightness"))
+            if (OsdSettings.shows("brightness") && osd.brightnessInSight.refCount === 0)
                 osd.showLevel(Icons.brightness(percent), "Brightness", percent > 0, percent, 100);
 
         }

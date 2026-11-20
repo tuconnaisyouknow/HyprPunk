@@ -61,6 +61,18 @@ Card {
         screenState?.release("popups");
     }
 
+    // Each new popup claims the island again: on top of an OSD or the AirPods card shown
+    // since, which wait under it or go (ScreenState).
+    Connections {
+        function onArrived() {
+            if (popups.wanted)
+                popups.screenState.claim("popups", 3);
+
+        }
+
+        target: Popups
+    }
+
     // The last popup's gap below it is the card's bottom padding.
     Binding {
         target: popups

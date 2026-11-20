@@ -12,9 +12,6 @@ Rectangle {
 
     default property alias content: contentRow.data
     property alias contentOpacity: contentRow.opacity
-    // Its glass alone, for content that goes into another pill's shape (the island's
-    // OSD, beside a card).
-    property alias glassOpacity: glass.opacity
     readonly property alias hovered: pillHover.hovered
     // Opens something on a click (clicked()): it answers the pointer like the control
     // center's blocks (PillZoom).
@@ -34,11 +31,6 @@ Rectangle {
     // How far its zoom draws it past its place in the row (PillZoom).
     readonly property real spreadX: pillZoom.spreadX
     readonly property real spreadY: pillZoom.spreadY
-    // Making way for the OSD beside a card (Bar.inOsdWay): it fades out while the OSD is
-    // there, and back in once it's gone.
-    property bool makingWay: false
-    property real presence: makingWay ? 0 : 1
-    readonly property bool madeWay: presence === 0
     property int spacing: Metrics.spacing.normal
     // On each side.
     property int horizontalPadding: Metrics.pillPadding
@@ -50,7 +42,7 @@ Rectangle {
     implicitHeight: Metrics.pillHeight
     radius: height / 2
     color: "transparent"
-    opacity: covered ? 0 : presence
+    opacity: covered ? 0 : 1
     clip: true
     signal clicked()
 
@@ -73,20 +65,17 @@ Rectangle {
 
     BlurShape {
         radius: pill.radius
-        shown: glass.opacity > 0.5 && !pill.covered && pill.presence > 0.5
+        shown: !pill.covered
     }
 
-    // Faded out for the OSD, it leaves the pointer to what's there.
     HoverHandler {
         id: pillHover
-
-        enabled: !pill.makingWay
     }
 
     TapHandler {
         id: pillTap
 
-        enabled: pill.clickable && !pill.makingWay
+        enabled: pill.clickable
         cursorShape: Qt.PointingHandCursor
         // Pressed as long as you like: it squeezes, and opens on release.
         longPressThreshold: 0
@@ -99,13 +88,6 @@ Rectangle {
         parent: pill.covered && pill.carrier !== null ? pill.carrier : pill
         anchors.centerIn: parent
         spacing: pill.spacing
-    }
-
-    Behavior on presence {
-        Anim {
-            token: Motion.color.normal
-        }
-
     }
 
 }

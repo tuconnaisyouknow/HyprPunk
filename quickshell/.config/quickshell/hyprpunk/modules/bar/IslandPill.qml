@@ -19,8 +19,10 @@ Pill {
     required property Item player
     // The time, which also tells the calendar what day it is.
     readonly property alias date: clock.date
-    // What it shows (IslandView.face).
-    readonly property string face: bar.islandOsdShown ? "osd" : "clock"
+    // What it shows (IslandView.face). Under a card that holds the island's shape it
+    // keeps the face it had, which the card grew out of; it takes the next one as the
+    // shape heads back to it, so the card folds onto what the island shows next.
+    property string face: "clock"
     // Where its time starts, from its left edge.
     readonly property real timeX: view.parent.x + view.x + view.timeX
     // Where the music's cover and equalizer are, the same way.
@@ -47,7 +49,7 @@ Pill {
                 clockPill.calendar.togglePinned();
         } else {
             Quickshell.execDetached(["xdg-open", clockPill.bar.osdShown.file]);
-            Osd.dismiss();
+            clockPill.bar.osdTimeline.dismiss();
         }
     }
     // The view sizes the island, padding included.
@@ -57,6 +59,14 @@ Pill {
     // never lands on a half pixel and the content stops shaking as it resizes.
     Layout.preferredWidth: 2 * Math.round(implicitWidth / 2)
     Layout.preferredHeight: 2 * Math.round(implicitHeight / 2)
+
+    Binding {
+        target: clockPill
+        property: "face"
+        value: clockPill.bar.islandOsdShown ? "osd" : "clock"
+        when: clockPill.bar.islandFrame.owner === null
+        restoreMode: Binding.RestoreNone
+    }
 
     IslandView {
         id: view

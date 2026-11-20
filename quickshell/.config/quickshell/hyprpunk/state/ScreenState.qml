@@ -20,20 +20,12 @@ QtObject {
             return toplevel.wayland !== null && toplevel.wayland.fullscreen;
         });
     }
-    // The island's claims, in the order they came: [{ name, rank }]. Rank 1 is a prompt
-    // an app waits on, 2 a panel you open, 3 a card that comes on its own.
+    // The island's claims, in the order they came: [{ name, rank, passing }]. Rank 1 is a
+    // prompt an app waits on, 2 a panel you open, 3 something that happened: a card that
+    // comes on its own (the notifications, the AirPods) or an OSD. A passing one only
+    // matters while it shows (a level OSD): it goes as soon as something takes its place.
     property var claims: []
-    // Who the island shows: the first prompt, which can't be pushed away; else the panel;
-    // else the first card. The others wait their turn.
-    readonly property string islandOwner: {
-        const first = (rank) => {
-            return claims.find((claim) => {
-                return claim.rank === rank;
-            });
-        };
-        const owner = first(1) ?? first(2) ?? first(3);
-        return owner !== undefined ? owner.name : "";
-    }
+    readonly property string islandOwner: ownerOf(claims)
     // The glass drawn straight on its desktop (BlurShape), for the blur behind it.
     property var blurShapes: []
 
@@ -53,26 +45,46 @@ QtObject {
     property var surfaces: ({
     })
 
-    // False when the island won't have it: a panel while a prompt waits for an answer.
-    // A prompt or a panel takes the island from the panel there, which closes.
-    function claim(name, rank) {
-        if (claims.some((claim) => {
+    // Who the island shows, the one rule for all of them: the first prompt, which can't be
+    // pushed away; else the panel; else the latest thing that happened, over the ones it
+    // interrupted, which come back once it's gone.
+    function ownerOf(list) {
+        const ranked = (rank) => {
+            return list.filter((claim) => {
+                return claim.rank === rank;
+            });
+        };
+        const happened = ranked(3);
+        const owner = ranked(1)[0] ?? ranked(2)[0] ?? happened[happened.length - 1];
+        return owner !== undefined ? owner.name : "";
+    }
+
+    // False when the island won't have it: a panel while a prompt waits for an answer, or
+    // something passing while it can't show. A prompt or a panel takes the island from the
+    // panel there, which closes. Something that happens again comes back on top.
+    function claim(name, rank, passing) {
+        if (rank !== 3 && claims.some((claim) => {
             return claim.name === name;
         }))
             return true;
 
-        if (rank === 2 && claims.some((claim) => {
-            return claim.rank === 1;
-        }))
+        if (rank === 2 && prompting())
             return false;
 
-        claims = claims.filter((claim) => {
-            return rank === 3 || claim.rank !== 2;
+        const next = claims.filter((claim) => {
+            return claim.name !== name && (rank === 3 || claim.rank !== 2);
         }).concat([{
             "name": name,
-            "rank": rank
+            "rank": rank,
+            "passing": passing === true
         }]);
-        return true;
+        const owner = ownerOf(next);
+        claims = next.filter((claim) => {
+            return !claim.passing || claim.name === owner;
+        });
+        return claims.some((claim) => {
+            return claim.name === name;
+        });
     }
 
     function release(name) {

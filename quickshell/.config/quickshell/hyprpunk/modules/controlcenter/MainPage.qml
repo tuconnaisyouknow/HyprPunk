@@ -54,6 +54,18 @@ ControlPage {
     pageName: "main"
     spacing: Metrics.spacing.large
 
+    // Its sliders show the brightness and the volume as they change: no OSD for them
+    // while you see the page.
+    ServiceRef {
+        service: Osd.brightnessInSight
+        active: page.active && Devices.hasBacklight
+    }
+
+    ServiceRef {
+        service: Osd.volumeInSight
+        active: page.active
+    }
+
     // Two columns of tiles, of the same width.
     RowLayout {
         id: tileColumns

@@ -52,6 +52,9 @@ Singleton {
     // for a popup.
     readonly property bool listed: focused !== null && focused.islandOwner === "notifications"
 
+    // A popup came: the card takes the island back from what happened before it.
+    signal arrived()
+
     function settle() {
         if (folded)
             home = focused;
@@ -95,6 +98,7 @@ Singleton {
             popups.leave([id]);
         });
         admit(joins);
+        arrived();
     }
 
     // The next ones waiting come in while the stack has room. Listed before it leaves the

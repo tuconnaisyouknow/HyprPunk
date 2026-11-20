@@ -7,8 +7,8 @@ import qs.components
 import qs.theme
 
 // Everything the island can briefly show (Osd): a level (volume, brightness), an on/off
-// switch, the screenshot you just took, battery alerts and the AirPods. The bar's island,
-// its OSD beside a card and the lock screen's island all draw it.
+// switch, the screenshot you just took, battery alerts and the AirPods. The bar's island
+// and the lock screen's both draw it.
 RowLayout {
     id: view
 
@@ -29,7 +29,7 @@ RowLayout {
     function batteryDetail() {
         const seconds = Battery.onBattery ? Battery.timeLeft : Battery.timeToFull;
         if (!(seconds > 0))
-            return Battery.percent + (Osd.estimating ? "% · Estimating…" : Battery.onBattery ? "%" : "% · Plugged in");
+            return Battery.percent + (Osd.estimating(view.content) ? "% · Estimating…" : Battery.onBattery ? "%" : "% · Plugged in");
 
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.round((seconds % 3600) / 60);

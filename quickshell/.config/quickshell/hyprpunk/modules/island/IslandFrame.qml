@@ -44,16 +44,13 @@ Card {
     property real fromRadius: 0
     property real fromCenter: 0
     property real fromTop: 0
-    property real fromMiddle: 0
     property real fromIslandShare: 1
     property real travel: 1
-    // How far its middle is from the screen's, where its top is, and the height of the
-    // island's middle, for what sits beside it.
+    // How far its middle is from the screen's, and where its top is.
     readonly property real shapeCenter: lerp(fromCenter, island.centerOffset, travel)
     readonly property real shapeTop: lerp(fromTop, targetTop, travel)
-    readonly property real islandMiddle: lerp(fromMiddle, island.top + island.height / 2, travel)
-    // How much the shape is the island's own: 1 folded on it, 0 a card's. The OSD beside
-    // a card goes into the island with it as it folds back, and comes out as a card opens.
+    // How much the shape is the island's own: 1 folded on it, 0 a card's. What the island
+    // shows, the time or an OSD, fades with it.
     readonly property real islandShare: lerp(fromIslandShare, owner === null ? 1 : 0, travel)
     readonly property alias shape: shape
     // The shape's middle on a whole pixel, which it and the content are centred on: each
@@ -93,7 +90,6 @@ Card {
         fromRadius = shape.radius;
         fromCenter = shapeCenter;
         fromTop = shapeTop;
-        fromMiddle = islandMiddle;
         fromIslandShare = islandShare;
         // A card opening bounces, and one taking the island from a smaller one, along the
         // sides it grows; a smaller one doesn't.
@@ -147,12 +143,11 @@ Card {
 
     }
 
-    // The island's own content (the time and its chips), at its place. An OSD has its own
-    // way into the island (Osd.landing).
+    // The island's own content (the time and its chips, or an OSD), at its place.
     PillContent {
         pill: frame.bar.islandItem
         active: frame.covering
-        share: pill.face === "osd" ? 0 : frame.islandShare
+        share: frame.islandShare
         x: frame.width / 2 + frame.island.centerOffset - frame.island.width / 2
         y: frame.island.top
     }

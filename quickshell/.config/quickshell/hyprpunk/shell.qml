@@ -45,7 +45,7 @@ ShellRoot {
         AirPods.devices;
         Idle.objectName;
         NightLight.objectName;
-        Osd.current;
+        Osd.blank;
         Screenshot.busy;
         NetworkStatus.device;
         PowerProfile.current;
