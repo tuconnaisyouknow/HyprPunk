@@ -8,4 +8,5 @@ NumberAnimation {
 
     duration: token.duration
     easing.type: token.easing
+    easing.overshoot: token.overshoot ?? 1.70158
 }

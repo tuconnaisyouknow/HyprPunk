@@ -181,7 +181,7 @@ Card {
 
             Behavior on opacity {
                 Anim {
-                    token: Motion.color.small
+                    token: Motion.unfold.content
                 }
 
             }
@@ -203,9 +203,8 @@ Card {
     }
 
     Behavior on progress {
-        NumberAnimation {
-            duration: Motion.resize.large.duration
-            easing.type: Easing.OutCubic
+        Anim {
+            token: Motion.unfold.content
         }
 
     }

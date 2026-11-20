@@ -17,8 +17,9 @@ PillPopup {
     // The island it grows out of (IslandPill), where the cover and the equalizer start.
     required property Item island
     readonly property var islandPill: bar.islandPill
-    // The cover settles during the first 70%, so it never crosses the fading-in title.
-    readonly property real flight: Math.min(1, progress / 0.7)
+    // The cover settles during the first 70%, so it never crosses the fading-in title, and
+    // stays in its slot as the card bounces past its ends.
+    readonly property real flight: Math.max(0, Math.min(1, progress / 0.7))
     // The island as you see it, zoomed under the pointer, which they start from.
     readonly property real zoomX: 1 + 2 * islandPill.spreadX / Math.max(islandPill.width, 1)
     readonly property real zoomY: 1 + 2 * islandPill.spreadY / Math.max(islandPill.height, 1)

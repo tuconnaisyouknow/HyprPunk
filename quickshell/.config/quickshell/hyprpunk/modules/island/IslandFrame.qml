@@ -5,10 +5,11 @@ import qs.theme
 import qs.windows
 
 // The one card shape every card of the island is drawn in: the panels, the calendar, the
-// notifications and the AirPods card. It grows out of the island to the open card's size
-// and folds back once none is open. When a card takes the island from another, the shape
-// only changes size while the old content fades out and the new one in, rather than one
-// card folding back behind the other. The cards draw their content clipped to it.
+// notifications and the AirPods card. It unfolds out of the island to the open card's size
+// and folds back once none is open, its width and height each going past and coming back
+// (Motion.unfold). When a card takes the island from another, the shape only glides to
+// its size while the old content fades out and the new one in, rather than one card
+// folding back behind the other. The cards draw their content clipped to it.
 // It eases where it sits too: the island moves and changes height when it takes an OSD
 // (Bar.islandOsdShown), which happens as soon as the last card closes.
 // The island itself is hidden while a card covers it, so the shape shows its content
@@ -44,14 +45,15 @@ Card {
     property real fromRadius: 0
     property real fromCenter: 0
     property real fromTop: 0
-    property real fromIslandShare: 1
-    property real travel: 1
+    // How far it has gone across and down: past 1 as it bounces.
+    property real travelX: 1
+    property real travelY: 1
     // How far its middle is from the screen's, and where its top is.
-    readonly property real shapeCenter: lerp(fromCenter, island.centerOffset, travel)
-    readonly property real shapeTop: lerp(fromTop, targetTop, travel)
-    // How much the shape is the island's own: 1 folded on it, 0 a card's. What the island
-    // shows, the time or an OSD, fades with it.
-    readonly property real islandShare: lerp(fromIslandShare, owner === null ? 1 : 0, travel)
+    readonly property real shapeCenter: lerp(fromCenter, island.centerOffset, travelX)
+    readonly property real shapeTop: lerp(fromTop, targetTop, travelY)
+    // How much the shape shows the island's own content, the time or an OSD: 1 folded on
+    // it, 0 a card's. It crosses over with the card's content, quicker than the shape.
+    property real islandShare: owner === null ? 1 : 0
     readonly property alias shape: shape
     // The shape's middle on a whole pixel, which it and the content are centred on: each
     // rounded on its own, they took turns rounding the other way as the shape bounced,
@@ -90,18 +92,19 @@ Card {
         fromRadius = shape.radius;
         fromCenter = shapeCenter;
         fromTop = shapeTop;
-        fromIslandShare = islandShare;
-        // A card opening bounces, and one taking the island from a smaller one, along the
-        // sides it grows; a smaller one doesn't.
-        if (openCard !== null)
-            settle.play(openCard.cardWidth > fromWidth, openCard.cardHeight > fromHeight);
-
+        // Unfolding out of the island or folding back onto it bounces; a card taking the
+        // island from another glides.
+        const unfolds = openCard === null || owner === null;
+        travelXAnimation.token = unfolds ? Motion.unfold.width : Motion.unfold.glideWidth;
+        travelYAnimation.token = unfolds ? Motion.unfold.height : Motion.unfold.glideHeight;
         owner = openCard;
         if (openCard !== null)
             lastOwner = openCard;
 
-        travel = 0;
-        travelAnimation.restart();
+        travelX = 0;
+        travelY = 0;
+        travelXAnimation.restart();
+        travelYAnimation.restart();
 
     }
     anchors.fill: parent
@@ -109,22 +112,22 @@ Card {
     z: -1
     visible: covering
     pillName: "island"
-    covering: owner !== null || travelAnimation.running
+    covering: owner !== null || travelXAnimation.running || travelYAnimation.running
     cardRect: Qt.rect(shape.x, shape.y, shape.width, shape.height)
     cardRadius: shape.radius
 
     Item {
         id: shape
 
-        property real radius: frame.lerp(frame.fromRadius, frame.targetRadius, frame.travel)
+        property real radius: Math.max(0, frame.lerp(frame.fromRadius, frame.targetRadius, frame.travelY))
 
         // The glass alone, so its width moves freely between two pixels: on whole ones
         // its sides stepped, a few times a second as the bounce slows down. It heads to
         // a whole, even width, where its edges are sharp around its middle.
         x: frame.middle - width / 2
         y: Math.round(frame.shapeTop)
-        width: frame.lerp(frame.fromWidth, 2 * Math.round(frame.targetWidth / 2), frame.travel) + settle.width
-        height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travel) + settle.height
+        width: frame.lerp(frame.fromWidth, 2 * Math.round(frame.targetWidth / 2), frame.travelX)
+        height: frame.lerp(frame.fromHeight, frame.targetHeight, frame.travelY)
 
         // Same look as the island it grows from: base color at 0.9, blurred, with the
         // glass rim, and lit under the pointer as it folds back onto the island that is.
@@ -152,18 +155,27 @@ Card {
         y: frame.island.top
     }
 
-    CardSettle {
-        id: settle
-    }
-
-    NumberAnimation {
-        id: travelAnimation
+    Anim {
+        id: travelXAnimation
 
         target: frame
-        property: "travel"
+        property: "travelX"
         to: 1
-        duration: Motion.resize.large.duration
-        easing.type: Easing.OutCubic
+    }
+
+    Anim {
+        id: travelYAnimation
+
+        target: frame
+        property: "travelY"
+        to: 1
+    }
+
+    Behavior on islandShare {
+        Anim {
+            token: Motion.unfold.content
+        }
+
     }
 
 }

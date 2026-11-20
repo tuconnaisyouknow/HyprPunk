@@ -354,7 +354,7 @@ Card {
 
             Behavior on opacity {
                 Anim {
-                    token: Motion.color.small
+                    token: Motion.unfold.content
                 }
 
             }
@@ -371,7 +371,7 @@ Card {
 
     Behavior on progress {
         Anim {
-            token: Motion.resize.large
+            token: Motion.unfold.content
         }
 
     }

@@ -19,7 +19,6 @@ Card {
     required property var screen
     // Its screen's bar, whose control pill it grows out of.
     required property var bar
-    property real progress: opened ? 1 : 0
     // The pages are built once the bar has its first values, or right away if you open
     // the panel before. Kept from then on.
     property bool pagesWanted: false
@@ -31,10 +30,6 @@ Card {
     // Where that pill is.
     readonly property var pill: bar.controlPill
     readonly property Item stack: pagesLoader.item
-
-    function lerp(from, to) {
-        return from + (to - from) * progress;
-    }
 
     function close() {
         opened = false;
@@ -84,7 +79,6 @@ Card {
 
     onOpenedChanged: {
         if (opened) {
-            settle.play(true, true);
             pagesWanted = true;
             keyboardFocus.forget();
             panel.forceActiveFocus();
@@ -94,7 +88,7 @@ Card {
     }
     anchors.fill: parent
     pillName: "control"
-    covering: progress > 0
+    covering: unfold.out
     cardRect: Qt.rect(panelSpot.x + glass.x, panelSpot.y + glass.y, glass.width, glass.height)
     cardRadius: panel.radius
     takesKeyboard: opened
@@ -120,8 +114,8 @@ Card {
 
             anchors.top: parent.top
             anchors.right: parent.right
-            anchors.topMargin: -controlCenter.lerp(controlCenter.pill.spreadY, 0)
-            anchors.rightMargin: -controlCenter.lerp(controlCenter.pill.spreadX, 0)
+            anchors.topMargin: -unfold.lerp(controlCenter.pill.spreadY, 0, unfold.heightProgress)
+            anchors.rightMargin: -unfold.lerp(controlCenter.pill.spreadX, 0, unfold.widthProgress)
             visible: panel.visible
             width: panel.shapeWidth
             height: panel.shapeHeight
@@ -150,11 +144,11 @@ Card {
             // It grows from the pill as you see it, zoomed past its place, to its own place:
             // how far its shape still starts past that place. The pages and the pill's spot
             // stay on that place, still while the shape heads to it.
-            readonly property int startX: Math.round(controlCenter.lerp(controlCenter.pill.spreadX, 0))
-            readonly property int startY: Math.round(controlCenter.lerp(controlCenter.pill.spreadY, 0))
-            // The glass's size as it grows and bounces, between two pixels too.
-            readonly property real shapeWidth: controlCenter.lerp(controlCenter.pill.width + 2 * controlCenter.pill.spreadX, controlCenter.panelWidth) + settle.width
-            readonly property real shapeHeight: controlCenter.lerp(controlCenter.pill.height + 2 * controlCenter.pill.spreadY, fullHeight) + settle.height
+            readonly property int startX: Math.round(unfold.lerp(controlCenter.pill.spreadX, 0, unfold.widthProgress))
+            readonly property int startY: Math.round(unfold.lerp(controlCenter.pill.spreadY, 0, unfold.heightProgress))
+            // The glass's size as it unfolds and bounces, between two pixels too.
+            readonly property real shapeWidth: unfold.lerp(controlCenter.pill.width + 2 * controlCenter.pill.spreadX, controlCenter.panelWidth, unfold.widthProgress)
+            readonly property real shapeHeight: unfold.lerp(controlCenter.pill.height + 2 * controlCenter.pill.spreadY, fullHeight, unfold.heightProgress)
 
             anchors.top: parent.top
             anchors.right: parent.right
@@ -162,7 +156,7 @@ Card {
             // (they're drawn as a picture of its size).
             anchors.topMargin: -startY
             anchors.rightMargin: -startX
-            visible: controlCenter.progress > 0
+            visible: controlCenter.covering
             width: Math.round(shapeWidth)
             height: Math.round(shapeHeight)
             // The pill's corners: rounder ones would let the pill's show under the panel.
@@ -208,7 +202,7 @@ Card {
                 PillContent {
                     pill: controlCenter.bar.controlItem
                     active: controlCenter.covering
-                    share: 1 - controlCenter.progress
+                    share: 1 - unfold.contentProgress
                 }
 
             }
@@ -232,7 +226,7 @@ Card {
                 // opens the ones it leads to, with their subject.
                 sourceComponent: PageStack {
                     // Starts hidden even when built with the panel already opening (Super+C),
-                    // so the pages still fade in.
+                    // so the pages still fade in, as the pill's content fades out (Unfold).
                     property bool built: false
 
                     opened: controlCenter.opened
@@ -313,7 +307,7 @@ Card {
 
                     Behavior on opacity {
                         Anim {
-                            token: Motion.color.small
+                            token: Motion.unfold.content
                         }
 
                     }
@@ -353,15 +347,10 @@ Card {
         onTriggered: controlCenter.pagesWanted = true
     }
 
-    CardSettle {
-        id: settle
-    }
+    Unfold {
+        id: unfold
 
-    Behavior on progress {
-        Anim {
-            token: Motion.resize.large
-        }
-
+        open: controlCenter.opened
     }
 
 }

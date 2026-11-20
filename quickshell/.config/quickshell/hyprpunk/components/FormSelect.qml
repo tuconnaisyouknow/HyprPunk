@@ -155,17 +155,47 @@ ColumnLayout {
 
     }
 
-    // The options, unfolded under the field.
+    // The options, unfolded under the field like a card out of its pill, past its size
+    // and back (Motion.unfold). Narrowed by a search while open, it glides instead.
     Item {
+        id: optionBox
+
+        // Unfolding or folding back, rather than changing size while open.
+        property bool unfolding: false
+
         Layout.fillWidth: true
         implicitHeight: select.expanded ? optionColumn.implicitHeight : 0
         clip: true
         visible: implicitHeight > 0
 
+        Connections {
+            function onExpandedChanged() {
+                optionBox.unfolding = true;
+                unfolded.restart();
+            }
+
+            target: select
+        }
+
+        Timer {
+            id: unfolded
+
+            interval: Motion.unfold.height.duration
+            onTriggered: optionBox.unfolding = false
+        }
+
         Column {
             id: optionColumn
 
             width: parent.width
+            opacity: select.expanded ? 1 : 0
+
+            Behavior on opacity {
+                Anim {
+                    token: Motion.unfold.content
+                }
+
+            }
             topPadding: Metrics.spacing.hairline
             spacing: Metrics.spacing.hairline
 
@@ -264,7 +294,7 @@ ColumnLayout {
 
         Behavior on implicitHeight {
             Anim {
-                token: Motion.resize.normal
+                token: optionBox.unfolding ? Motion.unfold.height : Motion.unfold.glideHeight
             }
 
         }

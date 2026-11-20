@@ -9,7 +9,8 @@ import qs.windows
 // and it stays until Escape or Backspace, a click outside, the shortcut or the pill again.
 // The workspace preview also opens on hover, for a glance: resting on the pill a moment
 // opens it, and leaving both the pill and the card folds it back.
-// Its content is laid out at full size and uncovered as the card grows.
+// Its content is laid out at full size, uncovered as the card grows, and fades in as the
+// pill's fades out (Unfold).
 Card {
     id: popup
 
@@ -46,7 +47,7 @@ Card {
     // Unfolded, or unfolding.
     property bool expanded: false
     // Out, from the opening until folded back.
-    readonly property bool mapped: expanded || progress > 0
+    readonly property bool mapped: unfold.out
     // Opened on purpose (a shortcut, a click) rather than as a preview: it stays open
     // when the pointer leaves, until closed. Always the case for a card that doesn't
     // open on hover.
@@ -54,8 +55,9 @@ Card {
     // Closed while kept open, until it has folded back: the pointer resting on the
     // preview's card or pill doesn't open it again.
     property bool closedOnPurpose: false
-    // 0 folded on the pill, 1 fully open.
-    property real progress: expanded ? 1 : 0
+    // How far it's open: 0 folded on the pill, 1 open, a little past either as it bounces.
+    readonly property real progress: unfold.heightProgress
+    readonly property alias unfold: unfold
     readonly property bool cardHovered: cardHover.hovered
     property bool pillHovered: false
     // It stays while the pointer is on the pill or on the card. The card opens over the
@@ -65,23 +67,19 @@ Card {
     readonly property alias card: card
     // The card grows from the pill as you see it, zoomed past its place, to its own place:
     // how far its shape still starts past that place, on whole pixels.
-    readonly property int startX: frame !== null ? 0 : Math.round(lerp(pill.spreadX, 0))
-    readonly property int startY: frame !== null ? 0 : Math.round(lerp(pill.spreadY, 0))
+    readonly property int startX: frame !== null ? 0 : Math.round(unfold.lerp(pill.spreadX, 0, unfold.widthProgress))
+    readonly property int startY: frame !== null ? 0 : Math.round(unfold.lerp(pill.spreadY, 0, unfold.heightProgress))
     // Its own shape's size as it grows and bounces, between two pixels too.
-    readonly property real shapeWidth: lerp(pill.width + 2 * pill.spreadX, cardWidth) + settle.width
-    readonly property real shapeHeight: lerp(pill.height + 2 * pill.spreadY, cardHeight) + settle.height
+    readonly property real shapeWidth: unfold.lerp(pill.width + 2 * pill.spreadX, cardWidth, unfold.widthProgress)
+    readonly property real shapeHeight: unfold.lerp(pill.height + 2 * pill.spreadY, cardHeight, unfold.heightProgress)
     // What draws its shape: its own glass, or its content's place in the shared one.
     readonly property Item shape: frame !== null ? card : glass
-    default property alias content: room.data
+    default property alias content: contentLayer.data
 
     // Right before it opens, to set the content up.
     signal opening()
     // Any other key while it's kept open, for a card that answers the keyboard.
     signal keyPressed(int key)
-
-    function lerp(from, to) {
-        return from + (to - from) * progress;
-    }
 
     // The pointer is on the pill of a preview (or on what opens it).
     function hoverStarted() {
@@ -226,11 +224,6 @@ Card {
 
     }
     onWidthChanged: followPill()
-    onExpandedChanged: {
-        if (expanded)
-            settle.play(true, true);
-
-    }
 
     Connections {
         function onWidthChanged() {
@@ -297,10 +290,10 @@ Card {
     Item {
         id: glass
 
-        readonly property real startX: popup.lerp(popup.pill.spreadX, 0)
+        readonly property real startX: unfold.lerp(popup.pill.spreadX, 0, unfold.widthProgress)
 
         x: popup.align === Qt.AlignRight ? popup.width - width + startX : popup.align === Qt.AlignHCenter ? (popup.width - width) / 2 : -startX
-        y: -popup.lerp(popup.pill.spreadY, 0)
+        y: -unfold.lerp(popup.pill.spreadY, 0, unfold.heightProgress)
         width: popup.shapeWidth
         height: popup.shapeHeight
         visible: popup.frame === null && popup.covering
@@ -397,26 +390,28 @@ Card {
                 PillContent {
                     pill: popup.pill
                     active: popup.frame === null && popup.covering
-                    share: 1 - popup.progress
+                    share: 1 - unfold.contentProgress
                 }
 
+            }
+
+            // The card's own content, over the pill's spot.
+            Item {
+                id: contentLayer
+
+                anchors.fill: parent
+                opacity: unfold.contentProgress
             }
 
         }
 
     }
 
-    // Its own shape's bounce; the island's shared shape has its own (IslandFrame).
-    CardSettle {
-        id: settle
-    }
+    // Its own shape's; the island's shared shape moves on its own (IslandFrame).
+    Unfold {
+        id: unfold
 
-    Behavior on progress {
-        NumberAnimation {
-            duration: Motion.resize.large.duration
-            easing.type: Easing.OutCubic
-        }
-
+        open: popup.expanded
     }
 
 }

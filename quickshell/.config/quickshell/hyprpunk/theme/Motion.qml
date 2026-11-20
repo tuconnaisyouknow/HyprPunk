@@ -10,7 +10,7 @@ Singleton {
     id: motion
 
     // Something going somewhere, or a shape changing size, starting fast so it answers
-    // right away. Large is a card unfolding out of its pill.
+    // right away.
     readonly property var move: tokens(Easing.OutCubic, 1)
     readonly property var resize: move
     // Appearing: decelerates into place.
@@ -38,19 +38,39 @@ Singleton {
         readonly property real overshoot: 4
     }
 
-    // A card's shape going a few pixels past its size as it finishes growing, then
-    // coming back (CardSettle). It peaks as the card reaches its size.
-    readonly property QtObject settle: QtObject {
-        readonly property int amount: 8
-        readonly property int delay: 110
-        readonly property int outDuration: 150
-        readonly property int outEasing: Easing.OutQuad
-        readonly property int backDuration: 320
-        readonly property int backEasing: Easing.InOutQuad
+    // A card unfolding out of its pill, or folding back onto it (Unfold, IslandFrame): its
+    // width and its height head there each on their own, going past and coming back, the
+    // height a moment longer, so the card stretches open like something elastic. A card
+    // already open that changes size or takes the island from another glides there
+    // instead (glide). The pill's content and the card's cross over quicker, while the
+    // shape is still on its way.
+    readonly property QtObject unfold: QtObject {
+        readonly property var width: ({
+            "duration": 360,
+            "easing": Easing.OutBack,
+            "overshoot": 0.9
+        })
+        readonly property var height: ({
+            "duration": 400,
+            "easing": Easing.OutBack,
+            "overshoot": 0.7
+        })
+        readonly property var glideWidth: ({
+            "duration": 360,
+            "easing": Easing.OutCubic
+        })
+        readonly property var glideHeight: ({
+            "duration": 400,
+            "easing": Easing.OutCubic
+        })
+        readonly property var content: ({
+            "duration": 160,
+            "easing": Easing.Linear
+        })
     }
 
-    // A pill that comes and goes from above the bar (DropInSlot, the OSD beside a card):
-    // it falls into place and bounces, and flies back up when it's over.
+    // A pill that comes and goes from above the bar (DropInSlot): it falls into place and
+    // bounces, and flies back up when it's over.
     readonly property QtObject drop: QtObject {
         // High enough to be off screen.
         readonly property int height: 60
