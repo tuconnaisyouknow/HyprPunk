@@ -805,12 +805,13 @@ WlSessionLockSurface {
 
                         opacity: Math.max(surface.unseen, surface.ease(surface.flight, 0.05, 0.45))
 
-                        Text {
+                        RollingText {
                             id: hours
 
                             text: Session.hourText(clock.date)
-                            color: Colors.primary
                             font: minutes.font
+                            // After the minutes' two digits: they always turn from 59 to 00.
+                            wait: 2 * Motion.stagger
                         }
 
                         GlassText {
@@ -843,7 +844,7 @@ WlSessionLockSurface {
 
                     // The island's time as the island draws it, as wide as the clock: at the
                     // island's size, it's the island's time exactly.
-                    Label {
+                    RollingText {
                         anchors.centerIn: parent
                         text: Session.clockText(clock.date)
                         font.features: {

@@ -108,10 +108,11 @@ Item {
                 openWidth: timeLabel.implicitWidth
                 openHeight: timeLabel.implicitHeight
 
-                Label {
+                RollingText {
                     id: timeLabel
 
                     opacity: view.timeLifted ? 0 : 1
+                    animated: view.animated
                     text: Session.clockText(view.date)
                     font.features: {
                         "tnum": 1

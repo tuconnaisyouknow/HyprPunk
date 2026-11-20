@@ -35,7 +35,7 @@ Everything below is drawn by the Quickshell configuration in [`quickshell/`](./q
 
 #### 🔒 Lock screen
 
-The screen blurs into the lock, with a big clock over the player and its synced lyrics, and the bar's island carried over to the middle. Typing shows the password prompt, and the island turns into a padlock that opens on the right password.
+The screen blurs into the lock, with a big clock over the player and its synced lyrics, its digits rolling up like a counter's as they turn, as everywhere the time shows, and the bar's island carried over to the middle. Typing shows the password prompt, and the island turns into a padlock that opens on the right password.
 
 ![lock-animation](./assets/screenshots/lock-animation.webp)
 
