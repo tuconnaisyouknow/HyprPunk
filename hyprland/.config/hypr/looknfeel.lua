@@ -128,5 +128,10 @@ hl.config({
     disable_hyprland_logo = true, -- No logo or anime mascot behind the wallpaper
     -- If the shell crashes while locked, it can take the lock back once restarted
     allow_session_lock_restore = true,
+    -- Screens turned off while you were away come back at your first key or move, from
+    -- Hyprland itself: it sees the input first, whatever woke the computer or wherever
+    -- the shell is
+    key_press_enables_dpms = true,
+    mouse_move_enables_dpms = true,
   },
 })

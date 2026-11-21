@@ -22,16 +22,11 @@ Singleton {
         Quickshell.execDetached([Session.scripts + "/idle-lights.sh", on ? "restore" : "off", which]);
     }
 
-    function wakeScreens() {
-        Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.dpms({action = \"on\"})"]);
-    }
-
     // The shell starts with you here: what one that restarted while you were away left
-    // lowered or off comes back, since it never saw you return.
+    // lowered comes back, since it never saw you return.
     Component.onCompleted: {
         light("keyboard", true);
         light("screen", true);
-        wakeScreens();
     }
 
     IdleMonitor {
@@ -47,14 +42,14 @@ Singleton {
     }
 
     // Through logind, so it knows the session is locked (hypridle shows the lock for it).
+    // The screens come back on at your first key or move, from Hyprland (looknfeel.lua).
     IdleMonitor {
         enabled: timeout > 0
         timeout: Power.delay("lock")
         onIsIdleChanged: {
             if (isIdle)
                 Quickshell.execDetached(["sh", "-c", "loginctl lock-session && hyprctl dispatch 'hl.dsp.dpms({action = \"off\"})'"]);
-            else
-                idle.wakeScreens();
+
         }
     }
 
