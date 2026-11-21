@@ -37,7 +37,15 @@ Item {
     readonly property real inkTop: sizer.baselineOffset + digitInk.tightBoundingRect.y
     readonly property real inkHeight: digitInk.tightBoundingRect.height
 
-    implicitWidth: row.implicitWidth
+    // Its cells' widths summed rather than the row's, which a row only learns when it
+    // lays out before a frame: the island around it would be drawn empty a frame (a
+    // circle where the lock first shows it), then ease out to the time's width.
+    implicitWidth: {
+        let width = 0;
+        for (let k = 0; k < repeater.count; k++)
+            width += repeater.itemAt(k)?.width ?? 0;
+        return width;
+    }
     implicitHeight: sizer.implicitHeight
     baselineOffset: sizer.baselineOffset
     onTextChanged: update()
@@ -67,8 +75,6 @@ Item {
     }
 
     Row {
-        id: row
-
         layoutDirection: Qt.RightToLeft
 
         Repeater {
