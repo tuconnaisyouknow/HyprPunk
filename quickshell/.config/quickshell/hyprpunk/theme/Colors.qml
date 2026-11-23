@@ -79,7 +79,7 @@ Singleton {
         JsonAdapter {
             id: palette
 
-            // Catppuccin Mocha, until the first palette is written.
+            // HyprPunk's default palette, until the first one is written.
             property string crust: "#11111b"
             property string base: "#1e1e2e"
             property string surface0: "#313244"

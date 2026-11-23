@@ -20,7 +20,7 @@ GLASS_RIM="$DOTFILES_DIR/quickshell/.config/quickshell/hyprpunk/shaders/glassrim
 # Where hyprpunk-login-screen writes the desktop's look: keep both alike
 LOOK_FILE="/var/lib/hyprpunk/login-look.conf"
 
-# Catppuccin colors for the output
+# HyprPunk's default colors for the output, before any palette
 C_ACCENT='\033[38;2;203;166;247m'
 C_DIM='\033[38;2;166;173;200m'
 C_GREEN='\033[38;2;166;227;161m'

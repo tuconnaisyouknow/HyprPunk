@@ -4,7 +4,7 @@
 -- frames, in the middle of the wallpaper's transition.
 local state = __require("lib.state")
 
--- Catppuccin Mocha's mauve in neon, until the first palette is written
+-- HyprPunk's default accent in neon, until the first palette is written
 local look = { primary = "cba6f7", theme = "neon" }
 for _, entry in ipairs(state.pairs("hypr-colors") or {}) do
   look[entry.key] = entry.value

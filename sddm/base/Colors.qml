@@ -4,8 +4,8 @@ import QtQuick
 
 // The login screen's colors, by the shell's roles (its theme/Colors.qml): the wallpaper's
 // palette, which wallpaperctl.sh has written where theme.conf.user points. SDDM reads it
-// over theme.conf and its Catppuccin Mocha. The primary is the accent, the secondary the rest of what you
-// read.
+// over theme.conf and its default colors. The primary is the accent, the secondary the
+// rest of what you read.
 QtObject {
     readonly property color crust: config.crust
     readonly property color base: config.base
