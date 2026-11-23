@@ -382,6 +382,7 @@ from other people's nearby.
 ├── btop/                # Btop configuration
 ├── cava/                # Audio visualizer configuration
 ├── fastfetch/           # Fastfetch configuration and logos
+├── frames/              # The shell's animation clock, a Qt plugin built by the installer for each Qt version
 ├── fontconfig/          # Ioskeley Mono for whatever asks for a monospace font
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
@@ -407,7 +408,7 @@ from other people's nearby.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `grub/`, `keyboard/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `frames/`, `grub/`, `keyboard/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
