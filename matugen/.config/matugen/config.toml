@@ -1,7 +1,10 @@
 # The desktop's colors, written by matugen so every app shares them. Every wallpaper
 # has its own palette (palettes.conf names it, palettes/ holds them): the wallpaper's own
-# hues at Catppuccin Mocha's lightness, so the theme stays dark and readable. An accent too
-# dark to read there stays the wallpaper's color: its surfaces go deeper instead.
+# hues at HyprPunk's fixed lightnesses, so the theme stays dark and readable. An accent too
+# dark to read there stays the wallpaper's color: its surfaces go deeper instead. Beside
+# the accent and the secondary, a palette holds eight softer tones (tone_*), a color wheel
+# squeezed into the hues those two leave free: the code, file kinds and graphs need more
+# than two colors.
 # wallpaperctl.sh renders the wallpaper's palette whenever it changes, with red, green,
 # yellow, peach and blue (meanings.json), which mean something and never change. Your own
 # apps' templates go in personal.toml, rendered after these.

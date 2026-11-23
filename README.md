@@ -130,17 +130,19 @@ HyprPunk comes in two themes, **neon** and **daydream**: the city never sleeps, 
 wallpapers, sorted into subthemes in `~/Pictures/Wallpapers/<theme>/<subtheme>/`, and the wallpaper you pick decides
 the whole look:
 
-- 🎨 Its own palette, picked by hand (`matugen/.config/matugen/palettes/`): the wallpaper's hues at Catppuccin Mocha's
-  lightness, so the desktop stays dark and readable. A deep red stays the wallpaper's red: its surfaces go darker
+- 🎨 Its own palette, picked by hand (`matugen/.config/matugen/palettes/`): the wallpaper's hues at HyprPunk's fixed
+  lightnesses, so the desktop stays dark and readable. A deep red stays the wallpaper's red: its surfaces go darker
   instead, until it reads.
-- ✨ An accent, in Mocha's mauve role, for titles and what's selected or active, and a secondary color, in lavender's
-  role, for everything else you read.
+- ✨ An accent, for titles and what's selected or active, and a secondary color for everything else you read.
 - 🌑 Surfaces and grays tinted with the wallpaper's mood.
-- 🚦 Red, green, yellow, peach and blue never change, since they mean something: errors, the battery, the camera and
-  the microphone.
+- 🌈 Eight softer tones (red, orange, yellow, green, teal, cyan, blue and pink) for what needs more than two colors:
+  code in Neovim, bat and yazi, file kinds, graphs, the prompt. They're a color wheel squeezed into the hues the accent
+  and the secondary leave free, so those two still lead and no two tones meet.
+- 🚦 Red, green, yellow, peach and blue never change, since they mean something: errors, git and diffs, the battery,
+  the camera and the microphone.
 
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
-terminal and its tools (Catppuccin Mocha tinted with the palette), and Brave's Classic theme, through its policy. The
+terminal and its tools, Neovim's own `hyprpunk` colorscheme, and Brave's Classic theme, through its policy. The
 shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop, Brave and a fastfetch already on screen change at
 once, Qt apps and yazi the next time they start, and your own apps follow if you add them (see
 [Customization](#-customization)). Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
@@ -574,7 +576,7 @@ customize (see [Philosophy](#-philosophy)): your apps can follow it, not change 
 - 🎨 The Kvantum theme is [GabePoel/KvLibadwaita](https://github.com/GabePoel/KvLibadwaita) by Gabriel Perko-Engel, under the GPL-3.0, with its colors swapped for the palette's. GTK 3 apps get libadwaita's look from [adw-gtk3](https://github.com/lassekongo83/adw-gtk3).
 - 🗂️ The Nextcloud sync emblems in `icons/` are [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)'s (GPL-3.0), moved from the icon's corner to the middle.
 - 🕹️ The CyberEXS GRUB theme comes from [HenriqueLopes42/themeGrub.CyberEXS](https://github.com/HenriqueLopes42/themeGrub.CyberEXS).
-- 🐱 The terminal tools' colors (Kitty, Btop, Yazi, Bat) start from [Catppuccin](https://github.com/catppuccin)'s Mocha themes (MIT), tinted with the wallpaper's palette.
+- 🐱 The palettes' lightnesses and the default palette come from [Catppuccin](https://github.com/catppuccin) Mocha (MIT), and Yazi's file icons from its Yazi theme.
 - 🔒 The lock screen, and the login screen drawn like it, are inspired by the lock screen in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.

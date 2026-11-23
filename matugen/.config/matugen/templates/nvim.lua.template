@@ -1,18 +1,37 @@
 -- Neovim's colors from the wallpaper's palette, written by matugen to
--- ~/.local/state/hyprpunk/nvim-colors.lua. catppuccin.lua lays them over Mocha's.
+-- ~/.local/state/hyprpunk/nvim-colors.lua. The hyprpunk colorscheme reads them, and open
+-- Neovims take them again as soon as the file changes.
 return {
-  mauve = "{{colors.primary.default.hex}}",
-  lavender = "{{colors.secondary.default.hex}}",
+  primary = "{{colors.primary.default.hex}}",
+  on_primary = "{{colors.on_primary.default.hex}}",
+  secondary = "{{colors.secondary.default.hex}}",
+
   text = "{{colors.text.default.hex}}",
   subtext1 = "{{colors.subtext1.default.hex}}",
   subtext0 = "{{colors.subtext0.default.hex}}",
   overlay2 = "{{colors.overlay2.default.hex}}",
   overlay1 = "{{colors.overlay1.default.hex}}",
   overlay0 = "{{colors.overlay0.default.hex}}",
-  surface2 = "{{colors.surface_container_highest.default.hex}}",
-  surface1 = "{{colors.surface_container_high.default.hex}}",
-  surface0 = "{{colors.surface_container.default.hex}}",
-  base = "{{colors.surface.default.hex}}",
-  mantle = "{{colors.surface_container_low.default.hex}}",
-  crust = "{{colors.surface_container_lowest.default.hex}}",
+
+  surface_container_highest = "{{colors.surface_container_highest.default.hex}}",
+  surface_container_high = "{{colors.surface_container_high.default.hex}}",
+  surface_container = "{{colors.surface_container.default.hex}}",
+  surface = "{{colors.surface.default.hex}}",
+  surface_container_low = "{{colors.surface_container_low.default.hex}}",
+  surface_container_lowest = "{{colors.surface_container_lowest.default.hex}}",
+
+  tone_red = "{{colors.tone_red.default.hex}}",
+  tone_orange = "{{colors.tone_orange.default.hex}}",
+  tone_yellow = "{{colors.tone_yellow.default.hex}}",
+  tone_green = "{{colors.tone_green.default.hex}}",
+  tone_teal = "{{colors.tone_teal.default.hex}}",
+  tone_cyan = "{{colors.tone_cyan.default.hex}}",
+  tone_blue = "{{colors.tone_blue.default.hex}}",
+  tone_pink = "{{colors.tone_pink.default.hex}}",
+
+  error = "{{colors.error.default.hex}}",
+  green = "{{colors.green.default.hex}}",
+  yellow = "{{colors.yellow.default.hex}}",
+  peach = "{{colors.peach.default.hex}}",
+  blue = "{{colors.blue.default.hex}}",
 }

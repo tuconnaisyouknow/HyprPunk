@@ -10,62 +10,45 @@ scan_timeout = 100
 # One line of pills sliding from one color to the next: who you are, where,
 # the git state, the project's language and the time. Then the prompt itself.
 format = """
-[](fg:surface0)\
+[](fg:surface_container)\
 $os\
 $username\
 ${custom.local_spacer}\
 $hostname\
-[](bg:primary fg:surface0)\
+[](bg:primary fg:surface_container)\
 $directory\
 [](fg:primary bg:secondary)\
 $git_branch\
 $git_status\
-[](fg:secondary bg:sky)\
+[](fg:secondary bg:cyan)\
 $nodejs\
 $php\
 $java\
 $python\
-[](fg:sky bg:sapphire)\
+[](fg:cyan bg:blue)\
 $time\
-[ ](fg:sapphire)\
+[ ](fg:blue)\
 $line_break$character"""
 
-# Catppuccin Mocha, with the wallpaper's palette in place of its surfaces, grays, mauve
-# and lavender
+# The palette's roles, by their own names. Error is the fixed red (meanings.json): it
+# says the last command failed.
 palette = 'hyprpunk'
 
 [palettes.hyprpunk]
-rosewater = "#f5e0dc"
-flamingo = "#f2cdcd"
-pink = "#f5c2e7"
 primary = "{{colors.primary.default.hex}}"
-red = "#f38ba8"
-maroon = "#eba0ac"
-peach = "#fab387"
-yellow = "#f9e2af"
-green = "#a6e3a1"
-teal = "#94e2d5"
-sky = "#89dceb"
-sapphire = "#74c7ec"
-blue = "#89b4fa"
 secondary = "{{colors.secondary.default.hex}}"
-text = "{{colors.text.default.hex}}"
-subtext1 = "{{colors.subtext1.default.hex}}"
-subtext0 = "{{colors.subtext0.default.hex}}"
-overlay2 = "{{colors.overlay2.default.hex}}"
-overlay1 = "{{colors.overlay1.default.hex}}"
-overlay0 = "{{colors.overlay0.default.hex}}"
-surface2 = "{{colors.surface_container_highest.default.hex}}"
-surface1 = "{{colors.surface_container_high.default.hex}}"
-surface0 = "{{colors.surface_container.default.hex}}"
-base = "{{colors.surface.default.hex}}"
-mantle = "{{colors.surface_container_low.default.hex}}"
-crust = "{{colors.surface_container_lowest.default.hex}}"
+error = "{{colors.error.default.hex}}"
+red = "{{colors.tone_red.default.hex}}"
+green = "{{colors.tone_green.default.hex}}"
+cyan = "{{colors.tone_cyan.default.hex}}"
+blue = "{{colors.tone_blue.default.hex}}"
+surface = "{{colors.surface.default.hex}}"
+surface_container = "{{colors.surface_container.default.hex}}"
 
 # Who and where: distro icon, user, and the machine's name over SSH only
 [os]
 disabled = false
-style = "bg:surface0 fg:secondary"
+style = "bg:surface_container fg:secondary"
 
 [os.symbols]
 Windows = "󰍲"
@@ -91,23 +74,23 @@ NixOS = "󱄅"
 
 [username]
 show_always = true
-style_user = "bg:surface0 fg:secondary"
-style_root = "bg:surface0 fg:red"
+style_user = "bg:surface_container fg:secondary"
+style_root = "bg:surface_container fg:error"
 format = '[ $user]($style)'
 
 # Just a space when you're on your own machine, the hostname takes its place over SSH
 [custom.local_spacer]
 when = 'test -z "$SSH_CONNECTION$SSH_TTY$SSH_CLIENT"'
-format = '[ ](bg:surface0 fg:secondary)'
+format = '[ ](bg:surface_container fg:secondary)'
 
 [hostname]
 ssh_only = true
 ssh_symbol = "󰢹 "
-format = "[@$hostname ](bg:surface0 fg:secondary)[$ssh_symbol](bg:surface0 fg:secondary)"
+format = "[@$hostname ](bg:surface_container fg:secondary)[$ssh_symbol](bg:surface_container fg:secondary)"
 
 # The last three folders, the usual ones shown as icons
 [directory]
-style = "fg:base bg:primary"
+style = "fg:surface bg:primary"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -126,75 +109,75 @@ truncation_symbol = "…/"
 [git_branch]
 symbol = ""
 style = "bg:secondary"
-format = '[[ $symbol $branch ](fg:base bg:secondary)]($style)'
+format = '[[ $symbol $branch ](fg:surface bg:secondary)]($style)'
 
 [git_status]
 style = "bg:secondary"
-format = '[[($all_status$ahead_behind )](fg:base bg:secondary)]($style)'
-up_to_date = '[ ✓](bg:secondary fg:base)'
-untracked = '[?\($count\)](bg:secondary fg:base)'
-stashed = '[\$](bg:secondary fg:base)'
-modified = '[!\($count\)](bg:secondary fg:base)'
-renamed = '[»\($count\)](bg:secondary fg:base)'
-deleted = '[✘\($count\)](bg:secondary fg:base)'
-staged = '[++\($count\)](bg:secondary fg:base)'
-ahead = '[⇡\(${count}\)](bg:secondary fg:base)'
-diverged = '⇕[\[](bg:secondary fg:base)[⇡\(${ahead_count}\)](bg:secondary fg:base)[⇣\(${behind_count}\)](bg:secondary fg:base)[\]](bg:secondary fg:base)'
-behind = '[⇣\(${count}\)](bg:secondary fg:base)'
+format = '[[($all_status$ahead_behind )](fg:surface bg:secondary)]($style)'
+up_to_date = '[ ✓](bg:secondary fg:surface)'
+untracked = '[?\($count\)](bg:secondary fg:surface)'
+stashed = '[\$](bg:secondary fg:surface)'
+modified = '[!\($count\)](bg:secondary fg:surface)'
+renamed = '[»\($count\)](bg:secondary fg:surface)'
+deleted = '[✘\($count\)](bg:secondary fg:surface)'
+staged = '[++\($count\)](bg:secondary fg:surface)'
+ahead = '[⇡\(${count}\)](bg:secondary fg:surface)'
+diverged = '⇕[\[](bg:secondary fg:surface)[⇡\(${ahead_count}\)](bg:secondary fg:surface)[⇣\(${behind_count}\)](bg:secondary fg:surface)[\]](bg:secondary fg:surface)'
+behind = '[⇣\(${count}\)](bg:secondary fg:surface)'
 
 # The project's language and its version.
 # The commented ones are ready to go: uncomment them and add them to the format above.
 [nodejs]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+style = "bg:cyan"
+format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 #[c]
 #symbol = " "
-#style = "bg:sky"
-#format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+#style = "bg:cyan"
+#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 #[rust]
 #symbol = ""
-#style = "bg:sky"
-#format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+#style = "bg:cyan"
+#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 #[golang]
 #symbol = ""
-#style = "bg:sky"
-#format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+#style = "bg:cyan"
+#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 [php]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+style = "bg:cyan"
+format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 [java]
 symbol = " "
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+style = "bg:cyan"
+format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 #[kotlin]
 #symbol = ""
-#style = "bg:sky"
-#format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+#style = "bg:cyan"
+#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 #[haskell]
 #symbol = ""
-#style = "bg:sky"
-#format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+#style = "bg:cyan"
+#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 [python]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:base bg:sky)]($style)'
+style = "bg:cyan"
+format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
 
 # Hours and minutes
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:sapphire"
-format = '[[  $time ](fg:base bg:sapphire)]($style)'
+style = "bg:blue"
+format = '[[  $time ](fg:surface bg:blue)]($style)'
 
 [line_break]
 disabled = false
@@ -203,10 +186,10 @@ disabled = false
 [character]
 disabled = false
 success_symbol = '[ ](bold fg:primary)'
-error_symbol = '[ ](bold fg:red)'
+error_symbol = '[ ](bold fg:error)'
 vimcmd_symbol = '[ ](bold fg:primary)'
-vimcmd_replace_one_symbol = '[ ](bold fg:maroon)'
-vimcmd_replace_symbol = '[ ](bold fg:maroon)'
+vimcmd_replace_one_symbol = '[ ](bold fg:red)'
+vimcmd_replace_symbol = '[ ](bold fg:red)'
 vimcmd_visual_symbol = '[ ](bold fg:green)'
 
 # What a prompt shrinks to once its command has run (see the transient prompt in .zshrc)

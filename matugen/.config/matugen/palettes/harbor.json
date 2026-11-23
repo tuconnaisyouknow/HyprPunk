@@ -104,6 +104,46 @@
       "default": {
         "color": "#aadfff"
       }
+    },
+    "tone_red": {
+      "default": {
+        "color": "#f68b99"
+      }
+    },
+    "tone_orange": {
+      "default": {
+        "color": "#f9b485"
+      }
+    },
+    "tone_yellow": {
+      "default": {
+        "color": "#fbe1af"
+      }
+    },
+    "tone_green": {
+      "default": {
+        "color": "#b5e095"
+      }
+    },
+    "tone_teal": {
+      "default": {
+        "color": "#9de2c6"
+      }
+    },
+    "tone_cyan": {
+      "default": {
+        "color": "#89dfda"
+      }
+    },
+    "tone_blue": {
+      "default": {
+        "color": "#aaaaf8"
+      }
+    },
+    "tone_pink": {
+      "default": {
+        "color": "#fbc1dc"
+      }
     }
   }
 }

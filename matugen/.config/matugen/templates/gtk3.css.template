@@ -1,8 +1,8 @@
 /* The colors of the HyprPunk GTK 3 theme. matugen writes them from
  * ~/.config/matugen/templates/gtk3.css.template, so change them there: each Adwaita
  * tone gets the base's tone at the same depth, the accent is the primary and text
- * a soft shade of it (on_surface), so an app takes the accent's color the way Mocha's
- * lavender sits by its mauve. gtk4.css.template gives GTK 4 the same ones. */
+ * a soft shade of it (on_surface), so an app's text leans toward the accent the way the
+ * shell's secondary sits by it. gtk4.css.template gives GTK 4 the same ones. */
 
 @define-color accent_bg_color {{colors.primary.default.hex}};
 @define-color accent_fg_color {{colors.on_primary.default.hex}};

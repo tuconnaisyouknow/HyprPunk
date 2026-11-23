@@ -11,7 +11,10 @@
 #   surface_container_lowest  the deepest surface, then surface_container_low, surface,
 #                             surface_container, surface_container_high and _highest
 #   text, subtext1, subtext0, overlay2, overlay1, overlay0
-#                             Catppuccin's text and greys, tinted with the palette
+#                             the text and its greys, tinted with the palette
+#   tone_red, tone_orange, tone_yellow, tone_green, tone_teal, tone_cyan, tone_blue,
+#   tone_pink                 the palette's tones, for what needs more colors than two:
+#                             syntax, file kinds, graphs
 #   error, green, yellow, peach, blue
 #                             colors that mean something, the same with every palette
 # Each comes as .hex, .hex_stripped, .rgba, .red, .green, .blue, .hue, .saturation or

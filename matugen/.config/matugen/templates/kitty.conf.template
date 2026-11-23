@@ -1,82 +1,82 @@
 # vim:ft=kitty
-# kitty's colors: Catppuccin Mocha's, with the wallpaper's palette in place of its
-# surfaces, grays, mauve and lavender, so magenta is the accent. matugen writes it to
-# ~/.local/state/hyprpunk/kitty-colors.conf, which kitty.conf includes.
+# kitty's colors from the wallpaper's palette. matugen writes them to
+# ~/.local/state/hyprpunk/kitty-colors.conf, which kitty.conf includes, and kitty reads
+# them again when wallpaperctl.sh tells it. Magenta is the accent and cyan the palette's
+# cyan; red, green, yellow and blue are the fixed colors (meanings.json), since tools
+# say errors and changes with them.
 
-## name:     Catppuccin Kitty Mocha
-## author:   Catppuccin Org
-## license:  MIT
-## upstream: https://github.com/catppuccin/kitty/blob/main/themes/mocha.conf
-## blurb:    Soothing pastel theme for the high-spirited!
+########
+# TEXT #
+########
 
+foreground           {{colors.text.default.hex}}
+background           {{colors.surface.default.hex}}
+selection_foreground {{colors.surface.default.hex}}
+selection_background {{colors.secondary.default.hex}}
 
+# The cursor and the links in the accent, like what you type and point at in the shell
+cursor            {{colors.primary.default.hex}}
+cursor_text_color {{colors.surface.default.hex}}
+url_color         {{colors.primary.default.hex}}
 
-# The basic colors
-foreground              {{colors.text.default.hex}}
-background              {{colors.surface.default.hex}}
-selection_foreground    {{colors.surface.default.hex}}
-selection_background    #f5e0dc
+##################
+# WINDOWS & TABS #
+##################
 
-# Cursor colors: the accent, like what you type in the shell's fields
-cursor                  {{colors.primary.default.hex}}
-cursor_text_color       {{colors.surface.default.hex}}
-
-# URL underline color when hovering with mouse
-url_color               #f5e0dc
-
-# Kitty window border colors
-active_border_color     {{colors.secondary.default.hex}}
-inactive_border_color   {{colors.overlay0.default.hex}}
-bell_border_color       #f9e2af
-
-# OS Window titlebar colors
+active_border_color   {{colors.secondary.default.hex}}
+inactive_border_color {{colors.overlay0.default.hex}}
+bell_border_color     {{colors.yellow.default.hex}}
 wayland_titlebar_color system
-macos_titlebar_color system
 
-# Tab bar colors
-active_tab_foreground   {{colors.surface_container_lowest.default.hex}}
-active_tab_background   #f5c2e7
+# The tab you're on is lit in the accent, the others sit on the bar
+active_tab_foreground   {{colors.on_primary.default.hex}}
+active_tab_background   {{colors.primary.default.hex}}
 inactive_tab_foreground {{colors.text.default.hex}}
 inactive_tab_background {{colors.surface_container_low.default.hex}}
 tab_bar_background      {{colors.surface_container_lowest.default.hex}}
 
-# Colors for marks (marked text in the terminal)
+#########
+# MARKS #
+#########
+
 mark1_foreground {{colors.surface.default.hex}}
 mark1_background {{colors.secondary.default.hex}}
 mark2_foreground {{colors.surface.default.hex}}
-mark2_background #f5c2e7
+mark2_background {{colors.tone_pink.default.hex}}
 mark3_foreground {{colors.surface.default.hex}}
-mark3_background #74c7ec
+mark3_background {{colors.tone_blue.default.hex}}
 
-# The 16 terminal colors
+#######################
+# THE TERMINAL COLORS #
+#######################
 
 # black
 color0 {{colors.surface_container_high.default.hex}}
 color8 {{colors.surface_container_highest.default.hex}}
 
 # red
-color1 #f38ba8
-color9 #f38ba8
+color1 {{colors.error.default.hex}}
+color9 {{colors.error.default.hex}}
 
 # green
-color2  #a6e3a1
-color10 #a6e3a1
+color2  {{colors.green.default.hex}}
+color10 {{colors.green.default.hex}}
 
 # yellow
-color3  #f9e2af
-color11 #f9e2af
+color3  {{colors.yellow.default.hex}}
+color11 {{colors.yellow.default.hex}}
 
 # blue
-color4  #89b4fa
-color12 #89b4fa
+color4  {{colors.blue.default.hex}}
+color12 {{colors.blue.default.hex}}
 
 # magenta
 color5  {{colors.primary.default.hex}}
 color13 {{colors.primary.default.hex}}
 
 # cyan
-color6  #94e2d5
-color14 #94e2d5
+color6  {{colors.tone_cyan.default.hex}}
+color14 {{colors.tone_cyan.default.hex}}
 
 # white
 color7  {{colors.subtext1.default.hex}}
