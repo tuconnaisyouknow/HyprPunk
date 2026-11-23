@@ -7,8 +7,8 @@
 #   wallpaperctl.sh set <image>    saves it and shows it with a transition (the shell's selector)
 #   wallpaperctl.sh theme <theme>  switches to the theme's last wallpaper, or its first one
 #   wallpaperctl.sh themes         prints each theme, the wallpaper it would switch to and its thumbnail (the theme picker)
-#   wallpaperctl.sh list [theme]   prints the theme's wallpapers in order, their thumbnails and their palette's accent,
-#                                  secondary and surface (the current theme's by default)
+#   wallpaperctl.sh list [theme]   prints each wallpaper's theme, then the wallpapers in order, their thumbnails and
+#                                  their palette's accent, secondary and surface (every theme's by default)
 #   wallpaperctl.sh reset          back to the current theme's first wallpaper
 #   wallpaperctl.sh login          gives the login screens the saved one's video and your desktop's look again
 #                                  (a new glass or regional format)
@@ -181,12 +181,26 @@ with_colors() {
   done
 }
 
+# Puts the theme before lines starting with a wallpaper, so the shell holds every theme's
+# list and shows a new theme's at once, before its look is in place
+with_themes() {
+  local line
+  while IFS= read -r line; do
+    printf '%s\t%s\n' "$(theme_of "${line%%$'\t'*}")" "$line"
+  done
+}
+
 # Subthemes in their folders' order, then the wallpapers by name
 list_wallpapers() {
   validate_theme "$1"
   find -L "$WALLPAPER_DIR/$1" -mindepth 2 -maxdepth 2 -type f \
     \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) |
     LC_ALL=C sort
+}
+
+# Every theme's wallpapers, the themes in their own order
+every_wallpaper() {
+  list_themes | cut -f1 | while IFS= read -r theme; do list_wallpapers "$theme"; done
 }
 
 first_wallpaper() {
@@ -372,10 +386,10 @@ themes:1)
   list_themes | with_thumbnails
   ;;
 list:1)
-  list_wallpapers "$(theme_of "$(saved_wallpaper)")" | with_thumbnails | with_colors
+  every_wallpaper | with_thumbnails | with_colors | with_themes
   ;;
 list:2)
-  list_wallpapers "$2" | with_thumbnails | with_colors
+  list_wallpapers "$2" | with_thumbnails | with_colors | with_themes
   ;;
 reset:1)
   acquire_lock
@@ -389,7 +403,7 @@ ensure:1)
   acquire_lock
   switch_to "$(saved_wallpaper)"
   # Every thumbnail, so the pickers open at once the first time too
-  list_themes | cut -f1 | while IFS= read -r theme; do list_wallpapers "$theme"; done | with_thumbnails >/dev/null
+  every_wallpaper | with_thumbnails >/dev/null
   ;;
 status:1)
   wallpaper="$(saved_wallpaper)"

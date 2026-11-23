@@ -23,9 +23,8 @@ IslandPanel {
     })
     readonly property var themes: Wallpapers.themes
     property int selectedIndex: 0
-    // The theme in use is the one whose last wallpaper is on screen.
     readonly property int currentIndex: themes.findIndex((theme) => {
-        return theme.wallpaper === Session.wallpaper;
+        return theme.name === Wallpapers.theme;
     })
 
     function select(delta) {

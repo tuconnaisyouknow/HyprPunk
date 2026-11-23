@@ -75,7 +75,7 @@ IslandPanel {
     ImageCarousel {
         id: carousel
 
-        currentId: Session.wallpaper
+        currentId: Wallpapers.current
         anchors.top: parent.top
         anchors.topMargin: picker.cardPadding
         anchors.left: parent.left
