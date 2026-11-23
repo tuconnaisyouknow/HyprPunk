@@ -24,9 +24,9 @@ Rectangle {
     // Past its first frames: laid out, so what follows a change eases to it.
     property bool drawn: false
     property date now: new Date()
-    // The clock follows the regional formats you picked for the desktop: 12 h in us,
-    // 24 h in fr.
-    readonly property var formats: Qt.locale(config.region === "fr" ? "fr_FR" : "en_US")
+    // The clock follows the regional formats you picked for the desktop, any locale as
+    // glibc names it: 12 h in en_US, 24 h in en_GB.
+    readonly property var formats: Qt.locale(config.region || "en_US.UTF-8")
     readonly property bool twelveHour: /a/i.test(formats.timeFormat(Locale.ShortFormat))
 
     // The hour on its own, AM/PM being a text of its own. Done by hand: Qt only counts
@@ -36,7 +36,7 @@ Rectangle {
         return twelveHour ? String(hour % 12 || 12) : String(hour).padStart(2, "0");
     }
 
-    // "AM" or "PM" in us, nothing in fr.
+    // "AM" or "PM" when the formats count to 12, nothing otherwise.
     function meridiemText(date) {
         if (!twelveHour)
             return "";

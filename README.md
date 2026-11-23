@@ -210,16 +210,16 @@ bash <(curl -fsSL https://raw.githubusercontent.com/tuconnaisyouknow/HyprPunk/re
 
 The script asks for the keyboard layout, where the Vim keys sit and the regional formats first, then your password once.
 After that it runs on its own until it offers to reboot, so you can leave it during the long package builds. Left empty, the
-answers give the layout your system already has (US when it has none), the Vim keys on `h j k l` and US formats (`en_US.UTF-8`). French formats (`fr_FR.UTF-8`) are generated during
-installation too, so you can switch later in the settings (`Super + I`). If the installation stops, run the
+answers give the layout your system already has (US when it has none), the Vim keys on `h j k l` and US formats (`en_US.UTF-8`). Every
+locale comes installed (`glibc-locales`), so you can switch later in the settings (`Super + I`). If the installation stops, run the
 same command again and it picks up where it left off.
 
 Reboot after the installation completes.
 
 > [!NOTE]
 > HyprPunk is in **English only**, by choice: the shell is written in it, and the session sets every app to it so
-> the whole desktop speaks one language. Every Latin keyboard layout is supported, but only two regional formats,
-> **United States (`en_US`)** and **France (`fr_FR`)**.
+> the whole desktop speaks one language. Every Latin keyboard layout is supported, and every regional format glibc
+> has (`de_CH`, `pt_BR`, `ja_JP`…).
 
 ### 📦 What gets installed
 
@@ -465,20 +465,20 @@ What follows the Vim keys:
 
 ### 🌍 Language and regional formats
 
-The interface is in English, and only in English: the session sets `LANG` and `LC_MESSAGES` to `en_US.UTF-8`, with
-no setting to change it. The regional formats (the other `LC_*` categories: dates, times, numbers, money) are
-yours to pick, United States (`us`, `en_US.UTF-8`) or France (`fr`, `fr_FR.UTF-8`), in the settings (`Super + I`,
-Keyboard and region) or from the command line:
+The interface is in English, and only in English: the session sets `LANG`, `LC_MESSAGES` and `LC_CTYPE` to `en_US.UTF-8`,
+with no setting to change it. The regional formats (the other `LC_*` categories: dates, times, numbers, money, sorting)
+are yours to pick, any UTF-8 locale glibc supports, in the settings (`Super + I`, Keyboard and region, found by country,
+language or code) or from the command line:
 
 ```bash
-hyprpunk locale set us
-hyprpunk locale set fr
+hyprpunk locale list
+hyprpunk locale set de_CH    # or de_CH.UTF-8
 ```
 
 The choice is stored in `$XDG_STATE_HOME/hyprpunk/locale-regional`. Hyprland, D-Bus, and the
 systemd user environment are refreshed immediately for newly started applications; already running applications need
-to be restarted. The shell follows the regional formats on the spot: the clocks run on 12 hours with AM/PM with `us`
-and on 24 hours with `fr`, and the calendar starts the week on the right day. The login screen's clock
+to be restarted. The shell follows the regional formats on the spot: the clocks run on 12 hours with AM/PM or on
+24 hours as the locale has it, and the calendar starts the week on the right day. The login screen's clock
 follows them from the next login.
 
 ---

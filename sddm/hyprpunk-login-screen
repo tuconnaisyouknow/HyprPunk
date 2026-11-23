@@ -13,8 +13,9 @@ THEMES_DIR="/usr/share/sddm/themes"
 CONF_DIR="/etc/sddm.conf.d"
 # Where sddm.sh points every login screen: keep both alike
 LOOK_FILE="/var/lib/hyprpunk/login-look.conf"
-# What the login screen reads, each with the only values it takes
-LOOK="(crust|base|primary|secondary|red)=#[0-9a-fA-F]{6}|glass=(classic|liquid)|region=(us|fr)"
+# What the login screen reads, each with the only values it takes: a locale is shaped
+# like glibc's ("de_DE.UTF-8", "sr_RS@latin")
+LOOK="(crust|base|primary|secondary|red)=#[0-9a-fA-F]{6}|glass=(classic|liquid)|region=[a-z]{2,3}(_[A-Z]{2})?(\.UTF-8)?(@[a-z]+)?"
 
 # Only a theme already installed: a name, nothing that could point elsewhere
 theme="${1:-}"

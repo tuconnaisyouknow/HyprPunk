@@ -7,8 +7,8 @@ import qs.config
 import qs.theme
 
 // The settings' keyboard and region page: the keyboard layout, any Latin one, where the
-// Vim keys sit on it, and the regional formats. The interface itself is in English, so
-// there's no language to pick. The scripts apply them (keyboard-layoutctl.sh,
+// Vim keys sit on it, and the regional formats, any locale glibc has. The interface itself
+// is in English, so there's no language to pick. The scripts apply them (keyboard-layoutctl.sh,
 // locale-profilectl.sh).
 SettingsPage {
     id: page
@@ -16,15 +16,18 @@ SettingsPage {
     title: "Keyboard and region"
     description: "New apps follow a change of formats right away. Log out and back in for the apps already open."
 
-    readonly property var regions: [{
-        "value": "us",
-        "icon": "󰃭",
-        "label": "United States"
-    }, {
-        "value": "fr",
-        "icon": "󰃭",
-        "label": "France"
+    // Every locale, listed when the page opens like the layouts. Until then, the one
+    // you're on.
+    property var regions: [{
+        "label": Session.regionalName || Session.regionalLocale,
+        "keywords": Session.regionalLocale,
+        "locale": Session.regionalLocale
     }]
+    readonly property int currentRegion: Math.max(0, regions.findIndex((entry) => {
+        return entry.locale === Session.regionalLocale;
+    }))
+    // What the formats make of a date, a time and a number, shown as you pick them.
+    readonly property date sample: new Date()
     // Every Latin layout and variant, as the selector's options, listed when the page
     // opens. Until then, the one you're on.
     property var layouts: [{
@@ -103,15 +106,51 @@ SettingsPage {
         Layout.fillWidth: true
         icon: "󰃭"
         title: "Regional formats"
-        description: "Dates, times, numbers and money: 12 or 24 hours, the decimal point or comma."
+        description: "Dates, times, numbers and money, found by country, language or code. Here: " + page.sample.toLocaleDateString(Session.regionalFormats, Locale.ShortFormat) + ", " + Session.shortTime(page.sample) + ", " + (1234.56).toLocaleString(Session.regionalFormats, "f", 2) + "."
 
-        SegmentedControl {
+        FormSelect {
+            id: regionSelect
+
             width: parent.width
-            compact: true
+            searchable: true
+            placeholder: "Find a country or a language"
             options: page.regions
-            value: Session.regionalProfile
-            onSelected: (value) => {
-                return Quickshell.execDetached([Session.scripts + "/locale-profilectl.sh", "set", value]);
+            onActivated: (index) => {
+                return Quickshell.execDetached([Session.scripts + "/locale-profilectl.sh", "set", page.regions[index].locale]);
+            }
+
+            // As for the layout, brought back to the formats really in use.
+            Binding {
+                target: regionSelect
+                property: "currentIndex"
+                value: page.currentRegion
+            }
+
+        }
+
+    }
+
+    Process {
+        command: [Session.scripts + "/locale-profilectl.sh", "list"]
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const regions = text.split("\n").filter((line) => {
+                    return line !== "";
+                }).map((line) => {
+                    const parts = line.split("\t");
+                    // Found by its whole code, or its language's or country's alone ("de", "ch").
+                    const codes = parts[0].replace(".UTF-8", "").split(/[_@]/);
+                    return {
+                        "label": parts[1],
+                        "keywords": [parts[0]].concat(codes).join(" ").toLowerCase(),
+                        "locale": parts[0]
+                    };
+                });
+                if (regions.length > 0)
+                    page.regions = regions;
+
             }
         }
 

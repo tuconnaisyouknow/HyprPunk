@@ -14,8 +14,10 @@ import Quickshell.Io
 Singleton {
     id: session
 
-    // "us" or "fr".
-    property string regionalProfile: "us"
+    // The regional formats' locale, as glibc names it ("de_DE.UTF-8"), and its name
+    // ("German (Germany)").
+    property string regionalLocale: "en_US.UTF-8"
+    property string regionalName: ""
     // "classic" or "liquid", the lock screen clock's glass. Switching it restyles every
     // glass surface on the spot, no restart needed.
     property string glassStyle: "classic"
@@ -41,11 +43,10 @@ Singleton {
     })
     // The wallpaper's path, empty until known.
     property string wallpaper: ""
-    readonly property string regionalLocale: localeOf(regionalProfile)
     // The regional formats as Qt knows them (day and month names, the first day of the
-    // week), though the shell keeps the locale it started with.
-    readonly property var regionalFormats: Qt.locale(regionalLocale.split(".")[0])
-    // The clocks follow the regional formats: 12 h in us, 24 h in fr.
+    // week), though the shell keeps the locale it started with. Qt reads glibc's names.
+    readonly property var regionalFormats: Qt.locale(regionalLocale)
+    // The clocks follow the regional formats: 12 h in en_US, 24 h in en_GB.
     readonly property bool twelveHour: /a/i.test(regionalFormats.timeFormat(Locale.ShortFormat))
     // The scripts the shell runs, linked from the dotfiles' scripts module.
     readonly property string scripts: Quickshell.env("HOME") + "/.local/lib/hyprpunk"
@@ -65,10 +66,6 @@ Singleton {
         return values;
     }
 
-    function localeOf(profile) {
-        return profile === "fr" ? "fr_FR.UTF-8" : "en_US.UTF-8";
-    }
-
     // The hour on its own, for the lock screen's big clock, where AM/PM is a text of its
     // own. Done by hand: Qt only counts to 12 in a format that shows AM/PM too.
     function hourText(date) {
@@ -76,7 +73,7 @@ Singleton {
         return twelveHour ? String(hour % 12 || 12) : String(hour).padStart(2, "0");
     }
 
-    // "AM" or "PM" in us, nothing in fr.
+    // "AM" or "PM" when the formats count to 12, nothing otherwise.
     function meridiemText(date) {
         if (!twelveHour)
             return "";
@@ -84,7 +81,7 @@ Singleton {
         return date.getHours() < 12 ? regionalFormats.amText : regionalFormats.pmText;
     }
 
-    // "3:07 PM" in us, "15:07" in fr, for the islands and the calendar card.
+    // "3:07 PM" or "15:07", for the islands and the calendar card.
     function clockText(date) {
         const meridiem = meridiemText(date);
         return hourText(date) + Qt.formatDateTime(date, ":mm") + (meridiem !== "" ? " " + meridiem : "");
@@ -123,7 +120,15 @@ Singleton {
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
-        onLoaded: session.regionalProfile = text().trim() || "us"
+        onLoaded: session.regionalLocale = text().trim() || "en_US.UTF-8"
+    }
+
+    FileView {
+        path: session.stateDir + "/locale-name"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: session.regionalName = text().trim()
     }
 
     FileView {

@@ -27,6 +27,8 @@ vim_keys=""
 locale_regional=""
 # A layout as it's typed and saved: XKB's code, then its variant if any ("fr bepo")
 readonly KEYBOARD_LAYOUT_FORMAT='^[A-Za-z0-9_/-]+( [A-Za-z0-9_.-]+)?$'
+# A locale as glibc names it ("de_DE.UTF-8", "sr_RS@latin")
+readonly LOCALE_FORMAT='^[a-z]{2,3}(_[A-Z]{2})?(\.UTF-8)?(@[a-z]+)?$'
 
 # What HyprPunk takes over in your home. Finding any of it means the system isn't fresh.
 readonly -a USER_CONFIG_PATHS=(
@@ -77,7 +79,7 @@ readonly -a PACKAGES=(
   zsh kitty shader-slang starship zoxide
   fzf eza bat fd
   ripgrep fastfetch btop tmux
-  yazi cava bc stow brightnessctl jq pacman-contrib xdg-user-dirs
+  yazi cava bc stow brightnessctl jq pacman-contrib xdg-user-dirs glibc-locales
   webp-pixbuf-loader
   neovim lazygit cargo npm
 
@@ -173,7 +175,7 @@ load_state() {
     echo "Invalid Vim keys in installation state: $vim_keys" >&2
     return 1
   }
-  [[ -z "$locale_regional" || "$locale_regional" == "us" || "$locale_regional" == "fr" ]] || {
+  [[ -z "$locale_regional" || "$locale_regional" =~ $LOCALE_FORMAT ]] || {
     echo "Invalid regional locale in installation state: $locale_regional" >&2
     return 1
   }
@@ -365,22 +367,16 @@ ask_vim_keys() {
   done
 }
 
+# Any UTF-8 locale glibc supports, checked against its list, since the scripts that
+# would check it aren't there yet: "de_DE" is found as de_DE.UTF-8
 ask_locale_regional() {
+  local answer
   while true; do
-    read -rp "Regional formats [us/fr] (default: us): " locale_regional
-    locale_regional="${locale_regional,,}"
-    case "$locale_regional" in
-    "" | us)
-      locale_regional="us"
-      break
-      ;;
-    fr)
-      break
-      ;;
-    *)
-      echo "Invalid regional format. Please enter 'fr' or 'us'."
-      ;;
-    esac
+    read -rp "Regional formats, a locale like en_US, en_GB, fr_FR or de_DE (default: en_US): " answer
+    locale_regional=$(awk -v wanted="${answer:-en_US}" '$2 == "UTF-8" && $1 !~ /^C\./ &&
+      ($1 == wanted || $1 == wanted ".UTF-8") { print $1; exit }' /usr/share/i18n/SUPPORTED)
+    [[ -z "$locale_regional" ]] || break
+    echo "Unknown locale. Pick one from /usr/share/i18n/SUPPORTED, like de_CH or pt_BR."
   done
 }
 
@@ -736,18 +732,6 @@ apply_themes() {
   gsettings set org.gnome.desktop.interface gtk-theme 'HyprPunk'
 }
 
-# English for the interface, and French beside it for the regional formats
-install_locales() {
-  local locale
-  for locale in en_US.UTF-8 fr_FR.UTF-8; do
-    if ! grep -q "^[[:space:]]*${locale}[[:space:]]\\+UTF-8" /etc/locale.gen; then
-      sudo sed -i "/^[[:space:]]*#[[:space:]]*${locale}[[:space:]]\\+UTF-8/s/^[[:space:]]*#[[:space:]]*//" /etc/locale.gen
-    fi
-  done
-
-  sudo locale-gen
-}
-
 # The login screens, one per subtheme. The wallpaper picks among them.
 install_sddm_theme() {
   "$LIB_DIR/sddm.sh" install
@@ -889,7 +873,6 @@ converge() {
   run_step "Configuring the update checks" configure_updates
   run_step "Installing tmux plugins" install_tmux_plugins
   run_step "Applying themes" apply_themes
-  run_step "Installing the locales" install_locales
   run_step "Installing the SDDM theme" install_sddm_theme
   run_step "Installing the Brave policy" install_brave_policy
   run_step "Configuring the wallpaper" configure_wallpaper
