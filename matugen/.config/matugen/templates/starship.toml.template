@@ -39,10 +39,9 @@ primary = "{{colors.primary.default.hex}}"
 secondary = "{{colors.secondary.default.hex}}"
 error = "{{colors.error.default.hex}}"
 red = "{{colors.tone_red.default.hex}}"
-green = "{{colors.tone_green.default.hex}}"
 cyan = "{{colors.tone_cyan.default.hex}}"
 blue = "{{colors.tone_blue.default.hex}}"
-surface = "{{colors.surface.default.hex}}"
+on_primary = "{{colors.on_primary.default.hex}}"
 surface_container = "{{colors.surface_container.default.hex}}"
 
 # Who and where: distro icon, user, and the machine's name over SSH only
@@ -90,7 +89,7 @@ format = "[@$hostname ](bg:surface_container fg:secondary)[$ssh_symbol](bg:surfa
 
 # The last three folders, the usual ones shown as icons
 [directory]
-style = "fg:surface bg:primary"
+style = "fg:on_primary bg:primary"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -109,75 +108,75 @@ truncation_symbol = "…/"
 [git_branch]
 symbol = ""
 style = "bg:secondary"
-format = '[[ $symbol $branch ](fg:surface bg:secondary)]($style)'
+format = '[[ $symbol $branch ](fg:on_primary bg:secondary)]($style)'
 
 [git_status]
 style = "bg:secondary"
-format = '[[($all_status$ahead_behind )](fg:surface bg:secondary)]($style)'
-up_to_date = '[ ✓](bg:secondary fg:surface)'
-untracked = '[?\($count\)](bg:secondary fg:surface)'
-stashed = '[\$](bg:secondary fg:surface)'
-modified = '[!\($count\)](bg:secondary fg:surface)'
-renamed = '[»\($count\)](bg:secondary fg:surface)'
-deleted = '[✘\($count\)](bg:secondary fg:surface)'
-staged = '[++\($count\)](bg:secondary fg:surface)'
-ahead = '[⇡\(${count}\)](bg:secondary fg:surface)'
-diverged = '⇕[\[](bg:secondary fg:surface)[⇡\(${ahead_count}\)](bg:secondary fg:surface)[⇣\(${behind_count}\)](bg:secondary fg:surface)[\]](bg:secondary fg:surface)'
-behind = '[⇣\(${count}\)](bg:secondary fg:surface)'
+format = '[[($all_status$ahead_behind )](fg:on_primary bg:secondary)]($style)'
+up_to_date = '[ ✓](bg:secondary fg:on_primary)'
+untracked = '[?\($count\)](bg:secondary fg:on_primary)'
+stashed = '[\$](bg:secondary fg:on_primary)'
+modified = '[!\($count\)](bg:secondary fg:on_primary)'
+renamed = '[»\($count\)](bg:secondary fg:on_primary)'
+deleted = '[✘\($count\)](bg:secondary fg:on_primary)'
+staged = '[++\($count\)](bg:secondary fg:on_primary)'
+ahead = '[⇡\(${count}\)](bg:secondary fg:on_primary)'
+diverged = '⇕[\[](bg:secondary fg:on_primary)[⇡\(${ahead_count}\)](bg:secondary fg:on_primary)[⇣\(${behind_count}\)](bg:secondary fg:on_primary)[\]](bg:secondary fg:on_primary)'
+behind = '[⇣\(${count}\)](bg:secondary fg:on_primary)'
 
 # The project's language and its version.
 # The commented ones are ready to go: uncomment them and add them to the format above.
 [nodejs]
 symbol = ""
 style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 #[c]
 #symbol = " "
 #style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 #[rust]
 #symbol = ""
 #style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 #[golang]
 #symbol = ""
 #style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 [php]
 symbol = ""
 style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 [java]
 symbol = " "
 style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 #[kotlin]
 #symbol = ""
 #style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 #[haskell]
 #symbol = ""
 #style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 [python]
 symbol = ""
 style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:surface bg:cyan)]($style)'
+format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
 
 # Hours and minutes
 [time]
 disabled = false
 time_format = "%R"
 style = "bg:blue"
-format = '[[  $time ](fg:surface bg:blue)]($style)'
+format = '[[  $time ](fg:on_primary bg:blue)]($style)'
 
 [line_break]
 disabled = false
@@ -190,7 +189,7 @@ error_symbol = '[ ](bold fg:error)'
 vimcmd_symbol = '[ ](bold fg:primary)'
 vimcmd_replace_one_symbol = '[ ](bold fg:red)'
 vimcmd_replace_symbol = '[ ](bold fg:red)'
-vimcmd_visual_symbol = '[ ](bold fg:green)'
+vimcmd_visual_symbol = '[ ](bold fg:blue)'
 
 # What a prompt shrinks to once its command has run (see the transient prompt in .zshrc)
 [profiles]

@@ -11,12 +11,12 @@
 
 foreground           {{colors.text.default.hex}}
 background           {{colors.surface.default.hex}}
-selection_foreground {{colors.surface.default.hex}}
+selection_foreground {{colors.on_primary.default.hex}}
 selection_background {{colors.secondary.default.hex}}
 
 # The cursor and the links in the accent, like what you type and point at in the shell
 cursor            {{colors.primary.default.hex}}
-cursor_text_color {{colors.surface.default.hex}}
+cursor_text_color {{colors.on_primary.default.hex}}
 url_color         {{colors.primary.default.hex}}
 
 ##################
@@ -31,7 +31,7 @@ wayland_titlebar_color system
 # The tab you're on is lit in the accent, the others sit on the bar
 active_tab_foreground   {{colors.on_primary.default.hex}}
 active_tab_background   {{colors.primary.default.hex}}
-inactive_tab_foreground {{colors.text.default.hex}}
+inactive_tab_foreground {{colors.secondary.default.hex}}
 inactive_tab_background {{colors.surface_container_low.default.hex}}
 tab_bar_background      {{colors.surface_container_lowest.default.hex}}
 
@@ -39,11 +39,11 @@ tab_bar_background      {{colors.surface_container_lowest.default.hex}}
 # MARKS #
 #########
 
-mark1_foreground {{colors.surface.default.hex}}
+mark1_foreground {{colors.on_primary.default.hex}}
 mark1_background {{colors.secondary.default.hex}}
-mark2_foreground {{colors.surface.default.hex}}
+mark2_foreground {{colors.on_primary.default.hex}}
 mark2_background {{colors.tone_pink.default.hex}}
-mark3_foreground {{colors.surface.default.hex}}
+mark3_foreground {{colors.on_primary.default.hex}}
 mark3_background {{colors.tone_blue.default.hex}}
 
 #######################
@@ -82,6 +82,6 @@ color14 {{colors.tone_cyan.default.hex}}
 color7  {{colors.subtext1.default.hex}}
 color15 {{colors.subtext0.default.hex}}
 
-# The secondary color, in the 256 colors' own lavender: what's drawn in it (fastfetch)
+# The secondary color, in the 256 colors' 147: what's drawn in it (fastfetch)
 # follows the wallpaper while on screen, like what's drawn in magenta
 color147 {{colors.secondary.default.hex}}

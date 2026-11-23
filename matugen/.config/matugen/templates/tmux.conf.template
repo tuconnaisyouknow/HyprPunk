@@ -2,7 +2,7 @@
 # ~/.local/state/hyprpunk/tmux-colors.conf, over the defaults tmux.conf starts from
 set -g @primary "{{colors.primary.default.hex}}"
 set -g @secondary "{{colors.secondary.default.hex}}"
-set -g @text "{{colors.text.default.hex}}"
+set -g @on_primary "{{colors.on_primary.default.hex}}"
 set -g @surface0 "{{colors.surface_container.default.hex}}"
 set -g @base "{{colors.surface.default.hex}}"
 set -g @red "{{colors.tone_red.default.hex}}"

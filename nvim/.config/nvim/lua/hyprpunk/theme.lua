@@ -1,11 +1,14 @@
 -- The hyprpunk colorscheme's highlight groups, from the wallpaper's palette. The accent
 -- and the secondary lead: keywords, titles and what's selected in the accent, fields
 -- and names in the secondary. The palette's tones tell the rest of the code apart, and
--- what means something (errors, warnings, git, diffs) takes the fixed colors.
+-- what means something (errors, warnings, git, diffs) takes the fixed colors. The text
+-- and overlays are the code's own ink, from its body to its faintest; Neovim's own
+-- interface around it reads the secondary, at half when it's off. What's written on a
+-- color takes on_primary.
 -- colors/hyprpunk.lua draws them; see-through, so kitty's background shows.
 local M = {}
 
--- `fg` laid over `bg` at `alpha`, for tinted backgrounds
+-- `fg` laid over `bg` at `alpha`, for tinted backgrounds and what reads at half (lualine too)
 local function blend(fg, bg, alpha)
   local function channel(hex, i)
     return tonumber(hex:sub(i, i + 1), 16)
@@ -16,9 +19,12 @@ local function blend(fg, bg, alpha)
   end
   return out
 end
+M.blend = blend
 
 function M.groups(c)
   local float = c.surface_container_low
+  -- The secondary at half, for what's off: the windows you're not in, muted entries
+  local off = blend(c.secondary, c.surface, 0.5)
   local meanings = {
     Error = c.error,
     Warn = c.yellow,
@@ -28,18 +34,20 @@ function M.groups(c)
   }
 
   local g = {
-    -- -- THE EDITOR -- --
+    ----------------
+    -- THE EDITOR --
+    ----------------
     Normal = { fg = c.text },
     NormalNC = { fg = c.text },
     NormalFloat = { fg = c.text, bg = float },
     FloatBorder = { fg = c.primary, bg = float },
     FloatTitle = { fg = c.primary, bg = float, bold = true },
-    FloatFooter = { fg = c.overlay1, bg = float },
+    FloatFooter = { fg = c.secondary, bg = float },
     WinSeparator = { fg = c.surface_container_highest },
     VertSplit = { link = "WinSeparator" },
     ColorColumn = { bg = c.surface_container },
     Conceal = { fg = c.overlay1 },
-    Cursor = { fg = c.surface, bg = c.primary },
+    Cursor = { fg = c.on_primary, bg = c.primary },
     lCursor = { link = "Cursor" },
     CursorIM = { link = "Cursor" },
     TermCursor = { link = "Cursor" },
@@ -71,23 +79,25 @@ function M.groups(c)
     WarningMsg = { fg = c.yellow },
     OkMsg = { fg = c.green },
     StatusLine = { fg = c.text, bg = c.surface_container_low },
-    StatusLineNC = { fg = c.overlay1, bg = c.surface_container_low },
-    TabLine = { fg = c.overlay1, bg = c.surface_container_lowest },
+    StatusLineNC = { fg = off, bg = c.surface_container_low },
+    TabLine = { fg = c.secondary, bg = c.surface_container_lowest },
     TabLineFill = { bg = c.surface_container_lowest },
     TabLineSel = { fg = c.primary, bg = c.surface },
     WinBar = { fg = c.secondary },
-    WinBarNC = { fg = c.overlay1 },
-    Pmenu = { fg = c.overlay2, bg = float },
+    WinBarNC = { fg = off },
+    Pmenu = { fg = c.secondary, bg = float },
     PmenuSel = { bg = c.surface_container, bold = true },
     PmenuSbar = { bg = c.surface_container },
     PmenuThumb = { bg = c.overlay0 },
     PmenuKind = { fg = c.primary },
     PmenuKindSel = { fg = c.primary, bg = c.surface_container, bold = true },
-    PmenuExtra = { fg = c.overlay1 },
+    PmenuExtra = { fg = c.secondary },
     PmenuMatch = { fg = c.primary, bold = true },
     WildMenu = { bg = c.surface_container },
 
-    -- -- WHAT MEANS SOMETHING -- --
+    --------------------------
+    -- WHAT MEANS SOMETHING --
+    --------------------------
     -- Spelling, diffs and git in the fixed colors: added, changed, removed
     SpellBad = { sp = c.error, undercurl = true },
     SpellCap = { sp = c.yellow, undercurl = true },
@@ -112,7 +122,9 @@ function M.groups(c)
     DiagnosticDeprecated = { strikethrough = true },
     DiagnosticUnnecessary = { fg = c.overlay1 },
 
-    -- -- THE CODE -- --
+    --------------
+    -- THE CODE --
+    --------------
     Comment = { fg = c.overlay2, italic = true },
     SpecialComment = { link = "Special" },
     Identifier = { fg = c.text },
@@ -148,7 +160,7 @@ function M.groups(c)
     Bold = { bold = true },
     Italic = { italic = true },
     Error = { fg = c.error },
-    Todo = { fg = c.surface, bg = c.yellow, bold = true },
+    Todo = { fg = c.on_primary, bg = c.yellow, bold = true },
 
     ["@variable"] = { fg = c.text },
     ["@variable.builtin"] = { fg = c.tone_red },
@@ -180,17 +192,19 @@ function M.groups(c)
     ["@tag.builtin"] = { link = "Tag" },
     ["@tag.attribute"] = { fg = c.tone_yellow, italic = true },
     ["@tag.delimiter"] = { link = "Delimiter" },
-    ["@comment.error"] = { fg = c.surface, bg = c.error },
-    ["@comment.warning"] = { fg = c.surface, bg = c.yellow },
-    ["@comment.todo"] = { fg = c.surface, bg = c.yellow },
-    ["@comment.note"] = { fg = c.surface, bg = c.blue },
+    ["@comment.error"] = { fg = c.on_primary, bg = c.error },
+    ["@comment.warning"] = { fg = c.on_primary, bg = c.yellow },
+    ["@comment.todo"] = { fg = c.on_primary, bg = c.yellow },
+    ["@comment.note"] = { fg = c.on_primary, bg = c.blue },
     ["@diff.plus"] = { link = "Added" },
     ["@diff.minus"] = { link = "Removed" },
     ["@diff.delta"] = { link = "Changed" },
     ["@lsp.mod.deprecated"] = { strikethrough = true },
     ["@lsp.type.comment"] = {},
 
-    -- -- MARKUP -- --
+    ------------
+    -- MARKUP --
+    ------------
     ["@markup.strong"] = { bold = true },
     ["@markup.italic"] = { italic = true },
     ["@markup.strikethrough"] = { strikethrough = true },
@@ -206,7 +220,9 @@ function M.groups(c)
     ["@markup.list.checked"] = { fg = c.tone_green },
     ["@markup.list.unchecked"] = { fg = c.overlay1 },
 
-    -- -- THE LANGUAGE SERVERS -- --
+    --------------------------
+    -- THE LANGUAGE SERVERS --
+    --------------------------
     LspReferenceText = { bg = c.surface_container_high },
     LspReferenceRead = { link = "LspReferenceText" },
     LspReferenceWrite = { link = "LspReferenceText" },
@@ -215,7 +231,9 @@ function M.groups(c)
     LspSignatureActiveParameter = { fg = c.primary, bold = true },
     LspInfoBorder = { link = "FloatBorder" },
 
-    -- -- THE PLUGINS -- --
+    -----------------
+    -- THE PLUGINS --
+    -----------------
     -- The completion menu: the kinds in the code's own colors
     BlinkCmpMenu = { link = "Pmenu" },
     BlinkCmpMenuBorder = { fg = c.primary, bg = float },
@@ -282,7 +300,7 @@ function M.groups(c)
     SnacksDashboardKey = { fg = c.secondary },
     SnacksDashboardFooter = { fg = c.secondary },
     SnacksDashboardSpecial = { fg = c.primary },
-    SnacksDashboardDir = { fg = c.overlay1 },
+    SnacksDashboardDir = { fg = c.secondary },
     SnacksPickerMatch = { fg = c.primary, bold = true },
     SnacksPickerPrompt = { fg = c.primary },
     SnacksIndent = { fg = c.surface_container_high },
@@ -290,9 +308,9 @@ function M.groups(c)
 
     WhichKey = { fg = c.secondary },
     WhichKeyGroup = { fg = c.primary },
-    WhichKeyDesc = { fg = c.text },
+    WhichKeyDesc = { fg = c.secondary },
     WhichKeySeparator = { fg = c.overlay0 },
-    WhichKeyValue = { fg = c.overlay1 },
+    WhichKeyValue = { fg = off },
     WhichKeyNormal = { link = "NormalFloat" },
     WhichKeyBorder = { link = "FloatBorder" },
 
@@ -309,19 +327,19 @@ function M.groups(c)
     NoiceMini = { bg = float },
 
     FidgetTitle = { fg = c.primary },
-    FidgetTask = { fg = c.overlay1 },
+    FidgetTask = { fg = c.secondary },
 
     MasonHeader = { fg = c.on_primary, bg = c.primary, bold = true },
-    MasonHeaderSecondary = { fg = c.surface, bg = c.secondary, bold = true },
+    MasonHeaderSecondary = { fg = c.on_primary, bg = c.secondary, bold = true },
     MasonHighlight = { fg = c.primary },
     MasonHighlightBlock = { fg = c.on_primary, bg = c.primary },
     MasonHighlightBlockBold = { fg = c.on_primary, bg = c.primary, bold = true },
     MasonHighlightSecondary = { fg = c.secondary },
-    MasonHighlightBlockSecondary = { fg = c.surface, bg = c.secondary },
-    MasonHighlightBlockBoldSecondary = { fg = c.surface, bg = c.secondary, bold = true },
-    MasonMuted = { fg = c.overlay1 },
-    MasonMutedBlock = { fg = c.overlay1, bg = c.surface_container },
-    MasonMutedBlockBold = { fg = c.overlay1, bg = c.surface_container, bold = true },
+    MasonHighlightBlockSecondary = { fg = c.on_primary, bg = c.secondary },
+    MasonHighlightBlockBoldSecondary = { fg = c.on_primary, bg = c.secondary, bold = true },
+    MasonMuted = { fg = off },
+    MasonMutedBlock = { fg = off, bg = c.surface_container },
+    MasonMutedBlockBold = { fg = off, bg = c.surface_container, bold = true },
     MasonError = { fg = c.error },
 
     LazyH1 = { fg = c.on_primary, bg = c.primary, bold = true },

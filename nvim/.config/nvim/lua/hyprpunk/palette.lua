@@ -33,7 +33,6 @@ M.defaults = {
   error = "#f38ba8",
   green = "#a6e3a1",
   yellow = "#f9e2af",
-  peach = "#fab387",
   blue = "#89b4fa",
 }
 

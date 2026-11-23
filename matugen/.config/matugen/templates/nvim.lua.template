@@ -32,6 +32,5 @@ return {
   error = "{{colors.error.default.hex}}",
   green = "{{colors.green.default.hex}}",
   yellow = "{{colors.yellow.default.hex}}",
-  peach = "{{colors.peach.default.hex}}",
   blue = "{{colors.blue.default.hex}}",
 }

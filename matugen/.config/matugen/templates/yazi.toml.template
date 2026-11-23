@@ -18,9 +18,9 @@ marker_cut      = { fg = "{{colors.error.default.hex}}", bg = "{{colors.error.de
 marker_marked   = { fg = "{{colors.secondary.default.hex}}", bg = "{{colors.secondary.default.hex}}" }
 marker_selected = { fg = "{{colors.primary.default.hex}}", bg = "{{colors.primary.default.hex}}" }
 
-count_copied   = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.green.default.hex}}" }
-count_cut      = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.error.default.hex}}" }
-count_selected = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.primary.default.hex}}" }
+count_copied   = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.green.default.hex}}" }
+count_cut      = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.error.default.hex}}" }
+count_selected = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.primary.default.hex}}" }
 
 border_symbol = "│"
 border_style  = { fg = "{{colors.overlay1.default.hex}}" }
@@ -30,23 +30,23 @@ syntect_theme = "~/.local/state/hyprpunk/code.tmTheme"
 
 [tabs]
 active   = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.primary.default.hex}}", bold = true }
-inactive = { fg = "{{colors.text.default.hex}}", bg = "{{colors.surface_container_high.default.hex}}" }
+inactive = { fg = "{{colors.secondary.default.hex}}", bg = "{{colors.surface_container_high.default.hex}}" }
 
 # The modes in Neovim's colors: normal in the accent, selecting like its visual mode
 [mode]
-normal_main = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.primary.default.hex}}", bold = true }
+normal_main = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.primary.default.hex}}", bold = true }
 normal_alt  = { fg = "{{colors.primary.default.hex}}", bg = "{{colors.surface_container.default.hex}}" }
 
-select_main = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.tone_blue.default.hex}}", bold = true }
+select_main = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.tone_blue.default.hex}}", bold = true }
 select_alt  = { fg = "{{colors.tone_blue.default.hex}}", bg = "{{colors.surface_container.default.hex}}" }
 
-unset_main  = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.tone_red.default.hex}}", bold = true }
+unset_main  = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.tone_red.default.hex}}", bold = true }
 unset_alt   = { fg = "{{colors.tone_red.default.hex}}", bg = "{{colors.surface_container.default.hex}}" }
 
 [indicator]
-parent  = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.secondary.default.hex}}" }
-current = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.primary.default.hex}}" }
-preview = { fg = "{{colors.surface.default.hex}}", bg = "{{colors.secondary.default.hex}}" }
+parent  = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.secondary.default.hex}}" }
+current = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.primary.default.hex}}" }
+preview = { fg = "{{colors.on_primary.default.hex}}", bg = "{{colors.secondary.default.hex}}" }
 
 [status]
 sep_left  = { open = "", close = "" }
@@ -92,7 +92,7 @@ hovered = { fg = "{{colors.primary.default.hex}}", bold = true }
 [which]
 mask            = { bg = "{{colors.surface_container.default.hex}}" }
 cand            = { fg = "{{colors.primary.default.hex}}" }
-rest            = { fg = "{{colors.overlay2.default.hex}}" }
+rest            = { fg = "{{colors.secondary.default.hex}}" }
 desc            = { fg = "{{colors.secondary.default.hex}}" }
 separator       = "  "
 separator_style = { fg = "{{colors.surface_container_highest.default.hex}}" }
@@ -100,7 +100,7 @@ separator_style = { fg = "{{colors.surface_container_highest.default.hex}}" }
 [help]
 on      = { fg = "{{colors.primary.default.hex}}" }
 run     = { fg = "{{colors.secondary.default.hex}}" }
-desc    = { fg = "{{colors.overlay2.default.hex}}" }
+desc    = { fg = "{{colors.secondary.default.hex}}" }
 hovered = { bg = "{{colors.surface_container_highest.default.hex}}", bold = true }
 footer  = { fg = "{{colors.text.default.hex}}", bg = "{{colors.surface_container_high.default.hex}}" }
 
@@ -116,7 +116,8 @@ rules = [
 	{ url = "*", is = "orphan", bg = "{{colors.error.default.hex}}" },
 	{ url = "*", is = "dummy", bg = "{{colors.error.default.hex}}" },
 	{ url = "*/", is = "dummy", bg = "{{colors.error.default.hex}}" },
-	{ mime = "vfs/{absent,stale}", fg = "{{colors.surface_container_high.default.hex}}" },
+	# Remote files yazi hasn't read yet: off
+	{ mime = "vfs/{absent,stale}", fg = "{{colors.overlay0.default.hex}}" },
 
 	# Folders in the accent, like Papirus's
 	{ url = "*/", fg = "{{colors.primary.default.hex}}" },

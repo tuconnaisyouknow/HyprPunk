@@ -1,14 +1,14 @@
 # btop's colors from the wallpaper's palette. matugen writes them to
 # ~/.config/btop/themes/hyprpunk.theme, which btop.conf picks, and open btops take them
-# when wallpaperctl.sh tells them. The accent and the secondary lead; each graph runs
-# through the palette's tones toward one of them. The temperature takes the fixed green,
-# yellow and red (meanings.json), which say how hot it runs.
+# when wallpaperctl.sh tells them. The accent and the secondary lead; the graphs run
+# through the palette's tones. The temperature takes the fixed green, yellow and red
+# (meanings.json), which say how hot it runs.
 
 # The terminal's background, so btop sits in it like everything else
 theme[main_bg]="{{colors.surface.default.hex}}"
 theme[main_fg]="{{colors.text.default.hex}}"
 theme[title]="{{colors.primary.default.hex}}"
-theme[inactive_fg]="{{colors.overlay1.default.hex}}"
+theme[inactive_fg]="{{colors.overlay0.default.hex}}"
 theme[div_line]="{{colors.overlay0.default.hex}}"
 theme[meter_bg]="{{colors.surface_container_high.default.hex}}"
 
