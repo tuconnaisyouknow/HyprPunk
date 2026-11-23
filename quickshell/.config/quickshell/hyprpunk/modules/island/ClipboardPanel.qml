@@ -25,14 +25,6 @@ SearchPanel {
         });
     }
 
-    // "[[ binary data 23 KiB png 1920x1080 ]]" -> "PNG · 1920x1080 · 23 KiB"
-    function imageLabel(text) {
-        const match = text.match(/binary data ([\d.]+ \w+) (\w+)(?: (\d+x\d+))?/);
-        return match ? [match[2].toUpperCase(), match[3], match[1]].filter((part) => {
-            return part;
-        }).join(" · ") : "Image";
-    }
-
     function copy(entry) {
         close();
         Clipboard.copy(entry);
@@ -107,7 +99,8 @@ SearchPanel {
 
                 Image {
                     anchors.fill: parent
-                    source: row.isImage ? "file://" + row.modelData.image : ""
+                    // A copied file's own path can hold spaces or a #
+                    source: row.isImage ? "file://" + row.modelData.image.split("/").map(encodeURIComponent).join("/") : ""
                     sourceSize.width: 272
                     sourceSize.height: 152
                     fillMode: Image.PreserveAspectFit
@@ -125,7 +118,7 @@ SearchPanel {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
                 maximumLineCount: 1
-                text: row.isImage ? clipboard.imageLabel(row.modelData.text) : row.modelData.text
+                text: row.modelData.text
                 textFormat: Text.PlainText
                 color: row.selected ? Colors.primary : Colors.secondary
                 font.family: Metrics.font

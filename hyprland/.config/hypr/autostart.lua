@@ -43,10 +43,11 @@ local startup = {
   -- Bluetooth stays off until you need it
   { name = "bluetooth",        command = "bluetoothctl power off" },
 
-  -- Clipboard history, text and images alike (images feed the shell's thumbnails), kept
-  -- or not as the settings say
-  { name = "clipboard-text",   command = "wl-paste --type text --watch " .. hyprpunk.scripts .. "/historyctl.sh store" },
-  { name = "clipboard-images", command = "wl-paste --type image --watch " .. hyprpunk.scripts .. "/historyctl.sh store" },
+  -- Clipboard history, text and images alike, kept or not as the settings say. Text is
+  -- asked for as plain UTF-8: any other text type (a browser's UTF-16 link, its HTML)
+  -- would come back as data nothing can paste.
+  { name = "clipboard-text",   command = "wl-paste --type 'text/plain;charset=utf-8' --watch " .. hyprpunk.scripts .. "/historyctl.sh store text" },
+  { name = "clipboard-images", command = "wl-paste --type image --watch " .. hyprpunk.scripts .. "/historyctl.sh store image" },
 
   -- X11 apps, since Hyprland's own XWayland is off (see above)
   { name = "xwayland",         command = "xwayland-satellite " .. x11Display },

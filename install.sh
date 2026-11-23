@@ -88,7 +88,7 @@ readonly -a PACKAGES=(
 
   hyprland awww hypridle hyprsunset
   grim wf-recorder hyprcursor hyprpicker
-  quickshell cliphist wl-clipboard libnotify psmisc
+  quickshell wl-clipboard libnotify psmisc
 
   qt5ct-kde qt5-wayland qt5-tools
   qt5-quickcontrols2 layer-shell-qt5

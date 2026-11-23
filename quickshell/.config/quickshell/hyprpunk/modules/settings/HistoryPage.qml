@@ -38,7 +38,7 @@ SettingsPage {
         opacity: enabled ? 1 : 0.5
         icon: "󰋚"
         title: "Remember up to"
-        description: "The oldest copies go once there are more."
+        description: "The oldest copies go once there are more, or once they weigh over 256 MB together."
 
         SettingChoices {
             width: parent.width

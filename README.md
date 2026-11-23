@@ -118,7 +118,7 @@ The applications themed and configured by these dotfiles.
 - 📝 **Neovim** with a Lua-based configuration.
 - 🎨 **GTK 3/4**, **Qt5/Qt6** and **Kvantum** with one libadwaita look, the shell and the terminal tools, all in the
   wallpaper's own palette, written by **matugen** (see [Visual Identity](#-visual-identity)).
-- 🛠️ **Cliphist**, **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
+- 🛠️ **Fastfetch**, **Btop**, **Cava**, **Bat**, and utility scripts.
 - 🦁 **Brave** managed policy (extensions, Rewards, Wallet, AI Chat) installed system-wide.
 - 📦 Modular configuration managed with GNU Stow.
 
