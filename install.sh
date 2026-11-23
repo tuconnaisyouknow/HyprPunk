@@ -72,7 +72,7 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
 # The folders that aren't linked into your home: installed system-wide by their own
 # steps, the README's images, or the page that makes the wallpapers' palettes, which git
 # leaves out but stow would link where it's there. Every other folder is a stow module.
-readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard palette-editor sddm)
+readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard palette-editor satellite sddm)
 
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
@@ -101,7 +101,7 @@ readonly -a PACKAGES=(
   xdg-desktop-portal
   xdg-desktop-portal-hyprland
   xdg-desktop-portal-gtk
-  xwayland-satellite
+  xorg-xwayland xcb-util-cursor clang
 
   adw-gtk-theme matugen imagemagick
   papirus-icon-theme
@@ -797,6 +797,15 @@ install_frame_clock() {
   sudo make -C "$DOTFILES_DIR/frames" install
 }
 
+# xwayland-satellite, which runs the X11 apps, built with HyprPunk's patch: an X11 app
+# can't resize its window once Hyprland has sized it, like a virtual machine's window
+# shrinking to fit its guest.
+# Installed in /usr/local/bin, so it goes before any packaged one.
+install_x11_apps() {
+  make -C "$DOTFILES_DIR/satellite"
+  sudo make -C "$DOTFILES_DIR/satellite" install
+}
+
 # The battery charge limit you set in the settings, on laptops that support one.
 # The service puts it back at boot and after sleep, and lets the wheel group change it.
 install_battery_limit() {
@@ -852,6 +861,7 @@ converge() {
   run_step "Installing Oh My Zsh" install_oh_my_zsh
   run_step "Downloading the dotfiles" clone_dotfiles
   run_step "Installing the shell's animation clock" install_frame_clock
+  run_step "Building the X11 apps' server" install_x11_apps
   run_step "Linking dotfiles" stow_dotfiles
   run_step "Building the shell's fonts" build_fonts
   run_step "Generating Qt configuration" generate_qt_configs

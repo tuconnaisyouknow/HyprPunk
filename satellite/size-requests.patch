@@ -1,0 +1,120 @@
+diff --git a/src/server/event.rs b/src/server/event.rs
+index acf51d9..ace62cb 100644
+--- a/src/server/event.rs
++++ b/src/server/event.rs
+@@ -390,6 +390,8 @@ impl SurfaceEvents {
+                     let prev_fs = toplevel.fullscreen;
+                     toplevel.fullscreen =
+                         states.contains(&(u32::from(xdg_toplevel::State::Fullscreen) as u8));
++                    toplevel.maximized =
++                        states.contains(&(u32::from(xdg_toplevel::State::Maximized) as u8));
+                     if toplevel.fullscreen != prev_fs {
+                         state.connection.set_fullscreen(
+                             *data.get::<&x::Window>().unwrap(),
+diff --git a/src/server/mod.rs b/src/server/mod.rs
+index a436331..f69cde4 100644
+--- a/src/server/mod.rs
++++ b/src/server/mod.rs
+@@ -240,6 +240,7 @@ struct ToplevelData {
+     toplevel: XdgToplevel,
+     xdg: XdgSurfaceData,
+     fullscreen: bool,
++    maximized: bool,
+     decoration: decoration::DecorationsData,
+ }
+ 
+@@ -1079,6 +1080,26 @@ impl<S: X11Selection + 'static> InnerServerState<S> {
+         !win.mapped || win.attrs.role.is_popup()
+     }
+ 
++    /// A maximized or fullscreen toplevel has the size the compositor configured, which
++    /// the X client can't change (xdg-shell makes that size mandatory)
++    pub fn can_change_size(&self, window: x::Window) -> bool {
++        let Some(data) = self
++            .windows
++            .get(&window)
++            .copied()
++            .and_then(|id| self.world.entity(id).ok())
++        else {
++            return true;
++        };
++
++        match data.get::<&SurfaceRole>().as_deref() {
++            Some(SurfaceRole::Toplevel(Some(toplevel))) => {
++                !(toplevel.fullscreen || toplevel.maximized)
++            }
++            _ => true,
++        }
++    }
++
+     pub fn reconfigure_window(&mut self, event: x::ConfigureNotifyEvent) {
+         let Some((mut win, data)) = self
+             .windows
+@@ -1589,6 +1610,7 @@ impl<S: X11Selection + 'static> InnerServerState<S> {
+             },
+             toplevel,
+             fullscreen: false,
++            maximized: false,
+             decoration: DecorationsData {
+                 wl: wl_decoration,
+                 satellite: sat_decoration,
+diff --git a/src/xstate/mod.rs b/src/xstate/mod.rs
+index 6f08eb9..4f1d7fd 100644
+--- a/src/xstate/mod.rs
++++ b/src/xstate/mod.rs
+@@ -488,11 +488,19 @@ impl XState {
+                             list.push(x::ConfigWindow::Y(e.y().into()));
+                         }
+                     }
+-                    if mask.contains(x::ConfigWindowMask::WIDTH) {
+-                        list.push(x::ConfigWindow::Width(e.width().into()));
+-                    }
+-                    if mask.contains(x::ConfigWindowMask::HEIGHT) {
+-                        list.push(x::ConfigWindow::Height(e.height().into()));
++                    let resize =
++                        mask.intersects(x::ConfigWindowMask::WIDTH | x::ConfigWindowMask::HEIGHT);
++                    if resize && !server_state.can_change_size(e.window()) {
++                        // ICCCM 4.1.5: a refused request is answered with the window's
++                        // unchanged geometry, so the client stops waiting for it
++                        self.send_current_geometry(e.window());
++                    } else {
++                        if mask.contains(x::ConfigWindowMask::WIDTH) {
++                            list.push(x::ConfigWindow::Width(e.width().into()));
++                        }
++                        if mask.contains(x::ConfigWindowMask::HEIGHT) {
++                            list.push(x::ConfigWindow::Height(e.height().into()));
++                        }
+                     }
+ 
+                     unwrap_or_skip_bad_window_cont!(self.connection.send_and_check_request(
+@@ -520,6 +528,30 @@ impl XState {
+         }
+     }
+ 
++    fn send_current_geometry(&self, window: x::Window) {
++        let cookie = self.connection.send_request(&x::GetGeometry {
++            drawable: x::Drawable::Window(window),
++        });
++        let geometry = unwrap_or_skip_bad_window_ret!(self.connection.wait_for_reply(cookie));
++        let event = &x::ConfigureNotifyEvent::new(
++            window,
++            window,
++            x::WINDOW_NONE,
++            geometry.x(),
++            geometry.y(),
++            geometry.width(),
++            geometry.height(),
++            geometry.border_width(),
++            false,
++        );
++        unwrap_or_skip_bad_window_ret!(self.connection.send_and_check_request(&x::SendEvent {
++            destination: x::SendEventDest::Window(window),
++            propagate: false,
++            event_mask: x::EventMask::STRUCTURE_NOTIFY,
++            event,
++        }));
++    }
++
+     fn handle_client_message(
+         &self,
+         e: x::ClientMessageEvent,

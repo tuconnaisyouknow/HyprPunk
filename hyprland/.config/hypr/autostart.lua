@@ -6,8 +6,10 @@
 -- X11 APPS --
 --------------
 
--- X11 apps go through xwayland-satellite alone, which handles Qt apps better than
--- Hyprland's own XWayland. With both running they fought over the same display.
+-- X11 apps go through xwayland-satellite alone: Hyprland's own XWayland lines the screens
+-- up left to right for them, so their menus open on the wrong spot when yours aren't
+-- laid out that way. With both running they fought over the same display. HyprPunk
+-- builds satellite with a patch (satellite/) that leaves the windows' size to Hyprland.
 hl.config({
   xwayland = {
     enabled = false,

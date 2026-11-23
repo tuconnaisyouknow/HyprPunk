@@ -401,6 +401,7 @@ from other people's nearby.
 ├── nvim/                # Neovim Lua configuration
 ├── portal/              # Sends the apps' Open and Save dialogs and screen sharing to the shell's pickers
 ├── quickshell/          # Quickshell bar, island panels, control center, notifications, captures, and prompts
+├── satellite/           # xwayland-satellite's patch, built by the installer, so X11 apps leave their windows' size to Hyprland
 ├── scripts/             # The hyprpunk command, and the helpers the shell and Hyprland run from ~/.local/lib/hyprpunk
 ├── sddm/                # The tool that gives the login screens the wallpaper's subtheme and the desktop's look, installed system-wide
 ├── sddm/base/           # What every login screen shares: the lock screen's layout, with its own copy of the shell's glass, sizes and motion
@@ -411,7 +412,7 @@ from other people's nearby.
 └── zsh/                 # Shell, aliases, bindings, and functions
 ```
 
-Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `frames/`, `grub/`, `keyboard/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
+Every top-level directory is a GNU Stow module that symlinks into `$HOME`, except `assets/`, `battery/`, `brave/`, `frames/`, `grub/`, `keyboard/`, `satellite/`, and `sddm/`, repository or system-wide resources handled separately by the installer and scripts. The themes' colors aren't linked: matugen fills `matugen/`'s templates with the wallpaper's palette, and `qt-configctl.sh` writes the Qtct configurations, so graphical changes don't modify the repository.
 
 ---
 
@@ -498,7 +499,7 @@ The installer enables or configures:
 - 🎬 `sddm`
 - 📶 `bluetooth`
 - ⚡ `power-profiles-daemon`
-- 🧱 `xwayland-satellite` for X11 apps, started with the session, with Hyprland's own XWayland turned off
+- 🧱 `xwayland-satellite` for X11 apps, built with a patch that leaves the X11 windows' size to Hyprland, started with the session, with Hyprland's own XWayland turned off
 - 🔋 `battery-limit.service`, on laptops whose battery driver has a charge limit: it lets the `wheel` group change the limit from the settings and applies the chosen one again at boot and around sleep
 - 🔑 `gnome-keyring`
 - 🎨 GTK, Qt, and Kvantum themes
