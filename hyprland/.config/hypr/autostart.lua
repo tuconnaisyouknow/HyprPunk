@@ -17,9 +17,9 @@ hl.config({
 })
 
 -- SDDM's login screen keeps :0 for itself, so satellite gets a set display rather
--- than whichever is free first
+-- than whichever is free first. Apps learn it at start (see below): with its own
+-- XWayland off, Hyprland clears DISPLAY while starting, after the config set it.
 local x11Display = ":1"
-hl.env("DISPLAY", x11Display)
 
 ---------------
 -- AUTOSTART --
@@ -79,6 +79,7 @@ hyprpunk.autostart = {
 }
 
 hl.on("hyprland.start", function()
+  hl.env("DISPLAY", x11Display)
   for _, entry in ipairs(startup) do
     hl.exec_cmd(entry.command)
   end
