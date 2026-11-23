@@ -24,13 +24,14 @@ hl.env("XCURSOR_THEME", "BreezeX-RosePine-Linux")
 hl.env("HYPRCURSOR_THEME", "rose-pine-hyprcursor")
 hl.env("HYPRCURSOR_SIZE", "24")
 
--- Tell GTK and Qt apps they're on Wayland, under Hyprland, with the Qt theme from qt5ct/qt6ct
+-- Tell GTK and Qt apps they're on Wayland, under Hyprland, with the Qt theme from qt5ct/qt6ct.
+-- X11 stays as a fallback for the apps built without Wayland (VMware's own GTK).
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
-hl.env("GDK_BACKEND", "wayland")
+hl.env("GDK_BACKEND", "wayland,x11")
 hl.env("QT_ENABLE_HIGHDPI_SCALING", "1") -- Qt 6 always scales, this brings the Qt 5 apps along
-hl.env("QT_QPA_PLATFORM", "wayland")
+hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct:qt6ct")
 
