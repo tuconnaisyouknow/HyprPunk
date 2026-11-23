@@ -26,7 +26,7 @@ hl.env("HYPRCURSOR_THEME", "rose-pine-hyprcursor")
 hl.env("HYPRCURSOR_SIZE", "24")
 
 -- Tell GTK and Qt apps they're on Wayland, under Hyprland, with the Qt theme from qt5ct/qt6ct.
--- X11 stays as a fallback for the apps built without Wayland (VMware's own GTK).
+-- X11 stays as a fallback for the apps that only run on it (VMware asks GTK for X11).
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_SESSION_DESKTOP", "Hyprland")
