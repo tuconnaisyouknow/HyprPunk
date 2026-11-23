@@ -367,14 +367,16 @@ ask_vim_keys() {
   done
 }
 
-# Any UTF-8 locale glibc supports, checked against its list, since the scripts that
-# would check it aren't there yet: "de_DE" is found as de_DE.UTF-8
+# Any UTF-8 locale glibc supports, checked against its list, in any case: glibc-locales
+# installs them all later, and the scripts that check what's installed aren't there yet.
+# "de_DE" is found as de_DE.UTF-8.
 ask_locale_regional() {
   local answer
   while true; do
     read -rp "Regional formats, a locale like en_US, en_GB, fr_FR or de_DE (default: en_US): " answer
-    locale_regional=$(awk -v wanted="${answer:-en_US}" '$2 == "UTF-8" && $1 !~ /^C\./ &&
-      ($1 == wanted || $1 == wanted ".UTF-8") { print $1; exit }' /usr/share/i18n/SUPPORTED)
+    answer="${answer:-en_US}"
+    locale_regional=$(awk -v wanted="${answer,,}" '$2 == "UTF-8" && $1 !~ /^C\./ &&
+      (tolower($1) == wanted || tolower($1) == wanted ".utf-8") { print $1; exit }' /usr/share/i18n/SUPPORTED)
     [[ -z "$locale_regional" ]] || break
     echo "Unknown locale. Pick one from /usr/share/i18n/SUPPORTED, like de_CH or pt_BR."
   done

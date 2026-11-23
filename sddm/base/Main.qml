@@ -25,7 +25,8 @@ Rectangle {
     property bool drawn: false
     property date now: new Date()
     // The clock follows the regional formats you picked for the desktop, any locale as
-    // glibc names it: 12 h in en_US, 24 h in en_GB.
+    // glibc names it: 12 h in en_US, 24 h in en_GB. Qt drops a variant (@latin) and takes
+    // the language's own.
     readonly property var formats: Qt.locale(config.region || "en_US.UTF-8")
     readonly property bool twelveHour: /a/i.test(formats.timeFormat(Locale.ShortFormat))
 
@@ -575,8 +576,8 @@ Rectangle {
 
             }
 
-            // AM or PM in us, small on the digits' baseline. Out of the row: the digits
-            // alone stand in the middle, as on the lock screen.
+            // AM or PM when the formats count to 12, small on the digits' baseline. Out of
+            // the row: the digits alone stand in the middle, as on the lock screen.
             Text {
                 x: timeRow.width + 18
                 y: hours.baselineOffset - baselineOffset

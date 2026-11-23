@@ -113,7 +113,7 @@ Item {
 
                     opacity: view.timeLifted ? 0 : 1
                     animated: view.animated
-                    text: Session.clockText(view.date)
+                    text: Session.shortTime(view.date)
                     font.features: {
                         "tnum": 1
                     }

@@ -828,8 +828,8 @@ WlSessionLockSurface {
 
                     }
 
-                    // AM or PM in us, small on the digits' baseline. Out of the row: the digits
-                    // alone stand on the axis.
+                    // AM or PM when the formats count to 12, small on the digits' baseline. Out
+                    // of the row: the digits alone stand on the axis.
                     Text {
                         x: timeRow.width + 18
                         y: hours.baselineOffset - baselineOffset
@@ -846,7 +846,7 @@ WlSessionLockSurface {
                     // island's size, it's the island's time exactly.
                     RollingText {
                         anchors.centerIn: parent
-                        text: Session.clockText(clock.date)
+                        text: Session.shortTime(clock.date)
                         font.features: {
                             "tnum": 1
                         }

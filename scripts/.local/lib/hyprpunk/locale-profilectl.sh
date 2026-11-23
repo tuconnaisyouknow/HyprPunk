@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Picks the regional formats (dates, numbers, money, sorting): any UTF-8 locale glibc
-# supports, all of them installed by the glibc-locales package. The interface is in
+# Picks the regional formats (dates, numbers, money, sorting): any UTF-8 locale that's
+# installed, every one glibc has with the glibc-locales package. The interface is in
 # English, whatever the formats: HyprPunk speaks one language, and so do the apps around
 # it. Saved for Hyprland's env.lua, with its name for the settings, and passed on to
 # systemd and D-Bus so the apps they start follow too. Apps already open keep theirs
@@ -18,7 +18,8 @@ STATE_DIR="$STATE_HOME/hyprpunk"
 LANGUAGE_LOCALE="en_US.UTF-8"
 REGIONAL_FILE="$STATE_DIR/locale-regional"
 NAME_FILE="$STATE_DIR/locale-name"
-# Every locale glibc can build, and where each one says what it's called
+# Every locale glibc can build, by the names you type, and where each one says what it's
+# called
 SUPPORTED="/usr/share/i18n/SUPPORTED"
 DEFINITIONS="/usr/share/i18n/locales"
 
@@ -26,16 +27,29 @@ usage() {
   echo "Usage: $0 {get|list|set <locale>|init [locale]|ensure}"
 }
 
-# The UTF-8 locales, as glibc names them ("de_DE.UTF-8", "sr_RS@latin"). C has no
-# region, so it isn't one.
+# The UTF-8 locales that are installed, by glibc's names ("de_DE.UTF-8", "sr_RS@latin").
+# locale -a writes them its own way ("sr_RS.utf8@latin"), so both lose their codeset to
+# meet. A locale that isn't installed would leave every new app in C, UTF-8 included.
+# C.UTF-8 holds no country's formats, so it isn't one to pick.
 supported_locales() {
-  awk '$2 == "UTF-8" && $1 !~ /^C\./ { print $1 }' "$SUPPORTED"
+  awk '
+    NR == FNR { if (sub(/\.utf8/, "")) installed[$1]; next }
+    $2 == "UTF-8" && $1 !~ /^C\./ { name = $1; sub(/\.UTF-8/, "", name); if (name in installed) print $1 }
+  ' <(locale -a) "$SUPPORTED"
 }
 
-# A locale as you'd type it, or nothing when glibc doesn't have it: "de_DE" is
-# de_DE.UTF-8, while "ta_LK" is UTF-8 under its bare name.
+# A locale as you'd type it, in any case, or nothing when it isn't installed: "de_DE" is
+# de_DE.UTF-8, while "ta_LK" is UTF-8 under its bare name. us and fr were the only two
+# choices once, saved by those names.
 resolve_locale() {
-  supported_locales | awk -v wanted="$1" '$1 == wanted || $1 == wanted ".UTF-8" { print; exit }'
+  local wanted="$1"
+  case "$wanted" in
+  us) wanted="en_US" ;;
+  fr) wanted="fr_FR" ;;
+  esac
+  supported_locales | awk -v wanted="${wanted,,}" '
+    tolower($1) == wanted || tolower($1) == wanted ".utf-8" { print; exit }
+  '
 }
 
 # Each locale with its name, from its own definition: "French (France)", and its
@@ -66,17 +80,12 @@ locale_names() {
   ' "${files[@]}"
 }
 
-# The saved choice, or the default when there's none. us and fr were the only two
-# choices once, saved by those names.
+# The saved choice, or the default when there's none or it's no longer installed
 read_profile() {
   local saved="" locale
   if [[ -r "$REGIONAL_FILE" ]]; then
     IFS= read -r saved <"$REGIONAL_FILE" || true
   fi
-  case "$saved" in
-  us) saved="en_US" ;;
-  fr) saved="fr_FR" ;;
-  esac
   locale=$(resolve_locale "$saved")
   printf '%s\n' "${locale:-$LANGUAGE_LOCALE}"
 }

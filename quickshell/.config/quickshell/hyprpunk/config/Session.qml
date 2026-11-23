@@ -44,7 +44,8 @@ Singleton {
     // The wallpaper's path, empty until known.
     property string wallpaper: ""
     // The regional formats as Qt knows them (day and month names, the first day of the
-    // week), though the shell keeps the locale it started with. Qt reads glibc's names.
+    // week), though the shell keeps the locale it started with. Qt reads glibc's names but
+    // not their variant: sr_RS@latin gets Serbian's own script, Cyrillic.
     readonly property var regionalFormats: Qt.locale(regionalLocale)
     // The clocks follow the regional formats: 12 h in en_US, 24 h in en_GB.
     readonly property bool twelveHour: /a/i.test(regionalFormats.timeFormat(Locale.ShortFormat))
@@ -81,13 +82,8 @@ Singleton {
         return date.getHours() < 12 ? regionalFormats.amText : regionalFormats.pmText;
     }
 
-    // "3:07 PM" or "15:07", for the islands and the calendar card.
-    function clockText(date) {
-        const meridiem = meridiemText(date);
-        return hourText(date) + Qt.formatDateTime(date, ":mm") + (meridiem !== "" ? " " + meridiem : "");
-    }
-
-    // A time in a sentence ("Until 3:30 PM"), with AM/PM when the formats have it.
+    // A time as the regional formats write it, "3:07 PM", "15:07" or "15.07": the
+    // islands' clock, the lock screen's small one, and in a sentence ("Until 3:30 PM").
     function shortTime(date) {
         return date.toLocaleTimeString(regionalFormats, Locale.ShortFormat);
     }
