@@ -2,16 +2,15 @@
 # has its own palette (palettes.conf names it, palettes/ holds them): the wallpaper's own
 # hues at Catppuccin Mocha's lightness, so the theme stays dark and readable. An accent too
 # dark to read there stays the wallpaper's color: its surfaces go deeper instead.
-# wallpaperctl.sh renders the wallpaper's palette whenever it changes.
+# wallpaperctl.sh renders the wallpaper's palette whenever it changes, with red, green,
+# yellow, peach and blue (meanings.json), which mean something and never change. Your own
+# apps' templates go in personal.toml, rendered after these.
 # matugen only expands ~ in its paths, so the shell's and the terminal's colors go to
 # ~/.local/state/hyprpunk, the default $XDG_STATE_HOME that their readers fall back on.
 # matugen only writes the files here. The open apps are told by wallpaperctl.sh, one
 # after another: all at once, they redraw together and the screens miss frames.
 
 [config]
-# Read last, over the palette: red, green, yellow, peach and blue mean something, they
-# never change
-import_json_files = ["./meanings.json"]
 
 # The HyprPunk theme imports it
 [templates.gtk3]

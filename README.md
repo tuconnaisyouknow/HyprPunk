@@ -142,7 +142,8 @@ the whole look:
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
 terminal and its tools (Catppuccin Mocha tinted with the palette), and Brave's Classic theme, through its policy. The
 shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop, Brave and a fastfetch already on screen change at
-once, Qt apps and yazi the next time they start. Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
+once, Qt apps and yazi the next time they start, and your own apps follow if you add them (see
+[Customization](#-customization)). Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
 theme, built in a moment from Papirus's grey folders.
 
 The theme picker (`Super + Ctrl + T`) switches theme and brings back the last wallpaper you had in it.
@@ -534,6 +535,11 @@ without touching your preferences:
 - 🖥️ **Your tmux and Kitty settings** go in `~/.config/tmux/personal.conf` and `~/.config/kitty/personal.conf`,
   read last so they win, kept out of git and skipped when they don't exist. Plugins you add to tmux's get installed
   by tpm too.
+- 🎨 **Your own apps can follow the wallpaper's colors** too: add their templates to `~/.config/matugen/personal.toml`,
+  which the installer copies from a commented example listing every color and what it's for. Each new palette fills
+  them after HyprPunk's apps, and a `post_hook` tells the open app. Your templates go in `~/.config/matugen/personal/`,
+  both kept out of git, and a broken one leaves HyprPunk's colors alone and says why in
+  `~/.local/state/hyprpunk/personal-colors.log`.
 - 🐚 **Your shell tweaks** go in files of your own, each skipped when it doesn't exist:
   - `~/.personalrc`, read at the very end of `.zshrc`, so your aliases, functions, options and variables win over
     HyprPunk's, fzf's and the prompt's.
@@ -542,7 +548,7 @@ without touching your preferences:
 We advise you to leave the rest of the dotfiles as they are. They're linked straight from the repository, so any
 edit there stops the next update, and the modules expect each other as they ship. If something you need
 can't be done from these files, open an issue rather than patching HyprPunk itself. The look isn't part of what you
-customize (see [Philosophy](#-philosophy)).
+customize (see [Philosophy](#-philosophy)): your apps can follow it, not change it.
 
 ---
 

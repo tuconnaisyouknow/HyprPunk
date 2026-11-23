@@ -1,0 +1,32 @@
+# Your own apps in the wallpaper's colors. install.sh copies this file to personal.toml,
+# yours and out of git, which wallpaperctl.sh renders with every new palette, after
+# HyprPunk's own apps. Your templates go in personal/, out of git too.
+#
+# A template is the app's color file with roles in place of the colors, like
+# {{colors.primary.default.hex}}. Each role has the job it has in the shell:
+#   primary                   the accent: titles, what's selected or active, links
+#   secondary                 everything else you read
+#   on_surface                text in a soft shade of the accent, as GTK and Qt apps have it
+#   on_primary                what's written on the accent
+#   surface_container_lowest  the deepest surface, then surface_container_low, surface,
+#                             surface_container, surface_container_high and _highest
+#   text, subtext1, subtext0, overlay2, overlay1, overlay0
+#                             Catppuccin's text and greys, tinted with the palette
+#   error, green, yellow, peach, blue
+#                             colors that mean something, the same with every palette
+# Each comes as .hex, .hex_stripped, .rgba, .red, .green, .blue, .hue, .saturation or
+# .lightness. {{palette}} is the palette's name and {{theme}} the wallpaper's theme (neon
+# or daydream).
+#
+# The post_hook tells the open app, once its file is written. A broken template stops all
+# of yours, none of them written, and ~/.local/state/hyprpunk/personal-colors.log says why.
+# HyprPunk's own apps never wait on yours.
+
+[config]
+
+[templates]
+
+# [templates.myapp]
+# input_path = "./personal/myapp.css.template"
+# output_path = "~/.config/myapp/colors.css"
+# post_hook = "pkill -USR1 -x myapp"

@@ -39,13 +39,12 @@ build() {
     name=$(basename "$palette" .json)
     cat >"$tmp/config.toml" <<CONFIG
 [config]
-import_json_files = ["$MEANINGS"]
 
 [templates.bat]
 input_path = "$TEMPLATE"
 output_path = "$tmp/themes/HyprPunk-$name.tmTheme"
 CONFIG
-    matugen -q -c "$tmp/config.toml" json "$palette"
+    matugen -q -c "$tmp/config.toml" --import-json "$MEANINGS" json "$palette"
   done
 
   mkdir -p "$THEMES"

@@ -25,6 +25,8 @@ WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 DEFAULT_THEME="neon"
 MATUGEN_DIR="$HOME/.config/matugen"
 PALETTES="$MATUGEN_DIR/palettes.conf"
+PERSONAL_COLORS="$MATUGEN_DIR/personal.toml"
+PERSONAL_LOG="$STATE_DIR/personal-colors.log"
 THUMBNAIL_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprpunk/thumbnails"
 LIB_DIR="$HOME/.local/lib/hyprpunk"
 LOGIN_SCREEN="/usr/local/bin/hyprpunk-login-screen"
@@ -263,13 +265,27 @@ palette_of() {
   printf '%s\n' "$MATUGEN_DIR/palettes/$name.json"
 }
 
-# matugen writes every app's colors from it, Brave's included, kept between sessions.
-# It also gets the palette's name, for what's kept ready for each palette (bat's theme),
-# and the wallpaper's theme, which the shell takes with its colors: neon emits its light.
+# matugen fills the templates from it, with the colors that mean something
+# (meanings.json), which no palette holds. They also get the palette's name, for what's
+# kept ready for each palette (bat's theme), and the wallpaper's theme, which the shell
+# takes with its colors: neon emits its light. matugen's own config by default, every
+# app's colors, Brave's included, kept between sessions. The other arguments go to matugen.
 render_colors() {
   local palette
   palette="$(palette_of "$1")"
-  matugen -q --import-json-string "{\"palette\": \"$(basename "$palette" .json)\", \"theme\": \"$(theme_of "$1")\"}" json "$palette"
+  matugen -q "${@:2}" --import-json "$MATUGEN_DIR/meanings.json" \
+    --import-json-string "{\"palette\": \"$(basename "$palette" .json)\", \"theme\": \"$(theme_of "$1")\"}" json "$palette"
+}
+
+# Your own apps' colors (personal.toml), after HyprPunk's and at the same low priority:
+# their post_hooks tell them in turn. A broken template stops only yours, none of them
+# written, and personal-colors.log says why.
+render_personal() {
+  [[ -f "$PERSONAL_COLORS" ]] || return 0
+  (
+    renice -n 19 -p "$BASHPID" >/dev/null
+    render_colors "$1" -c "$PERSONAL_COLORS"
+  ) >"$PERSONAL_LOG" 2>&1 || true
 }
 
 # The open apps take the colors matugen wrote, one after another, in the order you'd
@@ -311,7 +327,7 @@ set_login_screen() {
 # A new wallpaper and its look. A wallpaper without a palette stops here, before
 # anything changes. Then the transition starts as soon as you pick it, since awww doesn't
 # wait for it to end, and the colors, which take matugen a moment, land during it: the
-# shell's as soon as they're written, the apps' one after another. It's
+# shell's as soon as they're written, the apps' one after another, yours last. It's
 # saved only once both are in place, so a failure leaves the old one to come back at
 # login. The login screen comes last, since you only see it at the next login. Without
 # awww arguments the wallpaper isn't shown (install.sh).
@@ -324,6 +340,7 @@ switch_to() {
   fi
   render_colors "$wallpaper"
   tell_apps
+  render_personal "$wallpaper"
   write_state "$wallpaper"
   set_login_screen "$wallpaper"
 }

@@ -522,6 +522,10 @@ stow_dotfiles() {
   # files you have stay.
   mkdir -p "$HOME/.config/hypr/personal"
   cp --update=none "$DOTFILES_DIR/hyprland/.config/hypr/personal.example/"*.lua "$HOME/.config/hypr/personal/"
+
+  # Your own apps' colors too, from an example that renders nothing until you add one
+  mkdir -p "$HOME/.config/matugen/personal"
+  cp --update=none "$DOTFILES_DIR/matugen/.config/matugen/personal.example.toml" "$HOME/.config/matugen/personal.toml"
 }
 
 # The shell's text and titles are cuts of Ioskeley Mono and Orbitron that fontsctl.py

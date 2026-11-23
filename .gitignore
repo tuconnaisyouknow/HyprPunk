@@ -15,6 +15,10 @@ yazi/.config/yazi/theme.toml
 tmux/.config/tmux/personal.conf
 kitty/.config/kitty/personal.conf
 
+# Your own apps' colors, which wallpaperctl.sh renders after HyprPunk's
+matugen/.config/matugen/personal.toml
+matugen/.config/matugen/personal/
+
 # btop rewrites its settings whenever you change one in its interface. The repo keeps
 # btop.default.conf instead, copied in at install
 btop/.config/btop/btop.conf
