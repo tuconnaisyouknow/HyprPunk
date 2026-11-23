@@ -25,3 +25,6 @@ cava/.config/cava/themes/
 
 # The animation clock plugin, built for each Qt version by install.sh
 frames/build/
+
+# The page that makes the wallpapers' palettes, kept on the machine that makes them
+palette-editor/

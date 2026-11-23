@@ -68,8 +68,9 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
 )
 
 # The folders that aren't linked into your home: installed system-wide by their own
-# steps, or the README's images. Every other folder is a stow module.
-readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard sddm)
+# steps, the README's images, or the page that makes the wallpapers' palettes, which git
+# leaves out but stow would link where it's there. Every other folder is a stow module.
+readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard palette-editor sddm)
 
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
