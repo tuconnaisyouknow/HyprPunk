@@ -2,17 +2,17 @@
   "colors": {
     "primary": {
       "default": {
-        "color": "#de3100"
+        "color": "#f13600"
       }
     },
     "on_primary": {
       "default": {
-        "color": "#030503"
+        "color": "#000700"
       }
     },
     "secondary": {
       "default": {
-        "color": "#7ad5d4"
+        "color": "#00b8b8"
       }
     },
     "on_surface": {
@@ -27,82 +27,82 @@
     },
     "surface_container_lowest": {
       "default": {
-        "color": "#030503"
+        "color": "#000700"
       }
     },
     "surface_container_low": {
       "default": {
-        "color": "#040904"
+        "color": "#000b00"
       }
     },
     "surface": {
       "default": {
-        "color": "#060c06"
+        "color": "#000f00"
       }
     },
     "surface_container": {
       "default": {
-        "color": "#10170f"
+        "color": "#001c01"
       }
     },
     "surface_container_high": {
       "default": {
-        "color": "#1b221a"
+        "color": "#012803"
       }
     },
     "surface_container_highest": {
       "default": {
-        "color": "#242d24"
+        "color": "#09340b"
       }
     },
     "shadow": {
       "default": {
-        "color": "#030503"
+        "color": "#000700"
       }
     },
     "on_error": {
       "default": {
-        "color": "#030503"
+        "color": "#000700"
       }
     },
     "on_green": {
       "default": {
-        "color": "#030503"
+        "color": "#000700"
       }
     },
     "on_yellow": {
       "default": {
-        "color": "#030503"
+        "color": "#000700"
       }
     },
     "overlay0": {
       "default": {
-        "color": "#667765"
+        "color": "#368537"
       }
     },
     "overlay1": {
       "default": {
-        "color": "#798c78"
+        "color": "#469b46"
       }
     },
     "overlay2": {
       "default": {
-        "color": "#8da18c"
+        "color": "#5ab15a"
       }
     },
     "subtext0": {
       "default": {
-        "color": "#a0b59f"
+        "color": "#6ac769"
       }
     },
     "subtext1": {
       "default": {
-        "color": "#b4cab3"
+        "color": "#7edd7c"
       }
     },
     "text": {
       "default": {
-        "color": "#c7dfc6"
+        "color": "#8df48b"
       }
     }
   }

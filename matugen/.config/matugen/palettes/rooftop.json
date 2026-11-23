@@ -7,7 +7,7 @@
     },
     "on_primary": {
       "default": {
-        "color": "#0a150f"
+        "color": "#00180b"
       }
     },
     "secondary": {
@@ -27,82 +27,82 @@
     },
     "surface_container_lowest": {
       "default": {
-        "color": "#0a150f"
+        "color": "#00180b"
       }
     },
     "surface_container_low": {
       "default": {
-        "color": "#0f1d15"
+        "color": "#002010"
       }
     },
     "surface": {
       "default": {
-        "color": "#13241b"
+        "color": "#002815"
       }
     },
     "surface_container": {
       "default": {
-        "color": "#26392e"
+        "color": "#003f25"
       }
     },
     "surface_container_high": {
       "default": {
-        "color": "#3a4e42"
+        "color": "#005735"
       }
     },
     "surface_container_highest": {
       "default": {
-        "color": "#4d6356"
+        "color": "#006f44"
       }
     },
     "shadow": {
       "default": {
-        "color": "#0a150f"
+        "color": "#00180b"
       }
     },
     "on_error": {
       "default": {
-        "color": "#0a150f"
+        "color": "#00180b"
       }
     },
     "on_green": {
       "default": {
-        "color": "#0a150f"
+        "color": "#00180b"
       }
     },
     "on_yellow": {
       "default": {
-        "color": "#0a150f"
+        "color": "#00180b"
       }
     },
     "overlay0": {
       "default": {
-        "color": "#61786a"
+        "color": "#008754"
       }
     },
     "overlay1": {
       "default": {
-        "color": "#738d7d"
+        "color": "#009f64"
       }
     },
     "overlay2": {
       "default": {
-        "color": "#88a292"
+        "color": "#26b576"
       }
     },
     "subtext0": {
       "default": {
-        "color": "#9ab6a5"
+        "color": "#36cc87"
       }
     },
     "subtext1": {
       "default": {
-        "color": "#aeccba"
+        "color": "#4fe29b"
       }
     },
     "text": {
       "default": {
-        "color": "#c1e0cd"
+        "color": "#5cf8ac"
       }
     }
   }
