@@ -112,7 +112,9 @@ Item {
     // one's edge are that way: one beside it isn't above it for being a pixel taller.
     // The closest of them sets the row to land on, and the one of that row most in line
     // with the current one takes the keys, so down from a tile goes to the one under
-    // it. Left and right, only the controls level with the current one count.
+    // it. Those centred under it are all in line, and the first of them wins: down from a
+    // header onto a row of icons lands on the first. Left and right, only the controls
+    // level with the current one count.
     function neighbour(dx, dy) {
         const sign = dx + dy;
         const span = (r, horizontal) => {
@@ -137,7 +139,7 @@ Item {
                 "along": along,
                 "distance": (middle(along) - fromAlong[sign > 0 ? 1 : 0]) * sign,
                 "gap": gap(across, fromAcross),
-                "offset": Math.abs(middle(across) - middle(fromAcross))
+                "offset": gap([middle(across), middle(across)], fromAcross)
             };
         }).filter((entry) => {
             return entry.distance > 0 && (dx === 0 || entry.gap === 0);
