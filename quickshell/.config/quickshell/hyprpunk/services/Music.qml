@@ -14,7 +14,10 @@ Singleton {
     id: music
 
     readonly property var player: Players.followed
-    readonly property bool playing: player !== null && player.isPlaying
+    // Whether it plays, as the shell shows it. Some players (spotifast) pass through a
+    // pause while they load the next track, right after announcing it: that one only
+    // counts if it lasts, or the play button and the equalizers would flicker.
+    property bool playing: false
     // The track the shell has taken in, by its address and its title (two tracks with the
     // same title stay apart, and so do a player's that gives no address). It lags behind
     // playerTrack() while a change is being taken in.
@@ -113,6 +116,20 @@ Singleton {
         } else {
             player.next();
         }
+    }
+
+    // Takes the player's state in, holding playing through a pause that comes with a
+    // track change, until the player plays again or the pause lasts.
+    function followPlaying() {
+        const plays = player !== null && player.isPlaying;
+        const now = Date.now();
+        const changing = now - trackChangeTime < loadingPause.interval || now < skipUntil;
+        if (playing && !plays && changing) {
+            loadingPause.restart();
+            return ;
+        }
+        loadingPause.stop();
+        playing = plays;
     }
 
     function toggle() {
@@ -234,6 +251,8 @@ Singleton {
     // Another player: drawn from where MPRIS says it is until playerctl answers, so a
     // card on screen doesn't show the previous player's position meanwhile.
     onPlayerChanged: {
+        loadingPause.stop();
+        playing = player !== null && player.isPlaying;
         reset();
         polledPosition = player !== null ? player.position : 0;
         polledLength = 0;
@@ -243,6 +262,7 @@ Singleton {
 
         lyricsRequest.restart();
     }
+    Component.onCompleted: playing = player !== null && player.isPlaying
     onRunningChanged: {
         if (running) {
             positionKnown = false;
@@ -281,6 +301,7 @@ Singleton {
         }
 
         function onIsPlayingChanged() {
+            music.followPlaying();
             music.remember();
             music.poll();
         }
@@ -300,6 +321,14 @@ Singleton {
 
         interval: 300
         onTriggered: music.poll()
+    }
+
+    // A pause through a track change that lasted: it's a real one.
+    Timer {
+        id: loadingPause
+
+        interval: 500
+        onTriggered: music.playing = music.player !== null && music.player.isPlaying
     }
 
     Timer {
