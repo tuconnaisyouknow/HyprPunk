@@ -7,23 +7,10 @@ local glass = __require("glass_state") -- The shell's glass style
 -- WINDOW RULES --
 ------------------
 
--- Every app has its home
-local homes = {
-  { class = "kitty",                workspace = "1" },
-  { class = "brave-browser",        workspace = "2" },
-  { class = "Spotify",              workspace = "3" },
-  { class = "md.obsidian.Obsidian", workspace = "4" },
-  { class = "org.gnome.Nautilus",   workspace = "6" },
-}
-
--- Opens an app on its workspace. Also for personal/rules.lua: a second call for the
--- same app wins, so it moves one of these elsewhere too.
+-- Opens an app on a workspace of its own, for personal/rules.lua: apps open where you
+-- are until you give them one
 function hyprpunk.app(class, workspace)
   hl.window_rule({ match = { class = class }, workspace = tostring(workspace) })
-end
-
-for _, home in ipairs(homes) do
-  hyprpunk.app(home.class, home.workspace)
 end
 
 -- Floats every window of an app but its main one, picked by the title it opens with.

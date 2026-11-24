@@ -2,7 +2,8 @@
 -- install.sh copies this example into ~/.config/hypr/personal/ once; edit that copy.
 -- Uncomment what you want, it all does nothing as it stands.
 
--- An app's class is what `hyprctl clients` shows for its window
+-- An app opens where you are until you give it a workspace. Its class is what
+-- `hyprctl clients` shows for its window
 -- hyprpunk.app("org.gnome.Geary", 6)
 -- hyprpunk.app("discord", 7)
 
