@@ -27,6 +27,12 @@ Singleton {
         "duration": 300,
         "easing": Easing.InOutQuad
     })
+    // Something going back to rest once the pointer has left it: no answer to give, so
+    // it eases in as well as out, slower than it grew, and settles instead of snapping.
+    readonly property var settle: ({
+        "duration": 320,
+        "easing": Easing.InOutCubic
+    })
 
     // The answer to a press: squeezed a little, then springing back a touch too far
     // (BounceAnimation).

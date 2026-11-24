@@ -11,7 +11,8 @@ import qs.theme
 // follows whatever plays: the wheel, a sideways drag or the island card's keys turn
 // them, their dots sit under the controls and the player's name between the two times.
 // What plays, where it is and its lyrics are Music's: the card draws
-// them, the position moving on its own frames between two of Music's answers.
+// them, the position moving on its own frames between two of Music's answers. On a track
+// change the cover rolls (CoverArt) and the title and the artist slide along with it.
 Rectangle {
     id: card
 
@@ -65,7 +66,15 @@ Rectangle {
     readonly property int pageTravel: 28
     readonly property real pageOpacity: 1 - Math.abs(pageShift) / pageTravel
     readonly property bool turning: turn.running
-    // The position as the bar draws it, gliding from one player's to the next.
+    // The title and the artist of the track Music has taken in: a new track's wait for its
+    // change, so the old ones can leave first. Kept as they are while they leave.
+    property string title: ""
+    property string artist: ""
+    property bool wordsLeaving: false
+    // How far the title and the artist stand from their place as the track changes.
+    property real trackShift: 0
+    readonly property real trackOpacity: 1 - Math.abs(trackShift) / pageTravel
+    // The position as the bar draws it, gliding with it on a jump.
     readonly property real drawnPosition: length > 0 ? progress.ratio * length : shownPosition
     // How far the wheel has gone in this gesture, and whether it turned a page already.
     property real wheelDelta: 0
@@ -112,6 +121,15 @@ Rectangle {
 
     }
 
+    // Takes the player's words, once they're the track's Music has taken in.
+    function takeWords() {
+        if (wordsLeaving || player !== null && Music.playerTrack() !== Music.currentTrack)
+            return ;
+
+        title = player !== null ? (player.trackTitle || player.identity) : "";
+        artist = player !== null ? (player.trackArtist || player.trackAlbum) : "";
+    }
+
     function formatTime(seconds) {
         const total = Math.max(0, Math.floor(seconds));
         const minutes = Math.floor(total / 60);
@@ -122,8 +140,15 @@ Rectangle {
     implicitHeight: playerHeight + sourcesRoom + lyricsRoom
     radius: Metrics.radius.card
     color: "transparent"
-    // Picks up from where the track is now, not where it was when last shown.
-    onActiveChanged: now = Date.now()
+    // Picks up from where the track is now, not where it was when last shown: at once,
+    // with no glide from there.
+    onActiveChanged: {
+        now = Date.now();
+        glide.stop();
+        progress.lag = 0;
+    }
+    onPlayerChanged: Qt.callLater(takeWords)
+    Component.onCompleted: takeWords()
 
     ServiceRef {
         service: Music
@@ -139,6 +164,47 @@ Rectangle {
     Connections {
         function onPolledTimeChanged() {
             card.now = Date.now();
+        }
+
+        target: Music
+    }
+
+    Connections {
+        function onTrackTitleChanged() {
+            card.takeWords();
+        }
+
+        function onTrackArtistChanged() {
+            card.takeWords();
+        }
+
+        function onTrackAlbumChanged() {
+            card.takeWords();
+        }
+
+        function onIdentityChanged() {
+            card.takeWords();
+        }
+
+        target: card.player
+    }
+
+    // Another player: its track is taken in after its words change.
+    Connections {
+        function onPlayerChanged() {
+            Qt.callLater(card.takeWords);
+        }
+
+        // Where you see it, the words leave the way the cover rolls and the next ones come
+        // in from its side; otherwise they simply change.
+        function onTrackChanged(direction) {
+            if (!card.active) {
+                card.takeWords();
+                return ;
+            }
+            card.wordsLeaving = true;
+            trackSlide.direction = direction;
+            trackSlide.restart();
         }
 
         target: Music
@@ -239,6 +305,35 @@ Rectangle {
 
     }
 
+    SequentialAnimation {
+        id: trackSlide
+
+        property int direction: 1
+
+        Anim {
+            target: card
+            property: "trackShift"
+            to: -trackSlide.direction * card.pageTravel
+            token: Motion.leave.small
+        }
+
+        ScriptAction {
+            script: {
+                card.wordsLeaving = false;
+                card.takeWords();
+                card.trackShift = trackSlide.direction * card.pageTravel;
+            }
+        }
+
+        Anim {
+            target: card
+            property: "trackShift"
+            to: 0
+            token: Motion.enter.normal
+        }
+
+    }
+
     CoverArt {
         id: artwork
 
@@ -249,6 +344,7 @@ Rectangle {
         visible: card.coverVisible
         opacity: card.pageOpacity
         fades: !card.turning
+        rolls: card.active
         radius: card.artRadius
 
         transform: Translate {
@@ -265,16 +361,16 @@ Rectangle {
         anchors.leftMargin: card.artMargin + card.artSize + Metrics.spacing.large
         anchors.rightMargin: Metrics.spacing.large
         spacing: Metrics.spacing.hairline
-        opacity: card.pageOpacity
+        opacity: card.pageOpacity * card.trackOpacity
 
         transform: Translate {
-            x: card.pageShift
+            x: card.pageShift + card.trackShift
         }
 
         MarqueeText {
             Layout.fillWidth: true
             running: card.active
-            text: card.player !== null ? (card.player.trackTitle || card.player.identity) : ""
+            text: card.title
             color: Colors.primary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.emphasis
@@ -283,7 +379,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: card.player !== null ? (card.player.trackArtist || card.player.trackAlbum) : ""
+            text: card.artist
             color: Colors.secondary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.body
@@ -306,31 +402,46 @@ Rectangle {
     Item {
         id: progress
 
-        property real ratio: card.length > 0 ? Math.min(1, card.shownPosition / card.length) : 0
+        // Where the track is on the bar, and the level drawn: a jump (a click, a seek, a
+        // page turn, a track change) glides there, as the control center's sliders do,
+        // while playing moves it far less than a hundredth from one frame to the next.
+        readonly property real target: card.length > 0 ? Math.min(1, card.shownPosition / card.length) : 0
+        property real shownTarget: target
+        property real lag: 0
+        readonly property real ratio: Math.max(0, Math.min(1, target + lag))
         readonly property bool active: progressHover.hovered || card.scrubPosition >= 0
+        // The bar's thickness at rest: the item is as tall as it once grabbed.
+        readonly property int restHeight: 7
 
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: card.artMargin
         anchors.rightMargin: card.artMargin
         y: card.artMargin + card.artSize + Metrics.spacing.huge
-        height: Metrics.spacing.normal
-
-        // Only as a page turns: the level glides to where the next player is.
-        Behavior on ratio {
-            enabled: card.turning
-
-            Anim {
-                token: Motion.move.normal
+        height: 11
+        onTargetChanged: {
+            if (Math.abs(target - shownTarget) > 0.01) {
+                lag = Math.max(0, Math.min(1, shownTarget + lag)) - target;
+                glide.restart();
             }
-
+            shownTarget = target;
         }
 
-        // Thicker under the pointer, to show you can grab it.
+        Anim {
+            id: glide
+
+            target: progress
+            property: "lag"
+            to: 0
+            token: Motion.move.normal
+        }
+
+        // Thicker under the pointer, to show you can grab it. Centered by hand: a centering
+        // anchor snaps to whole pixels, and the top edge would step as the bottom glides.
         Rectangle {
-            anchors.verticalCenter: parent.verticalCenter
+            y: (parent.height - height) / 2
             width: parent.width
-            height: progress.active ? parent.height : 5
+            height: progress.active ? parent.height : progress.restHeight
             radius: height / 2
             color: Colors.alpha(Colors.light, 0.14)
 
@@ -341,9 +452,12 @@ Rectangle {
                 color: Colors.primary
             }
 
+            // Grows at once under the pointer, settles back once it's gone.
             Behavior on height {
+                id: thickness
+
                 Anim {
-                    token: Motion.resize.small
+                    token: thickness.targetValue === progress.height ? Motion.resize.small : Motion.settle
                 }
 
             }

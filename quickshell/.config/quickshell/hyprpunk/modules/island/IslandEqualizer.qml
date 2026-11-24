@@ -30,6 +30,7 @@ IslandPart {
         opacity: part.lifted ? 0 : 1
         playing: Music.playing
         running: part.live && part.visible && MusicSettings.equalizer
+        roundness: 1
     }
 
 }

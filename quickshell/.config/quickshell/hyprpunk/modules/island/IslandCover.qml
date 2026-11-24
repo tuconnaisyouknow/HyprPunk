@@ -19,50 +19,16 @@ IslandPart {
     openHeight: openWidth
 
     CoverArt {
-        id: art
-
         anchors.fill: parent
         opacity: part.lifted ? 0 : 1
         decodeSize: 2 * Math.ceil(part.openWidth)
+        rolls: part.animated && !part.lifted
 
         // The last cover stays while the part closes after the player quits.
         Binding on source {
             when: Music.player !== null
             value: Music.player?.trackArtUrl ?? ""
             restoreMode: Binding.RestoreNone
-        }
-
-    }
-
-    // Only where you see it: hidden, under a card or the lock, the next cover simply
-    // fades in.
-    Connections {
-        function onTrackChanged(direction) {
-            if (!part.animated || part.lifted || !part.visible)
-                return ;
-
-            art.rollTo(direction);
-            pop.restart();
-        }
-
-        target: Music
-    }
-
-    SequentialAnimation {
-        id: pop
-
-        Anim {
-            target: art
-            property: "scale"
-            to: Motion.disc.popScale
-            token: Motion.disc.popOut
-        }
-
-        Anim {
-            target: art
-            property: "scale"
-            to: 1
-            token: Motion.disc.popBack
         }
 
     }

@@ -1,13 +1,15 @@
 import QtQuick
 import Quickshell
 import qs.components
+import qs.services
 import qs.theme
 
 // The track's cover: round in the island, a rounded square in the player, and every
 // shape between as the player grows out of the island (PlayerCard). A cover only fades
 // in over another cover, on a track change; the first one is simply there, so a copy of
 // a cover already shown (the lock's island taking over from the bar's) starts as it is.
-// The island's rolls like a record instead (rollTo). Until there's one, a note on a
+// Where you see it, a track change rolls it like a record instead, with a pop: the old
+// cover out, the next one in from the side it comes from. Until there's one, a note on a
 // plain tile.
 Item {
     id: cover
@@ -25,6 +27,10 @@ Item {
     readonly property Image back: aFront ? artB : artA
     // Off, the next cover takes its place at once: it comes in with a move of its own.
     property bool fades: true
+    // Rolls on a track change: off where nobody sees it, the next cover simply fades in.
+    property bool rolls: true
+    // A disc turns as it rolls; a square doesn't roll, it slides.
+    readonly property bool round: radius >= Math.min(width, height) / 2
     // How far the front picture has faded in over the other, or over the note while the
     // cover it takes the place of had rolled away.
     property real fade: 1
@@ -68,14 +74,15 @@ Item {
     }
 
     // The track changed: what shows rolls out, the new cover rolls in from the given side
-    // and lands upright, rolling without slipping. The new cover fades in on its way once
-    // loaded, over the note until then.
+    // and lands upright, rolling without slipping, and the cover pops. The new cover fades
+    // in on its way once loaded, over the note until then.
     function rollTo(direction) {
         leaving = fade < 1 && fadesOverBack && back.status === Image.Ready ? back : frontShown ? front : null;
         fadeIn.stop();
         fade = 1;
         rollDirection = direction;
         rollAnimation.restart();
+        pop.restart();
     }
 
     onSourceChanged: load()
@@ -145,9 +152,9 @@ Item {
         readonly property vector2d leavingCrop: crop(leaving)
         // One turn every time it travels its round edge's length.
         readonly property real frontOffset: cover.rollDirection * cover.rollTravel * (1 - cover.roll)
-        readonly property real frontAngle: frontOffset / Math.max(1, width / 2)
+        readonly property real frontAngle: cover.round ? frontOffset / Math.max(1, width / 2) : 0
         readonly property real leavingOffset: -cover.rollDirection * cover.rollTravel * cover.roll
-        readonly property real leavingAngle: leavingOffset / Math.max(1, width / 2)
+        readonly property real leavingAngle: cover.round ? leavingOffset / Math.max(1, width / 2) : 0
 
         // The share of a picture its middle square takes, on each axis.
         function crop(image) {
@@ -161,6 +168,16 @@ Item {
         fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/cover.frag.qsb"))
     }
 
+    Connections {
+        function onTrackChanged(direction) {
+            if (cover.rolls && cover.visible)
+                cover.rollTo(direction);
+
+        }
+
+        target: Music
+    }
+
     Anim {
         id: rollAnimation
 
@@ -170,6 +187,25 @@ Item {
         to: 1
         token: Motion.disc.roll
         onFinished: cover.leaving = null
+    }
+
+    SequentialAnimation {
+        id: pop
+
+        Anim {
+            target: cover
+            property: "scale"
+            to: Motion.disc.popScale
+            token: Motion.disc.popOut
+        }
+
+        Anim {
+            target: cover
+            property: "scale"
+            to: 1
+            token: Motion.disc.popBack
+        }
+
     }
 
     Anim {

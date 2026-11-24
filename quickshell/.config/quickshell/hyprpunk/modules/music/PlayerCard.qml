@@ -149,6 +149,7 @@ PillPopup {
             x: playerPopup.flyX(playerPopup.island.coverX, musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size) + musicPlayerCard.pageShift
             opacity: musicPlayerCard.pageOpacity
             fades: !musicPlayerCard.turning
+            rolls: playerPopup.mapped
             y: playerPopup.flyY(musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size)
             width: size
             height: size
@@ -161,6 +162,7 @@ PillPopup {
             x: playerPopup.flyX(playerPopup.island.equalizerX, musicPlayerCard.equalizerCenter.x, playerPopup.slotSize) + Math.round((playerPopup.slotSize - width) / 2)
             y: playerPopup.flyY(musicPlayerCard.equalizerCenter.y, playerPopup.slotSize) + Math.round((playerPopup.slotSize - height) / 2)
             scale: playerPopup.zoomY + (1 - playerPopup.zoomY) * playerPopup.flight
+            roundness: 1 - playerPopup.flight
             playing: Music.playing
             running: playerPopup.mapped && MusicSettings.equalizer
         }
