@@ -73,6 +73,14 @@ readonly -a OTHER_DESKTOP_PACKAGES=(
 # leaves out but stow would link where it's there. Every other folder is a stow module.
 readonly -a SYSTEM_MODULES=(assets battery brave frames grub keyboard palette-editor satellite sddm)
 
+# The folders HyprPunk's files share with other programs: pip's packages in ~/.local/lib,
+# apps' data and icons in ~/.local/share, Nautilus's other extensions, your screenshots.
+# Parents come before what's inside them.
+readonly -a SHARED_FOLDERS=(
+  .local/bin .local/lib .local/share .local/share/icons
+  .local/share/nautilus-python/extensions Pictures
+)
+
 # Everything HyprPunk installs, by what it's for
 readonly -a PACKAGES=(
   zsh kitty shader-slang starship zoxide
@@ -485,11 +493,44 @@ clone_dotfiles() {
   git clone --filter=blob:none "$DOTFILES_REPO" "$DOTFILES_DIR"
 }
 
+# Puts back in your home what a program wrote into the repository through a link, when
+# git doesn't track it: the link's place gets the real file or folder
+bring_home() {
+  local place="$1" stray="$2"
+
+  [[ "$stray" == "$DOTFILES_DIR"/* && -e "$stray" ]] || return 0
+  [[ -z "$(git -C "$DOTFILES_DIR" ls-files -- "$stray")" ]] || return 0
+  rm -f -- "$place"
+  mv -- "$stray" "$place"
+}
+
+# A folder HyprPunk shares with other programs is yours, a real folder: stow would link
+# a missing one to the repository as a whole, and what they write there would land in
+# the dotfiles. Older versions did, so one linked that way is opened up again, and
+# whatever got in comes home. HyprPunk's own files stay, for stow to link one by one.
+own_folder() {
+  local folder="$1" linked entry
+
+  if [[ -L "$folder" && "$(realpath -m -- "$folder")" == "$DOTFILES_DIR"/* ]]; then
+    linked="$(realpath -- "$folder")"
+    rm -f -- "$folder"
+    mkdir -p -- "$folder"
+    while IFS= read -r -d '' entry; do
+      bring_home "$folder/$(basename -- "$entry")" "$entry"
+    done < <(find "$linked" -mindepth 1 -maxdepth 1 -print0)
+  fi
+  mkdir -p -- "$folder"
+
+  while IFS= read -r -d '' entry; do
+    bring_home "$entry" "$(realpath -m -- "$entry")"
+  done < <(find "$folder" -mindepth 1 -maxdepth 1 -type l -print0)
+}
+
 # Links every module into your home, a new one included. Links left broken by a file or
 # a module that left the repository go first, wherever they are: stow only cleans the
 # folders a module still uses.
 stow_dotfiles() {
-  local link module
+  local link module folder
   local -a modules=()
 
   while IFS= read -r -d '' link; do
@@ -498,21 +539,23 @@ stow_dotfiles() {
     fi
   done < <(find "$HOME" -xdev -path "$DOTFILES_DIR" -prune -o -xtype l -print0 2>/dev/null)
 
+  for folder in "${SHARED_FOLDERS[@]}"; do
+    own_folder "$HOME/$folder"
+  done
+
   for module in "$DOTFILES_DIR"/*/; do
     module=$(basename "$module")
     [[ " ${SYSTEM_MODULES[*]} " == *" $module "* ]] || modules+=("$module")
   done
-  # stow links a folder missing from your home as a whole, and what other programs
-  # write there would land in the repository: pip's packages in ~/.local/lib, apps'
-  # icons in ~/.local/share/icons, Nautilus's other extensions next to ours
-  mkdir -p "$HOME/.local/bin" "$HOME/.local/lib" "$HOME/.local/share/icons" \
-    "$HOME/.local/share/nautilus-python/extensions"
   stow --dir "$DOTFILES_DIR" --target "$HOME" "${modules[@]}"
 
   # btop rewrites its settings whenever you change one, so it starts from a copy of
-  # ours, kept out of git, and the settings you already have stay
+  # ours, kept out of git, and the settings you already have stay. Its theme is
+  # HyprPunk's, the wallpaper's colors written by matugen: one an older copy or btop's
+  # menu named instead is put back.
   [[ -e "$HOME/.config/btop/btop.conf" ]] ||
     cp "$HOME/.config/btop/btop.default.conf" "$HOME/.config/btop/btop.conf"
+  sed -i 's/^color_theme = .*/color_theme = "hyprpunk"/' "$HOME/.config/btop/btop.conf"
 
   # Your Hyprland tweaks live in a folder of your own, out of git, so a pull never
   # touches them. It starts from the commented examples, which stow leaves out, and

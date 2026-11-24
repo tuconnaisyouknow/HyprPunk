@@ -253,15 +253,17 @@ hyprpunk update
 `hyprpunk` is the one command HyprPunk adds to your `PATH` (in `~/.local/bin`): run it alone to list what else it does.
 When an update is waiting, a notification tells you at login, and its **Update** button runs it in your terminal
 (turn it off in the settings, `Super + I`, Updates, where a button also updates HyprPunk). `hyprpunk check` asks
-the same from a terminal.
+the same from a terminal. Installed before the `hyprpunk` command existed? Update once with
+`git -C ~/.dotfiles pull && ~/.dotfiles/install.sh apply`, and it's there from then on.
 
 It pulls the latest HyprPunk, then runs the installer's steps again with the new version. Each step describes how
 things should be rather than what to do, so running it again only changes what differs, and a machine installed months
 ago catches up on everything at once.
 
 - 🔁 **Put back as HyprPunk ships it:** the look (GTK, Qt and icon themes, the font, dark mode), the login screens, the
-  GRUB theme, Brave's policy, the services and system files, and the links into your home, a new module included. Links
-  left broken by a file HyprPunk removed go away.
+  GRUB theme, Brave's policy, the services and system files, btop's theme, and the links into your home, a new module
+  included. Links left broken by a file HyprPunk removed go away, and what apps wrote into the repository through a
+  folder an older version linked whole (`~/.local/share`, `~/Pictures`) comes back to your home.
 - 🎛️ **Kept as you set it:** what you picked in the shell (layout, Vim keys, regional formats, displays, touchpad, wallpaper), the
   default apps, and your personal files (see [Customization](#-customization)). An example HyprPunk adds to
   `~/.config/hypr/personal/` is copied in, the files you have stay.
