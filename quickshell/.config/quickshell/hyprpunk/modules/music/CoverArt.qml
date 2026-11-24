@@ -7,7 +7,8 @@ import qs.theme
 // shape between as the player grows out of the island (PlayerCard). A cover only fades
 // in over another cover, on a track change; the first one is simply there, so a copy of
 // a cover already shown (the lock's island taking over from the bar's) starts as it is.
-// Until there's one, a note on a plain tile.
+// The island's rolls like a record instead (rollTo). Until there's one, a note on a
+// plain tile.
 Item {
     id: cover
 
@@ -24,9 +25,22 @@ Item {
     readonly property Image back: aFront ? artB : artA
     // Off, the next cover takes its place at once: it comes in with a move of its own.
     property bool fades: true
-    // How far the front picture has faded in over the other.
+    // How far the front picture has faded in over the other, or over the note while the
+    // cover it takes the place of had rolled away.
     property real fade: 1
+    property bool fadesOverBack: true
     readonly property bool frontShown: front.status === Image.Ready
+    // The old cover rolling out as the new one rolls in, from 0 to 1, 1 the side the new
+    // one comes from (the next track), -1 the other.
+    property real roll: 1
+    property int rollDirection: 1
+    readonly property bool rolling: roll < 1
+    // The picture rolling out, what showed when the track changed.
+    property Image leaving: null
+    // How far a cover rolls, out of sight with a gap.
+    readonly property real rollTravel: width + Metrics.spacing.normal
+    // The front picture shows: rolling in, only once it's the new track's.
+    readonly property bool shown: frontShown && (!rolling || front.source.toString() === source.toString())
 
     // The cover loaded (or failed to): it comes to the front.
     function take(image) {
@@ -34,6 +48,7 @@ Item {
             return ;
 
         const over = frontShown && fades;
+        fadesOverBack = shown;
         aFront = !aFront;
         fade = over ? 0 : 1;
         if (over)
@@ -52,13 +67,24 @@ Item {
 
     }
 
+    // The track changed: what shows rolls out, the new cover rolls in from the given side
+    // and lands upright, rolling without slipping. The new cover fades in on its way once
+    // loaded, over the note until then.
+    function rollTo(direction) {
+        leaving = fade < 1 && fadesOverBack && back.status === Image.Ready ? back : frontShown ? front : null;
+        fadeIn.stop();
+        fade = 1;
+        rollDirection = direction;
+        rollAnimation.restart();
+    }
+
     onSourceChanged: load()
     Component.onCompleted: load()
 
     Rectangle {
         anchors.fill: parent
         // Under the cover's antialiased edge, it would ring it.
-        visible: !cover.frontShown || cover.fade < 1
+        visible: !cover.shown || cover.fade < 1
         radius: cover.radius
         color: Colors.surface1
 
@@ -107,12 +133,21 @@ Item {
     ShaderEffect {
         readonly property var front: cover.front
         readonly property var back: cover.back
+        // Always a picture to read, drawn at no opacity when none leaves.
+        readonly property var leaving: cover.leaving ?? cover.front
         readonly property vector2d size: Qt.vector2d(width, height)
         readonly property real radius: Math.min(cover.radius, width / 2, height / 2)
-        readonly property real frontAlpha: cover.frontShown ? cover.fade : 0
-        readonly property real backAlpha: cover.back.status === Image.Ready && cover.fade < 1 ? 1 : 0
+        readonly property real frontAlpha: cover.shown ? cover.fade : 0
+        readonly property real backAlpha: cover.fadesOverBack && cover.back.status === Image.Ready && cover.fade < 1 ? 1 : 0
+        readonly property real leavingAlpha: cover.rolling && cover.leaving !== null && cover.leaving.status === Image.Ready ? 1 : 0
         readonly property vector2d frontCrop: crop(cover.front)
         readonly property vector2d backCrop: crop(cover.back)
+        readonly property vector2d leavingCrop: crop(leaving)
+        // One turn every time it travels its round edge's length.
+        readonly property real frontOffset: cover.rollDirection * cover.rollTravel * (1 - cover.roll)
+        readonly property real frontAngle: frontOffset / Math.max(1, width / 2)
+        readonly property real leavingOffset: -cover.rollDirection * cover.rollTravel * cover.roll
+        readonly property real leavingAngle: leavingOffset / Math.max(1, width / 2)
 
         // The share of a picture its middle square takes, on each axis.
         function crop(image) {
@@ -124,6 +159,17 @@ Item {
         // The pictures are read where they sit in the atlas (qt_SubRect_), not copied out.
         supportsAtlasTextures: true
         fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/cover.frag.qsb"))
+    }
+
+    Anim {
+        id: rollAnimation
+
+        target: cover
+        property: "roll"
+        from: 0
+        to: 1
+        token: Motion.disc.roll
+        onFinished: cover.leaving = null
     }
 
     Anim {

@@ -187,6 +187,25 @@ Singleton {
         readonly property int easing: Easing.InOutSine
     }
 
+    // The island's cover on a track change, like a record (IslandCover): the old one rolls
+    // out as the next one rolls in, and the cover pops.
+    readonly property QtObject disc: QtObject {
+        readonly property var roll: ({
+            "duration": 520,
+            "easing": Easing.OutCubic
+        })
+        readonly property var popOut: ({
+            "duration": 120,
+            "easing": Easing.OutQuad
+        })
+        readonly property var popBack: ({
+            "duration": 480,
+            "easing": Easing.OutBack,
+            "overshoot": 3
+        })
+        readonly property real popScale: 1.16
+    }
+
     // The lyrics following the song (LyricsView): the view glides to the line sung, the
     // old lines slide away, the new ones rise one after another from the line sung.
     readonly property QtObject lyrics: QtObject {
