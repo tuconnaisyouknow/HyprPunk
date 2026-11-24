@@ -3,23 +3,32 @@ import Quickshell.Hyprland
 import qs.components
 import qs.theme
 
-// The bar's workspace buttons: this screen's workspaces from 1 to 10, empty ones
-// hidden unless you're on them. One light shows the one you're on. It's the only thing
-// that travels: it stretches to the next workspace and the icons take its color as it
-// passes, while each button only opens or closes its own place. The button under the
-// pointer is passed on to the preview card.
+// The bar's workspace buttons: a dot for each workspace from 1 to the last one in use
+// here, all but the ones another screen holds, so a dot's place says which workspace it
+// is. One light shows the
+// one you're on. It's the only thing that travels: it stretches to the next workspace
+// over the dots, while each button only opens or closes its own place. The button under
+// the pointer is passed on to the preview card.
 Item {
     id: workspaceSwitcher
 
     required property var screen
-    // Font Awesome glyph of each workspace, by id.
-    required property var icons
     // The workspace under the pointer, null when there is none.
     readonly property var hoveredWorkspace: hoveredButton !== null ? hoveredButton.workspace : null
     property Item hoveredButton: null
     readonly property var hyprlandMonitor: Hyprland.monitorFor(screen)
     readonly property var workspaces: Hyprland.workspaces.values.filter((workspace) => {
         return workspace.id > 0 && workspace.id <= 10 && workspace.monitor === workspaceSwitcher.hyprlandMonitor && (workspace.active || workspace.toplevels.values.length > 0);
+    })
+    // The row ends there, on the workspace you're on if it's further.
+    readonly property int last: workspaces.reduce((highest, workspace) => {
+        return Math.max(highest, workspace.id);
+    }, 0)
+    // The workspaces other screens hold, by id: their dots make way.
+    readonly property var elsewhere: Hyprland.workspaces.values.filter((workspace) => {
+        return workspace.id > 0 && workspace.id <= 10 && workspace.monitor !== workspaceSwitcher.hyprlandMonitor;
+    }).map((workspace) => {
+        return workspace.id;
     })
     // The one you're on, null while you're on another screen.
     readonly property var focusedWorkspace: workspaces.find((workspace) => {
@@ -46,6 +55,9 @@ Item {
     // from where the light is.
     Light {
         id: light
+
+        // The dot stretched, as thick as the dots.
+        readonly property int thickness: target !== null ? target.dotSize : 0
 
         // The button it's on or going to, and the one it left.
         property Item target: null
@@ -92,7 +104,9 @@ Item {
 
         x: leftEdge
         width: rightEdge - leftEdge
-        height: target !== null ? target.size : 0
+        y: target !== null ? (target.size - thickness) / 2 : 0
+        z: 1
+        height: thickness
         visible: target !== null
         // The whole light, glass included: in neon the unlit tube would stay otherwise.
         opacity: workspaceSwitcher.focusedWorkspace !== null ? 1 : 0
@@ -139,15 +153,16 @@ Item {
                 required property int index
 
                 workspaceId: index + 1
-                icon: workspaceSwitcher.icons[workspaceId]
                 workspace: workspaceSwitcher.workspaces.find((workspace) => {
                     return workspace.id === workspaceId;
                 }) || null
+                shown: workspaceId <= workspaceSwitcher.last && !workspaceSwitcher.elsewhere.includes(workspaceId)
                 gap: Metrics.spacing.hairline
                 lightLeft: light.x - x
                 lightRight: light.x + light.width - x
                 lightOpacity: light.visible ? light.opacity : 0
-                onActivated: workspace.activate()
+                // An empty workspace has nothing to activate yet: Hyprland makes it.
+                onActivated: Hyprland.dispatch("hl.dsp.focus({ workspace = " + workspaceId + " })")
                 onHoveredChanged: {
                     if (hovered)
                         workspaceSwitcher.hoveredButton = button;

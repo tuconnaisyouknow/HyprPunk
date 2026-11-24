@@ -6,14 +6,13 @@ import qs.config
 import qs.modules.workspaces
 import qs.theme
 
-// The workspaces pill: your workspaces as icons, and a preview of the others in a card
+// The workspaces pill: your workspaces as dots, and a preview of the others in a card
 // that grows out of it, on hover or with its shortcut (super+w).
 Pill {
     id: workspacePill
 
     required property var bar
     readonly property alias popup: workspacePopup
-    readonly property var icons: ["", "", "", "", "", "", "", "", "", "", ""]
     // Which of your other workspaces the preview card opens on.
     property var previewWorkspace: null
     readonly property var previewWorkspaces: workspaceSwitcher.workspaces.filter((workspace) => {
@@ -51,7 +50,6 @@ Pill {
         id: workspaceSwitcher
 
         screen: workspacePill.bar.screen
-        icons: workspacePill.icons
         // Waits like the other pills. No need to preview the workspace you're on.
         onHoveredWorkspaceChanged: {
             if (hoveredWorkspace !== null && !hoveredWorkspace.focused && !workspacePopup.mapped)
