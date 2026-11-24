@@ -59,7 +59,6 @@ readonly -a USER_CONFIG_PATHS=(
   ".bindingrc"
   ".aliasrc"
   ".functionrc"
-  ".highlightrc"
 )
 
 # Login screens and desktops that would mean someone already set this system up

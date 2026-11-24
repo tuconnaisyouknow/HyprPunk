@@ -1,0 +1,38 @@
+# The colors of the command you're typing, for zsh-syntax-highlighting. matugen writes
+# them to ~/.local/state/hyprpunk/zsh-highlight.zsh, which .zshrc reads at start and
+# again when wallpaperctl.sh tells it. The command in the accent, the rest of the code in
+# the palette's tones, comments the faintest; what can't run is the error's red.
+ZSH_HIGHLIGHT_STYLES[default]=none
+ZSH_HIGHLIGHT_STYLES[unknown-token]=fg={{colors.error.default.hex}},bold
+ZSH_HIGHLIGHT_STYLES[reserved-word]=fg={{colors.tone_yellow.default.hex}}
+ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg={{colors.primary.default.hex}},underline
+ZSH_HIGHLIGHT_STYLES[global-alias]=fg={{colors.tone_cyan.default.hex}}
+ZSH_HIGHLIGHT_STYLES[precommand]=fg={{colors.primary.default.hex}},underline
+ZSH_HIGHLIGHT_STYLES[commandseparator]=none
+ZSH_HIGHLIGHT_STYLES[autodirectory]=fg={{colors.primary.default.hex}},underline
+ZSH_HIGHLIGHT_STYLES[path]=underline
+ZSH_HIGHLIGHT_STYLES[path_pathseparator]=
+ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]=
+ZSH_HIGHLIGHT_STYLES[globbing]=fg={{colors.tone_blue.default.hex}}
+ZSH_HIGHLIGHT_STYLES[history-expansion]=fg={{colors.tone_blue.default.hex}}
+ZSH_HIGHLIGHT_STYLES[command-substitution]=none
+ZSH_HIGHLIGHT_STYLES[command-substitution-delimiter]=fg={{colors.tone_green.default.hex}}
+ZSH_HIGHLIGHT_STYLES[process-substitution]=none
+ZSH_HIGHLIGHT_STYLES[process-substitution-delimiter]=fg={{colors.tone_green.default.hex}}
+ZSH_HIGHLIGHT_STYLES[single-hyphen-option]=none
+ZSH_HIGHLIGHT_STYLES[double-hyphen-option]=none
+ZSH_HIGHLIGHT_STYLES[back-quoted-argument]=none
+ZSH_HIGHLIGHT_STYLES[back-quoted-argument-delimiter]=fg={{colors.tone_green.default.hex}}
+ZSH_HIGHLIGHT_STYLES[single-quoted-argument]=fg={{colors.tone_yellow.default.hex}}
+ZSH_HIGHLIGHT_STYLES[double-quoted-argument]=fg={{colors.tone_yellow.default.hex}}
+ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]=fg={{colors.tone_yellow.default.hex}}
+ZSH_HIGHLIGHT_STYLES[rc-quote]=fg={{colors.tone_cyan.default.hex}}
+ZSH_HIGHLIGHT_STYLES[dollar-double-quoted-argument]=fg={{colors.tone_cyan.default.hex}}
+ZSH_HIGHLIGHT_STYLES[back-double-quoted-argument]=fg={{colors.tone_cyan.default.hex}}
+ZSH_HIGHLIGHT_STYLES[back-dollar-quoted-argument]=fg={{colors.tone_cyan.default.hex}}
+ZSH_HIGHLIGHT_STYLES[assign]=none
+ZSH_HIGHLIGHT_STYLES[redirection]=fg={{colors.tone_yellow.default.hex}}
+ZSH_HIGHLIGHT_STYLES[comment]=fg={{colors.overlay0.default.hex}}
+ZSH_HIGHLIGHT_STYLES[named-fd]=none
+ZSH_HIGHLIGHT_STYLES[numeric-fd]=none
+ZSH_HIGHLIGHT_STYLES[arg0]=fg={{colors.primary.default.hex}}

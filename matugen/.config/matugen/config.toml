@@ -78,6 +78,11 @@ output_path = "~/.local/state/hyprpunk/kitty-colors.conf"
 input_path = "./templates/tmux.conf.template"
 output_path = "~/.local/state/hyprpunk/tmux-colors.conf"
 
+# The colors of the command you're typing, which .zshrc reads again when told
+[templates.zsh-highlight]
+input_path = "./templates/zsh-highlight.zsh.template"
+output_path = "~/.local/state/hyprpunk/zsh-highlight.zsh"
+
 # The whole prompt, which Starship reads again on every prompt
 [templates.starship]
 input_path = "./templates/starship.toml.template"
@@ -107,3 +112,7 @@ output_path = "~/.config/yazi/theme.toml"
 [templates.btop]
 input_path = "./templates/btop.theme.template"
 output_path = "~/.config/btop/themes/hyprpunk.theme"
+
+[templates.cava]
+input_path = "./templates/cava.template"
+output_path = "~/.config/cava/themes/hyprpunk"

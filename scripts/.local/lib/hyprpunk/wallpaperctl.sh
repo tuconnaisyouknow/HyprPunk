@@ -318,10 +318,11 @@ gsettings set org.gnome.desktop.interface gtk-theme '' && gsettings set org.gnom
 # Brave's color, through its root tool, which polkit lets through. Skipped without Brave.
 [ -x /usr/local/bin/hyprpunk-brave-color ] && pkexec /usr/local/bin/hyprpunk-brave-color "$(cat ~/.local/state/hyprpunk/brave-color)"
 # A running tmux, the prompts on screen (.zshrc draws them again on SIGURG, which every
-# other program ignores) and open btops (SIGUSR2)
+# other program ignores), open btops and cavas (SIGUSR2)
 tmux source-file ~/.local/state/hyprpunk/tmux-colors.conf
 pkill -URG -x zsh
 pkill -USR2 -x btop
+pkill -USR2 -x cava
 # bat's themes, built again if a palette changed
 ~/.local/lib/hyprpunk/batctl.sh ensure
 TELL

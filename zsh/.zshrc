@@ -39,8 +39,11 @@ fi
 
 source ~/.aliasrc
 source ~/.functionrc
-source ~/.highlightrc
 source ~/.bindingrc
+
+# The colors of the command you're typing, in the wallpaper's palette (matugen)
+highlight_colors="$hyprpunk_state/zsh-highlight.zsh"
+[[ -r "$highlight_colors" ]] && source "$highlight_colors"
 
 #########
 # TOOLS #
@@ -108,8 +111,10 @@ add-zle-hook-widget zle-line-finish _transient_prompt
 add-zle-hook-widget line-init _restore_prompt
 
 # A new palette sends SIGURG to every zsh, so the prompt you're typing at is drawn again
-# in its colors. Every other program ignores it.
+# in its colors, and the command you're typing at your next key. Every other program
+# ignores it.
 TRAPURG() {
+  [[ -r "$highlight_colors" ]] && source "$highlight_colors"
   zle && zle reset-prompt
 }
 

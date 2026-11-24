@@ -1,0 +1,9 @@
+# cava's colors from the wallpaper's palette. matugen writes them to
+# ~/.config/cava/themes/hyprpunk, which cava's config picks, and open cavas take them
+# when wallpaperctl.sh tells them. The same wave as the shell's music player: the
+# secondary at the bottom, the accent at the top.
+
+[color]
+gradient = 1
+gradient_color_1 = '{{colors.secondary.default.hex}}'
+gradient_color_2 = '{{colors.primary.default.hex}}'

@@ -20,14 +20,14 @@ $directory\
 [](fg:primary bg:secondary)\
 $git_branch\
 $git_status\
-[](fg:secondary bg:cyan)\
+[](fg:secondary bg:tone_cyan)\
 $nodejs\
 $php\
 $java\
 $python\
-[](fg:cyan bg:blue)\
+[](fg:tone_cyan bg:tone_blue)\
 $time\
-[ ](fg:blue)\
+[ ](fg:tone_blue)\
 $line_break$character"""
 
 # The palette's roles, by their own names. Error is the fixed red (meanings.json): it
@@ -38,9 +38,9 @@ palette = 'hyprpunk'
 primary = "{{colors.primary.default.hex}}"
 secondary = "{{colors.secondary.default.hex}}"
 error = "{{colors.error.default.hex}}"
-red = "{{colors.tone_red.default.hex}}"
-cyan = "{{colors.tone_cyan.default.hex}}"
-blue = "{{colors.tone_blue.default.hex}}"
+tone_red = "{{colors.tone_red.default.hex}}"
+tone_cyan = "{{colors.tone_cyan.default.hex}}"
+tone_blue = "{{colors.tone_blue.default.hex}}"
 on_primary = "{{colors.on_primary.default.hex}}"
 surface_container = "{{colors.surface_container.default.hex}}"
 
@@ -128,55 +128,55 @@ behind = '[⇣\(${count}\)](bg:secondary fg:on_primary)'
 # The commented ones are ready to go: uncomment them and add them to the format above.
 [nodejs]
 symbol = ""
-style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+style = "bg:tone_cyan"
+format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 #[c]
 #symbol = " "
-#style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+#style = "bg:tone_cyan"
+#format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 #[rust]
 #symbol = ""
-#style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+#style = "bg:tone_cyan"
+#format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 #[golang]
 #symbol = ""
-#style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+#style = "bg:tone_cyan"
+#format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 [php]
 symbol = ""
-style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+style = "bg:tone_cyan"
+format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 [java]
 symbol = " "
-style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+style = "bg:tone_cyan"
+format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 #[kotlin]
 #symbol = ""
-#style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+#style = "bg:tone_cyan"
+#format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 #[haskell]
 #symbol = ""
-#style = "bg:cyan"
-#format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+#style = "bg:tone_cyan"
+#format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 [python]
 symbol = ""
-style = "bg:cyan"
-format = '[[ $symbol( $version) ](fg:on_primary bg:cyan)]($style)'
+style = "bg:tone_cyan"
+format = '[[ $symbol( $version) ](fg:on_primary bg:tone_cyan)]($style)'
 
 # Hours and minutes
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:blue"
-format = '[[  $time ](fg:on_primary bg:blue)]($style)'
+style = "bg:tone_blue"
+format = '[[  $time ](fg:on_primary bg:tone_blue)]($style)'
 
 [line_break]
 disabled = false
@@ -187,9 +187,9 @@ disabled = false
 success_symbol = '[ ](bold fg:primary)'
 error_symbol = '[ ](bold fg:error)'
 vimcmd_symbol = '[ ](bold fg:primary)'
-vimcmd_replace_one_symbol = '[ ](bold fg:red)'
-vimcmd_replace_symbol = '[ ](bold fg:red)'
-vimcmd_visual_symbol = '[ ](bold fg:blue)'
+vimcmd_replace_one_symbol = '[ ](bold fg:tone_red)'
+vimcmd_replace_symbol = '[ ](bold fg:tone_red)'
+vimcmd_visual_symbol = '[ ](bold fg:tone_blue)'
 
 # What a prompt shrinks to once its command has run (see the transient prompt in .zshrc)
 [profiles]

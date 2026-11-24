@@ -143,8 +143,8 @@ the whole look:
 
 matugen fills every app's template with it: GTK, Qt and Kvantum, the shell, Hyprland's borders, the login screen, the
 terminal and its tools, Neovim's own `hyprpunk` colorscheme, and Brave's Classic theme, through its policy. The
-shell, open GTK apps, terminals, the prompt, tmux, Neovim, btop, Brave and a fastfetch already on screen change at
-once, Qt apps and yazi the next time they start, and your own apps follow if you add them (see
+shell, open GTK apps, terminals, the prompt and the command you're typing, tmux, Neovim, btop, cava, Brave and a
+fastfetch already on screen change at once, Qt apps and yazi the next time they start, and your own apps follow if you add them (see
 [Customization](#-customization)). Papirus's folders take the accent, at once in open apps too: each accent gets its own icon
 theme, built in a moment from Papirus's grey folders.
 

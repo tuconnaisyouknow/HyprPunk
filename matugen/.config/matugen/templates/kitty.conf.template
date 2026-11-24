@@ -1,9 +1,9 @@
 # vim:ft=kitty
 # kitty's colors from the wallpaper's palette. matugen writes them to
 # ~/.local/state/hyprpunk/kitty-colors.conf, which kitty.conf includes, and kitty reads
-# them again when wallpaperctl.sh tells it. Magenta is the accent and cyan the palette's
-# cyan; red, green, yellow and blue are the fixed colors (meanings.json), since tools
-# say errors and changes with them.
+# them again when wallpaperctl.sh tells it. The sixteen colors keep the names terminal
+# tools ask for them by, and get the role closest to each: tools say errors and changes in
+# red, green, yellow and blue, so those are the fixed colors (meanings.json).
 
 ########
 # TEXT #
@@ -50,38 +50,36 @@ mark3_background {{colors.tone_blue.default.hex}}
 # THE TERMINAL COLORS #
 #######################
 
-# black
+# Black: the raised surfaces
 color0 {{colors.surface_container_high.default.hex}}
 color8 {{colors.surface_container_highest.default.hex}}
 
-# red
+# Red: the error
 color1 {{colors.error.default.hex}}
 color9 {{colors.error.default.hex}}
 
-# green
+# Green, yellow and blue: the fixed ones
 color2  {{colors.green.default.hex}}
 color10 {{colors.green.default.hex}}
 
-# yellow
 color3  {{colors.yellow.default.hex}}
 color11 {{colors.yellow.default.hex}}
 
-# blue
 color4  {{colors.blue.default.hex}}
 color12 {{colors.blue.default.hex}}
 
-# magenta
+# Magenta: the accent
 color5  {{colors.primary.default.hex}}
 color13 {{colors.primary.default.hex}}
 
-# cyan
+# Cyan: the palette's cyan tone
 color6  {{colors.tone_cyan.default.hex}}
 color14 {{colors.tone_cyan.default.hex}}
 
-# white
+# White: the text ramp
 color7  {{colors.subtext1.default.hex}}
 color15 {{colors.subtext0.default.hex}}
 
-# The secondary color, in the 256 colors' 147: what's drawn in it (fastfetch)
-# follows the wallpaper while on screen, like what's drawn in magenta
+# The secondary, in the 256 colors' 147: what's drawn in it (fastfetch) follows the
+# wallpaper while on screen, like what's drawn in the accent
 color147 {{colors.secondary.default.hex}}
