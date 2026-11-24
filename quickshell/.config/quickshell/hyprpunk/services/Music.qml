@@ -38,6 +38,9 @@ Singleton {
     property real polledPosition: 0
     property real polledLength: 0
     property real polledTime: 0
+    // How late an answer can be, in seconds: some players (spotifast) only move their
+    // position every second or so, and give the last one until then.
+    readonly property real answerAge: 1.5
     // An answer came since something started showing the position: before it, a card
     // waking up would show where the track was before the computer slept.
     property bool positionKnown: false
@@ -147,9 +150,15 @@ Singleton {
                     return ;
 
                 const first = !music.positionKnown;
-                music.polledPosition = state.position;
+                // An answer is never ahead, but may be late: while playing, one a little
+                // behind the drawn position says nothing new, and stepping back to it would
+                // take the lyrics back a line. Further behind, the track was sought back.
+                const now = Date.now();
+                const drawn = music.positionAt(now);
+                const late = music.playing && !first && state.position < drawn && drawn - state.position < music.answerAge;
+                music.polledPosition = late ? drawn : state.position;
                 music.polledLength = state.length;
-                music.polledTime = Date.now();
+                music.polledTime = now;
                 music.positionKnown = true;
                 if (first)
                     lyricsRequest.restart();
@@ -230,6 +239,15 @@ Singleton {
             positionKnown = false;
             poll();
         }
+    }
+    // The drawn position stops and starts with the player, from where it stands: resuming
+    // from an old answer would leap ahead, and later answers wouldn't take it back.
+    onPlayingChanged: {
+        const now = Date.now();
+        if (!playing)
+            polledPosition += Math.max(0, Math.min(1500, now - polledTime)) / 1000;
+
+        polledTime = now;
     }
     onLengthChanged: lyricsRequest.restart()
 
