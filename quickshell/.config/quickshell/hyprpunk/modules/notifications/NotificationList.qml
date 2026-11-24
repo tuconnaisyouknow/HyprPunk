@@ -21,9 +21,6 @@ ColumnLayout {
     property var clearQueue: []
     // Waiting, not counting the ones on their way out.
     readonly property int count: listed.staying
-    // Still in sight, those sliding out included: the list only reads as empty once the
-    // last one has slid out.
-    readonly property int shownCount: listed.inSight
     // While the ones out of view are dismissed together: they're already off the list,
     // and going through it again for each would stall a long one.
     property bool dismissing: false
@@ -125,11 +122,11 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
 
-        // In once the last one has slid out, out as soon as a new one comes in. Focus's
+        // In once the last one is gone, its exit over, out as soon as a new one comes in. Focus's
         // line hangs under it, so the words stay centred with or without it.
         Item {
             anchors.fill: parent
-            opacity: list.shownCount === 0 ? 1 : 0
+            opacity: list.listed.entries.length === 0 ? 1 : 0
 
             Text {
                 id: emptyText
@@ -233,10 +230,6 @@ ColumnLayout {
                         property: "slide"
                         to: entry.width + Metrics.spacing.section
                         token: Motion.leave.normal
-                    }
-
-                    ScriptAction {
-                        script: list.listed.vanish(entry.notificationId)
                     }
 
                     Anim {
