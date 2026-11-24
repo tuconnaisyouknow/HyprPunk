@@ -105,12 +105,17 @@ Item {
                 shown: view.timeShown
                 animated: view.animated
                 gap: Metrics.spacing.normal * coverPart.presence
-                openWidth: timeLabel.implicitWidth
+                // Its place is the time's ink, so the gaps on both sides are measured from
+                // what's drawn: the digits fill their cells unevenly (a 1 leaves far more
+                // room on its right than a 0), and the cover and the equalizer sat unevenly
+                // around it, differently from one minute to the next.
+                openWidth: timeInk.tightBoundingRect.width
                 openHeight: timeLabel.implicitHeight
 
                 RollingText {
                     id: timeLabel
 
+                    x: -timeInk.tightBoundingRect.x
                     opacity: view.timeLifted ? 0 : 1
                     animated: view.animated
                     text: Session.shortTime(view.date)
@@ -119,6 +124,12 @@ Item {
                     }
                 }
 
+                TextMetrics {
+                    id: timeInk
+
+                    font: timeLabel.font
+                    text: timeLabel.text
+                }
             }
 
             IslandPart {
