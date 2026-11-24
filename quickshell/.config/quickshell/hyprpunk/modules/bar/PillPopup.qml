@@ -180,8 +180,8 @@ Card {
     parent: cardLayer
     opened: expanded
     // The open card's size, the full size by default. Animate it on your side if it
-    // changes while open (the calendar taking the notifications beside it). The room the card needs
-    // stays at its widest and the card eases inside it.
+    // changes while open: the room the card needs stays at its widest and the card
+    // eases inside it.
     cardWidth: width
     cardHeight: height
     // The pill's corners: rounder ones would let the pill's show under the card.

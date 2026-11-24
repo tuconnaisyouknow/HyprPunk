@@ -13,6 +13,11 @@ Singleton {
     readonly property var from: file.values.from ? parseInt(file.values.from) : null
     readonly property var to: file.values.to ? parseInt(file.values.to) : null
 
+    // An hour as the regional formats write it: "9:00 PM" or "21:00".
+    function hourText(hour) {
+        return Session.shortTime(new Date(2000, 0, 1, hour));
+    }
+
     function set(key, value) {
         file.run(["set", key, String(value)]);
     }

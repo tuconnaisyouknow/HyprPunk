@@ -1,5 +1,4 @@
 import QtQuick
-import qs.components
 import qs.theme
 
 // The values a setting can take, side by side, wrapping onto a new line when they run

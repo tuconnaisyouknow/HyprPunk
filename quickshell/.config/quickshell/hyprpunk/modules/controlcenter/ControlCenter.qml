@@ -301,6 +301,9 @@ Card {
                     CaffeinePage {
                     }
 
+                    NightLightPage {
+                    }
+
                     TrayPage {
                         id: trayPage
                     }

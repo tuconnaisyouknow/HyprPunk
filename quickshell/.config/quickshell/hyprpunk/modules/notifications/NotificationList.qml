@@ -4,10 +4,12 @@ import Quickshell
 import qs.components
 import qs.theme
 import qs.services
+import qs.state
 
-// Every notification still waiting, newest first, with a button to clear them all: the
-// ones in view leave one after another, the rest just goes. It sits next to the
-// calendar, in the card that grows out of the island.
+// Every notification still waiting, newest first, under a button to clear them all: the
+// ones in view leave one after another, the rest just goes. Focus's switch closes it.
+// It sits next to the calendar, in the card that grows out of the island, and stays
+// there empty, so Focus is always at hand.
 ColumnLayout {
     id: list
 
@@ -19,8 +21,8 @@ ColumnLayout {
     property var clearQueue: []
     // Waiting, not counting the ones on their way out.
     readonly property int count: listed.staying
-    // Still in sight, those sliding out included: the card only narrows once the last one
-    // has slid out, or the calendar would come sliding in under it.
+    // Still in sight, those sliding out included: the list only reads as empty once the
+    // last one has slid out.
     readonly property int shownCount: listed.inSight
     // While the ones out of view are dismissed together: they're already off the list,
     // and going through it again for each would stall a long one.
@@ -110,6 +112,7 @@ ColumnLayout {
         }
 
         GlassButton {
+            enabled: list.count > 0
             icon: "󰎟"
             label: "Clear"
             accent: true
@@ -118,90 +121,176 @@ ColumnLayout {
 
     }
 
-    ListView {
-        id: view
-
+    Item {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        // The gap is part of each entry, so it closes with the exit animation.
-        spacing: 0
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
 
-        model: ScriptModel {
-            values: list.listed.entries
+        // In once the last one has slid out, out as soon as a new one comes in. Focus's
+        // line hangs under it, so the words stay centred with or without it.
+        Item {
+            anchors.fill: parent
+            opacity: list.shownCount === 0 ? 1 : 0
+
+            Text {
+                id: emptyText
+
+                anchors.centerIn: parent
+                text: "No notifications"
+                color: Colors.secondary
+                font.family: Metrics.font
+                font.pixelSize: Metrics.text.emphasis
+            }
+
+            Text {
+                anchors.top: emptyText.bottom
+                anchors.topMargin: Metrics.spacing.small
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Focus is on: new ones wait here"
+                color: Colors.secondary
+                font.family: Metrics.font
+                font.pixelSize: Metrics.text.body
+                opacity: ShellState.doNotDisturb ? 1 : 0
+
+                Behavior on opacity {
+                    Anim {
+                        token: Motion.color.small
+                    }
+
+                }
+
+            }
+
+            Behavior on opacity {
+                Anim {
+                    token: Motion.color.small
+                }
+
+            }
+
         }
 
-        delegate: Item {
-            id: entry
+        ListView {
+            id: view
 
-            required property var modelData
-            readonly property int notificationId: modelData.id
-            readonly property bool leaving: list.listed.leaving(notificationId)
-            // Card offset from its resting place, and share of its slot in the list.
-            property real slide: 0
-            property real slot: 1
+            anchors.fill: parent
+            // The gap is part of each entry, so it closes with the exit animation.
+            spacing: 0
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
 
-            width: ListView.view.width
-            height: (card.implicitHeight + Metrics.spacing.normal) * slot
-            Component.onCompleted: {
-                if (leaving)
-                    exitAnimation.start();
-
-            }
-            onLeavingChanged: {
-                if (leaving)
-                    exitAnimation.start();
-
-            }
-            // A card scrolled out of view is destroyed before its animation ends.
-            Component.onDestruction: {
-                if (leaving) {
-                    const id = notificationId;
-                    Qt.callLater(() => {
-                        return list.listed.drop([id]);
-                    });
-                }
+            model: ScriptModel {
+                values: list.listed.entries
             }
 
-            NotificationCard {
-                id: card
+            delegate: Item {
+                id: entry
 
-                x: entry.slide
-                width: parent.width
-                // Let go as it leaves, before it's destroyed: the card keeps what it showed.
-                notification: entry.leaving ? null : entry.modelData.notification
+                required property var modelData
+                readonly property int notificationId: modelData.id
+                readonly property bool leaving: list.listed.leaving(notificationId)
+                // Card offset from its resting place, and share of its slot in the list.
+                property real slide: 0
+                property real slot: 1
+
+                width: ListView.view.width
+                height: (card.implicitHeight + Metrics.spacing.normal) * slot
+                Component.onCompleted: {
+                    if (leaving)
+                        exitAnimation.start();
+
+                }
+                onLeavingChanged: {
+                    if (leaving)
+                        exitAnimation.start();
+
+                }
+                // A card scrolled out of view is destroyed before its animation ends.
+                Component.onDestruction: {
+                    if (leaving) {
+                        const id = notificationId;
+                        Qt.callLater(() => {
+                            return list.listed.drop([id]);
+                        });
+                    }
+                }
+
+                NotificationCard {
+                    id: card
+
+                    x: entry.slide
+                    width: parent.width
+                    // Let go as it leaves, before it's destroyed: the card keeps what it showed.
+                    notification: entry.leaving ? null : entry.modelData.notification
+                }
+
+                // Slides out to the right, then closes the gap.
+                SequentialAnimation {
+                    id: exitAnimation
+
+                    // Past the list's edge, its glass's glow with it.
+                    Anim {
+                        target: entry
+                        property: "slide"
+                        to: entry.width + Metrics.spacing.section
+                        token: Motion.leave.normal
+                    }
+
+                    ScriptAction {
+                        script: list.listed.vanish(entry.notificationId)
+                    }
+
+                    Anim {
+                        target: entry
+                        property: "slot"
+                        to: 0
+                        token: Motion.resize.normal
+                    }
+
+                    ScriptAction {
+                        script: list.listed.drop([entry.notificationId])
+                    }
+
+                }
+
             }
 
-            // Slides out to the right, then closes the gap.
-            SequentialAnimation {
-                id: exitAnimation
+        }
 
-                // Past the list's edge, its glass's glow with it.
-                Anim {
-                    target: entry
-                    property: "slide"
-                    to: entry.width + Metrics.spacing.section
-                    token: Motion.leave.normal
-                }
+    }
 
-                ScriptAction {
-                    script: list.listed.vanish(entry.notificationId)
-                }
+    // Focus keeps new notifications from popping out of the island: they wait here, all
+    // but the critical ones. Its name flips it too.
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Metrics.spacing.normal
 
-                Anim {
-                    target: entry
-                    property: "slot"
-                    to: 0
-                    token: Motion.resize.normal
-                }
+        IconText {
+            Layout.fillWidth: true
+            icon: ShellState.doNotDisturb ? "󰂛" : "󰂚"
+            text: "Focus"
+            color: ShellState.doNotDisturb ? Colors.primary : Colors.secondary
+            font.pixelSize: Metrics.text.emphasis
 
-                ScriptAction {
-                    script: list.listed.drop([entry.notificationId])
-                }
-
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
             }
 
+            TapHandler {
+                gesturePolicy: TapHandler.ReleaseWithinBounds
+                onTapped: focusSwitch.activate()
+            }
+
+            ColorFade on color {
+                token: Motion.color.small
+            }
+
+        }
+
+        ToggleSwitch {
+            id: focusSwitch
+
+            checked: ShellState.doNotDisturb
+            onToggled: ShellState.doNotDisturb = !ShellState.doNotDisturb
         }
 
     }

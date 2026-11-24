@@ -8,7 +8,7 @@ import qs.services
 import qs.state
 import qs.theme
 
-// The island's card: the calendar, with the notifications waiting beside it. It grows
+// The island's card: the calendar, with the notifications beside it. It grows
 // out of the island, in the shape all the island's cards share (IslandFrame), holding
 // the island like a panel (ScreenState). Every month is drawn as six full weeks, the
 // days of the months around it filling the ends, so the card keeps one shape. The wheel
@@ -44,8 +44,6 @@ PillPopup {
     // Seven circles across, which the card is sized around.
     readonly property int calendarWidth: 2 * inset + 7 * daySize + 6 * dayGap
     readonly property int notificationWidth: 400
-    // The notifications open beside the calendar while some are waiting.
-    property real animatedWidth: notificationList.shownCount > 0 ? calendarWidth + notificationWidth : calendarWidth
     property int pendingMonthDelta: 0
 
     function changeMonth(delta) {
@@ -65,7 +63,6 @@ PillPopup {
     // A password, a file or a screen to share is being asked for on the island.
     blocked: calendarPopup.bar.screenState.prompting()
     align: Qt.AlignHCenter
-    cardWidth: animatedWidth
     implicitWidth: calendarWidth + notificationWidth
     implicitHeight: calendarBody.y + calendarBody.implicitHeight + inset
     // It takes the island: an island panel open there folds back. While it
@@ -287,14 +284,6 @@ PillPopup {
         }
 
     }
-
-    Behavior on animatedWidth {
-        Anim {
-            token: Motion.resize.large
-        }
-
-    }
-
 
     // When the calendar covers the island, the privacy and recording dots move to its
     // right, following its edge as it grows: the edge it's drawn with, or the gap

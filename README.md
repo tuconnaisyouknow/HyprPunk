@@ -286,7 +286,7 @@ repository that the update changes, git refuses the pull and nothing changes.
 |---|---|
 | `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
 | `Super + Space` | Open the application launcher, where `>` lists the island's menus |
-| `Super + C` | Open the control center (Wi-Fi, Bluetooth, sound, display, background apps…) |
+| `Super + C` | Open the control center (Wi-Fi, Bluetooth, night light, caffeine, sound, display, background apps…) |
 | `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and region, sound, music, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |

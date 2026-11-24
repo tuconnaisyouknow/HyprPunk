@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Networking
 import qs.components
+import qs.config
 import qs.services
 import qs.state
 import qs.theme
@@ -49,6 +50,16 @@ ControlPage {
             return minutes + " min left";
 
         return Math.floor(minutes / 60) + " h " + String(minutes % 60).padStart(2, "0") + " left";
+    }
+
+    // "Off", "On", or the schedule's next turn: "Until 7:00", "From 21:00".
+    function nightLightSubtitle() {
+        if (NightLightSettings.mode !== "schedule")
+            return NightLight.active ? "On" : "Off";
+
+        // Turned against the schedule, it holds until the schedule's own next turn: the
+        // hours still tell it.
+        return NightLight.active ? "Until " + NightLightSettings.hourText(NightLightSettings.to) : "From " + NightLightSettings.hourText(NightLightSettings.from);
     }
 
     pageName: "main"
@@ -112,14 +123,18 @@ ControlPage {
             Layout.fillHeight: true
             spacing: Metrics.spacing.large
 
+            // Its icon goes against the schedule until its next turn: leaving the
+            // schedule is for its page.
             ControlTile {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                icon: "󰂛"
-                title: "Focus"
-                subtitle: ShellState.doNotDisturb ? "On" : "Off"
-                active: ShellState.doNotDisturb
-                onToggled: ShellState.doNotDisturb = !ShellState.doNotDisturb
+                icon: NightLight.active ? "󰛨" : "󰌶"
+                title: "Night light"
+                subtitle: page.nightLightSubtitle()
+                active: NightLight.active
+                expandable: true
+                onToggled: NightLight.toggle()
+                onExpandRequested: page.stack.push("nightlight")
             }
 
             ControlTile {
