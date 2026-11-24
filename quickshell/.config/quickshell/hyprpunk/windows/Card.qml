@@ -8,8 +8,20 @@ import QtQuick
 Item {
     // The pill it grows out of: "workspaces", "monitor", "island" or "control".
     property string pillName: ""
-    // Open, or opening: the island's shape (IslandFrame) heads to this card's.
+    // Open, or opening: asked for, by you or by what it shows.
     property bool opened: false
+    // Where it stands once open, in the screen's coordinates: what it would cover there
+    // folds back before it grows (ScreenShell).
+    property rect openRect: Qt.rect(0, 0, 0, 0)
+    // The cards it was opened over, folding back to make room for it.
+    property var coveredCards: []
+    // Opened, but still waiting for them to be gone.
+    readonly property bool waitingForRoom: coveredCards.some((card) => {
+        return card.covering;
+    })
+    // Opened and in sight: what the card draws its unfolding from, and the island's shape
+    // (IslandFrame) heads to.
+    readonly property bool showing: opened && !waitingForRoom
     // Drawn over its pill, from the moment it opens until folded back onto it.
     property bool covering: false
     // An island card that carries the music's cover and equalizer out of the island and

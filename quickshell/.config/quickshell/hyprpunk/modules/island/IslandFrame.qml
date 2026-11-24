@@ -23,7 +23,7 @@ Card {
     property var cards: []
     // The card open on the island.
     readonly property Item openCard: cards.find((card) => {
-        return card.opened;
+        return card.showing;
     }) ?? null
     // The card whose shape it heads to: the open one, taken once the shape it's in has
     // been noted, so that nothing heading to the new card moves before.
@@ -84,6 +84,11 @@ Card {
         const width = 2 * Math.round(Math.min(shape.width, card.cardWidth) / 2);
         const height = Math.min(shape.y + shape.height - top, card.cardHeight);
         return Qt.rect(middle - width / 2, top, width, height);
+    }
+
+    // Where a card stands once open, around the island's middle.
+    function openRect(card) {
+        return Qt.rect(width / 2 + island.centerOffset - card.cardWidth / 2, island.top, card.cardWidth, card.cardHeight);
     }
 
     onOpenCardChanged: {

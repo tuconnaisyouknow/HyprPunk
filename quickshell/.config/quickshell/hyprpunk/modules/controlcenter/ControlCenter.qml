@@ -93,6 +93,7 @@ Card {
     anchors.fill: parent
     pillName: "control"
     covering: unfold.out
+    openRect: Qt.rect(width - pill.right - panelWidth, pill.top, panelWidth, panelMaxHeight)
     cardRect: Qt.rect(panelSpot.x + glass.x, panelSpot.y + glass.y, glass.width, glass.height)
     cardRadius: panel.radius
     takesKeyboard: opened
@@ -129,7 +130,7 @@ Card {
             GlassSurface {
                 radius: panel.radius
                 tinted: false
-                hovered: !controlCenter.opened && controlCenter.pill.lit
+                hovered: !controlCenter.showing && controlCenter.pill.lit
                 backgroundColor: Colors.panel
             }
 
@@ -237,7 +238,7 @@ Card {
                     maxHeight: controlCenter.panelMaxHeight - 2 * controlCenter.padding
                     padding: controlCenter.padding
                     radius: panel.radius
-                    opacity: built && controlCenter.opened ? 1 : 0
+                    opacity: built && controlCenter.showing ? 1 : 0
                     Component.onCompleted: built = true
                     onCloseRequested: controlCenter.close()
                     onCurrentChanged: Qt.callLater(keyboardFocus.settle)
@@ -359,7 +360,7 @@ Card {
     Unfold {
         id: unfold
 
-        open: controlCenter.opened
+        open: controlCenter.showing
     }
 
 }

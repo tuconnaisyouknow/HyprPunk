@@ -28,9 +28,9 @@ Card {
     // Items with Keys handlers for the panel's own keys.
     property var keyTargets: []
     default property alias content: contentArea.data
-    property real progress: opened ? 1 : 0
+    property real progress: showing ? 1 : 0
     // Out, from open() until folded back onto the island.
-    readonly property bool shown: opened || progress > 0
+    readonly property bool shown: showing || progress > 0
     // Where the island is.
     readonly property var island: bar.islandPill
     readonly property Item shape: islandFrame.shape
@@ -135,6 +135,7 @@ Card {
     visible: shown
     pillName: "island"
     covering: shown
+    openRect: islandFrame.openRect(panel)
     cardRect: Qt.rect(card.x, card.y, card.width, card.height)
     cardRadius: card.radius
     // Given back as soon as the card closes, e.g. to the panel it opens.
@@ -177,7 +178,7 @@ Card {
             anchors.top: parent.top
             width: panel.cardWidth
             height: panel.cardHeight
-            opacity: panel.opened ? 1 : 0
+            opacity: panel.showing ? 1 : 0
 
             Behavior on opacity {
                 Anim {

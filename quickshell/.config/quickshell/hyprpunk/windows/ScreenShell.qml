@@ -384,6 +384,21 @@ Scope {
 
         }
 
+        Variants {
+            model: window.cards
+
+            Connections {
+                required property var modelData
+
+                function onOpenedChanged() {
+                    window.makeRoom(modelData);
+                }
+
+                target: modelData
+            }
+
+        }
+
         Region {
             id: cardBlur
 
@@ -405,6 +420,35 @@ Scope {
                 radius: modelData.cardRadius
             }
 
+        }
+
+        // A card never opens over another: the ones it would cover fold back first, and it
+        // grows once they're gone (Card.showing). Every card hangs from the bar, so two
+        // meet where their spans across the screen do. The cards of one pill take its
+        // place from each other on their own (the island's shape). A prompt an app waits
+        // on can't be pushed away: the card doesn't open over it.
+        function makeRoom(card) {
+            if (!card.opened) {
+                card.coveredCards = [];
+                return ;
+            }
+            const room = card.openRect;
+            const covered = cards.filter((other) => {
+                if (other.pillName === card.pillName || !(other.opened || other.covering))
+                    return false;
+
+                const place = other.opened ? other.openRect : other.cardRect;
+                return room.x < place.x + place.width && place.x < room.x + room.width;
+            });
+            if (covered.some((other) => {
+                return other.keptUnderFullscreen;
+            })) {
+                card.close();
+                return ;
+            }
+            for (const other of covered)
+                other.close();
+            card.coveredCards = covered;
         }
 
         function clickedOutside() {

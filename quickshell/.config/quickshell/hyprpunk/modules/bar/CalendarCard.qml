@@ -125,7 +125,7 @@ PillPopup {
             anchors.rightMargin: calendarPopup.inset
             anchors.topMargin: calendarPopup.inset
             spacing: Metrics.spacing.large
-            opacity: calendarPopup.expanded ? 1 : 0
+            opacity: calendarPopup.showing ? 1 : 0
 
             // As tall as a button, like the notifications' header, so the two read as one
             // line. The chevrons stand over the first and last columns, each a day wide.
@@ -232,7 +232,7 @@ PillPopup {
         anchors.bottomMargin: calendarPopup.inset
         width: Metrics.stroke
         color: Colors.surface1
-        opacity: calendarPopup.expanded ? 1 : 0
+        opacity: calendarPopup.showing ? 1 : 0
 
         Behavior on opacity {
             Anim {
@@ -253,8 +253,8 @@ PillPopup {
         anchors.bottomMargin: calendarPopup.inset
         anchors.rightMargin: calendarPopup.inset
         width: calendarPopup.notificationWidth - 2 * calendarPopup.inset
-        shown: calendarPopup.expanded
-        opacity: calendarPopup.expanded ? 1 : 0
+        shown: calendarPopup.showing
+        opacity: calendarPopup.showing ? 1 : 0
 
         Behavior on opacity {
             Anim {

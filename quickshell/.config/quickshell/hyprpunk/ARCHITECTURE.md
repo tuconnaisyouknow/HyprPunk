@@ -98,6 +98,9 @@ in that surface (a card's preview, its pinned state, the page shown).
   window of its own. The only other windows are the lock (a session lock, required by
   Wayland), the settings window (a real window you can move) and the desktop's music
   wave (its own process, so the shell's stalls never freeze it).
+- **A card never opens over another.** The cards of other pills it would cover
+  (`Card.openRect`) fold back first, and it grows once they're gone (`Card.showing`,
+  `ScreenShell.makeRoom`). A prompt can't be pushed away: nothing opens over it.
 - **The shell's window is never resized:** Hyprland shows a resized layer's new buffer
   in its old box for a frame.
 - **Blur is asked for shape by shape, by a window no bigger than it needs.** Hyprland

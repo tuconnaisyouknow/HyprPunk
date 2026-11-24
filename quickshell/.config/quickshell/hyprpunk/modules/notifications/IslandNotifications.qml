@@ -25,7 +25,7 @@ Card {
     // The card's margin around the notifications.
     readonly property int cardPadding: Metrics.spacing.small
     readonly property var screenState: ShellState.forScreen(screen)
-    property real progress: opened ? 1 : 0
+    property real progress: showing ? 1 : 0
     // The card's full height, kept while it folds: shrinking with the last popup's gap,
     // it would flatten into a long empty pill before narrowing.
     property real openHeight: 0
@@ -42,9 +42,10 @@ Card {
     cardHeight: openHeight
     openRadius: Metrics.cardRadius
     // Gone while they wait, or the folded card would catch the island's clicks.
-    visible: opened || progress > 0
+    visible: showing || progress > 0
     pillName: "island"
     covering: visible
+    openRect: islandFrame.openRect(popups)
     cardRect: Qt.rect(card.x, card.y, card.width, card.height)
     cardRadius: card.radius
 
@@ -105,7 +106,7 @@ Card {
             x: Math.round(popups.width / 2 + popups.island.centerOffset - popups.cardWidth / 2) - card.x + popups.cardPadding
             y: popups.cardPadding
             width: popups.cardWidth - 2 * popups.cardPadding
-            opacity: popups.opened ? 1 : 0
+            opacity: popups.showing ? 1 : 0
 
             Repeater {
                 model: ScriptModel {

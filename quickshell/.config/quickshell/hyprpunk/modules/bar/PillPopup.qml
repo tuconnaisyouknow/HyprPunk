@@ -179,6 +179,7 @@ Card {
 
     parent: cardLayer
     opened: expanded
+    openRect: frame !== null ? frame.openRect(popup) : Qt.rect(x, y, width, height)
     // The open card's size, the full size by default. Animate it on your side if it
     // changes while open: the room the card needs stays at its widest and the card
     // eases inside it.
@@ -302,7 +303,7 @@ Card {
         GlassSurface {
             radius: card.radius
             tinted: false
-            hovered: !popup.expanded && popup.pill.lit
+            hovered: !popup.showing && popup.pill.lit
             backgroundColor: Colors.panel
         }
 
@@ -411,7 +412,7 @@ Card {
     Unfold {
         id: unfold
 
-        open: popup.expanded
+        open: popup.showing
     }
 
 }

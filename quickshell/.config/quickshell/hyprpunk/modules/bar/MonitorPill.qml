@@ -43,7 +43,7 @@ Pill {
             id: monitorContent
 
             width: monitorPopup.width
-            opacity: monitorPopup.expanded ? 1 : 0
+            opacity: monitorPopup.showing ? 1 : 0
             active: monitorPopup.mapped
 
             Behavior on opacity {

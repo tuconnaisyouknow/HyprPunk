@@ -41,9 +41,9 @@ Card {
     readonly property bool worn: AirPods.inEars(device)
     // No timeout while the case is open; both pods worn still fold it back (onWornChanged).
     readonly property bool held: (reason === "lid" || reason === "connected") && device !== null && device.lidOpen
-    property real progress: opened ? 1 : 0
+    property real progress: showing ? 1 : 0
     // Out, from open() until folded back onto the island.
-    readonly property bool shown: opened || progress > 0
+    readonly property bool shown: showing || progress > 0
     // Where the island is.
     readonly property var island: bar.islandPill
     // What's asked for, until the island is free to show it: {address, reason, at (ms),
@@ -129,6 +129,7 @@ Card {
     visible: shown
     pillName: "island"
     covering: shown
+    openRect: islandFrame.openRect(popup)
     cardRect: Qt.rect(card.x, card.y, card.width, card.height)
     cardRadius: card.radius
     // Given the island, or no longer: a panel or a prompt took it, and the card comes back
@@ -224,7 +225,7 @@ Card {
             anchors.top: parent.top
             width: popup.cardWidth
             height: popup.cardHeight
-            opacity: popup.opened ? 1 : 0
+            opacity: popup.showing ? 1 : 0
 
             ColumnLayout {
                 id: layout

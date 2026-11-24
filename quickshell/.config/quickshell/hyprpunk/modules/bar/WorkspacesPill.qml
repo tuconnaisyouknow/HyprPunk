@@ -109,7 +109,7 @@ Pill {
             width: workspacePill.previewWidth
             height: workspacePill.previewHeight
             active: workspacePopup.mapped
-            opacity: workspacePopup.expanded ? 1 : 0
+            opacity: workspacePopup.showing ? 1 : 0
 
             sourceComponent: WorkspacePreviewCard {
                 workspaces: workspacePill.previewWorkspaces
