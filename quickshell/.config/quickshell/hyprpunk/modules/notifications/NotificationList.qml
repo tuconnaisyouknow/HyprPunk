@@ -108,12 +108,18 @@ ColumnLayout {
             font.weight: Font.Bold
         }
 
+        // A circle like the calendar's chevrons, so the card's header keeps one rhythm. Its
+        // words wait under the pointer.
         GlassButton {
             enabled: list.count > 0
-            icon: "󰎟"
-            label: "Clear"
+            icon: "󰃢"
             accent: true
             onClicked: list.clearAll()
+
+            ToolTipArea {
+                text: "Clear all"
+            }
+
         }
 
     }

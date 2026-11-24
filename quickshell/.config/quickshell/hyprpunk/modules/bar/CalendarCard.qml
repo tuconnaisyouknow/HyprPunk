@@ -11,8 +11,8 @@ import qs.theme
 // The island's card: the calendar, with the notifications beside it. It grows
 // out of the island, in the shape all the island's cards share (IslandFrame), holding
 // the island like a panel (ScreenState). Every month is drawn as six full weeks, the
-// days of the months around it filling the ends, so the card keeps one shape. The wheel
-// goes through the months.
+// days of the months around it filling the ends, so the card keeps one shape. The
+// chevrons beside its name and the wheel go through the months.
 PillPopup {
     id: calendarPopup
 
@@ -45,6 +45,9 @@ PillPopup {
     readonly property int calendarWidth: 2 * inset + 7 * daySize + 6 * dayGap
     readonly property int notificationWidth: 400
     property int pendingMonthDelta: 0
+    // The month on its way out or in: its name and days slide and fade, the chevrons stay.
+    property real monthSlideY: 0
+    property real monthOpacity: 1
 
     function changeMonth(delta) {
         if (monthTransition.running)
@@ -115,9 +118,6 @@ PillPopup {
         ColumnLayout {
             id: calendarBody
 
-            property real monthSlideY: 0
-            property real monthTransitionOpacity: 1
-
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
@@ -125,17 +125,48 @@ PillPopup {
             anchors.rightMargin: calendarPopup.inset
             anchors.topMargin: calendarPopup.inset
             spacing: Metrics.spacing.large
-            opacity: (calendarPopup.expanded ? 1 : 0) * monthTransitionOpacity
+            opacity: calendarPopup.expanded ? 1 : 0
 
-            Heading {
-                Layout.alignment: Qt.AlignHCenter
-                text: Session.regionalFormats.standaloneMonthName(calendarPopup.displayedMonthNumber) + " " + calendarPopup.displayedYear
-                font.pixelSize: Metrics.text.emphasis
+            // As tall as a button, like the notifications' header, so the two read as one
+            // line. The chevrons stand over the first and last columns, each a day wide.
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: calendarPopup.dayGap
+
+                GlassButton {
+                    icon: "󰅃"
+                    onClicked: calendarPopup.changeMonth(-1)
+                }
+
+                Heading {
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    elide: Text.ElideRight
+                    text: Session.regionalFormats.standaloneMonthName(calendarPopup.displayedMonthNumber) + " " + calendarPopup.displayedYear
+                    font.pixelSize: Metrics.text.emphasis
+                    opacity: calendarPopup.monthOpacity
+
+                    transform: Translate {
+                        y: calendarPopup.monthSlideY
+                    }
+
+                }
+
+                GlassButton {
+                    icon: "󰅀"
+                    onClicked: calendarPopup.changeMonth(1)
+                }
+
             }
 
             Grid {
                 columns: 7
                 spacing: calendarPopup.dayGap
+                opacity: calendarPopup.monthOpacity
+
+                transform: Translate {
+                    y: calendarPopup.monthSlideY
+                }
 
                 Repeater {
                     // From the locale's first day, "Lun" rather than "lun.".
@@ -189,11 +220,6 @@ PillPopup {
                 }
 
             }
-
-            transform: Translate {
-                y: calendarBody.monthSlideY
-            }
-
         }
 
     }
@@ -244,15 +270,15 @@ PillPopup {
 
         ParallelAnimation {
             Anim {
-                target: calendarBody
+                target: calendarPopup
                 property: "monthSlideY"
                 to: calendarPopup.pendingMonthDelta > 0 ? -calendarPopup.daySize : calendarPopup.daySize
                 token: Motion.leave.small
             }
 
             Anim {
-                target: calendarBody
-                property: "monthTransitionOpacity"
+                target: calendarPopup
+                property: "monthOpacity"
                 to: 0
                 token: Motion.leave.small
             }
@@ -262,21 +288,21 @@ PillPopup {
         ScriptAction {
             script: {
                 calendarPopup.monthOffset += calendarPopup.pendingMonthDelta;
-                calendarBody.monthSlideY = calendarPopup.pendingMonthDelta > 0 ? calendarPopup.daySize : -calendarPopup.daySize;
+                calendarPopup.monthSlideY = calendarPopup.pendingMonthDelta > 0 ? calendarPopup.daySize : -calendarPopup.daySize;
             }
         }
 
         ParallelAnimation {
             Anim {
-                target: calendarBody
+                target: calendarPopup
                 property: "monthSlideY"
                 to: 0
                 token: Motion.enter.small
             }
 
             Anim {
-                target: calendarBody
-                property: "monthTransitionOpacity"
+                target: calendarPopup
+                property: "monthOpacity"
                 to: 1
                 token: Motion.enter.small
             }

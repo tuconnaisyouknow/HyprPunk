@@ -3,8 +3,8 @@ import qs.theme
 
 // The shell's button, a glass pill holding its words: in the accent for the one that
 // answers (Open, Share, a notification's action), lit while it's on (a filter in use).
-// It bounces when clicked, and takes the click on press, away from a card's own click
-// under it.
+// With only an icon it's a circle. It bounces when clicked, and takes the click on
+// press, away from a card's own click under it.
 Item {
     id: button
 
@@ -25,7 +25,7 @@ Item {
         clicked();
     }
 
-    implicitWidth: content.implicitWidth + 2 * Metrics.spacing.huge
+    implicitWidth: label !== "" ? content.implicitWidth + 2 * Metrics.spacing.huge : implicitHeight
     implicitHeight: Metrics.buttonHeight
     // Unavailable: the secondary at half opacity, like anything that's off.
     opacity: enabled ? 1 : 0.5
@@ -51,8 +51,8 @@ Item {
         anchors.centerIn: parent
         width: Math.min(implicitWidth, button.width - 2 * Metrics.spacing.large)
         icon: button.icon
-        // With no icon, the gap would push the words off centre.
-        gap: button.icon !== "" ? font.pixelSize / 2 : 0
+        // Alone, the icon or the words would sit off centre by the gap.
+        gap: button.icon !== "" && button.label !== "" ? font.pixelSize / 2 : 0
         text: button.label
         elide: Text.ElideRight
         color: button.accent ? Colors.over(Colors.primary) : button.active ? Colors.primary : Colors.secondary

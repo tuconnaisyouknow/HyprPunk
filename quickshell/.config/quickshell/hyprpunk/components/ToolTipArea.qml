@@ -2,13 +2,21 @@ import QtQuick
 import Quickshell
 import qs.theme
 
-// A tooltip that shows up after half a second of hovering.
+// A name that shows up after half a second over what it's put in: a small pill of the
+// shell's glass, a fixed gap from it on one side and centred along that side. It pops
+// out of that side and folds back into it.
 Item {
     id: area
 
     required property string text
-    property bool delayedVisible: false
-    property bool above: false
+    // The side it stands on.
+    property int edge: Edges.Bottom
+    // From the element to the glass.
+    readonly property int gap: Metrics.spacing.normal
+    // Room around the glass for its pop past its size, which the window would cut.
+    readonly property int pad: Metrics.spacing.small
+    readonly property bool vertical: edge === Edges.Top || edge === Edges.Bottom
+    property bool shown: false
 
     anchors.fill: parent
 
@@ -20,7 +28,7 @@ Item {
                 showDelay.restart();
             } else {
                 showDelay.stop();
-                area.delayedVisible = false;
+                area.shown = false;
             }
         }
     }
@@ -29,49 +37,67 @@ Item {
         id: showDelay
 
         interval: 500
-        onTriggered: area.delayedVisible = true
+        onTriggered: area.shown = true
     }
 
     PopupWindow {
-        id: popup
-
-        visible: area.delayedVisible && area.text !== ""
-        implicitWidth: background.implicitWidth
-        implicitHeight: background.implicitHeight
+        // Mapped until it has folded back: Hyprland closes popups at once.
+        visible: area.text !== "" && (area.shown || bubble.scale > 0)
+        implicitWidth: bubble.width + 2 * area.pad
+        implicitHeight: bubble.height + 2 * area.pad
         color: "transparent"
         grabFocus: false
 
+        // The element, stretched out by the gap on its side: the window lies against it,
+        // centred along it.
         anchor {
             item: area
-            edges: area.above ? Edges.Top : Edges.Bottom | Edges.Left
-            gravity: area.above ? Edges.Top : Edges.Bottom | Edges.Right
-            adjustment: PopupAdjustment.SlideX
-            margins.top: area.above ? -23 : 34
+            edges: area.edge
+            gravity: area.edge
+            adjustment: area.vertical ? PopupAdjustment.SlideX : PopupAdjustment.SlideY
+            rect.x: area.edge === Edges.Left ? -(area.gap - area.pad) : 0
+            rect.y: area.edge === Edges.Top ? -(area.gap - area.pad) : 0
+            rect.width: area.width + (area.vertical ? 0 : area.gap - area.pad)
+            rect.height: area.height + (area.vertical ? area.gap - area.pad : 0)
         }
 
-        Rectangle {
-            id: background
+        // Scaled rather than faded: the blur behind it follows what's drawn, and would
+        // snap off halfway through a fade.
+        Item {
+            id: bubble
 
-            anchors.fill: parent
-            implicitWidth: tooltipText.implicitWidth + 18
-            implicitHeight: tooltipText.implicitHeight + 10
-            radius: 7
-            color: Colors.surface0
+            x: area.pad
+            y: area.pad
+            width: label.implicitWidth + 2 * Metrics.spacing.large
+            height: label.implicitHeight + 2 * Metrics.spacing.small
+            scale: area.shown ? 1 : 0
+            transformOrigin: area.edge === Edges.Bottom ? Item.Top : area.edge === Edges.Top ? Item.Bottom : area.edge === Edges.Left ? Item.Right : Item.Left
+
+            GlassSurface {
+                radius: height / 2
+                backgroundColor: Colors.panel
+            }
 
             Text {
-                id: tooltipText
+                id: label
 
                 anchors.centerIn: parent
                 text: area.text
-                color: Colors.primary
+                color: Colors.secondary
                 font.family: Metrics.font
-                font.pixelSize: Metrics.text.emphasis
-                font.weight: Font.Medium
+                font.pixelSize: Metrics.text.body
+            }
+
+            Behavior on scale {
+                Anim {
+                    token: area.shown ? Motion.pop : Motion.leave.small
+                }
+
             }
 
         }
 
-        // An empty input region makes the tooltip completely click-through.
+        // Click-through: an empty input region.
         mask: Region {
         }
 
