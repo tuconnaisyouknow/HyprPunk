@@ -108,7 +108,7 @@ readonly -a PACKAGES=(
   rose-pine-cursor
   rose-pine-hyprcursor nwg-look
 
-  ttf-ioskeley-mono python-fonttools
+  python-fonttools
   otf-font-awesome
   ttf-apple-emoji noto-fonts-cjk
 
@@ -526,9 +526,9 @@ stow_dotfiles() {
   cp --update=none "$DOTFILES_DIR/matugen/.config/matugen/personal.example.toml" "$HOME/.config/matugen/personal.toml"
 }
 
-# The shell's text and titles are cuts of Ioskeley Mono and Orbitron that fontsctl.py
-# builds under names of their own, and the apps write in the text one too. The terminal
-# takes Ioskeley Mono as packaged.
+# The shell's text and titles, and the terminal's font, are cuts of Ioskeley Mono and
+# Orbitron that fontsctl.py builds under names of their own. The apps write in the text
+# one too.
 build_fonts() {
   "$LIB_DIR/fontsctl.py" ensure
 }

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-# Builds the desktop's two fonts into ~/.local/share/fonts/hyprpunk, under names of their
-# own: Qt Quick picks a font by its family alone, so each role gets a family that holds
-# exactly the cut it needs. The apps write in the text one too.
+# Builds the desktop's three fonts into ~/.local/share/fonts/hyprpunk, under names of
+# their own: Qt Quick picks a font by its family alone, so each role gets a family that
+# holds exactly the cut it needs. The apps write in the text one too.
 #   HyprPunk Text     Ioskeley Mono's Nerd Font, semi-condensed, from regular to bold,
 #                     upright and italic, with its symbols one cell wide like its letters
+#   HyprPunk Term     the same at full width, regular and bold: Ioskeley Mono Term with
+#                     the Nerd Font icons, for the terminal and whatever asks for monospace
 #   HyprPunk Display  Orbitron Bold, with digits that all take one width (tnum): the
 #                     lock's clock would shift every minute without them
 #
@@ -31,16 +33,12 @@ CACHE_DIR = CACHE_HOME + "/hyprpunk/fonts"
 IOSKELEY = "https://github.com/ahatem/IoskeleyMono/releases/download/v2.2.0/IoskeleyMono-NerdFont.zip"
 ORBITRON = "https://raw.githubusercontent.com/google/fonts/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf"
 
-# The weights the shell writes in, by the name Ioskeley gives each file
-TEXT_WEIGHTS = {
-    "Regular": "",
-    "Medium": "Medium",
-    "SemiBold": "SemiBold",
-    "Bold": "Bold",
+# Ioskeley's families: the width each is cut from, and the weights it's written in. The
+# shell writes in four, the terminal only in regular and bold.
+IOSKELEY_FAMILIES = {
+    "HyprPunk Text": ("SemiCondensed", ["Regular", "Medium", "SemiBold", "Bold"]),
+    "HyprPunk Term": ("", ["Regular", "Bold"]),
 }
-# Each weight upright then italic: the shell only writes upright, the apps ask for both
-TEXT_CUTS = [(weight, italic) for weight in TEXT_WEIGHTS for italic in (False, True)]
-TEXT_FAMILY = "HyprPunk Text"
 DISPLAY_FAMILY = "HyprPunk Display"
 
 
@@ -49,8 +47,14 @@ def style(weight, italic):
     return f"{weight} Italic".removeprefix("Regular ") if italic else weight
 
 
-def text_path(weight, italic):
-    return f"{FONTS_DIR}/HyprPunkText-{style(weight, italic).replace(' ', '')}.ttf"
+# Each weight upright then italic: the shell only writes upright, the apps ask for both
+def cuts(family):
+    weights = IOSKELEY_FAMILIES[family][1]
+    return [(weight, italic) for weight in weights for italic in (False, True)]
+
+
+def font_path(family, weight, italic):
+    return f"{FONTS_DIR}/{family.replace(' ', '')}-{style(weight, italic).replace(' ', '')}.ttf"
 
 
 def display_path():
@@ -100,8 +104,9 @@ def rename(font, family, weight, italic=False):
 
 
 # Ioskeley draws its symbols (squares, arrows, ticks…) two cells wide, and keeps a
-# one-cell form of each behind a feature. The shell writes with the narrow ones, so a
-# symbol takes the room of a letter: a password's squares stay close together.
+# one-cell form of each behind a feature. Both families write with the narrow ones, so a
+# symbol takes the room of a letter: a password's squares stay close together, and the
+# terminal's grid holds. At full width, that's exactly Ioskeley Mono Term.
 def narrow_symbols(font):
     glyphs = set(font.getGlyphOrder())
     for table in font["cmap"].tables:
@@ -111,16 +116,22 @@ def narrow_symbols(font):
                 table.cmap[code] = narrow
 
 
-def build_text():
+# A cut's file in Ioskeley's archive: its width, weight and slant run together, and
+# the full-width regular is the one left to call itself Regular
+def ioskeley_member(width, weight, italic):
+    cut = width + weight.removeprefix("Regular") + ("Italic" if italic else "")
+    return f"{width or 'Normal'}/IoskeleyMonoNerdFont-{cut or 'Regular'}.ttf"
+
+
+def build_ioskeley(family):
     archive = zipfile.ZipFile(download(IOSKELEY, "IoskeleyMono-NerdFont.zip"))
-    for weight, italic in TEXT_CUTS:
-        suffix = TEXT_WEIGHTS[weight] + ("Italic" if italic else "")
-        member = f"SemiCondensed/IoskeleyMonoNerdFont-SemiCondensed{suffix}.ttf"
-        font = TTFont(io.BytesIO(archive.read(member)))
+    width = IOSKELEY_FAMILIES[family][0]
+    for weight, italic in cuts(family):
+        font = TTFont(io.BytesIO(archive.read(ioskeley_member(width, weight, italic))))
         narrow_symbols(font)
-        rename(font, TEXT_FAMILY, weight, italic)
-        save(font, text_path(weight, italic))
-        print(f"Built {TEXT_FAMILY} {style(weight, italic)}")
+        rename(font, family, weight, italic)
+        save(font, font_path(family, weight, italic))
+        print(f"Built {family} {style(weight, italic)}")
 
 
 # Each digit copied into a cell as wide as the widest one, centred, and offered as the
@@ -189,9 +200,12 @@ def main():
     os.makedirs(FONTS_DIR, exist_ok=True)
     again = command == "build"
     built = False
-    if again or not all(os.path.exists(text_path(*cut)) for cut in TEXT_CUTS):
-        build_text()
-        built = True
+    for family in IOSKELEY_FAMILIES:
+        if again or not all(
+            os.path.exists(font_path(family, *cut)) for cut in cuts(family)
+        ):
+            build_ioskeley(family)
+            built = True
     if again or not os.path.exists(display_path()):
         build_display()
         built = True

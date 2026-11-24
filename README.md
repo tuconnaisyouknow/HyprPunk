@@ -386,7 +386,7 @@ from other people's nearby.
 ├── cava/                # Audio visualizer configuration
 ├── fastfetch/           # Fastfetch configuration and logos
 ├── frames/              # The shell's animation clock, a Qt plugin built by the installer for each Qt version
-├── fontconfig/          # Ioskeley Mono for whatever asks for a monospace font
+├── fontconfig/          # The terminal's font for whatever asks for a monospace font
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
 ├── gtk4/                # GTK 4 settings
@@ -581,7 +581,7 @@ customize (see [Philosophy](#-philosophy)): your apps can follow it, not change 
 - 🔒 The lock screen, and the login screen drawn like it, are inspired by the lock screen in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
-- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock and login screens' clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's cuts are built on your machine under names of their own (`fontsctl.py`).
+- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock and login screens' clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's and the terminal's cuts are built on your machine under names of their own (`fontsctl.py`), with the [Nerd Fonts](https://www.nerdfonts.com) icons Ioskeley ships.
 - 💤 The Neovim configuration starts from the [LazyVim starter](https://github.com/LazyVim/starter), under the Apache License 2.0 (`nvim/.config/nvim/LICENSE`).
 
 ---
