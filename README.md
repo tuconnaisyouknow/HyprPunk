@@ -227,7 +227,7 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 `yay -Rns <package>`, which no update brings back, and give its shortcut another app from your personal files (see
 [Customization](#-customization)).
 
-- 🌐 **Brave**, with **uBlock Origin Lite** installed by its policy, its Classic theme in the wallpaper's colors, and
+- 🌐 **Brave**, with **uBlock Origin** installed by its policy, its Classic theme in the wallpaper's colors, and
   Rewards, Wallet and AI Chat turned off.
 - 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
