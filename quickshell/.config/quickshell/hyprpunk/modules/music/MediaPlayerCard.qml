@@ -37,7 +37,7 @@ Rectangle {
     readonly property point equalizerCenter: Qt.point(equalizer.x + equalizer.width / 2, equalizer.y + equalizer.height / 2)
     // Shown: the position is followed and the card animates.
     property bool active: true
-    readonly property bool playing: player !== null && player.isPlaying
+    readonly property bool playing: player !== null && Music.playing
     // The time the position is drawn at, moved on every frame while playing.
     property real now: Date.now()
     readonly property real length: Music.length
@@ -85,8 +85,9 @@ Rectangle {
     readonly property int lyricsLine: Music.lyricsLine(position)
     // The side controls' glyphs, the skips' and play's: the main ones stand out.
     readonly property int sideIcon: Metrics.text.title
-    readonly property int skipIcon: 28
-    readonly property int playIcon: 34
+    readonly property int modeGlyph: Metrics.text.title + 6
+    readonly property int skipGlyph: 20
+    readonly property int playGlyph: 24
 
     // To another page: the cover, the title and the player's name leave the way the pages
     // go, and the next ones come in from the other side. The rest stays, and changes
@@ -595,13 +596,24 @@ Rectangle {
         height: playButton.height
 
         IconButton {
+            id: shuffleButton
+
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            icon: card.player !== null && card.player.shuffle ? "󰒝" : "󰒞"
             iconSize: card.sideIcon
             lit: card.player !== null && card.player.shuffle
             enabled: card.player !== null && card.player.shuffleSupported
             onClicked: card.player.shuffle = !card.player.shuffle
+
+            ModeGlyph {
+                anchors.centerIn: parent
+                width: card.modeGlyph
+                height: width
+                kind: "shuffle"
+                shuffles: card.player !== null && card.player.shuffle
+                color: shuffleButton.ink
+            }
+
         }
 
         Row {
@@ -609,14 +621,23 @@ Rectangle {
             spacing: Metrics.spacing.section
 
             IconButton {
+                id: previousButton
+
                 anchors.verticalCenter: parent.verticalCenter
                 width: 40
                 height: width
-                icon: "󰑟"
-                iconSize: card.skipIcon
                 lit: true
                 enabled: card.player !== null && card.player.canGoPrevious
                 onClicked: Music.skip(-1)
+
+                TransportGlyph {
+                    anchors.centerIn: parent
+                    width: card.skipGlyph
+                    height: width
+                    kind: "previous"
+                    color: previousButton.ink
+                }
+
             }
 
             IconButton {
@@ -625,33 +646,60 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 46
                 height: width
-                icon: card.playing ? "󰏤" : "󰐊"
-                iconSize: card.playIcon
                 lit: true
                 enabled: card.player !== null && card.player.canTogglePlaying
                 onClicked: card.player.togglePlaying()
+
+                TransportGlyph {
+                    anchors.centerIn: parent
+                    width: card.playGlyph
+                    height: width
+                    playing: card.playing
+                    color: playButton.ink
+                }
+
             }
 
             IconButton {
+                id: nextButton
+
                 anchors.verticalCenter: parent.verticalCenter
                 width: 40
                 height: width
-                icon: "󰈑"
-                iconSize: card.skipIcon
                 lit: true
                 enabled: card.player !== null && card.player.canGoNext
                 onClicked: Music.skip(1)
+
+                TransportGlyph {
+                    anchors.centerIn: parent
+                    width: card.skipGlyph
+                    height: width
+                    kind: "next"
+                    color: nextButton.ink
+                }
+
             }
 
         }
 
         IconButton {
+            id: repeatButton
+
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            icon: card.player === null || card.player.loopState === MprisLoopState.None ? "󰑗" : card.player.loopState === MprisLoopState.Track ? "󰑘" : "󰑖"
             iconSize: card.sideIcon
             lit: card.player !== null && card.player.loopState !== MprisLoopState.None
             enabled: card.player !== null && card.player.loopSupported
+
+            ModeGlyph {
+                anchors.centerIn: parent
+                width: card.modeGlyph
+                height: width
+                kind: "repeat"
+                repeatsTrack: card.player !== null && card.player.loopState === MprisLoopState.Track
+                color: repeatButton.ink
+            }
+
             onClicked: {
                 if (card.player.loopState === MprisLoopState.None)
                     card.player.loopState = MprisLoopState.Playlist;
