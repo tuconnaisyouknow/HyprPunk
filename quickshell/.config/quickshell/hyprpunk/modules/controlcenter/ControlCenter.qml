@@ -82,9 +82,13 @@ Card {
             pagesWanted = true;
             keyboardFocus.forget();
             panel.forceActiveFocus();
-        } else if (stack !== null) {
-            stack.reset();
         }
+    }
+    // It folds back on the page you were on, and only then goes back to the main one.
+    onCoveringChanged: {
+        if (!covering && stack !== null)
+            stack.reset();
+
     }
     anchors.fill: parent
     pillName: "control"
@@ -329,9 +333,10 @@ Card {
             }
 
             // A page changing height. Between two pages the stack sets the pace itself, and
-            // a page moving its own height sets it too.
+            // a page moving its own height sets it too. Folded away, it takes the main
+            // page's at once, ready for the next opening.
             Behavior on fullHeight {
-                enabled: panel.heightAnimated && controlCenter.stack.progress === 1 && !controlCenter.stack.currentPage?.resizing
+                enabled: panel.heightAnimated && controlCenter.covering && controlCenter.stack.progress === 1 && !controlCenter.stack.currentPage?.resizing
 
                 Anim {
                     token: Motion.resize.normal

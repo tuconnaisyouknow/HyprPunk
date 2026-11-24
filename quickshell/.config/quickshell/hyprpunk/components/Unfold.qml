@@ -14,8 +14,10 @@ Item {
     property real heightProgress: open ? 1 : 0
     // From 0 the pill's content to 1 the card's.
     property real contentProgress: open ? 1 : 0
-    // Out from the moment it opens until it has folded back, bounce included.
-    readonly property bool out: open || widthMotion.running || heightMotion.running || contentMotion.running
+    // Out from the moment it opens until it has folded back, bounce included: until the
+    // shape is back on the pill. Not from the motions running, which only start once the
+    // shape is told to fold, a moment after it's closed.
+    readonly property bool out: open || widthProgress !== 0 || heightProgress !== 0 || contentProgress !== 0
 
     // From a value to another, the given share of the way.
     function lerp(from, to, share) {
@@ -26,8 +28,6 @@ Item {
 
     Behavior on widthProgress {
         Anim {
-            id: widthMotion
-
             token: Motion.unfold.width
         }
 
@@ -35,8 +35,6 @@ Item {
 
     Behavior on heightProgress {
         Anim {
-            id: heightMotion
-
             token: Motion.unfold.height
         }
 
@@ -44,8 +42,6 @@ Item {
 
     Behavior on contentProgress {
         Anim {
-            id: contentMotion
-
             token: Motion.unfold.content
         }
 

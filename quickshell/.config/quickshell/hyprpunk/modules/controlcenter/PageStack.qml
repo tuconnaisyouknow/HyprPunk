@@ -136,7 +136,7 @@ Item {
 
     }
 
-    // The panel folds back on the main page, without a zoom.
+    // Back on the main page at once, without a zoom: for the panel once it has folded away.
     function reset() {
         zoom.stop();
         history = ["main"];
