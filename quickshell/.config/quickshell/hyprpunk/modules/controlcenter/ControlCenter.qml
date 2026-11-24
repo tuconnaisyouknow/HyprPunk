@@ -328,9 +328,10 @@ Card {
                 home: panel
             }
 
-            // A page changing height. Between two pages the stack sets the pace itself.
+            // A page changing height. Between two pages the stack sets the pace itself, and
+            // a page moving its own height sets it too.
             Behavior on fullHeight {
-                enabled: panel.heightAnimated && controlCenter.stack.progress === 1
+                enabled: panel.heightAnimated && controlCenter.stack.progress === 1 && !controlCenter.stack.currentPage?.resizing
 
                 Anim {
                     token: Motion.resize.normal

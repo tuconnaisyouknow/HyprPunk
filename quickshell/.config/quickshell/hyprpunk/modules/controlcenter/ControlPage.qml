@@ -20,6 +20,12 @@ Item {
     readonly property bool active: current && stack.opened
     // Of the two pages of a move, the one behind the door.
     readonly property bool inner: current === (stack.direction > 0)
+    // The folds in it (Fold), which add themselves. While one moves, the page moves its own
+    // height: the panel follows it as it goes rather than easing after it.
+    property var folds: []
+    readonly property bool resizing: folds.some((fold) => {
+        return fold.moving;
+    })
 
     function show() {
         stack.push(pageName);

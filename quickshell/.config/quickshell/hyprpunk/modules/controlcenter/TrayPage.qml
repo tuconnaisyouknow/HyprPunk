@@ -8,7 +8,8 @@ import qs.services
 import qs.theme
 
 // The control center's background apps page: each app by its name, its menu unfolding
-// under it, and a button to bring it back.
+// under it, and a button to bring it back. One menu at a time: opening another folds the
+// last one back as it unfolds.
 ControlPage {
     id: page
 
@@ -19,11 +20,6 @@ ControlPage {
     function show(app) {
         expandedApp = app;
         stack.push(pageName);
-    }
-
-    // Scrolls the list so an app whose menu just unfolded starts at the top.
-    function reveal(app) {
-        flickable.contentY = Math.max(0, Math.min(app.y, flickable.contentHeight - flickable.height));
     }
 
     pageName: "tray"
@@ -40,10 +36,12 @@ ControlPage {
         target: Tray
     }
 
+    // Left with its menu folded, so the next time it opens the app sends it up to date.
     onVisibleChanged: {
-        if (!visible)
+        if (!visible) {
             flickable.contentY = 0;
-
+            expandedApp = null;
+        }
     }
 
     PageHeader {
@@ -104,12 +102,16 @@ ControlPage {
                         readonly property bool expanded: page.expandedApp === modelData
 
                         Layout.fillWidth: true
-                        spacing: Metrics.spacing.small
-                        // After the menu has had a frame to unfold.
-                        onExpandedChanged: {
-                            if (expanded)
-                                Qt.callLater(page.reveal, app);
+                        spacing: 0
 
+                        // The list follows the menu as it unfolds, so the app ends at the
+                        // top when there's room below it.
+                        Binding {
+                            target: flickable
+                            property: "contentY"
+                            value: Math.max(0, Math.min(app.y, flickable.contentHeight - flickable.height))
+                            when: app.expanded && menuFold.moving
+                            restoreMode: Binding.RestoreNone
                         }
 
                         // The row unfolds the menu, or brings back an app that has none;
@@ -257,14 +259,23 @@ ControlPage {
 
                         }
 
-                        TrayMenu {
+                        // Its gaps inside the fold, so they come and go with it.
+                        Fold {
+                            id: menuFold
+
                             Layout.fillWidth: true
-                            Layout.leftMargin: Metrics.spacing.normal
-                            Layout.bottomMargin: Metrics.spacing.small
-                            visible: app.expanded
-                            shown: app.expanded
-                            handle: app.modelData.menu
-                            onTriggered: page.stack.closeRequested()
+                            open: app.expanded
+
+                            TrayMenu {
+                                x: Metrics.spacing.normal
+                                width: parent.width - Metrics.spacing.normal
+                                topPadding: Metrics.spacing.small
+                                bottomPadding: Metrics.spacing.small
+                                shown: menuFold.out
+                                handle: app.modelData.menu
+                                onTriggered: page.stack.closeRequested()
+                            }
+
                         }
 
                     }
