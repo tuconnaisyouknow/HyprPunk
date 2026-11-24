@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Services.Mpris
 import qs.components
 import qs.config
@@ -413,6 +414,11 @@ Rectangle {
         // The bar's thickness at rest: the item is as tall as it once grabbed.
         readonly property int restHeight: 7
 
+        // Where the pointer puts the level's end.
+        function ratioAt(x) {
+            return Math.max(0, Math.min(1, x / width));
+        }
+
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: card.artMargin
@@ -438,19 +444,18 @@ Rectangle {
 
         // Thicker under the pointer, to show you can grab it. Centered by hand: a centering
         // anchor snaps to whole pixels, and the top edge would step as the bottom glides.
-        Rectangle {
+        // The level is cut to the track's round shape in the shader: it starts empty and
+        // fills from the first second.
+        ShaderEffect {
+            readonly property vector2d size: Qt.vector2d(width, height)
+            readonly property real level: width * progress.ratio
+            readonly property color trackColor: Colors.alpha(Colors.light, 0.14)
+            readonly property color fillColor: Colors.primary
+
             y: (parent.height - height) / 2
             width: parent.width
             height: progress.active ? parent.height : progress.restHeight
-            radius: height / 2
-            color: Colors.alpha(Colors.light, 0.14)
-
-            Rectangle {
-                width: parent.width * progress.ratio
-                height: parent.height
-                radius: parent.radius
-                color: Colors.primary
-            }
+            fragmentShader: Qt.resolvedUrl(Quickshell.shellPath("shaders/progress.frag.qsb"))
 
             // Grows at once under the pointer, settles back once it's gone.
             Behavior on height {
@@ -489,7 +494,7 @@ Rectangle {
                 }
                 onCentroidChanged: {
                     if (active)
-                        card.scrubPosition = Math.max(0, Math.min(1, centroid.position.x / progress.width)) * card.length;
+                        card.scrubPosition = progress.ratioAt(centroid.position.x) * card.length;
 
                 }
             }
@@ -497,7 +502,7 @@ Rectangle {
             TapHandler {
                 gesturePolicy: TapHandler.ReleaseWithinBounds
                 onTapped: (eventPoint) => {
-                    Music.seek(Math.max(0, Math.min(1, eventPoint.position.x / progress.width)) * card.length);
+                    Music.seek(progress.ratioAt(eventPoint.position.x) * card.length);
                 }
             }
 

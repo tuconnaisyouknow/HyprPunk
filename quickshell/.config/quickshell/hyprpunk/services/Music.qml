@@ -149,11 +149,17 @@ Singleton {
                 if (asked !== music.player)
                     return ;
 
-                const first = !music.positionKnown;
-                // An answer is never ahead, but may be late: while playing, one a little
-                // behind the drawn position says nothing new, and stepping back to it would
-                // take the lyrics back a line. Further behind, the track was sought back.
+                // A track starts from the beginning: just after a change, a position
+                // further on than the time since is still the previous track's.
                 const now = Date.now();
+                const sinceChange = (now - music.trackChangeTime) / 1000;
+                if (sinceChange < music.answerAge && state.position > sinceChange + music.answerAge)
+                    return ;
+
+                // Otherwise an answer is never ahead, but may be late: while playing, one a
+                // little behind the drawn position says nothing new, and stepping back to it
+                // would take the lyrics back a line. Further behind, the track was sought back.
+                const first = !music.positionKnown;
                 const drawn = music.positionAt(now);
                 const late = music.playing && !first && state.position < drawn && drawn - state.position < music.answerAge;
                 music.polledPosition = late ? drawn : state.position;
@@ -208,8 +214,11 @@ Singleton {
         history = played.slice(-50);
         skipUntil = 0;
         currentTrack = id;
-        // The player still reports the old track's position at this point.
+        // The player still reports the old track's position at this point: the new one
+        // starts from the beginning until it answers.
         remember(0);
+        polledPosition = 0;
+        polledTime = Date.now();
         trackChangeTime = Date.now();
         trackChanged(direction);
     }
