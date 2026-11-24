@@ -49,31 +49,48 @@ Item {
 
     // It rests on the button of the workspace you're on, and goes out where it stands
     // when you leave for another screen. On its way to another button each edge goes
-    // from the edge of the button it left to the edge of the one it's going to, the
-    // front one first. Both ends follow their buttons as the row moves, so the light
-    // never trails behind a button that closes. A move you interrupt sets off again
-    // from where the light is.
+    // from where it stood to the edge of the one it's going to, the front one first.
+    // Where it set off from is kept as a place in the row (a third into the second
+    // button), not in pixels: the row opens and closes under it, and a place that
+    // closes takes the light's edge along, so the light never leaves the row.
     Light {
         id: light
 
         // The dot stretched, as thick as the dots.
         readonly property int thickness: target !== null ? target.dotSize : 0
 
-        // The button it's on or going to, and the one it left.
+        // The button it's on or going to.
         property Item target: null
-        property Item origin: null
-        // How far its edges were from the button it left, when a move was interrupted.
-        property real leftOffset: 0
-        property real rightOffset: 0
+        // Where its edges set off from, as places in the row: the button's index, and
+        // how far into its room.
+        property real leftPlace: 0
+        property real rightPlace: 0
         // How far along each edge is.
         property real front: 1
         property real back: 1
         // Going right, so its right edge leads.
         property bool forward: true
-        readonly property real fromLeft: origin !== null ? origin.x + leftOffset : 0
-        readonly property real fromRight: origin !== null ? origin.x + origin.shapeWidth + rightOffset : 0
+        readonly property real fromLeft: at(leftPlace)
+        readonly property real fromRight: at(rightPlace)
         readonly property real leftEdge: target !== null ? fromLeft + (target.x - fromLeft) * (forward ? back : front) : 0
         readonly property real rightEdge: target !== null ? fromRight + (target.x + target.shapeWidth - fromRight) * (forward ? front : back) : 0
+
+        // A place in the row, from a point on it, and back.
+        function placeOf(point) {
+            for (let index = 0; index < buttons.count; index++) {
+                const button = buttons.itemAt(index);
+                if (button.implicitWidth > 0 && point < button.x + button.implicitWidth)
+                    return index + Math.max(0, point - button.x) / button.implicitWidth;
+
+            }
+            return buttons.count;
+        }
+
+        function at(place) {
+            const index = Math.min(Math.floor(place), buttons.count - 1);
+            const button = buttons.itemAt(index);
+            return button !== null ? button.x + (place - index) * button.implicitWidth : 0;
+        }
 
         function moveTo(button) {
             if (button === null || button === target)
@@ -83,19 +100,13 @@ Item {
             // Nothing to travel from while it's out: it comes on in place.
             if (target === null || opacity === 0) {
                 target = button;
-                origin = button;
-                leftOffset = 0;
-                rightOffset = 0;
                 front = 1;
                 back = 1;
                 return ;
             }
-            const left = leftEdge - target.x;
-            const right = rightEdge - target.x - target.shapeWidth;
+            leftPlace = placeOf(leftEdge);
+            rightPlace = placeOf(rightEdge);
             forward = button.workspaceId > target.workspaceId;
-            origin = target;
-            leftOffset = left;
-            rightOffset = right;
             front = 0;
             back = 0;
             target = button;
