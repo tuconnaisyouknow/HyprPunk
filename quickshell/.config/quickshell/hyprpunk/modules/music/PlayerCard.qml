@@ -35,19 +35,22 @@ PillPopup {
     // Where something of the given size starts, flying from a slot of the island (given
     // from its left edge) to a middle in the player (given from its left edge). Never
     // closer to the shape's edge than in the island: the shape folds back faster than
-    // they fly, and would cut them. On whole pixels: thin bars sliding across half pixels
-    // shimmer.
+    // they fly, and would hide them. The shape without its bounce, which they don't
+    // take: they rest in the island's slots as the shape goes past them. On whole pixels:
+    // thin bars sliding across half pixels shimmer.
     function flyX(islandX, playerX, size) {
         const start = islandMiddle + (islandX + slotSize / 2 - islandPill.width / 2) * zoomX;
         const end = musicPlayerCard.x + playerX;
+        const left = frame.steadyShape.x - frameContent.x;
         const edge = Metrics.islandMusicInset + size / 2;
-        return Math.round(Math.max(edge, Math.min(card.width - edge, start + (end - start) * flight)) - size / 2);
+        return Math.round(Math.max(left + edge, Math.min(left + frame.steadyShape.width - edge, start + (end - start) * flight)) - size / 2);
     }
 
     // Kept off the shape's bottom edge the same way.
     function flyY(playerY, size) {
         const y = Metrics.pillHeight / 2 + (playerY - Metrics.pillHeight / 2) * flight;
-        return Math.round(Math.min(card.height - Metrics.islandMusicInset - size / 2, y) - size / 2);
+        const bottom = frame.steadyShape.y + frame.steadyShape.height - frameContent.y;
+        return Math.round(Math.min(bottom - Metrics.islandMusicInset - size / 2, y) - size / 2);
     }
 
     cardLayer: bar.cardLayer
@@ -126,7 +129,7 @@ PillPopup {
         equalizerVisible: false
     }
 
-    Item {
+    carried: Item {
         anchors.fill: parent
         opacity: playerPopup.musicCarried ? 1 : 0
 

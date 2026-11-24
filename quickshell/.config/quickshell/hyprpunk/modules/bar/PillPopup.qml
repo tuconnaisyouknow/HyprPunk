@@ -75,6 +75,10 @@ Card {
     // What draws its shape: its own glass, or its content's place in the shared one.
     readonly property Item shape: frame !== null ? card : glass
     default property alias content: contentLayer.data
+    // What a card of the island carries out of it and back (the player's cover and
+    // equalizer): the island's own, so it stays whole the whole way instead of crossing
+    // over with the content, and keeps out of the shape's bounce.
+    property alias carried: carriedLayer.data
 
     // Right before it opens, to set the content up.
     signal opening()
@@ -404,6 +408,33 @@ Card {
                 opacity: unfold.contentProgress
             }
 
+        }
+
+    }
+
+    // Cut by the island's shape without its bounce: going past the island as it folds
+    // back, the shape would cut into what the island shows.
+    ClippingRectangle {
+        id: carriedClip
+
+        readonly property rect steady: popup.frame !== null ? popup.frame.steadyShape : Qt.rect(0, 0, 0, 0)
+
+        x: steady.x - popup.x
+        y: steady.y - popup.y
+        width: steady.width
+        height: steady.height
+        radius: popup.frame !== null ? popup.frame.steadyRadius : 0
+        color: "transparent"
+        visible: popup.covering
+
+        // At the content's place.
+        Item {
+            id: carriedLayer
+
+            x: card.x + room.x - carriedClip.x
+            y: card.y + room.y - carriedClip.y
+            width: room.width
+            height: room.height
         }
 
     }

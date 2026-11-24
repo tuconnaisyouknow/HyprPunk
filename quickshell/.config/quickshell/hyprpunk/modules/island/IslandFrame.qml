@@ -51,6 +51,14 @@ Card {
     // How far its middle is from the screen's, and where its top is.
     readonly property real shapeCenter: lerp(fromCenter, island.centerOffset, travelX)
     readonly property real shapeTop: lerp(fromTop, targetTop, travelY)
+    // The shape as it would be without going past its size: the bounce is the glass's
+    // alone, and what the player carries out of the island keeps to this one.
+    readonly property rect steadyShape: {
+        const width = lerp(fromWidth, 2 * Math.round(targetWidth / 2), Math.min(1, travelX));
+        const top = Math.round(lerp(fromTop, targetTop, Math.min(1, travelY)));
+        return Qt.rect(middle - width / 2, top, width, lerp(fromTop + fromHeight, targetTop + targetHeight, Math.min(1, travelY)) - top);
+    }
+    readonly property real steadyRadius: Math.max(0, lerp(fromRadius, targetRadius, Math.min(1, travelY)))
     // How much the shape shows the island's own content, the time or an OSD: 1 folded on
     // it, 0 a card's. It crosses over with the card's content, quicker than the shape.
     property real islandShare: owner === null ? 1 : 0
