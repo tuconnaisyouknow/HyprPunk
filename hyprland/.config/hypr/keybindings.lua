@@ -7,14 +7,13 @@
 
 -- The apps the shortcuts below open, and the terminal and editor everything else
 -- uses. The shell's settings choose the terminal, browser, files and music apps;
--- personal/keybindings.lua (hyprpunk.programs.music = "...") wins over them.
+-- personal/keybindings.lua (hyprpunk.programs.music = "...") wins over them. No music app
+-- comes with HyprPunk: Super+P waits for the one you pick.
 hyprpunk.programs = {
   terminal = "kitty",
   editor = "nvim",
   files = "nautilus --new-window",
   browser = "brave",
-  notes = "obsidian",
-  music = "spotify-launcher",
 }
 for role, command in pairs(__require("apps_state")) do
   hyprpunk.programs[role] = command
@@ -23,7 +22,10 @@ end
 -- Read when the key is pressed rather than now, so a change made after this file still counts
 local function launch(program)
   return function()
-    hl.dispatch(hl.dsp.exec_cmd(hyprpunk.programs[program]))
+    local command = hyprpunk.programs[program]
+    if command ~= nil then
+      hl.dispatch(hl.dsp.exec_cmd(command))
+    end
   end
 end
 
@@ -71,7 +73,6 @@ local shell = "qs -c hyprpunk ipc call "
 bind(mainMod .. " + T", launch("terminal"), "Open the terminal")
 bind(mainMod .. " + E", launch("files"), "Open the file manager")
 bind(mainMod .. " + B", launch("browser"), "Open the web browser")
-bind(mainMod .. " + O", launch("notes"), "Open the notes")
 bind(mainMod .. " + P", launch("music"), "Open the music player")
 -- What's playing, in the bar's card rather than the app. Nothing while no player runs.
 bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd(shell .. "player toggle"), "Show the music player card")

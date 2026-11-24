@@ -125,7 +125,6 @@ readonly -a PACKAGES=(
   7zip unrar unzip zip
   ffmpeg mpv celluloid mate-media
   libreoffice-fresh brave-bin
-  spotify-launcher obsidian
 
   qt6-multimedia
   qt6-multimedia-ffmpeg

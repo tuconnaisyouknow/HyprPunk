@@ -16,12 +16,12 @@ source "$script_dir/lib/settings.sh"
 
 STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/hyprpunk/apps.conf"
 
-# As keybindings.lua has them
+# As keybindings.lua has them: no music app until you pick one
 declare -A DEFAULTS=(
   [terminal]=kitty
   [browser]=brave
   [files]="nautilus --new-window"
-  [music]=spotify-launcher
+  [music]=""
 )
 KEYS=(terminal browser files music)
 

@@ -229,7 +229,6 @@ HyprPunk installs its own choice of applications, without asking. You can remove
 
 - 🌐 **Brave**, with **uBlock Origin** installed by its policy, its Classic theme in the wallpaper's colors, and
   Rewards, Wallet and AI Chat turned off.
-- 🎵 **Spotify** (`spotify-launcher`) and 📓 **Obsidian**.
 - 📄 **LibreOffice** for documents, **Papers** for PDFs, **Loupe** for images, **mpv** for videos and **Celluloid** for
   music files, set as the default apps for those files (an update leaves the ones you picked).
 - 📁 **Nautilus** for files, with thumbnails of videos, audio covers, PDFs, office documents, EPUBs, RAW photos and
@@ -523,7 +522,7 @@ without touching your preferences:
 - 🧩 **Your Hyprland preferences** go in `~/.config/hypr/personal/`. The installer fills it with commented examples
   from `hyprland/.config/hypr/personal.example/`, one per subject, each loaded after HyprPunk's own file so
   whatever you set wins:
-  - ⌨️ `keybindings.lua` to swap the apps the shortcuts open (`hyprpunk.programs.music = "spicetify auto"`), over
+  - ⌨️ `keybindings.lua` to swap the apps the shortcuts open (`hyprpunk.programs.music = "spotifast"`), over
     the terminal, browser, files and music apps picked in the settings, or
     add, rebind and free shortcuts with `hyprpunk.bind`, `hyprpunk.rebind` and `hyprpunk.unbind`. Your terminal
     and editor (`hyprpunk.programs.terminal` and `.editor`) are also what the shell opens your config files and
