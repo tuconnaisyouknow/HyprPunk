@@ -71,21 +71,22 @@ load_touchpads() {
     return 2
   }
   udev_touchpads_json="$(
-    if command -v udevadm >/dev/null 2>&1; then
-      local event_path properties hardware_name normalized_name
-      for event_path in "$INPUT_SYSFS"/event*; do
-        [[ -e "$event_path" ]] || continue
-        properties="$(udevadm info -q property -p "$event_path" 2>/dev/null || true)"
-        grep -q '^ID_INPUT_TOUCHPAD=1$' <<<"$properties" || continue
-        [[ -r "$event_path/device/name" ]] || continue
-        hardware_name="$(sed -n '1p' "$event_path/device/name")"
-        normalized_name="$(
-          printf '%s' "$hardware_name" |
-            LC_ALL=C tr '[:upper:]' '[:lower:]' |
-            sed -E 's/[^a-z0-9:_-]+/-/g; s/^-+//; s/-+$//'
-        )"
-        [[ -n "$normalized_name" ]] && printf '%s\n' "$normalized_name"
-      done
+    # One udevadm for every device, so the touchpad key answers at once
+    if command -v udevadm >/dev/null 2>&1 && compgen -G "$INPUT_SYSFS/event*" >/dev/null; then
+      local event hardware_name normalized_name
+      udevadm info -q property "$INPUT_SYSFS"/event* 2>/dev/null |
+        awk -F= '$1 == "DEVPATH" { n = split($2, parts, "/"); event = parts[n] }
+                 $0 == "ID_INPUT_TOUCHPAD=1" { print event }' |
+        while IFS= read -r event; do
+          [[ -r "$INPUT_SYSFS/$event/device/name" ]] || continue
+          hardware_name="$(sed -n '1p' "$INPUT_SYSFS/$event/device/name")"
+          normalized_name="$(
+            printf '%s' "$hardware_name" |
+              LC_ALL=C tr '[:upper:]' '[:lower:]' |
+              sed -E 's/[^a-z0-9:_-]+/-/g; s/^-+//; s/-+$//'
+          )"
+          [[ -n "$normalized_name" ]] && printf '%s\n' "$normalized_name"
+        done
     fi |
       jq -Rsc 'split("\n") | map(select(length > 0)) | unique'
   )"
