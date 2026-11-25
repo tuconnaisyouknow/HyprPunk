@@ -83,11 +83,10 @@ Rectangle {
     readonly property bool lyricsShown: player !== null && Music.lyricsShown
     readonly property bool lyricsFound: player !== null && Music.lyricsFound
     readonly property int lyricsLine: Music.lyricsLine(position)
-    // The side controls' glyphs, the skips' and play's: the main ones stand out.
+    // The side controls' icons, the skips' and play's: the main ones stand out.
     readonly property int sideIcon: Metrics.text.title
-    readonly property int modeGlyph: Metrics.text.title + 6
-    readonly property int skipGlyph: 20
-    readonly property int playGlyph: 24
+    readonly property int skipIcon: 20
+    readonly property int playIcon: 24
 
     // To another page: the cover, the title and the player's name leave the way the pages
     // go, and the next ones come in from the other side. The rest stays, and changes
@@ -600,20 +599,11 @@ Rectangle {
 
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
+            icon: card.player !== null && card.player.shuffle ? "shuffle_on" : "shuffle"
             iconSize: card.sideIcon
             lit: card.player !== null && card.player.shuffle
             enabled: card.player !== null && card.player.shuffleSupported
             onClicked: card.player.shuffle = !card.player.shuffle
-
-            ModeGlyph {
-                anchors.centerIn: parent
-                width: card.modeGlyph
-                height: width
-                kind: "shuffle"
-                shuffles: card.player !== null && card.player.shuffle
-                color: shuffleButton.ink
-            }
-
         }
 
         Row {
@@ -626,18 +616,11 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 40
                 height: width
+                icon: "skip_previous"
+                iconSize: card.skipIcon
                 lit: true
                 enabled: card.player !== null && card.player.canGoPrevious
                 onClicked: Music.skip(-1)
-
-                TransportGlyph {
-                    anchors.centerIn: parent
-                    width: card.skipGlyph
-                    height: width
-                    kind: "previous"
-                    color: previousButton.ink
-                }
-
             }
 
             IconButton {
@@ -646,18 +629,11 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 46
                 height: width
+                icon: card.playing ? "pause" : "play_arrow"
+                iconSize: card.playIcon
                 lit: true
                 enabled: card.player !== null && card.player.canTogglePlaying
                 onClicked: card.player.togglePlaying()
-
-                TransportGlyph {
-                    anchors.centerIn: parent
-                    width: card.playGlyph
-                    height: width
-                    playing: card.playing
-                    color: playButton.ink
-                }
-
             }
 
             IconButton {
@@ -666,18 +642,11 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 40
                 height: width
+                icon: "skip_next"
+                iconSize: card.skipIcon
                 lit: true
                 enabled: card.player !== null && card.player.canGoNext
                 onClicked: Music.skip(1)
-
-                TransportGlyph {
-                    anchors.centerIn: parent
-                    width: card.skipGlyph
-                    height: width
-                    kind: "next"
-                    color: nextButton.ink
-                }
-
             }
 
         }
@@ -687,19 +656,10 @@ Rectangle {
 
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
+            icon: card.player === null || card.player.loopState === MprisLoopState.None ? "repeat" : card.player.loopState === MprisLoopState.Track ? "repeat_one_on" : "repeat_on"
             iconSize: card.sideIcon
             lit: card.player !== null && card.player.loopState !== MprisLoopState.None
             enabled: card.player !== null && card.player.loopSupported
-
-            ModeGlyph {
-                anchors.centerIn: parent
-                width: card.modeGlyph
-                height: width
-                kind: "repeat"
-                repeatsTrack: card.player !== null && card.player.loopState === MprisLoopState.Track
-                color: repeatButton.ink
-            }
-
             onClicked: {
                 if (card.player.loopState === MprisLoopState.None)
                     card.player.loopState = MprisLoopState.Playlist;

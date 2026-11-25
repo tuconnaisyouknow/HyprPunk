@@ -6,6 +6,27 @@ import Quickshell
 // The status icons the bar, the island and the control center share, so the same
 // level always gets the same Material Symbols icon (Icon draws them by name).
 Singleton {
+    // Icons that change into one another, by family: Icon goes from one to the other
+    // (IconMorph) rather than swapping.
+    readonly property var family: {
+        const families = {
+            "volume": ["volume_up", "volume_down", "volume_mute", "volume_off"],
+            "brightness": ["brightness_low", "brightness_medium", "brightness_high"],
+            "wifi": ["signal_wifi_0_bar", "network_wifi_1_bar", "network_wifi_2_bar", "network_wifi_3_bar", "signal_wifi_4_bar", "network_wifi_1_bar_locked", "network_wifi_2_bar_locked", "network_wifi_3_bar_locked", "signal_wifi_4_bar_lock", "signal_wifi_off"],
+            "battery": ["battery_0_bar", "battery_1_bar", "battery_2_bar", "battery_3_bar", "battery_4_bar", "battery_5_bar", "battery_6_bar", "battery_full", "battery_charging_20", "battery_charging_30", "battery_charging_50", "battery_charging_60", "battery_charging_80", "battery_charging_90", "battery_charging_full"],
+            "play": ["play_arrow", "pause"],
+            "shuffle": ["shuffle", "shuffle_on"],
+            "repeat": ["repeat", "repeat_on", "repeat_one", "repeat_one_on"]
+        };
+        const family = {};
+        for (const name in families) {
+            for (const icon of families[name])
+                family[icon] = name;
+
+        }
+        return family;
+    }
+
     // volume in %, 0 to 100.
     function volume(volume, muted) {
         if (muted)

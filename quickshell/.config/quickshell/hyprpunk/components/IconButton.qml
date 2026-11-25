@@ -1,9 +1,8 @@
 import QtQuick
 import qs.theme
 
-// A glyph you click, like a card's close cross or the player's controls: a glass halo
-// shows only under the pointer, so it stays discreet. A glyph drawn rather than typed (the
-// player's skips) goes in as a child, in its ink. It bounces when clicked, and takes
+// An icon you click, like a card's close cross or the player's controls: a glass halo
+// shows only under the pointer, so it stays discreet. It bounces when clicked, and takes
 // the click on press, away from a card's own click under it.
 Item {
     id: button
@@ -13,8 +12,6 @@ Item {
     // In the accent even at rest: a main control, or a switch that's on.
     property bool lit: false
     readonly property bool hovered: hover.hovered
-    // The glyph's color, as it fades.
-    readonly property alias ink: glyph.color
     // Its shape, which the keyboard's ring follows.
     readonly property real radius: height / 2
 

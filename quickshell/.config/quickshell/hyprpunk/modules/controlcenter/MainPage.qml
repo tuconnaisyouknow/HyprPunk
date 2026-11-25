@@ -93,7 +93,7 @@ ControlPage {
 
             ControlTile {
                 Layout.fillWidth: true
-                icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "signal_wifi_0_bar") : "wifi_off"
+                icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "signal_wifi_0_bar") : "signal_wifi_off"
                 title: "Wi-Fi"
                 subtitle: page.wifiSubtitle()
                 name: Networking.wifiEnabled && NetworkStatus.activeWifi !== null ? NetworkStatus.activeWifi.name : ""

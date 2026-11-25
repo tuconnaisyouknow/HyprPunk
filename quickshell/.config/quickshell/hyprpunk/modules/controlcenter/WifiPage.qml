@@ -202,7 +202,7 @@ ControlPage {
                         Layout.topMargin: Metrics.spacing.normal
                         Layout.bottomMargin: Metrics.spacing.normal
                         visible: NetworkStatus.wifiNetworks.length === 0
-                        icon: Networking.wifiEnabled ? "signal_wifi_0_bar" : "wifi_off"
+                        icon: Networking.wifiEnabled ? "signal_wifi_0_bar" : "signal_wifi_off"
                         text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
                         color: Colors.secondary
                         font.pixelSize: Metrics.text.emphasis
