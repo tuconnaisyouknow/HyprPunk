@@ -24,8 +24,9 @@ PillPopup {
     // The island as you see it, zoomed under the pointer, which they start from.
     readonly property real zoomX: 1 + 2 * islandPill.spreadX / Math.max(islandPill.width, 1)
     readonly property real zoomY: 1 + 2 * islandPill.spreadY / Math.max(islandPill.height, 1)
-    // The island's middle, from the card's left edge.
-    readonly property real islandMiddle: bar.width / 2 + islandPill.centerOffset - frameContent.x
+    // The island's middle, from the left edge of the content's room, which stays put on
+    // screen while the shape grows (PillPopup): the shape's own edge moves.
+    readonly property real islandMiddle: bar.width / 2 + islandPill.centerOffset - x
     // The cover's and the equalizer's slot in the island.
     readonly property real slotSize: Metrics.pillHeight - 2 * Metrics.islandMusicInset
     // They show while the card is the island's, or folds back onto the island's music.
@@ -42,7 +43,7 @@ PillPopup {
     function flyX(islandX, playerX, size) {
         const start = islandMiddle + (islandX + slotSize / 2 - islandPill.width / 2) * zoomX;
         const end = musicPlayerCard.x + playerX;
-        const left = frame.steadyShape.x - frameContent.x;
+        const left = frame.steadyShape.x - x;
         const edge = Metrics.islandMusicInset + size / 2;
         return Math.round(Math.max(left + edge, Math.min(left + frame.steadyShape.width - edge, start + (end - start) * flight)) - size / 2);
     }
