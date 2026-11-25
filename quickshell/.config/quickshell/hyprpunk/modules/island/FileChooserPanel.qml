@@ -411,7 +411,7 @@ IslandPanel {
         anchors.top: header.bottom
         anchors.topMargin: picker.sectionSpacing
         width: picker.contentWidth
-        icon: picker.intent === "new" ? "note_add" : picker.intent === "rename" ? "edit" : picker.saving ? "save" : "search"
+        icon: picker.intent === "new" ? "create_new_folder" : picker.intent === "rename" ? "edit" : picker.saving ? "save" : "search"
         placeholder: picker.intent === "new" ? (picker.pickingFolder ? "New folder's name" : "New file's name, or a folder's ending with /") : picker.intent === "rename" ? "New name" : picker.saving ? "File name" : "Filter, or a path from / or ~"
         // What Enter will do.
         hint: picker.intent === "new" ? (picker.makesFolder ? "Create folder" : "Create file") : picker.intent === "rename" ? "Rename" : picker.intent === "trash" ? (picker.trashTargets.length > 1 ? "Move " + picker.trashTargets.length + " to the trash" : "Move to the trash") : picker.intent === "replace" ? "Enter again to replace" : picker.selected && picker.selected.isDir ? "Open folder" : picker.selected || picker.saving || picker.pickingFolder || picker.marked.length > 0 ? picker.answerLabel : ""
@@ -658,10 +658,14 @@ IslandPanel {
 
             IconButton {
                 anchors.verticalCenter: parent.verticalCenter
-                icon: "note_add"
+                icon: "create_new_folder"
                 iconSize: Metrics.text.title
                 lit: picker.intent === "new"
                 onClicked: picker.create()
+
+                ToolTipArea {
+                    text: "New folder · Ctrl+N"
+                }
             }
 
             IconButton {
@@ -671,6 +675,10 @@ IslandPanel {
                 lit: picker.intent === "rename"
                 enabled: picker.selected !== null
                 onClicked: picker.rename()
+
+                ToolTipArea {
+                    text: "Rename · F2"
+                }
             }
 
             IconButton {
@@ -680,6 +688,10 @@ IslandPanel {
                 lit: picker.intent === "trash"
                 enabled: picker.trashTargets.length > 0
                 onClicked: picker.armTrash()
+
+                ToolTipArea {
+                    text: "Move to trash · Delete"
+                }
             }
 
         }

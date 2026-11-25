@@ -269,6 +269,7 @@ Item {
 
                 Pill {
                     clickable: true
+                    tip: "Install the updates in a terminal"
                     onClicked: Updates.upgrade()
 
                     IconText {

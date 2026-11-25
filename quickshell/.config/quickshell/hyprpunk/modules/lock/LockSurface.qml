@@ -914,6 +914,7 @@ WlSessionLockSurface {
 
                     width: 380
                     lyricsInside: false
+                    tooltips: false
                     active: player !== null
                     player: LockSettings.player ? Music.player : null
                     backgroundColor: Colors.alpha(Colors.base, 0.55)

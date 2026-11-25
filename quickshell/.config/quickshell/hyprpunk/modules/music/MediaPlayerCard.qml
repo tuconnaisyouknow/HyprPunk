@@ -30,6 +30,8 @@ Rectangle {
     // Off when the lyrics are shown somewhere else (under the card on the lock screen),
     // which then uses lyricsLine.
     property bool lyricsInside: true
+    // Off on the lock screen, whose surface can't hold a popup.
+    property bool tooltips: true
     // Where the artwork and the equalizer sit, for the island's player flying them in.
     readonly property int artSize: 56
     readonly property int artMargin: Metrics.spacing.huge
@@ -580,6 +582,12 @@ Rectangle {
         lit: card.lyricsShown
         enabled: card.player !== null
         onClicked: Lyrics.setEnabled(!Lyrics.enabled)
+
+        ToolTipArea {
+            visible: card.tooltips
+            text: "Lyrics"
+        }
+
     }
 
     // The side controls' glyphs line up with the cover and the bar's ends, their halo

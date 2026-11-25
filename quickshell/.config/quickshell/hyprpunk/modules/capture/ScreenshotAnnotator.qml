@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.components
 import qs.theme
 
@@ -31,22 +32,28 @@ Item {
     property bool saving: false
     readonly property var tools: [{
         "value": "pen",
-        "icon": "edit"
+        "icon": "edit",
+        "name": "Pen"
     }, {
         "value": "highlight",
-        "icon": "ink_highlighter"
+        "icon": "ink_highlighter",
+        "name": "Highlighter"
     }, {
         "value": "arrow",
-        "icon": "arrow_right_alt"
+        "icon": "arrow_right_alt",
+        "name": "Arrow"
     }, {
         "value": "rect",
-        "icon": "rectangle"
+        "icon": "rectangle",
+        "name": "Rectangle"
     }, {
         "value": "ellipse",
-        "icon": "circle"
+        "icon": "circle",
+        "name": "Ellipse"
     }, {
         "value": "text",
-        "icon": "text_fields"
+        "icon": "text_fields",
+        "name": "Text"
     }]
     readonly property var colors: [Colors.red, Colors.peach, Colors.yellow, Colors.green, Colors.blue, Colors.primary]
 
@@ -301,6 +308,8 @@ Item {
 
         readonly property real below: annotator.region.y + annotator.region.height + 12
         readonly property real above: annotator.region.y - height - 12
+        // The names stand away from the region, so they never hide what you draw.
+        readonly property int tipEdge: y === below ? Edges.Bottom : Edges.Top
 
         x: Math.max(12, Math.min(annotator.width - width - 12, annotator.region.x + annotator.region.width / 2 - width / 2))
         y: below + height <= annotator.height - 12 ? below : above >= 12 ? above : annotator.region.y + annotator.region.height - height - 12
@@ -332,6 +341,8 @@ Item {
                     required property var modelData
 
                     icon: modelData.icon
+                    tip: modelData.name
+                    tipEdge: toolbar.tipEdge
                     chosen: annotator.tool === modelData.value
                     onClicked: {
                         annotator.commitText();
@@ -344,6 +355,8 @@ Item {
             // Filled or outlined, for the rectangles and ellipses.
             ToolButton {
                 icon: "format_color_fill"
+                tip: "Fill"
+                tipEdge: toolbar.tipEdge
                 chosen: annotator.filled
                 enabled: annotator.boxed(annotator.tool)
                 opacity: enabled ? 1 : 0.35
@@ -406,16 +419,37 @@ Item {
 
                 Item {
                     required property int index
+                    readonly property bool chosen: annotator.size === index
+                    readonly property int dot: [6, 10, 15][index]
 
                     implicitWidth: 26
                     implicitHeight: 34
 
+                    // Ringed like the chosen color, as far from its dot.
                     Rectangle {
                         anchors.centerIn: parent
-                        width: [6, 10, 15][parent.index]
+                        width: parent.chosen ? parent.dot + 8 : parent.dot + 2
                         height: width
                         radius: width / 2
-                        color: annotator.size === parent.index ? Colors.primary : Colors.secondary
+                        color: "transparent"
+                        border.width: parent.chosen ? 2 : 0
+                        border.color: Colors.primary
+
+                        Behavior on width {
+                            Anim {
+                                token: Motion.pop
+                            }
+
+                        }
+
+                    }
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.dot
+                        height: width
+                        radius: width / 2
+                        color: parent.chosen ? Colors.primary : Colors.secondary
 
                         ColorFade on color {
                             token: Motion.color.small
@@ -428,6 +462,11 @@ Item {
                         onTapped: annotator.size = parent.index
                     }
 
+                    ToolTipArea {
+                        text: ["Small", "Medium", "Large"][parent.index]
+                        edge: toolbar.tipEdge
+                    }
+
                 }
 
             }
@@ -437,16 +476,22 @@ Item {
 
             ToolButton {
                 icon: "undo"
+                tip: "Undo · Ctrl+Z"
+                tipEdge: toolbar.tipEdge
                 onClicked: annotator.undo()
             }
 
             ToolButton {
                 icon: "close"
+                tip: "Cancel · Escape"
+                tipEdge: toolbar.tipEdge
                 onClicked: annotator.cancelled()
             }
 
             ToolButton {
                 icon: "check"
+                tip: "Save · Enter"
+                tipEdge: toolbar.tipEdge
                 chosen: true
                 onClicked: annotator.save()
             }
@@ -467,6 +512,9 @@ Item {
         id: button
 
         property string icon
+        // Its name, and its key when it has one.
+        property string tip
+        property int tipEdge: Edges.Bottom
         property bool chosen: false
 
         signal clicked()
@@ -492,6 +540,11 @@ Item {
             id: buttonHover
 
             cursorShape: Qt.PointingHandCursor
+        }
+
+        ToolTipArea {
+            text: button.tip
+            edge: button.tipEdge
         }
 
         TapHandler {

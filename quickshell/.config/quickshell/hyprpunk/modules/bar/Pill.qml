@@ -16,6 +16,8 @@ Rectangle {
     // Opens something on a click (clicked()): it answers the pointer like the control
     // center's blocks (PillZoom).
     property bool clickable: false
+    // What a click does, under the pointer, when the pill doesn't say it.
+    property string tip: ""
     // The pointer is on the pill's spot in the card that covers it, which takes the
     // pointer from the pill: it stays lit, so the card folds back onto the pill as
     // you'll see it.
@@ -80,6 +82,12 @@ Rectangle {
         // Pressed as long as you like: it squeezes, and opens on release.
         longPressThreshold: 0
         onTapped: pill.clicked()
+    }
+
+    // Below the pill, the bar being at the top.
+    ToolTipArea {
+        visible: pill.tip !== ""
+        text: pill.tip
     }
 
     RowLayout {
