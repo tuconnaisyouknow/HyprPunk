@@ -41,6 +41,16 @@ for _, device in ipairs(state.devices) do
   })
 end
 
+-- Caps Lock and Num Lock tell the shell they moved, so its OSD shows at once. The lock
+-- itself changes only once the key is handled, so the shell asks for it afterwards.
+local lockKeys = { [66] = true, [77] = true }
+
+hl.on("input.keyboard.key", function(keycode)
+  if lockKeys[keycode] then
+    hl.dispatch(hl.dsp.event("hyprpunk-locks"))
+  end
+end)
+
 --------------
 -- GESTURES --
 --------------

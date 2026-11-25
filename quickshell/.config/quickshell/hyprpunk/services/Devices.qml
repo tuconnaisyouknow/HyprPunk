@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
 
@@ -26,11 +27,6 @@ Singleton {
     // change shows no OSD. Idle sets them before it dims things.
     property real keyboardOsdMutedUntil: 0
     property real screenOsdMutedUntil: 0
-    // The keyboards' Caps Lock and Num Lock lights, as the kernel exposes them.
-    property var capsLockLeds: []
-    property var numLockLeds: []
-    // Path of each light that's on.
-    property var ledsOn: ({})
     property bool locksKnown: false
     property bool touchpadKnown: false
     property bool keyboardHwKnown: false
@@ -66,20 +62,6 @@ Singleton {
         locksKnown = true;
     }
 
-    function ledChanged(path, on) {
-        if (ledsOn[path] === on)
-            return ;
-
-        const leds = Object.assign({}, ledsOn);
-        leds[path] = on;
-        ledsOn = leds;
-        updateLocks(capsLockLeds.some((led) => {
-            return leds[led];
-        }), numLockLeds.some((led) => {
-            return leds[led];
-        }));
-    }
-
     // A change Idle announced is not shown, only that one.
     function screenOsdMuted() {
         const muted = Date.now() < screenOsdMutedUntil;
@@ -97,65 +79,29 @@ Singleton {
         return muted;
     }
 
-    // Lists the lights again when a keyboard comes or goes.
+    // The keyboard you type on: Hyprland keeps each one's locks apart. Read at startup,
+    // then each time Hyprland says a lock key was handled (input.lua).
     Process {
-        id: ledList
+        id: locksRead
 
-        command: ["sh", "-c", "for led in /sys/class/leds/*::capslock /sys/class/leds/*::numlock; do [ -e \"$led/brightness\" ] && echo \"$led\"; done"]
+        // A lock key pressed while the last answer was on its way: ask again after it.
+        property bool asked: false
+
+        function ask() {
+            if (running)
+                asked = true;
+            else
+                running = true;
+        }
+
+        command: ["sh", "-c", "hyprctl devices -j 2>/dev/null | jq -r '.keyboards[] | select(.main) | .capsLock, .numLock'"]
         running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const leds = text.split("\n").filter((line) => {
-                    return line !== "";
-                });
-                devices.capsLockLeds = leds.filter((led) => {
-                    return led.endsWith("::capslock");
-                });
-                devices.numLockLeds = leds.filter((led) => {
-                    return led.endsWith("::numlock");
-                });
+        onExited: {
+            if (asked) {
+                asked = false;
+                running = true;
             }
         }
-
-    }
-
-    Variants {
-        id: ledFiles
-
-        model: devices.capsLockLeds.concat(devices.numLockLeds)
-
-        FileView {
-            required property string modelData
-
-            path: modelData + "/brightness"
-            printErrors: false
-            onLoaded: devices.ledChanged(modelData, parseInt(text()) > 0)
-        }
-
-    }
-
-    // sysfs sends no event when a light changes, so they are read a few times a second.
-    // Reading a file is cheap, unlike starting a command each time.
-    Timer {
-        interval: 120
-        running: true
-        repeat: true
-        onTriggered: {
-            if (devices.capsLockLeds.length > 0 || devices.numLockLeds.length > 0) {
-                for (const file of ledFiles.instances)
-                    file.reload();
-            } else if (!ledList.running && !hyprlandLocks.running) {
-                hyprlandLocks.running = true;
-            }
-        }
-    }
-
-    // For keyboards without lights, ask Hyprland instead.
-    Process {
-        id: hyprlandLocks
-
-        command: ["sh", "-c", "hyprctl devices -j 2>/dev/null | jq -r '([.keyboards[]?.capsLock] | any), ([.keyboards[]?.numLock] | any)'"]
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -166,6 +112,16 @@ Singleton {
             }
         }
 
+    }
+
+    Connections {
+        function onRawEvent(event) {
+            if (event.name === "custom" && event.data === "hyprpunk-locks")
+                locksRead.ask();
+
+        }
+
+        target: Hyprland
     }
 
     Process {
@@ -202,21 +158,17 @@ Singleton {
         onTriggered: Quickshell.execDetached(["brightnessctl", "-c", "backlight", "set", devices.pendingBrightness + "%"])
     }
 
-    // The backlight and the keyboards' lights only send events when they change.
+    // The backlight only sends events when it changes.
     TiedProcess {
-        program: ["udevadm", "monitor", "--kernel", "--subsystem-match=backlight", "--subsystem-match=leds"]
+        program: ["udevadm", "monitor", "--kernel", "--subsystem-match=backlight"]
         running: true
 
         stdout: SplitParser {
             onRead: (line) => {
-                if (line.includes("(backlight)")) {
-                    // Still writing what the slider asked for: read it back once written.
-                    if (!brightnessWriteDelay.running)
-                        brightnessRead.running = true;
+                // Still writing what the slider asked for: read it back once written.
+                if (line.includes("(backlight)") && !brightnessWriteDelay.running)
+                    brightnessRead.running = true;
 
-                } else if (/ (add|remove) /.test(line) && /::(capslock|numlock)/.test(line)) {
-                    ledList.running = true;
-                }
             }
         }
 
