@@ -3,6 +3,7 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import qs.components
 import qs.modules.airpods
 import qs.modules.bar
 import qs.modules.capture
@@ -82,14 +83,11 @@ Scope {
 
             model: shell.screenState !== null ? shell.screenState.blurShapes : []
 
-            Region {
+            RoundedRegion {
                 required property var modelData
 
-                x: modelData.place.x
-                y: modelData.place.y
-                width: modelData.place.width
-                height: modelData.place.height
-                radius: modelData.placeRadius
+                box: modelData.place
+                cornerRadius: modelData.placeRadius
             }
 
         }
@@ -427,14 +425,11 @@ Scope {
 
             model: window.cards
 
-            Region {
+            RoundedRegion {
                 required property var modelData
 
-                x: modelData.covering ? modelData.cardRect.x : 0
-                y: modelData.covering ? modelData.cardRect.y : 0
-                width: modelData.covering ? modelData.cardRect.width : 0
-                height: modelData.covering ? modelData.cardRect.height : 0
-                radius: modelData.cardRadius
+                box: modelData.covering ? modelData.cardRect : Qt.rect(0, 0, 0, 0)
+                cornerRadius: modelData.cardRadius
             }
 
         }

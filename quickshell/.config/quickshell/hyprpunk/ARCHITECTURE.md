@@ -107,7 +107,8 @@ in that surface (a card's preview, its pinned state, the page shown).
   blurs the whole of a window that asks for blur, again at every frame something moves
   behind it. So the pills' blur belongs to a second window of the bar's size that draws
   nothing (a glass on the desktop puts a `BlurShape` in itself), and the shell's window
-  only asks for its open cards' (`Card.cardRect`). Never a blur rule on a full-screen
+  only asks for its open cards' (`Card.cardRect`). Both on the glass's own pixels
+  (`RoundedRegion`): Qt's rounded regions miss its edge. Never a blur rule on a full-screen
   layer: it cost a third of the graphics card all through a wallpaper's transition.
 - **What's closed costs nothing, and opens without a stall.** A card's content is built
   off the critical path: by an asynchronous `Loader` once the bar has its first values.

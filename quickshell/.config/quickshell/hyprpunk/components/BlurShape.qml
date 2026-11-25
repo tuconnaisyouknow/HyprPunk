@@ -5,6 +5,7 @@ import qs.state
 // in the glass, it fills it and tells its screen where it is (ScreenShell blurs there).
 // Its place is read at each frame of the window: nothing tells when a parent moves an
 // item or a zoom draws it bigger. The cards' glass doesn't need one (Card.cardRect).
+// Its screen blurs a RoundedRegion there, which puts it on whole pixels.
 Item {
     id: shape
 
@@ -20,8 +21,7 @@ Item {
     property var listedOn: null
 
     function locate() {
-        const drawn = mapToItem(null, 0, 0, width, height);
-        place = Qt.rect(Math.round(drawn.x), Math.round(drawn.y), Math.round(drawn.width), Math.round(drawn.height));
+        place = mapToItem(null, 0, 0, width, height);
     }
 
     function list() {
