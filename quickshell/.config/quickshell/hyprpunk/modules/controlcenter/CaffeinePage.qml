@@ -55,7 +55,7 @@ ControlPage {
             readonly property bool chosen: ShellState.caffeine && ShellState.caffeineMinutes === modelData.minutes
 
             Layout.fillWidth: true
-            icon: modelData.minutes === 0 ? "󰅶" : "󰔛"
+            icon: modelData.minutes === 0 ? "coffee" : "timer"
             title: modelData.label
             // The chosen duration ends at: "Until 22:10".
             subtitle: chosen && ShellState.caffeineUntil > 0 ? "Until " + Session.shortTime(new Date(ShellState.caffeineUntil)) : ""

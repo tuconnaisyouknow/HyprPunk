@@ -93,7 +93,7 @@ ControlPage {
 
             ControlTile {
                 Layout.fillWidth: true
-                icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "󰤯") : "󰤭"
+                icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "signal_wifi_0_bar") : "wifi_off"
                 title: "Wi-Fi"
                 subtitle: page.wifiSubtitle()
                 name: Networking.wifiEnabled && NetworkStatus.activeWifi !== null ? NetworkStatus.activeWifi.name : ""
@@ -106,7 +106,7 @@ ControlPage {
 
             ControlTile {
                 Layout.fillWidth: true
-                icon: BluetoothStatus.enabled ? (BluetoothStatus.connected.length > 0 ? "󰂱" : "󰂯") : "󰂲"
+                icon: BluetoothStatus.enabled ? (BluetoothStatus.connected.length > 0 ? "bluetooth_connected" : "bluetooth") : "bluetooth_disabled"
                 title: "Bluetooth"
                 subtitle: page.bluetoothSubtitle()
                 name: BluetoothStatus.enabled && BluetoothStatus.connected.length === 1 ? BluetoothStatus.connected[0].deviceName : ""
@@ -128,7 +128,7 @@ ControlPage {
             ControlTile {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                icon: NightLight.active ? "󰛨" : "󰌶"
+                icon: "lightbulb"
                 title: "Night light"
                 subtitle: page.nightLightSubtitle()
                 active: NightLight.active
@@ -140,7 +140,7 @@ ControlPage {
             ControlTile {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                icon: ShellState.caffeine ? "󰅶" : "󰾪"
+                icon: "coffee"
                 title: "Caffeine"
                 subtitle: page.caffeineSubtitle()
                 active: ShellState.caffeine

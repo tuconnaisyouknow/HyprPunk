@@ -13,7 +13,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰝚"
+        icon: "music_note"
         title: "Show what's playing"
         description: "The player and its lyrics under the clock, which anyone at the screen can see and pause."
         checkable: true
@@ -23,7 +23,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰗘"
+        icon: "animation"
         title: "Animation"
         description: "The lock blurs in out of your desktop and plays its way out. Off, it covers the screen and leaves it at once, and only the island moves."
         checkable: true

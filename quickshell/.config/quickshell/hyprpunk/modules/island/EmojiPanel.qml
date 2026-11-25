@@ -73,7 +73,7 @@ SearchPanel {
     }
 
     panelName: "emoji"
-    searchIcon: "󰱨"
+    searchIcon: "mood"
     placeholder: "Search emojis"
     hint: selectedIndex >= 0 && selectedIndex < results.length ? results[selectedIndex].name : ""
     count: results.length

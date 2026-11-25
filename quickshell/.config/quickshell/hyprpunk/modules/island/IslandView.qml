@@ -144,15 +144,14 @@ Item {
                 openWidth: 2 * Math.round(padlockIcon.implicitWidth / 2)
                 openHeight: padlockIcon.implicitHeight
 
-                Text {
+                Icon {
                     id: padlockIcon
 
                     x: Math.round((parent.width - implicitWidth) / 2)
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "󰌾"
+                    text: "lock"
                     color: Colors.primary
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.title
+                    size: Metrics.text.title
                 }
 
             }

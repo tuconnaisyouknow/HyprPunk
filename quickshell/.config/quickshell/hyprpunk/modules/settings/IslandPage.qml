@@ -15,44 +15,44 @@ SettingsPage {
     // Each change the island can show, as osdctl.sh names it.
     readonly property var changes: [{
         "name": "volume",
-        "icon": "󰕾",
+        "icon": "volume_up",
         "title": "Volume",
         "description": "The volume keys, and any app changing the volume."
     }, {
         "name": "microphone",
-        "icon": "󰍬",
+        "icon": "mic",
         "title": "Microphone",
         "description": "Muted or back on."
     }, {
         "name": "brightness",
-        "icon": "󰃠",
+        "icon": "brightness_high",
         "title": "Brightness",
         "description": "The screen's and the keyboard's light."
     }, {
         "name": "keys",
-        "icon": "󰪛",
+        "icon": "keyboard_capslock",
         "title": "Caps Lock, Num Lock and the touchpad key",
         "description": "On or off."
     }, {
         "name": "power",
-        "icon": "󰚥",
+        "icon": "power",
         "title": "Plugged in or on battery",
         "description": "With the time left. The battery's warnings always show."
     }, {
         "name": "airpods",
-        "icon": "󱡏",
+        "icon": "earbuds",
         "title": "AirPods",
         "description": "Their battery, as they connect."
     }, {
         "name": "screenshots",
-        "icon": "󰹑",
+        "icon": "screenshot_monitor",
         "title": "Screenshots and recordings",
         "description": "A preview of what you just took, to open it."
     }]
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰔛"
+        icon: "timer"
         title: "How long they stay"
 
         SegmentedControl {
@@ -60,15 +60,15 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "short",
-                "icon": "󰾆",
+                "icon": "clock_loader_20",
                 "label": "Short"
             }, {
                 "value": "normal",
-                "icon": "󰾅",
+                "icon": "clock_loader_60",
                 "label": "Normal"
             }, {
                 "value": "long",
-                "icon": "󰓅",
+                "icon": "speed",
                 "label": "Long"
             }]
             value: OsdSettings.duration

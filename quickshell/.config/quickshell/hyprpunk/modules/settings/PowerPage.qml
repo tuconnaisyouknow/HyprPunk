@@ -17,28 +17,28 @@ SettingsPage {
     property string source: Power.source
     readonly property var steps: [{
         "step": "keyboard",
-        "icon": "󰌌",
+        "icon": "keyboard",
         "title": "Keyboard light",
         "description": "Turns off when you stop typing.",
         "values": [0, 10, 30, 60, 120, 300],
         "needs": "keyboard"
     }, {
         "step": "dim",
-        "icon": "󰃞",
+        "icon": "brightness_low",
         "title": "Dim the screen",
         "description": "Lowers the brightness, a warning before it locks.",
         "values": [0, 60, 120, 300, 600, 900, 1800],
         "needs": "screen"
     }, {
         "step": "lock",
-        "icon": "󰌾",
+        "icon": "lock",
         "title": "Lock the screen",
         "description": "And turns the screens off.",
         "values": [0, 60, 120, 300, 600, 900, 1800, 3600],
         "needs": ""
     }, {
         "step": "suspend",
-        "icon": "󰒲",
+        "icon": "bedtime",
         "title": "Sleep",
         "description": "Suspends the computer.",
         "values": [0, 300, 600, 900, 1800, 3600, 7200],
@@ -79,11 +79,11 @@ SettingsPage {
         compact: true
         options: [{
             "value": "plugged",
-            "icon": "󰚥",
+            "icon": "power",
             "label": "Plugged in"
         }, {
             "value": "battery",
-            "icon": "󰁹",
+            "icon": "battery_full",
             "label": "On battery"
         }]
         value: page.source
@@ -120,7 +120,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰝚"
+        icon: "music_note"
         title: "Stay awake while media plays"
         description: "Music or a video playing holds off dimming, locking and sleep."
         checkable: true

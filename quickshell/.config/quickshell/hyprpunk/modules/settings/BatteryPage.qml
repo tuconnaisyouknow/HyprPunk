@@ -84,7 +84,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰁻"
+        icon: "battery_2_bar"
         title: "Low battery"
         description: "The island warns you, and the battery turns red in the bar."
 
@@ -104,7 +104,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰂃"
+        icon: "battery_alert"
         title: "Critical battery"
         description: "The warning stays in the island until you plug it in."
 
@@ -124,7 +124,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰐥"
+        icon: "power_settings_new"
         title: "When it's critical"
         description: "A minute after the warning, if it's still not plugged in, rather than dying on you. Sleep keeps your work open but slowly drains the battery; shutting down closes what isn't saved."
 
@@ -133,15 +133,15 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "none",
-                "icon": "󰂚",
+                "icon": "notifications",
                 "label": "Only warn"
             }, {
                 "value": "suspend",
-                "icon": "󰒲",
+                "icon": "bedtime",
                 "label": "Sleep"
             }, {
                 "value": "poweroff",
-                "icon": "󰐥",
+                "icon": "power_settings_new",
                 "label": "Shut down"
             }]
             value: BatterySettings.action

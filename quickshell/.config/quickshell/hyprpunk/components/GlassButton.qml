@@ -49,10 +49,11 @@ Item {
         id: content
 
         anchors.centerIn: parent
-        width: Math.min(implicitWidth, button.width - 2 * Metrics.spacing.large)
+        // Squeezed, the words elide within a margin. An icon alone needs none, and would
+        // stick out of so narrow a box, off centre.
+        width: button.label !== "" ? Math.min(implicitWidth, button.width - 2 * Metrics.spacing.large) : implicitWidth
         icon: button.icon
-        // Alone, the icon or the words would sit off centre by the gap.
-        gap: button.icon !== "" && button.label !== "" ? font.pixelSize / 2 : 0
+        filled: button.active
         text: button.label
         elide: Text.ElideRight
         color: button.accent ? Colors.over(Colors.primary) : button.active ? Colors.primary : Colors.secondary

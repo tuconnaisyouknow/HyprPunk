@@ -28,7 +28,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰀻"
+        icon: "apps"
         title: "Apps"
         description: LauncherSettings.pinned.length + " pinned, " + LauncherSettings.hidden.length + " hidden."
 
@@ -71,13 +71,12 @@ SettingsPage {
                             opacity: app.hidden ? 0.5 : 1
                         }
 
-                        Text {
+                        Icon {
                             anchors.centerIn: parent
                             visible: app.iconPath === ""
-                            text: "󰀻"
+                            text: "apps"
                             color: Colors.secondary
-                            font.family: Metrics.font
-                            font.pixelSize: Metrics.text.title
+                            size: Metrics.text.title
                         }
 
                     }
@@ -93,7 +92,7 @@ SettingsPage {
                     }
 
                     GlassButton {
-                        icon: "󰐃"
+                        icon: "keep"
                         label: "Pin"
                         accent: app.pinned
                         activeFocusOnTab: true
@@ -101,7 +100,7 @@ SettingsPage {
                     }
 
                     GlassButton {
-                        icon: "󰈉"
+                        icon: "visibility_off"
                         label: "Hide"
                         accent: app.hidden
                         activeFocusOnTab: true

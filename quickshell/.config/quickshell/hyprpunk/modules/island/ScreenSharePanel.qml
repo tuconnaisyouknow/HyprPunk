@@ -158,11 +158,10 @@ IslandPanel {
             anchors.verticalCenter: parent.verticalCenter
             spacing: Metrics.spacing.normal
 
-            Text {
-                text: "󰹑"
+            Icon {
+                text: "screenshot_monitor"
                 color: Colors.primary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.emphasis
+                size: Metrics.text.emphasis
             }
 
             Text {
@@ -183,11 +182,11 @@ IslandPanel {
             value: picker.tab
             options: [{
                 "value": "screens",
-                "icon": "󰍹",
+                "icon": "monitor",
                 "label": "Screens"
             }, {
                 "value": "windows",
-                "icon": "󰖯",
+                "icon": "select_window",
                 "label": "Windows"
             }]
             onSelected: (value) => {
@@ -355,14 +354,14 @@ IslandPanel {
 
             // The app can share the same thing again next time without asking.
             GlassButton {
-                icon: "󰁯"
+                icon: "settings_backup_restore"
                 label: "Remember"
                 active: picker.remember
                 onClicked: picker.remember = !picker.remember
             }
 
             GlassButton {
-                icon: "󰩭"
+                icon: "screenshot_region"
                 label: "Region"
                 onClicked: picker.drawRegion()
             }

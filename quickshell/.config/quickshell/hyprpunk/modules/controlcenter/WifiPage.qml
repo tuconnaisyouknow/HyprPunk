@@ -21,11 +21,11 @@ ControlPage {
     property string tab: "wifi"
     readonly property var tabs: [{
         "value": "wifi",
-        "icon": "󰤨",
+        "icon": "signal_wifi_4_bar",
         "label": "Wi-Fi"
     }, {
         "value": "vpn",
-        "icon": "󰖂",
+        "icon": "vpn_key",
         "label": "VPN"
     }]
     readonly property int tabIndex: tab === "vpn" ? 1 : 0
@@ -202,7 +202,7 @@ ControlPage {
                         Layout.topMargin: Metrics.spacing.normal
                         Layout.bottomMargin: Metrics.spacing.normal
                         visible: NetworkStatus.wifiNetworks.length === 0
-                        icon: Networking.wifiEnabled ? "󰤯" : "󰤭"
+                        icon: Networking.wifiEnabled ? "signal_wifi_0_bar" : "wifi_off"
                         text: Networking.wifiEnabled ? "Searching for networks…" : "Wi-Fi is off"
                         color: Colors.secondary
                         font.pixelSize: Metrics.text.emphasis
@@ -249,7 +249,7 @@ ControlPage {
                                     icon: Icons.wifi(modelData.signalStrength, false)
                                     title: modelData.name
                                     subtitle: modelData.stateChanging ? (modelData.connected ? "Disconnecting…" : "Connecting…") : modelData.connected ? "Connected" : modelData.known ? "Saved" : ""
-                                    trailing: WifiProfiles.needsSecrets(modelData) ? "󰌾" : ""
+                                    trailing: WifiProfiles.needsSecrets(modelData) ? "lock" : ""
                                     highlighted: modelData.connected
                                     detailsAvailable: modelData.known
                                     onClicked: page.select(modelData)
@@ -288,7 +288,7 @@ ControlPage {
                             IconText {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                icon: "󰌾"
+                                icon: "lock"
                                 text: (page.passwordNetwork !== null ? page.passwordNetwork.name : "")
                                 color: Colors.primary
                                 font.pixelSize: Metrics.text.emphasis
@@ -344,7 +344,7 @@ ControlPage {
                     ListRow {
                         Layout.fillWidth: true
                         visible: Networking.wifiEnabled
-                        icon: "󰤫"
+                        icon: "signal_wifi_bad"
                         title: "Hidden network"
                         onClicked: page.hiddenRequested()
                     }
@@ -361,7 +361,7 @@ ControlPage {
                         Layout.topMargin: Metrics.spacing.normal
                         Layout.bottomMargin: Metrics.spacing.normal
                         visible: Vpn.profiles.length === 0
-                        icon: "󰖂"
+                        icon: "vpn_key"
                         text: "No VPN yet"
                         color: Colors.secondary
                         font.pixelSize: Metrics.text.emphasis
@@ -389,10 +389,10 @@ ControlPage {
                                 readonly property var profile: Vpn.profile(modelData) || {}
 
                                 Layout.fillWidth: true
-                                icon: "󰖂"
+                                icon: "vpn_key"
                                 title: profile.name || ""
                                 subtitle: Vpn.status(profile)
-                                trailing: profile.state === "activated" ? "󰄬" : ""
+                                trailing: profile.state === "activated" ? "check" : ""
                                 highlighted: profile.state === "activated"
                                 detailsAvailable: true
                                 onClicked: Vpn.toggle(modelData)
@@ -427,7 +427,7 @@ ControlPage {
                             IconText {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
-                                icon: "󰌾"
+                                icon: "lock"
                                 text: page.vpnAsking !== null ? page.vpnAsking.name : ""
                                 color: Colors.primary
                                 font.pixelSize: Metrics.text.emphasis
@@ -456,7 +456,7 @@ ControlPage {
 
                     ActionRow {
                         Layout.fillWidth: true
-                        icon: Vpn.importing ? "󰔟" : "󰈔"
+                        icon: Vpn.importing ? "hourglass" : "draft"
                         label: Vpn.importing ? "Importing…" : "Import a Configuration"
                         onTriggered: Vpn.importFile()
                     }

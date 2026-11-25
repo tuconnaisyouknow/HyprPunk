@@ -22,10 +22,10 @@ RowLayout {
     function networkIcon() {
         const device = NetworkStatus.device;
         if (device === null)
-            return "󰤮";
+            return "signal_wifi_off";
 
         if (device.type === DeviceType.Wired)
-            return device.connected ? "󰈀" : "󰌚";
+            return device.connected ? "lan" : "settings_ethernet";
 
         const network = NetworkStatus.activeWifi;
         return Icons.wifi(network !== null ? network.signalStrength : 0, device.connected && Vpn.connection !== null);
@@ -47,11 +47,12 @@ RowLayout {
         implicitWidth: NetworkStatus.connecting ? 16 : networkLabel.implicitWidth
         implicitHeight: networkLabel.implicitHeight
 
-        Label {
+        Icon {
             id: networkLabel
 
             visible: !NetworkStatus.connecting
             text: status.networkIcon()
+            size: Metrics.text.title
         }
 
         Shape {
@@ -141,10 +142,10 @@ RowLayout {
             radius: width / 2
             color: status.badgeColor
 
-            Label {
+            Icon {
                 anchors.centerIn: parent
-                text: "󰌾"
-                font.pixelSize: 9
+                text: "lock"
+                size: 9
             }
 
         }
@@ -152,9 +153,10 @@ RowLayout {
     }
 
     // Caffeine on: the computer stays awake.
-    Label {
+    Icon {
+        size: Metrics.text.title
         visible: ShellState.caffeine
-        text: "󰅶"
+        text: "coffee"
     }
 
     IconText {

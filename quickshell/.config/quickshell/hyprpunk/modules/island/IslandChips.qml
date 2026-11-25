@@ -186,12 +186,11 @@ RowLayout {
             spacing: Metrics.spacing.small
             opacity: ShellState.doNotDisturb ? 0.5 : 1
 
-            Text {
+            Icon {
                 anchors.verticalCenter: parent.verticalCenter
-                text: ShellState.doNotDisturb ? "󰂛" : "󰂚"
+                text: ShellState.doNotDisturb ? "notifications_off" : "notifications"
                 color: ShellState.doNotDisturb ? Colors.secondary : Colors.primary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.emphasis
+                size: Metrics.text.emphasis
             }
 
             Text {

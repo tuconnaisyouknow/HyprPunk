@@ -9,8 +9,7 @@ import qs.theme
 IslandPanel {
     id: menu
 
-    // [{"icon", "name", "badge" (optional, a small icon at the icon's corner), ...}]:
-    // the other keys are the caller's.
+    // [{"icon", "name", ...}]: the other keys are the caller's.
     required property var entries
     // -1 while nothing is selected.
     property int selectedIndex: 0
@@ -108,34 +107,17 @@ IslandPanel {
 
                         }
 
-                        Text {
-                            id: entryIcon
-
+                        Icon {
                             anchors.centerIn: parent
                             text: entryCard.modelData.icon
+                            filled: entryCard.selected
                             color: entryCard.armed ? Colors.over(Colors.red) : entryCard.selected ? Colors.over(Colors.primary) : Colors.primary
-                            font.family: Metrics.font
-                            font.pixelSize: 24
-                            font.weight: Font.Bold
+                            size: 24
 
                             ColorFade on color {
                                 token: Motion.color.small
                             }
 
-                        }
-
-                        // Over the icon's corner, cut out of it by an outline of the square's color.
-                        Text {
-                            visible: entryCard.modelData.badge !== undefined
-                            x: entryIcon.x + entryIcon.width - width * 0.8
-                            y: entryIcon.y + entryIcon.height - height * 0.95
-                            text: entryCard.modelData.badge || ""
-                            color: entryIcon.color
-                            style: Text.Outline
-                            styleColor: entryCard.selected && !Colors.emits ? Colors.primary : Qt.tint(Colors.base, Colors.alpha(Colors.surface0, 0.6))
-                            font.family: Metrics.font
-                            font.pixelSize: Metrics.text.emphasis
-                            font.weight: Font.Bold
                         }
 
                         HoverHandler {

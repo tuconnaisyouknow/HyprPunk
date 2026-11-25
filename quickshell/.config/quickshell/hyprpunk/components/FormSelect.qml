@@ -111,17 +111,16 @@ ColumnLayout {
             font.pixelSize: Metrics.text.emphasis
         }
 
-        Text {
+        Icon {
             id: chevron
 
             anchors.right: parent.right
             anchors.rightMargin: Metrics.spacing.large
             anchors.verticalCenter: parent.verticalCenter
-            text: "󰅀"
+            text: "keyboard_arrow_down"
             color: Colors.secondary
             rotation: select.expanded ? 180 : 0
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.emphasis
+            size: Metrics.text.emphasis
 
             Behavior on rotation {
                 Anim {
@@ -224,17 +223,16 @@ ColumnLayout {
                         font.weight: option.optionIndex === select.currentIndex ? Font.Bold : Font.Normal
                     }
 
-                    Text {
+                    Icon {
                         id: check
 
                         anchors.right: parent.right
                         anchors.rightMargin: Metrics.spacing.large
                         anchors.verticalCenter: parent.verticalCenter
                         visible: option.optionIndex === select.currentIndex
-                        text: ""
+                        text: "check"
                         color: Colors.primary
-                        font.family: Metrics.font
-                        font.pixelSize: Metrics.text.body
+                        size: Metrics.text.body
                     }
 
                     HoverHandler {

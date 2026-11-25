@@ -116,7 +116,7 @@ readonly -a PACKAGES=(
   rose-pine-hyprcursor nwg-look
 
   python-fonttools
-  otf-font-awesome
+  otf-font-awesome ttf-material-symbols-variable-git
   ttf-apple-emoji noto-fonts-cjk
 
   nautilus nautilus-python sushi gst-libav loupe papers

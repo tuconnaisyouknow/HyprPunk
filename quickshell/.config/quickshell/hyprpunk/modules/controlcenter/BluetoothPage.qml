@@ -37,7 +37,7 @@ ControlPage {
         Layout.topMargin: Metrics.spacing.normal
         Layout.bottomMargin: Metrics.spacing.normal
         visible: BluetoothStatus.devices.length === 0
-        icon: BluetoothStatus.enabled ? "󰂰" : "󰂲"
+        icon: BluetoothStatus.enabled ? "bluetooth_searching" : "bluetooth_disabled"
         text: BluetoothStatus.enabled ? "Searching for devices…" : "Bluetooth is off"
         color: Colors.secondary
         font.pixelSize: Metrics.text.emphasis

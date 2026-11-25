@@ -9,22 +9,22 @@ IconMenu {
     // Destructive actions ask for a second click (or Enter).
     entries: [{
         "id": "lock",
-        "icon": "󰌾",
+        "icon": "lock",
         "confirm": false,
         "command": ["qs", "-c", "hyprpunk", "ipc", "call", "lock", "lock"]
     }, {
         "id": "logout",
-        "icon": "",
+        "icon": "logout",
         "confirm": true,
         "command": ["hyprctl", "dispatch", "hl.dsp.exit()"]
     }, {
         "id": "reboot",
-        "icon": "󰑓",
+        "icon": "restart_alt",
         "confirm": true,
         "command": ["systemctl", "reboot"]
     }, {
         "id": "shutdown",
-        "icon": "",
+        "icon": "power_settings_new",
         "confirm": true,
         "command": ["systemctl", "poweroff"]
     }]

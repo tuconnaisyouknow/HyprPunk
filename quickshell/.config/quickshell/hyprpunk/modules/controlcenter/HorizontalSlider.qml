@@ -190,13 +190,11 @@ Item {
 
         }
 
-        Text {
+        Icon {
             anchors.centerIn: parent
             text: control.icon
             color: control.iconColor
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.title
-            font.weight: Font.Bold
+            size: Metrics.text.title
         }
 
         HoverHandler {

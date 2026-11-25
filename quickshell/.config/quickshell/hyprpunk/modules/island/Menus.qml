@@ -9,47 +9,47 @@ import qs.services
 Singleton {
     // panel: the island panel opened on the screen ("settings" opens the settings window).
     readonly property var entries: [{
-        "icon": "󰅌",
+        "icon": "content_paste",
         "name": "Clipboard",
         "comment": "What you copied, to copy again",
         "panel": "clipboard"
     }, {
-        "icon": "󰱨",
+        "icon": "mood",
         "name": "Emoji",
         "comment": "Find an emoji and copy it",
         "panel": "emoji"
     }, {
-        "icon": "󰹑",
+        "icon": "screenshot_monitor",
         "name": "Capture",
         "comment": "Take a screenshot or record the screen",
         "panel": "screenshot"
     }, {
-        "icon": "󰌌",
+        "icon": "keyboard",
         "name": "Keybindings",
         "comment": "Every shortcut, to look up or run",
         "panel": "keybindings"
     }, {
-        "icon": "",
+        "icon": "wallpaper",
         "name": "Wallpaper",
         "comment": "Change the wallpaper, and the colors with it",
         "panel": "wallpaper"
     }, {
-        "icon": "󰏘",
+        "icon": "palette",
         "name": "Theme",
         "comment": "Switch to another theme and its wallpaper",
         "panel": "theme"
     }, {
-        "icon": "",
+        "icon": "settings",
         "name": "Configuration",
         "comment": "Open one of your config files in your editor",
         "panel": "config"
     }, {
-        "icon": "󰘮",
+        "icon": "tune",
         "name": "Settings",
         "comment": "Displays, sound, power, appearance and the rest",
         "panel": "settings"
     }, {
-        "icon": "",
+        "icon": "power_settings_new",
         "name": "Session",
         "comment": "Lock, log out, reboot, shut down",
         "panel": "session"

@@ -48,7 +48,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰌌"
+        icon: "keyboard"
         title: "Keyboard layout"
         description: "Any Latin layout, found by its name or its code. The login screen and the TTYs take it too."
 
@@ -78,7 +78,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰌓"
+        icon: "keyboard_alt"
         title: "Vim keys"
         description: "The arrows of every panel, window and terminal app. On the home row they start under your right index, whatever the layout writes there, and the keys they take move to the letters left free."
 
@@ -87,11 +87,11 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "vim",
-                "icon": "󰌌",
+                "icon": "keyboard",
                 "label": "Vim's letters  " + page.keysLabel(["h", "j", "k", "l"])
             }, {
                 "value": "home",
-                "icon": "󰋜",
+                "icon": "home",
                 "label": "Home row  " + page.keysLabel(Session.homeKeys)
             }]
             value: Session.vimKeysPlace
@@ -104,7 +104,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰃭"
+        icon: "calendar_month"
         title: "Regional formats"
         description: "Dates, times, numbers and money, found by country, language or code. Here: " + page.sample.toLocaleDateString(Session.regionalFormats, Locale.ShortFormat) + ", " + Session.shortTime(page.sample) + ", " + (1234.56).toLocaleString(Session.regionalFormats, "f", 2) + "."
 

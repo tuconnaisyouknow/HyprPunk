@@ -576,7 +576,7 @@ Rectangle {
         anchors.right: equalizer.left
         anchors.rightMargin: Metrics.spacing.small
         anchors.verticalCenter: artwork.verticalCenter
-        icon: "󰍰"
+        icon: "lyrics"
         iconSize: card.sideIcon
         lit: card.lyricsShown
         enabled: card.player !== null

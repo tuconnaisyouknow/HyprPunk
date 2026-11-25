@@ -30,12 +30,11 @@ RowLayout {
             hovered: backHover.hovered
         }
 
-        Text {
+        Icon {
             anchors.centerIn: parent
-            text: "󰅁"
+            text: "keyboard_arrow_left"
             color: Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.title
+            size: Metrics.text.title
         }
 
         HoverHandler {

@@ -42,11 +42,11 @@ ControlBlock {
         anchors.rightMargin: row.detailsAvailable ? 8 : 14
         spacing: Metrics.spacing.large
 
-        Text {
+        Icon {
             text: row.icon
+            filled: row.highlighted
             color: row.highlighted ? Colors.primary : Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.title
+            size: Metrics.text.title
         }
 
         Column {
@@ -75,12 +75,11 @@ ControlBlock {
 
         }
 
-        Text {
+        Icon {
             visible: text !== ""
             text: row.trailing
             color: Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.emphasis
+            size: Metrics.text.emphasis
         }
 
         // Plain glyph with a glass halo on hover, like the player's controls.
@@ -105,12 +104,11 @@ ControlBlock {
 
             }
 
-            Text {
+            Icon {
                 anchors.centerIn: parent
-                text: "󰋽"
+                text: "info"
                 color: detailsArea.containsMouse ? Colors.primary : Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.title
+                size: Metrics.text.title
             }
 
             // A MouseArea takes the click from the row.

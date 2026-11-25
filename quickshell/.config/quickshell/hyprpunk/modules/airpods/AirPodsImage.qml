@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs.components
 import qs.theme
 
 // Apple's picture of the AirPods or their case, in a fixed box so both line up.
@@ -25,13 +26,12 @@ Item {
         asynchronous: true
     }
 
-    Text {
+    Icon {
         visible: render.status !== Image.Ready
         anchors.centerIn: parent
         text: product.glyph
         color: Colors.secondary
-        font.family: Metrics.font
-        font.pixelSize: 88
+        size: 88
     }
 
 }

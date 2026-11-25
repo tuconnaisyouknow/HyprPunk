@@ -95,12 +95,11 @@ Item {
         radius: cover.radius
         color: Colors.surface1
 
-        Text {
+        Icon {
             anchors.centerIn: parent
-            text: "󰎆"
+            text: "music_note"
             color: Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: Math.round(Math.min(cover.width, cover.height) * 0.4)
+            size: Math.round(Math.min(cover.width, cover.height) * 0.4)
         }
 
     }

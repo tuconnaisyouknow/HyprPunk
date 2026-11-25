@@ -70,17 +70,16 @@ ColumnLayout {
         }
 
         // Back to "(None)".
-        Text {
+        Icon {
             id: clear
 
             anchors.right: icon.left
             anchors.rightMargin: Metrics.spacing.normal
             anchors.verticalCenter: parent.verticalCenter
             visible: file.path !== ""
-            text: ""
+            text: "close"
             color: clearHover.hovered ? Colors.primary : Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.body
+            size: Metrics.text.body
 
             HoverHandler {
                 id: clearHover
@@ -95,16 +94,15 @@ ColumnLayout {
 
         }
 
-        Text {
+        Icon {
             id: icon
 
             anchors.right: parent.right
             anchors.rightMargin: Metrics.spacing.large
             anchors.verticalCenter: parent.verticalCenter
-            text: "󰉋"
+            text: "folder"
             color: Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.emphasis
+            size: Metrics.text.emphasis
         }
 
         HoverHandler {

@@ -82,7 +82,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: page.network !== null && page.network.connected ? "󰤭" : "󰤨"
+        icon: page.network !== null && page.network.connected ? "wifi_off" : "signal_wifi_4_bar"
         label: page.network !== null && page.network.connected ? "Disconnect" : "Connect"
         onTriggered: {
             if (page.network.connected)
@@ -95,7 +95,7 @@ ControlPage {
     ActionRow {
         Layout.fillWidth: true
         visible: page.enterprise || page.passwordKeyMgmt !== ""
-        icon: "󰏫"
+        icon: "edit"
         label: page.enterprise ? "Modify Settings" : "Change Password"
         onTriggered: {
             if (page.enterprise) {
@@ -178,7 +178,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: "󰆴"
+        icon: "delete"
         label: "Forget This Network"
         confirmLabel: "Click again to forget it"
         destructive: true

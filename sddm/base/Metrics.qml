@@ -5,9 +5,11 @@ import QtQuick
 // The login screen's sizes: the shell's own (its theme/Metrics.qml), for what the two
 // share, so the bar you log in under is the one you find behind it. Keep both alike.
 QtObject {
-    // Ioskeley Mono with the Nerd Font icons, as fontsctl.py builds it for the shell.
-    // sddm.sh copies it next to the theme, and Main.qml loads it.
+    // Ioskeley Mono, as fontsctl.py builds it for the shell. sddm.sh copies it next to
+    // the theme, and Main.qml loads it.
     readonly property string font: "HyprPunk Text"
+    // The icons: Material Symbols Rounded, installed for the whole system.
+    readonly property string iconFont: "Material Symbols Rounded"
     // The clock, in capitals: Orbitron Bold, built with digits that all take one width.
     readonly property string displayFont: "HyprPunk Display"
     // How far the pills sit from the screen's sides, and the strip they're centred in.

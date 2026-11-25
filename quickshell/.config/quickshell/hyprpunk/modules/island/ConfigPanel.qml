@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import qs.components
 import qs.config
 import qs.theme
 
@@ -14,43 +15,43 @@ SearchPanel {
     // $EDITOR on the path, in your terminal. A folder in Neovim opens its file picker.
     readonly property string editScript: "if [ -d \"$1\" ] && [ \"${EDITOR:-nvim}\" = nvim ]; then exec nvim \"+lua Snacks.dashboard.pick('files', { cwd = '$1' })\"; fi; exec ${EDITOR:-nvim} \"$1\""
     readonly property var files: [{
-        "icon": "",
+        "icon": "settings",
         "name": "Hyprland",
         "path": "~/.config/hypr/personal"
     }, {
-        "icon": "󰌌",
+        "icon": "keyboard",
         "name": "Hyprland keybindings",
         "path": "~/.config/hypr/personal/keybindings.lua"
     }, {
-        "icon": "󰖲",
+        "icon": "select_window_2",
         "name": "Window rules",
         "path": "~/.config/hypr/personal/rules.lua"
     }, {
-        "icon": "󰍽",
+        "icon": "mouse",
         "name": "Mouse and touchpad",
         "path": "~/.config/hypr/personal/input.lua"
     }, {
-        "icon": "",
+        "icon": "data_object",
         "name": "Environment variables",
         "path": "~/.config/hypr/personal/env.lua"
     }, {
-        "icon": "󱓞",
+        "icon": "rocket_launch",
         "name": "Autostart",
         "path": "~/.config/hypr/personal/autostart.lua"
     }, {
-        "icon": "󰆍",
+        "icon": "code",
         "name": "Zsh",
         "path": "~/.personalrc"
     }, {
-        "icon": "󰉹",
+        "icon": "format_list_bulleted",
         "name": "Zsh completions",
         "path": "~/.completionrc"
     }, {
-        "icon": "",
+        "icon": "splitscreen_right",
         "name": "Tmux",
         "path": "~/.config/tmux/personal.conf"
     }, {
-        "icon": "󰄛",
+        "icon": "terminal",
         "name": "Kitty",
         "path": "~/.config/kitty/personal.conf"
     }]
@@ -72,7 +73,7 @@ SearchPanel {
     }
 
     panelName: "config"
-    searchIcon: ""
+    searchIcon: "settings"
     placeholder: "Search configuration files"
     count: results.length
     view: list
@@ -118,7 +119,7 @@ SearchPanel {
             radius: Metrics.radius.normal
             color: "transparent"
 
-            Text {
+            Icon {
                 id: fileIcon
 
                 anchors.left: parent.left
@@ -127,8 +128,7 @@ SearchPanel {
                 width: 22
                 text: row.modelData.icon
                 color: row.selected ? Colors.primary : Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.title
+                size: Metrics.text.title
             }
 
             Column {

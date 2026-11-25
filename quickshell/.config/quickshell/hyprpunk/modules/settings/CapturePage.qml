@@ -36,7 +36,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰹑"
+        icon: "screenshot_monitor"
         title: "After a screenshot"
         description: "Copied, it's ready to paste. Only copied, it's gone once you copy something else."
 
@@ -45,15 +45,15 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "both",
-                "icon": "󰆏",
+                "icon": "content_copy",
                 "label": "Copy and save"
             }, {
                 "value": "copy",
-                "icon": "󰅍",
+                "icon": "content_paste",
                 "label": "Copy only"
             }, {
                 "value": "save",
-                "icon": "󰆓",
+                "icon": "save",
                 "label": "Save only"
             }]
             value: CaptureSettings.screenshots
@@ -68,13 +68,13 @@ SettingsPage {
         Layout.fillWidth: true
         enabled: CaptureSettings.saves
         opacity: enabled ? 1 : 0.5
-        icon: "󰉏"
+        icon: "photo_library"
         title: "Screenshots folder"
         description: page.shortPath(CaptureSettings.screenshotsFolder)
 
         ActionRow {
             width: parent.width
-            icon: "󰉋"
+            icon: "folder"
             label: "Choose a folder"
             onTriggered: page.chooseFolder("screenshots.folder", "Screenshots folder", CaptureSettings.screenshotsFolder)
         }
@@ -83,7 +83,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰕾"
+        icon: "volume_up"
         title: "Sound in recordings"
         description: "What plays on the computer, or your voice through the microphone."
 
@@ -92,15 +92,15 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "system",
-                "icon": "󰓃",
+                "icon": "speaker",
                 "label": "Computer"
             }, {
                 "value": "microphone",
-                "icon": "󰍬",
+                "icon": "mic",
                 "label": "Microphone"
             }, {
                 "value": "none",
-                "icon": "󰖁",
+                "icon": "volume_off",
                 "label": "No sound"
             }]
             value: CaptureSettings.audio
@@ -113,7 +113,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰕧"
+        icon: "videocam"
         title: "Frame rate"
         description: "Recording only what changes keeps files small. A steady rate plays smoother and suits video editors better."
 
@@ -122,15 +122,15 @@ SettingsPage {
             compact: true
             options: [{
                 "value": 0,
-                "icon": "󰔛",
+                "icon": "timer",
                 "label": "As it changes"
             }, {
                 "value": 30,
-                "icon": "󰕧",
+                "icon": "videocam",
                 "label": "30 fps"
             }, {
                 "value": 60,
-                "icon": "󰕧",
+                "icon": "videocam",
                 "label": "60 fps"
             }]
             value: CaptureSettings.framerate
@@ -143,13 +143,13 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰉏"
+        icon: "photo_library"
         title: "Recordings folder"
         description: page.shortPath(CaptureSettings.recordingsFolder)
 
         ActionRow {
             width: parent.width
-            icon: "󰉋"
+            icon: "folder"
             label: "Choose a folder"
             onTriggered: page.chooseFolder("recordings.folder", "Recordings folder", CaptureSettings.recordingsFolder)
         }

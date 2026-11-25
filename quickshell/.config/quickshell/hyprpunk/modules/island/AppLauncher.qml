@@ -102,7 +102,7 @@ SearchPanel {
     }
 
     panelName: "launcher"
-    searchIcon: actionsEntry ? "󰅂" : "󰍉"
+    searchIcon: actionsEntry ? "keyboard_arrow_right" : "search"
     readOnly: actionsEntry !== null
     placeholder: actionsEntry ? actionsEntry.name : "Search apps, > menus, ? web"
     placeholderColor: actionsEntry ? Colors.secondary : Colors.alpha(Colors.secondary, 0.5)
@@ -180,16 +180,15 @@ SearchPanel {
             backgroundColor: "transparent"
         }
 
-        Text {
+        Icon {
             id: specialIcon
 
             anchors.left: parent.left
             anchors.leftMargin: Metrics.spacing.huge
             anchors.verticalCenter: parent.verticalCenter
-            text: launcher.special === "calc" ? "󰃬" : "󰖟"
+            text: launcher.special === "calc" ? "calculate" : "language"
             color: Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.heading
+            size: Metrics.text.heading
         }
 
         Text {
@@ -301,14 +300,12 @@ SearchPanel {
                         source: row.isMenu ? "" : Quickshell.iconPath(row.modelData.icon, "application-x-executable")
                     }
 
-                    Text {
+                    Icon {
                         anchors.centerIn: parent
                         visible: row.isMenu
                         text: row.isMenu ? row.modelData.icon : ""
                         color: Colors.primary
-                        font.family: Metrics.font
-                        font.pixelSize: 24
-                        font.weight: Font.Bold
+                        size: 24
                     }
 
                 }

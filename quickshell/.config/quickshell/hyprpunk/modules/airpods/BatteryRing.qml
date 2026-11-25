@@ -68,12 +68,22 @@ Column {
 
         }
 
-        Text {
+        Icon {
+            visible: ring.charging
             anchors.centerIn: parent
-            text: ring.charging ? "󱐋" : ring.battery !== null && ring.battery.label ? ring.battery.label : ""
-            color: ring.charging ? Colors.green : Colors.secondary
+            text: "bolt"
+            color: Colors.green
+            size: Metrics.text.title
+            filled: true
+        }
+
+        Text {
+            visible: !ring.charging
+            anchors.centerIn: parent
+            text: ring.battery !== null && ring.battery.label ? ring.battery.label : ""
+            color: Colors.secondary
             font.family: Metrics.font
-            font.pixelSize: ring.charging ? Metrics.text.title : Metrics.text.body
+            font.pixelSize: Metrics.text.body
             font.weight: Font.Bold
         }
 

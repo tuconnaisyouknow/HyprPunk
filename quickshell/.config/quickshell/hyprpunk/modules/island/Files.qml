@@ -62,28 +62,28 @@ Singleton {
     // entry: {name, isDir}.
     function icon(entry) {
         if (entry.isDir)
-            return "󰉋";
+            return "folder";
 
         const name = entry.name.toLowerCase();
         if (isImage(name))
-            return "󰋩";
+            return "image";
 
         if (/\.(mp4|mkv|webm|mov|avi)$/.test(name))
-            return "󰈫";
+            return "video_file";
 
         if (/\.(mp3|flac|ogg|opus|wav|m4a)$/.test(name))
-            return "󰈣";
+            return "audio_file";
 
         if (/\.pdf$/.test(name))
-            return "󰈦";
+            return "picture_as_pdf";
 
         if (/\.(zip|tar|gz|xz|zst|bz2|7z|rar)$/.test(name))
-            return "󰗄";
+            return "folder_zip";
 
         if (/\.(txt|md|odt|docx?|rtf)$/.test(name))
-            return "󰈙";
+            return "description";
 
-        return "󰈔";
+        return "draft";
     }
 
 }

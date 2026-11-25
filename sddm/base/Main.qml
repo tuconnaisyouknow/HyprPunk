@@ -83,19 +83,17 @@ Rectangle {
         width: height
         clickable: true
 
-        // A whole, even number of pixels, the glyph on a whole pixel inside: its cell is a
-        // fraction wide, and alone in the circle it would be drawn off the middle.
+        // A whole, even number of pixels, the glyph on a whole pixel inside: an odd cell
+        // alone in the circle would be drawn off the middle.
         Item {
             implicitWidth: 2 * Math.round(glyph.implicitWidth / 2)
             implicitHeight: glyph.implicitHeight
 
-            Text {
+            Icon {
                 id: glyph
 
                 x: Math.round((parent.width - implicitWidth) / 2)
                 color: iconPill.hovered ? Colors.primary : Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.title
 
                 Behavior on color {
                     ColorAnimation {
@@ -330,8 +328,8 @@ Rectangle {
             clickable: users.count > 1
             onClicked: root.userIndex = (root.userIndex + 1) % users.count
 
-            Label {
-                text: "󰀄"
+            Icon {
+                text: "person"
             }
 
             Label {
@@ -374,12 +372,11 @@ Rectangle {
                 openWidth: 2 * Math.round(padlock.implicitWidth / 2)
                 openHeight: padlock.implicitHeight
 
-                Label {
+                Icon {
                     id: padlock
 
                     x: Math.round((parent.width - implicitWidth) / 2)
-                    text: "󰌾"
-                    font.weight: Font.Normal
+                    text: "lock"
                 }
 
             }
@@ -482,8 +479,8 @@ Rectangle {
             clickable: sessions.count > 1
             onClicked: root.sessionIndex = (root.sessionIndex + 1) % sessions.count
 
-            Label {
-                text: "󰍹"
+            Icon {
+                text: "monitor"
             }
 
             Label {
@@ -508,7 +505,7 @@ Rectangle {
             x: shutDownPill.x - Metrics.spacing.normal - width
             lift: shutDownPill.lift
             backdrop: barBlur
-            icon: "󰑓"
+            icon: "restart_alt"
             onConfirmed: sddm.reboot()
         }
 
@@ -518,7 +515,7 @@ Rectangle {
             x: bar.width - Metrics.barMargin - width
             lift: Motion.drop.height
             backdrop: barBlur
-            icon: "\uf011"
+            icon: "power_settings_new"
             onConfirmed: sddm.powerOff()
         }
 

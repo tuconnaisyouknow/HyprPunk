@@ -16,7 +16,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰔛"
+        icon: "timer"
         title: "How long they stay"
         description: "For the apps that don't say. One stays while the pointer is on it, and urgent ones until you close them."
 
@@ -36,7 +36,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰀻"
+        icon: "apps"
         title: "Apps"
         description: "Every app that has sent you a notification. Turn one off and its notifications wait in the center without popping up."
 
@@ -79,13 +79,12 @@ SettingsPage {
                             source: app.iconPath
                         }
 
-                        Text {
+                        Icon {
                             anchors.centerIn: parent
                             visible: app.iconPath === ""
-                            text: "󰂚"
+                            text: "notifications"
                             color: Colors.secondary
-                            font.family: Metrics.font
-                            font.pixelSize: Metrics.text.title
+                            size: Metrics.text.title
                         }
 
                     }

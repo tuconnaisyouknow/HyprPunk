@@ -411,7 +411,7 @@ IslandPanel {
         anchors.top: header.bottom
         anchors.topMargin: picker.sectionSpacing
         width: picker.contentWidth
-        icon: picker.intent === "new" ? "󰝒" : picker.intent === "rename" ? "󰏫" : picker.saving ? "󰆓" : "󰍉"
+        icon: picker.intent === "new" ? "note_add" : picker.intent === "rename" ? "edit" : picker.saving ? "save" : "search"
         placeholder: picker.intent === "new" ? (picker.pickingFolder ? "New folder's name" : "New file's name, or a folder's ending with /") : picker.intent === "rename" ? "New name" : picker.saving ? "File name" : "Filter, or a path from / or ~"
         // What Enter will do.
         hint: picker.intent === "new" ? (picker.makesFolder ? "Create folder" : "Create file") : picker.intent === "rename" ? "Rename" : picker.intent === "trash" ? (picker.trashTargets.length > 1 ? "Move " + picker.trashTargets.length + " to the trash" : "Move to the trash") : picker.intent === "replace" ? "Enter again to replace" : picker.selected && picker.selected.isDir ? "Open folder" : picker.selected || picker.saving || picker.pickingFolder || picker.marked.length > 0 ? picker.answerLabel : ""
@@ -542,7 +542,7 @@ IslandPanel {
                 }
 
                 // An icon column, so the names line up like the files'.
-                Text {
+                Icon {
                     id: placeIcon
 
                     anchors.left: parent.left
@@ -551,8 +551,7 @@ IslandPanel {
                     width: Metrics.spacing.section
                     text: place.modelData.icon
                     color: place.current ? Colors.primary : Colors.secondary
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.emphasis
+                    size: Metrics.text.emphasis
                 }
 
                 Text {
@@ -644,14 +643,14 @@ IslandPanel {
             GlassButton {
                 visible: picker.filters.length > 0
                 height: parent.height
-                icon: "󰈲"
+                icon: "filter_alt"
                 label: picker.filters.length > 0 ? picker.filters[picker.filterIndex].name : ""
                 onClicked: picker.nextFilter()
             }
 
             GlassButton {
                 height: parent.height
-                icon: picker.showHidden ? "󰈈" : "󰈉"
+                icon: picker.showHidden ? "visibility" : "visibility_off"
                 label: "Hidden"
                 active: picker.showHidden
                 onClicked: picker.showHidden = !picker.showHidden
@@ -659,7 +658,7 @@ IslandPanel {
 
             IconButton {
                 anchors.verticalCenter: parent.verticalCenter
-                icon: "󰝒"
+                icon: "note_add"
                 iconSize: Metrics.text.title
                 lit: picker.intent === "new"
                 onClicked: picker.create()
@@ -667,7 +666,7 @@ IslandPanel {
 
             IconButton {
                 anchors.verticalCenter: parent.verticalCenter
-                icon: "󰏫"
+                icon: "edit"
                 iconSize: Metrics.text.title
                 lit: picker.intent === "rename"
                 enabled: picker.selected !== null
@@ -676,7 +675,7 @@ IslandPanel {
 
             IconButton {
                 anchors.verticalCenter: parent.verticalCenter
-                icon: "󰩺"
+                icon: "delete"
                 iconSize: Metrics.text.title
                 lit: picker.intent === "trash"
                 enabled: picker.trashTargets.length > 0

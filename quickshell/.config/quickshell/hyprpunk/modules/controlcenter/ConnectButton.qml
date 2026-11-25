@@ -21,7 +21,7 @@ Rectangle {
         clicked();
     }
 
-    implicitWidth: labelText.implicitWidth + 32
+    implicitWidth: content.implicitWidth + 32
     implicitHeight: 34
     radius: height / 2
     color: "transparent"
@@ -37,15 +37,31 @@ Rectangle {
         inward: true
     }
 
-    Text {
-        id: labelText
+    Row {
+        id: content
 
         anchors.centerIn: parent
-        text: (button.busy ? "󰔟  " : "") + button.label
-        color: Colors.over(Colors.primary)
-        font.family: Metrics.font
-        font.pixelSize: Metrics.text.emphasis
-        font.weight: Font.Bold
+        spacing: Metrics.spacing.normal
+
+        Icon {
+            visible: button.busy
+            anchors.verticalCenter: parent.verticalCenter
+            text: "hourglass"
+            color: labelText.color
+            size: Metrics.text.emphasis
+        }
+
+        Text {
+            id: labelText
+
+            anchors.verticalCenter: parent.verticalCenter
+            text: button.label
+            color: Colors.over(Colors.primary)
+            font.family: Metrics.font
+            font.pixelSize: Metrics.text.emphasis
+            font.weight: Font.Bold
+        }
+
     }
 
     HoverHandler {

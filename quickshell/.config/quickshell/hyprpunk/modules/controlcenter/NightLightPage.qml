@@ -36,10 +36,10 @@ ControlPage {
 
     ListRow {
         Layout.fillWidth: true
-        icon: "󰔛"
+        icon: "timer"
         title: "Scheduled"
         subtitle: NightLightSettings.hourText(NightLightSettings.from) + " to " + NightLightSettings.hourText(NightLightSettings.to)
-        trailing: page.scheduled ? "" : ""
+        trailing: page.scheduled ? "check" : ""
         highlighted: page.scheduled
         onClicked: NightLight.setScheduled(!page.scheduled)
     }

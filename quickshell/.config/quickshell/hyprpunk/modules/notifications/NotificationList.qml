@@ -99,7 +99,7 @@ ColumnLayout {
 
         IconText {
             Layout.fillWidth: true
-            icon: "󰂚"
+            icon: "notifications"
             text: "Notifications"
             color: Colors.primary
             heading: true
@@ -112,7 +112,7 @@ ColumnLayout {
         // words wait under the pointer.
         GlassButton {
             enabled: list.count > 0
-            icon: "󰃢"
+            icon: "cleaning_services"
             accent: true
             onClicked: list.clearAll()
 
@@ -265,7 +265,7 @@ ColumnLayout {
 
         IconText {
             Layout.fillWidth: true
-            icon: ShellState.doNotDisturb ? "󰂛" : "󰂚"
+            icon: ShellState.doNotDisturb ? "notifications_off" : "notifications"
             text: "Focus"
             color: ShellState.doNotDisturb ? Colors.primary : Colors.secondary
             font.pixelSize: Metrics.text.emphasis

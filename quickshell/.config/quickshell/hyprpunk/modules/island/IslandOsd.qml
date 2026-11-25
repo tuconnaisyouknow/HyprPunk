@@ -39,12 +39,11 @@ RowLayout {
 
     spacing: Metrics.spacing.normal
 
-    Text {
+    Icon {
         visible: view.shown && view.content.kind === ""
         text: view.content.icon
         color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: Metrics.text.heading
+        size: Metrics.text.heading
     }
 
     // Volume and screen brightness only show their icon and bar.
@@ -132,15 +131,14 @@ RowLayout {
         }
 
         // A recording's play sign.
-        Text {
+        Icon {
             anchors.centerIn: parent
             visible: view.content.title === "Recording"
-            text: "󰐊"
+            text: "play_arrow"
             color: Colors.primary
             style: Text.Outline
             styleColor: Colors.alpha(Colors.crust, 0.6)
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.emphasis
+            size: Metrics.text.emphasis
         }
 
     }
@@ -169,14 +167,13 @@ RowLayout {
 
     // Battery: green when plugged in, the accent when unplugged, red when low (pulsing when
     // it's critical), with the time left or until full.
-    Text {
+    Icon {
         id: batteryOsdIcon
 
         visible: view.shown && view.content.kind === "battery"
         text: Icons.battery(Battery.device.percentage, Battery.onBattery)
         color: view.batteryColor()
-        font.family: Metrics.font
-        font.pixelSize: 22
+        size: 22
 
         SequentialAnimation on opacity {
             running: Battery.critical && batteryOsdIcon.visible
@@ -243,13 +240,12 @@ RowLayout {
         }
 
         // No picture yet (or AirPods Max): the glyph instead.
-        Text {
+        Icon {
             visible: airPodsOsdImage.status !== Image.Ready
             anchors.centerIn: parent
-            text: "󱡏"
+            text: "earbuds"
             color: Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: 22
+            size: 22
         }
 
     }

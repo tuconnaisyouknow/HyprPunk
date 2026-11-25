@@ -21,11 +21,11 @@ ControlBlock {
     readonly property bool noiseControl: AirPods.hasNoiseControl(device)
     readonly property var listeningModes: [{
         "value": 2,
-        "icon": "󰋋",
+        "icon": "headphones",
         "label": "Noise Cancellation"
     }, {
         "value": 3,
-        "icon": "󰟅",
+        "icon": "hearing",
         "label": "Transparency"
     }]
 
@@ -78,7 +78,7 @@ ControlBlock {
                     Layout.preferredWidth: 120
                     Layout.preferredHeight: 86
                     source: panel.images !== null ? "file://" + panel.images.buds : ""
-                    glyph: panel.headphones ? "󰋋" : "󱡏"
+                    glyph: panel.headphones ? "headphones" : "earbuds"
                 }
 
                 Row {

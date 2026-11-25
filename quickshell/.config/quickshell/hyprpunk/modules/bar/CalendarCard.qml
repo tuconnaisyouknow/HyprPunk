@@ -134,7 +134,7 @@ PillPopup {
                 spacing: calendarPopup.dayGap
 
                 GlassButton {
-                    icon: "󰅃"
+                    icon: "keyboard_arrow_up"
                     onClicked: calendarPopup.changeMonth(-1)
                 }
 
@@ -153,7 +153,7 @@ PillPopup {
                 }
 
                 GlassButton {
-                    icon: "󰅀"
+                    icon: "keyboard_arrow_down"
                     onClicked: calendarPopup.changeMonth(1)
                 }
 

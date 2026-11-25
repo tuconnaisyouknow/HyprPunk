@@ -17,19 +17,19 @@ ControlPage {
     property string tab: "output"
     readonly property var tabs: [{
         "value": "output",
-        "icon": "󰓃",
+        "icon": "speaker",
         "label": "Output"
     }, {
         "value": "input",
-        "icon": "󰍬",
+        "icon": "mic",
         "label": "Input"
     }, {
         "value": "apps",
-        "icon": "󰎆",
+        "icon": "music_note",
         "label": "Apps"
     }, {
         "value": "devices",
-        "icon": "󰂯",
+        "icon": "bluetooth",
         "label": "Devices"
     }]
     readonly property int tabIndex: tabs.findIndex((item) => {
@@ -65,31 +65,24 @@ ControlPage {
     })
     signal bluetoothDetailsRequested(var device)
 
-    function volumeIcon(volume, muted) {
-        if (muted || volume === 0)
-            return "󰖁";
-
-        return volume < 0.34 ? "󰕿" : volume < 0.67 ? "󰖀" : "󰕾";
-    }
-
     function outputLabel(node) {
         const info = AudioPorts.info[node.name];
         return info !== undefined && info.label !== "" ? info.label : (node.description || node.nickname || node.name);
     }
 
     function inputIcon(node) {
-        return node.name.startsWith("bluez") ? "󰋋" : /head/i.test(outputLabel(node)) ? "󰋎" : "󰍬";
+        return node.name.startsWith("bluez") ? "headphones" : /head/i.test(outputLabel(node)) ? "headset_mic" : "mic";
     }
 
     function outputIcon(node) {
         const name = node.name;
         if (name.startsWith("bluez"))
-            return "󰋋";
+            return "headphones";
 
         if (/hdmi|displayport/i.test(outputLabel(node)))
-            return "󰍹";
+            return "monitor";
 
-        return /head/i.test(outputLabel(node)) ? "󰋋" : "󰓃";
+        return /head/i.test(outputLabel(node)) ? "headphones" : "speaker";
     }
 
     function outputKind(node) {
@@ -213,7 +206,7 @@ ControlPage {
         title: page.outputLabel(modelData)
         subtitle: page.outputKind(modelData)
         highlighted: page.sink === modelData
-        trailing: highlighted ? "󰄬" : ""
+        trailing: highlighted ? "check" : ""
         onClicked: Pipewire.preferredDefaultAudioSink = modelData
     }
 
@@ -225,7 +218,7 @@ ControlPage {
         title: page.outputLabel(modelData)
         subtitle: page.outputKind(modelData)
         highlighted: page.source === modelData
-        trailing: highlighted ? "󰄬" : ""
+        trailing: highlighted ? "check" : ""
         onClicked: Pipewire.preferredDefaultAudioSource = modelData
     }
 
@@ -254,13 +247,12 @@ ControlPage {
                     visible: status === Image.Ready
                 }
 
-                Text {
+                Icon {
                     anchors.centerIn: parent
                     visible: !appIcon.visible
-                    text: "󰎆"
+                    text: "music_note"
                     color: Colors.primary
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.title
+                    size: Metrics.text.title
                 }
 
             }
@@ -271,7 +263,7 @@ ControlPage {
                 value: app.audio !== null ? app.audio.volume : 0
                 accent: app.audio !== null && app.audio.muted ? Colors.secondary : Colors.primary
                 iconButton: true
-                icon: app.audio !== null ? page.volumeIcon(app.audio.volume, app.audio.muted) : "󰖁"
+                icon: app.audio !== null ? Icons.volume(app.audio.volume * 100, app.audio.muted) : "volume_off"
                 onValueRequested: (value) => {
                     if (app.audio !== null) {
                         app.audio.muted = false;
@@ -388,7 +380,7 @@ ControlPage {
                                 value: page.sourceAudio !== null ? page.sourceAudio.volume : 0
                                 accent: page.sourceAudio !== null && page.sourceAudio.muted ? Colors.secondary : Colors.primary
                                 iconButton: true
-                                icon: page.sourceAudio === null || page.sourceAudio.muted ? "󰍭" : "󰍬"
+                                icon: page.sourceAudio === null || page.sourceAudio.muted ? "mic_off" : "mic"
                                 onValueRequested: (value) => {
                                     if (page.sourceAudio !== null) {
                                         page.sourceAudio.muted = false;
@@ -533,7 +525,7 @@ ControlPage {
                             required property var modelData
 
                             Layout.fillWidth: true
-                            icon: "󰋋"
+                            icon: "headphones"
                             title: modelData.deviceName
                             subtitle: modelData.batteryAvailable ? "Connected · " + Math.round(modelData.battery * 100) + "%" : "Connected"
                             highlighted: true

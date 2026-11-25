@@ -108,13 +108,12 @@ IslandPanel {
                     smooth: true
                 }
 
-                Text {
+                Icon {
                     anchors.centerIn: parent
                     visible: prompt.iconSource === ""
-                    text: "󰦝"
+                    text: "shield_lock"
                     color: Colors.primary
-                    font.family: Metrics.font
-                    font.pixelSize: 30
+                    size: 30
                 }
 
             }
@@ -159,7 +158,7 @@ IslandPanel {
             x: shakeOffset
             width: parent.width
             enabled: !prompt.waiting
-            icon: prompt.waiting ? "󰔟" : "󰌾"
+            icon: prompt.waiting ? "hourglass" : "lock"
             // Some PAM steps ask for a code you should see, not a password.
             secret: !(prompt.flow && prompt.flow.responseVisible)
             textColor: Colors.primary

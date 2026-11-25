@@ -246,7 +246,7 @@ Item {
                 spacing: Metrics.spacing.normal
 
                 IconTitle {
-                    icon: ""
+                    icon: "memory"
                     text: "CPU"
                 }
 
@@ -314,7 +314,7 @@ Item {
 
                 IconDetail {
                     Layout.fillWidth: true
-                    icon: ""
+                    icon: "thermostat"
                     text: SystemStats.temperature
                 }
 
@@ -333,7 +333,7 @@ Item {
                 spacing: Metrics.spacing.normal
 
                 IconTitle {
-                    icon: ""
+                    icon: "memory_alt"
                     text: "RAM"
                 }
 
@@ -379,7 +379,7 @@ Item {
 
                 IconTitle {
                     Layout.fillWidth: true
-                    icon: ""
+                    icon: "list"
                     text: "Processes"
                 }
 

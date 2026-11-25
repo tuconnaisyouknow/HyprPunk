@@ -25,13 +25,13 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰣇"
+        icon: "deployed_code"
         title: "HyprPunk"
         description: page.versionText ? "The version you have: " + page.versionText + "." : "The version you have."
 
         ActionRow {
             width: parent.width
-            icon: "󰚰"
+            icon: "update"
             label: "Update HyprPunk"
             onTriggered: UpdateSettings.updateHyprPunk()
         }
@@ -40,7 +40,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰂚"
+        icon: "notifications"
         title: "Tell me at login"
         description: "A notification when a new HyprPunk is waiting, with a button to update."
         checkable: true
@@ -50,7 +50,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰏗"
+        icon: "package_2"
         title: "Package updates"
         description: "The bar shows how many packages can be updated, and updates them on a click."
         checkable: true
@@ -59,7 +59,7 @@ SettingsPage {
 
         ActionRow {
             width: parent.width
-            icon: "󰏔"
+            icon: "download"
             label: Updates.count > 0 ? "Update " + Updates.count + (Updates.count > 1 ? " packages" : " package") : "Update the packages"
             onTriggered: Updates.upgrade()
         }
@@ -70,7 +70,7 @@ SettingsPage {
         Layout.fillWidth: true
         enabled: UpdateSettings.packages
         opacity: enabled ? 1 : 0.5
-        icon: "󰔛"
+        icon: "timer"
         title: "Look for them every"
         description: "And after anything pacman does."
 

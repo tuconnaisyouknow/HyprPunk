@@ -16,7 +16,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰂵"
+        icon: "blur_on"
         title: "Glass"
         description: "Classic, with a crisp rim, or liquid, see-through like the lock screen's clock."
 
@@ -25,11 +25,11 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "classic",
-                "icon": "󰆧",
+                "icon": "diamond",
                 "label": "Classic"
             }, {
                 "value": "liquid",
-                "icon": "󰖌",
+                "icon": "water_drop",
                 "label": "Liquid"
             }]
             value: Session.glassStyle
@@ -42,7 +42,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰗌"
+        icon: "opacity"
         title: "Transparency"
         description: "The windows the wallpaper shows through, blurred: all of them, your terminal alone, or none."
 
@@ -51,15 +51,15 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "all",
-                "icon": "󰈈",
+                "icon": "visibility",
                 "label": "All"
             }, {
                 "value": "terminal",
-                "icon": "󰆍",
+                "icon": "terminal",
                 "label": "Terminal"
             }, {
                 "value": "none",
-                "icon": "󰈉",
+                "icon": "visibility_off",
                 "label": "None"
             }]
             value: Session.transparency
@@ -72,7 +72,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰸉"
+        icon: "wallpaper"
         title: "Wallpaper and theme"
         description: "Picked in the island, which shows each one as it would look."
 
@@ -82,14 +82,14 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰸉"
+                icon: "wallpaper"
                 label: "Choose a wallpaper"
                 onTriggered: ShellState.focused()?.open("wallpaper")
             }
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰏘"
+                icon: "palette"
                 label: "Choose a theme"
                 onTriggered: ShellState.focused()?.open("theme")
             }

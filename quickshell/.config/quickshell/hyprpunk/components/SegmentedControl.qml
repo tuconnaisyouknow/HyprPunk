@@ -111,11 +111,11 @@ Item {
                     horizontalItemAlignment: Grid.AlignHCenter
                     verticalItemAlignment: Grid.AlignVCenter
 
-                    Text {
+                    Icon {
                         text: segment.modelData.icon
+                        filled: segment.chosen
                         color: segment.chosen ? Colors.over(Colors.primary) : Colors.primary
-                        font.family: Metrics.font
-                        font.pixelSize: control.compact ? 16 : 20
+                        size: control.compact ? 16 : 20
 
                         ColorFade on color {
                             token: Motion.color.normal

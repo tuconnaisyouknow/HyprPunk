@@ -9,31 +9,30 @@ import qs.state
 IconMenu {
     id: menu
 
-    // mode: the screenshot taken, or the recording started, on this screen; badge: a
-    // small icon at the bottom right of the icon.
+    // mode: the screenshot taken, or the recording started, on this screen. A region is
+    // dashed, whether captured or recorded.
     entries: [{
-        "icon": "󰍹",
+        "icon": "monitor",
         "name": "Screen",
         "mode": "screen"
     }, {
-        "icon": "󰒉",
+        "icon": "screenshot_region",
         "name": "Region",
         "mode": "region"
     }, {
-        "icon": "󰏫",
+        "icon": "edit",
         "name": "Region and annotate",
         "mode": "annotate"
     }].concat(Screenshot.recording ? [{
-        "icon": "󰓛",
+        "icon": "stop",
         "name": "Stop recording",
         "mode": "stop"
     }] : [{
-        "icon": "󰕧",
+        "icon": "videocam",
         "name": "Record screen",
         "mode": "record"
     }, {
-        "icon": "󰒉",
-        "badge": "󰕧",
+        "icon": "screen_record",
         "name": "Record region",
         "mode": "record-region"
     }])

@@ -14,7 +14,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰕾"
+        icon: "volume_up"
         title: "Volume keys"
         description: "How much a press changes the volume."
 
@@ -34,7 +34,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰋋"
+        icon: "headphones"
         title: "Volume limit"
         description: "A louder volume comes down to it, and the volume keys and the control center's slider stop there, to spare your ears. An app can still raise its own volume past it."
 

@@ -180,7 +180,7 @@ SettingsPage {
 
     // A change that undoes itself unless you keep it.
     question: SettingRow {
-        icon: "󰔛"
+        icon: "timer"
         title: "Keep these settings?"
         description: "They go back as they were in " + page.secondsLeft + " s."
 
@@ -190,14 +190,14 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰄬"
+                icon: "check"
                 label: "Keep"
                 onTriggered: Displays.keep()
             }
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰕌"
+                icon: "undo"
                 label: "Revert"
                 onTriggered: Displays.revert()
             }
@@ -579,7 +579,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
-        icon: "󰹑"
+        icon: "screenshot_monitor"
         title: "Resolution"
         description: page.selected ? page.selected.description : ""
 
@@ -600,7 +600,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
-        icon: "󰑓"
+        icon: "refresh"
         title: "Refresh rate"
 
         SettingChoices {
@@ -618,7 +618,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
-        icon: "󰁌"
+        icon: "zoom_out_map"
         title: "Scale"
         description: "How big everything is drawn. Auto picks one from the screen's size."
 
@@ -640,7 +640,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
-        icon: "󰎤"
+        icon: "looks_one"
         title: "Number"
         description: "Its number in the bar, and the workspace it starts with."
 
@@ -659,7 +659,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
-        icon: "󰕰"
+        icon: "grid_view"
         title: "Workspaces"
         description: "The ones this screen holds. One held by another screen is faint, and moves here when you pick it."
 
@@ -693,7 +693,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.outputs.length > 0
-        icon: "󰕮"
+        icon: "dashboard"
         title: "Layout"
         description: page.info.layout === "auto" ? "Laid out on their own, side by side by number." : "Placed as you set them."
 
@@ -703,14 +703,14 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰕮"
+                icon: "dashboard"
                 label: "Lay them out on their own"
                 onTriggered: Displays.apply(["auto-layout"], false)
             }
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰑓"
+                icon: "refresh"
                 label: "Reset every screen's settings"
                 destructive: true
                 onTriggered: Displays.apply(["reset"], false)

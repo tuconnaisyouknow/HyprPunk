@@ -2,21 +2,24 @@
 # Builds the desktop's three fonts into ~/.local/share/fonts/hyprpunk, under names of
 # their own: Qt Quick picks a font by its family alone, so each role gets a family that
 # holds exactly the cut it needs. The apps write in the text one too.
-#   HyprPunk Text     Ioskeley Mono's Nerd Font, semi-condensed, from regular to bold,
-#                     upright and italic, with its symbols one cell wide like its letters
-#   HyprPunk Term     the same at full width, regular and bold: Ioskeley Mono Term with
-#                     the Nerd Font icons, for the terminal and whatever asks for monospace
+#   HyprPunk Text     Ioskeley Mono, semi-condensed, from regular to bold, upright and
+#                     italic, with its symbols one cell wide like its letters. No icons:
+#                     the shell draws its own from Material Symbols
+#   HyprPunk Term     the same at full width, regular and bold, with the Nerd Font icons
+#                     (Ioskeley Mono Term), for the terminal and whatever asks for monospace
 #   HyprPunk Display  Orbitron Bold, with digits that all take one width (tnum): the
 #                     lock's clock would shift every minute without them
 #
-#   fontsctl.py ensure   builds what's missing (install.sh)
-#   fontsctl.py build    builds both again
+#   fontsctl.py ensure   builds what's missing or now comes from elsewhere (install.sh)
+#   fontsctl.py build    builds them all again
 
 import copy
 import io
+import json
 import os
 import subprocess
 import sys
+import urllib.parse
 import urllib.request
 import zipfile
 
@@ -30,16 +33,29 @@ CACHE_HOME = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
 FONTS_DIR = DATA_HOME + "/fonts/hyprpunk"
 CACHE_DIR = CACHE_HOME + "/hyprpunk/fonts"
 
-IOSKELEY = "https://github.com/ahatem/IoskeleyMono/releases/download/v2.2.0/IoskeleyMono-NerdFont.zip"
+IOSKELEY = "https://github.com/ahatem/IoskeleyMono/releases/download/v2.2.0/"
 ORBITRON = "https://raw.githubusercontent.com/google/fonts/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf"
 
-# Ioskeley's families: the width each is cut from, and the weights it's written in. The
-# shell writes in four, the terminal only in regular and bold.
+# Ioskeley's families: the archive each comes from and a cut's file in it, the width it's
+# cut from, and the weights it's written in. The shell writes in four, the terminal only
+# in regular and bold. In a file's name, the width, weight and slant run together.
 IOSKELEY_FAMILIES = {
-    "HyprPunk Text": ("SemiCondensed", ["Regular", "Medium", "SemiBold", "Bold"]),
-    "HyprPunk Term": ("", ["Regular", "Bold"]),
+    "HyprPunk Text": (
+        IOSKELEY + "IoskeleyMono.zip",
+        "{width}/Hinted/IoskeleyMono-{cut}.ttf",
+        "SemiCondensed",
+        ["Regular", "Medium", "SemiBold", "Bold"],
+    ),
+    "HyprPunk Term": (
+        IOSKELEY + "IoskeleyMono-NerdFont.zip",
+        "{width}/IoskeleyMonoNerdFont-{cut}.ttf",
+        "",
+        ["Regular", "Bold"],
+    ),
 }
 DISPLAY_FAMILY = "HyprPunk Display"
+# Where each family was built from, so one whose source changed is built again
+SOURCES_FILE = FONTS_DIR + "/sources.json"
 
 
 # A cut's name as font files spell it: Regular, Italic, Medium, Medium Italic…
@@ -49,7 +65,7 @@ def style(weight, italic):
 
 # Each weight upright then italic: the shell only writes upright, the apps ask for both
 def cuts(family):
-    weights = IOSKELEY_FAMILIES[family][1]
+    weights = IOSKELEY_FAMILIES[family][3]
     return [(weight, italic) for weight in weights for italic in (False, True)]
 
 
@@ -68,8 +84,9 @@ def save(font, path):
     os.replace(path + ".part", path)
 
 
-# Kept between runs: Ioskeley's archive is large
-def download(url, name):
+# Kept between runs, by its file's name: Ioskeley's archives are large
+def download(url):
+    name = urllib.parse.unquote(url.rsplit("/", 1)[1])
     path = f"{CACHE_DIR}/{name}"
     if not os.path.exists(path):
         os.makedirs(CACHE_DIR, exist_ok=True)
@@ -116,18 +133,18 @@ def narrow_symbols(font):
                 table.cmap[code] = narrow
 
 
-# A cut's file in Ioskeley's archive: its width, weight and slant run together, and
-# the full-width regular is the one left to call itself Regular
-def ioskeley_member(width, weight, italic):
+# A cut's file in its family's archive: the full-width regular is the one left to call
+# itself Regular
+def ioskeley_member(family, weight, italic):
+    _, member, width, _ = IOSKELEY_FAMILIES[family]
     cut = width + weight.removeprefix("Regular") + ("Italic" if italic else "")
-    return f"{width or 'Normal'}/IoskeleyMonoNerdFont-{cut or 'Regular'}.ttf"
+    return member.format(width=width or "Normal", cut=cut or "Regular")
 
 
 def build_ioskeley(family):
-    archive = zipfile.ZipFile(download(IOSKELEY, "IoskeleyMono-NerdFont.zip"))
-    width = IOSKELEY_FAMILIES[family][0]
+    archive = zipfile.ZipFile(download(IOSKELEY_FAMILIES[family][0]))
     for weight, italic in cuts(family):
-        font = TTFont(io.BytesIO(archive.read(ioskeley_member(width, weight, italic))))
+        font = TTFont(io.BytesIO(archive.read(ioskeley_member(family, weight, italic))))
         narrow_symbols(font)
         rename(font, family, weight, italic)
         save(font, font_path(family, weight, italic))
@@ -182,7 +199,7 @@ def add_tabular_digits(font):
 
 
 def build_display():
-    font = TTFont(download(ORBITRON, "Orbitron.ttf"))
+    font = TTFont(download(ORBITRON))
     font = instancer.instantiateVariableFont(font, {"wght": 700})
     add_tabular_digits(font)
     rename(font, DISPLAY_FAMILY, "Bold")
@@ -199,17 +216,32 @@ def main():
         sys.exit("usage: fontsctl.py <ensure|build>")
     os.makedirs(FONTS_DIR, exist_ok=True)
     again = command == "build"
+    try:
+        with open(SOURCES_FILE) as file:
+            sources = json.load(file)
+    except (OSError, ValueError):
+        sources = {}
     built = False
-    for family in IOSKELEY_FAMILIES:
-        if again or not all(
-            os.path.exists(font_path(family, *cut)) for cut in cuts(family)
+    for family, (url, *_) in IOSKELEY_FAMILIES.items():
+        if (
+            again
+            or sources.get(family) != url
+            or not all(os.path.exists(font_path(family, *cut)) for cut in cuts(family))
         ):
             build_ioskeley(family)
+            sources[family] = url
             built = True
-    if again or not os.path.exists(display_path()):
+    if (
+        again
+        or sources.get(DISPLAY_FAMILY) != ORBITRON
+        or not os.path.exists(display_path())
+    ):
         build_display()
+        sources[DISPLAY_FAMILY] = ORBITRON
         built = True
     if built:
+        with open(SOURCES_FILE, "w") as file:
+            json.dump(sources, file, indent=2)
         subprocess.run(["fc-cache", "-f", FONTS_DIR], check=True)
 
 

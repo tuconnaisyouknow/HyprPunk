@@ -48,14 +48,14 @@ Item {
 
     }
 
-    Text {
+    Icon {
         id: glyph
 
         anchors.centerIn: parent
         text: button.icon
+        filled: button.lit
         color: button.lit || button.hovered ? Colors.primary : Colors.secondary
-        font.family: Metrics.font
-        font.pixelSize: button.iconSize
+        size: button.iconSize
 
         ColorFade on color {
             token: Motion.color.small

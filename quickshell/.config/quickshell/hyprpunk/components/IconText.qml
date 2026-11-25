@@ -2,20 +2,22 @@ import QtQuick
 import QtQuick.Layouts
 import qs.theme
 
-// An icon and its value, with the same gap between them whatever the icon. Nerd Font
-// glyphs all claim one cell but spill out of it by different amounts (the RAM chip,
-// the charging bolt…), so the gap is measured from the ink.
+// An icon and its value, with the same gap between them whatever the icon. Icons all
+// take a square but leave it more or less empty (the Bluetooth rune, the wide RAM
+// stick…), so the gap is measured from the ink. Either can be left out: the other then
+// stands alone, centred in its own box.
 Item {
     id: iconText
 
     property string icon
+    // The icon fills in while what it stands for is on.
+    property alias filled: iconLabel.filled
     property string text
     property color color: Colors.primary
-    // The value's font, whose size and weight the icon takes too.
+    // The value's font, whose size the icon takes too.
     property alias font: valueLabel.font
     property real iconSize: font.pixelSize
-    // The value is a title (Heading): capitals in the display font, smaller than its icon,
-    // which stays in the text's font, the only one with the icons.
+    // The value is a title (Heading): capitals in the display font, smaller than its icon.
     property bool heading: false
     property alias elide: valueLabel.elide
     // From the icon's ink to the value's ink, in pixels.
@@ -28,22 +30,22 @@ Item {
         id: row
 
         anchors.fill: parent
-        // The label is already widened to the icon's ink when it overflows its cell.
         spacing: iconText.gap - (iconLabel.implicitWidth - iconMetrics.tightBoundingRect.right) - valueMetrics.tightBoundingRect.x
 
-        Label {
+        Icon {
             id: iconLabel
 
+            visible: iconText.icon !== ""
             text: iconText.icon
             color: iconText.color
-            font.pixelSize: iconText.iconSize
-            font.weight: valueLabel.font.weight
+            size: iconText.iconSize
         }
 
         Label {
             id: valueLabel
 
             Layout.fillWidth: true
+            visible: iconText.text !== ""
             text: iconText.text
             color: decode.running ? "transparent" : iconText.color
             font.family: iconText.heading ? Metrics.displayFont : Metrics.font

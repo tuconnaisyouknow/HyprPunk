@@ -19,87 +19,87 @@ Scope {
     readonly property var sections: [{
         "name": "displays",
         "page": "DisplaysPage.qml",
-        "icon": "󰍹",
+        "icon": "monitor",
         "label": "Displays"
     }, {
         "name": "input",
         "page": "InputPage.qml",
-        "icon": "󰍽",
+        "icon": "mouse",
         "label": "Mouse and touchpad"
     }, {
         "name": "region",
         "page": "RegionPage.qml",
-        "icon": "󰌌",
+        "icon": "keyboard",
         "label": "Keyboard and region"
     }, {
         "name": "sound",
         "page": "VolumePage.qml",
-        "icon": "󰕾",
+        "icon": "volume_up",
         "label": "Sound"
     }, {
         "name": "music",
         "page": "MusicPage.qml",
-        "icon": "󰝚",
+        "icon": "music_note",
         "label": "Music"
     }, {
         "name": "battery",
         "page": "BatteryPage.qml",
-        "icon": "󰁹",
+        "icon": "battery_full",
         "label": "Battery and power"
     }, {
         "name": "power",
         "page": "PowerPage.qml",
-        "icon": "󰒲",
+        "icon": "bedtime",
         "label": "Idle and sleep"
     }, {
         "name": "lock",
         "page": "LockPage.qml",
-        "icon": "󰌾",
+        "icon": "lock",
         "label": "Lock screen"
     }, {
         "name": "nightlight",
         "page": "NightLightPage.qml",
-        "icon": "󰖔",
+        "icon": "nightlight",
         "label": "Night light"
     }, {
         "name": "appearance",
         "page": "AppearancePage.qml",
-        "icon": "󰏘",
+        "icon": "palette",
         "label": "Appearance"
     }, {
         "name": "notifications",
         "page": "NotificationsPage.qml",
-        "icon": "󰂚",
+        "icon": "notifications",
         "label": "Notifications"
     }, {
         "name": "island",
         "page": "IslandPage.qml",
-        "icon": "󰍡",
+        "icon": "chat_bubble",
         "label": "Island"
     }, {
         "name": "apps",
         "page": "AppsPage.qml",
-        "icon": "󰀻",
+        "icon": "apps",
         "label": "Default apps"
     }, {
         "name": "launcher",
         "page": "LauncherPage.qml",
-        "icon": "󱓞",
+        "icon": "rocket_launch",
         "label": "Launcher"
     }, {
         "name": "capture",
         "page": "CapturePage.qml",
-        "icon": "󰹑",
+        "icon": "screenshot_monitor",
         "label": "Screenshots"
     }, {
         "name": "history",
         "page": "HistoryPage.qml",
-        "icon": "󰅌",
+        "icon": "content_paste",
         "label": "Clipboard and history"
     }, {
         "name": "updates",
         "page": "UpdatesPage.qml",
-        "icon": "󰚰",
+        "icon": "update",
         "label": "Updates"
     }]
     // Kept between openings.
@@ -259,13 +259,12 @@ Scope {
                                     anchors.rightMargin: Metrics.spacing.large
                                     spacing: Metrics.spacing.large
 
-                                    Text {
+                                    Icon {
                                         Layout.preferredWidth: 24
-                                        horizontalAlignment: Text.AlignHCenter
                                         text: tab.modelData.icon
+                                        filled: tab.chosen
                                         color: tab.chosen ? Colors.over(Colors.primary) : Colors.secondary
-                                        font.family: Metrics.font
-                                        font.pixelSize: Metrics.text.title
+                                        size: Metrics.text.title
                                     }
 
                                     Text {

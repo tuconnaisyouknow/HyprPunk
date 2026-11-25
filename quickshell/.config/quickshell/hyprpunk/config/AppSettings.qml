@@ -13,25 +13,25 @@ Singleton {
     readonly property var roles: [{
         "name": "terminal",
         "categories": ["TerminalEmulator"],
-        "icon": "󰆍",
+        "icon": "terminal",
         "title": "Terminal",
         "description": "Super+T, and wherever the shell or an app opens a terminal."
     }, {
         "name": "browser",
         "categories": ["WebBrowser"],
-        "icon": "󰖟",
+        "icon": "language",
         "title": "Browser",
         "description": "Super+B, and the links you open from other apps."
     }, {
         "name": "files",
         "categories": ["FileManager"],
-        "icon": "󰉋",
+        "icon": "folder",
         "title": "Files",
         "description": "Super+E, and the folders you open from other apps."
     }, {
         "name": "music",
         "categories": ["Audio", "Player"],
-        "icon": "󰝚",
+        "icon": "music_note",
         "title": "Music",
         "description": "Super+P. The players the island and the lock screen follow are on the Music page."
     }]

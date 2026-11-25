@@ -69,7 +69,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: page.up ? "󰌙" : "󰖂"
+        icon: page.up ? "vpn_key_off" : "vpn_key"
         label: page.up ? "Disconnect" : "Connect"
         onTriggered: Vpn.toggle(page.uuid)
     }
@@ -86,11 +86,10 @@ ControlPage {
             anchors.rightMargin: Metrics.spacing.large
             spacing: Metrics.spacing.large
 
-            Text {
-                text: "󰁪"
+            Icon {
+                text: "autorenew"
                 color: Colors.primary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.title
+                size: Metrics.text.title
             }
 
             Text {
@@ -124,7 +123,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: "󰆴"
+        icon: "delete"
         label: "Delete This VPN"
         confirmLabel: "Click again to delete it"
         destructive: true

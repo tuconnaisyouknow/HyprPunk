@@ -38,11 +38,10 @@ RowLayout {
         font.pixelSize: Metrics.text.body
     }
 
-    Text {
-        text: "󰅂"
+    Icon {
+        text: "keyboard_arrow_right"
         color: header.block.hovered ? Colors.primary : Colors.secondary
-        font.family: Metrics.font
-        font.pixelSize: Metrics.text.emphasis
+        size: Metrics.text.emphasis
 
         ColorFade on color {
             token: Motion.color.small

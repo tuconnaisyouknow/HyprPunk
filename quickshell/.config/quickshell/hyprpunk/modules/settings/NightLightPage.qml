@@ -18,15 +18,15 @@ SettingsPage {
         compact: true
         options: [{
             "value": "off",
-            "icon": "󰌶",
+            "icon": "light_off",
             "label": "Off"
         }, {
             "value": "on",
-            "icon": "󰛨",
+            "icon": "lightbulb",
             "label": "Always on"
         }, {
             "value": "schedule",
-            "icon": "󰔛",
+            "icon": "timer",
             "label": "Scheduled"
         }]
         value: NightLightSettings.mode
@@ -37,7 +37,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰈸"
+        icon: "local_fire_department"
         title: "Warmth"
         description: "In kelvin: the lower, the warmer."
 
@@ -59,7 +59,7 @@ SettingsPage {
         Layout.fillWidth: true
         enabled: page.scheduled
         opacity: enabled ? 1 : 0.5
-        icon: "󰖔"
+        icon: "nightlight"
         title: "From"
         description: "When it turns on, in the scheduled mode."
 
@@ -79,7 +79,7 @@ SettingsPage {
         Layout.fillWidth: true
         enabled: page.scheduled
         opacity: enabled ? 1 : 0.5
-        icon: "󰖨"
+        icon: "light_mode"
         title: "To"
         description: "When it turns off again, the next morning."
 

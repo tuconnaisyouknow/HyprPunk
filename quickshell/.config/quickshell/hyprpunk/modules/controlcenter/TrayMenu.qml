@@ -95,21 +95,21 @@ Column {
                     opacity: entry.modelData.enabled ? 1 : 0.5
 
                     // Check boxes and radio buttons, in the shell's colors.
-                    Text {
+                    Icon {
                         visible: text !== ""
                         text: {
                             const item = entry.modelData;
                             if (item.buttonType === QsMenuButtonType.CheckBox)
-                                return item.checkState === Qt.Checked ? "󰄵" : item.checkState === Qt.PartiallyChecked ? "󰡖" : "󰄱";
+                                return item.checkState === Qt.Checked ? "check_box" : item.checkState === Qt.PartiallyChecked ? "indeterminate_check_box" : "check_box_outline_blank";
 
                             if (item.buttonType === QsMenuButtonType.RadioButton)
-                                return item.checkState === Qt.Checked ? "󰐾" : "󰄰";
+                                return item.checkState === Qt.Checked ? "radio_button_checked" : "radio_button_unchecked";
 
                             return "";
                         }
+                        filled: entry.modelData.checkState === Qt.Checked
                         color: entry.modelData.checkState === Qt.Checked ? Colors.primary : Colors.secondary
-                        font.family: Metrics.font
-                        font.pixelSize: Metrics.text.emphasis
+                        size: Metrics.text.emphasis
                     }
 
                     IconImage {
@@ -131,13 +131,12 @@ Column {
                     }
 
                     // Turns down as its submenu unfolds.
-                    Text {
+                    Icon {
                         visible: entry.modelData.hasChildren
-                        text: "󰅂"
+                        text: "keyboard_arrow_right"
                         rotation: entry.open ? 90 : 0
                         color: entry.current ? Colors.primary : Colors.secondary
-                        font.family: Metrics.font
-                        font.pixelSize: Metrics.text.emphasis
+                        size: Metrics.text.emphasis
 
                         Behavior on rotation {
                             Anim {

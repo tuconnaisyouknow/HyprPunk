@@ -31,22 +31,22 @@ Item {
     property bool saving: false
     readonly property var tools: [{
         "value": "pen",
-        "icon": "󰏫"
+        "icon": "edit"
     }, {
         "value": "highlight",
-        "icon": "󰸱"
+        "icon": "ink_highlighter"
     }, {
         "value": "arrow",
-        "icon": "󰁔"
+        "icon": "arrow_right_alt"
     }, {
         "value": "rect",
-        "icon": "󰝣"
+        "icon": "rectangle"
     }, {
         "value": "ellipse",
-        "icon": "󰝦"
+        "icon": "circle"
     }, {
         "value": "text",
-        "icon": "󰊄"
+        "icon": "text_fields"
     }]
     readonly property var colors: [Colors.red, Colors.peach, Colors.yellow, Colors.green, Colors.blue, Colors.primary]
 
@@ -343,7 +343,7 @@ Item {
 
             // Filled or outlined, for the rectangles and ellipses.
             ToolButton {
-                icon: "󰉦"
+                icon: "format_color_fill"
                 chosen: annotator.filled
                 enabled: annotator.boxed(annotator.tool)
                 opacity: enabled ? 1 : 0.35
@@ -436,17 +436,17 @@ Item {
             }
 
             ToolButton {
-                icon: "󰕌"
+                icon: "undo"
                 onClicked: annotator.undo()
             }
 
             ToolButton {
-                icon: "󰅖"
+                icon: "close"
                 onClicked: annotator.cancelled()
             }
 
             ToolButton {
-                icon: "󰄬"
+                icon: "check"
                 chosen: true
                 onClicked: annotator.save()
             }
@@ -481,12 +481,11 @@ Item {
             visible: button.chosen
         }
 
-        Text {
+        Icon {
             anchors.centerIn: parent
             text: button.icon
             color: button.chosen ? Colors.over(Colors.primary) : Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.title
+            size: Metrics.text.title
         }
 
         HoverHandler {

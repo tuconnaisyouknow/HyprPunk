@@ -24,7 +24,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰅌"
+        icon: "content_paste"
         title: "Clipboard history"
         description: "Keeps what you copy, to paste it again from Super+V. Passwords from a password manager are never kept."
         checkable: true
@@ -36,7 +36,7 @@ SettingsPage {
         Layout.fillWidth: true
         enabled: HistorySettings.clipboard
         opacity: enabled ? 1 : 0.5
-        icon: "󰋚"
+        icon: "history"
         title: "Remember up to"
         description: "The oldest copies go once there are more, or once they weigh over 256 MB together."
 
@@ -56,7 +56,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰃢"
+        icon: "cleaning_services"
         title: "Clear"
         description: "Asks you to confirm, and can't be undone."
 
@@ -66,7 +66,7 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰅌"
+                icon: "content_paste"
                 label: "Clear the clipboard history"
                 destructive: true
                 detail: page.held("clipboard", "copy", "copies")
@@ -76,7 +76,7 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰀻"
+                icon: "apps"
                 label: "Clear the launcher's recent apps"
                 destructive: true
                 detail: page.held("launcher", "app", "apps")
@@ -86,7 +86,7 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "󰞅"
+                icon: "mood"
                 label: "Clear the recent emojis"
                 destructive: true
                 detail: page.held("emoji", "emoji", "emojis")

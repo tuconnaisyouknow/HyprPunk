@@ -16,7 +16,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰇀"
+        icon: "arrow_selector_tool"
         title: "Pointer speed"
         description: "For the mouse and the touchpad alike."
 
@@ -42,7 +42,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰳽"
+        icon: "left_click"
         title: "Acceleration"
         description: "Faster moves go further, or the pointer goes as far as your hand, whatever the speed: a steadier aim for games and drawing."
 
@@ -51,11 +51,11 @@ SettingsPage {
             compact: true
             options: [{
                 "value": "adaptive",
-                "icon": "󰓅",
+                "icon": "speed",
                 "label": "Adaptive"
             }, {
                 "value": "flat",
-                "icon": "󰘖",
+                "icon": "trending_flat",
                 "label": "Flat"
             }]
             value: InputSettings.values.acceleration || null
@@ -68,7 +68,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰳾"
+        icon: "ads_click"
         title: "Focus follows the pointer"
         description: "The window under the pointer takes the keyboard. Off, a click gives it."
         checkable: true
@@ -78,7 +78,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "󰍽"
+        icon: "mouse"
         title: "Natural scrolling with the mouse"
         description: "The page follows the wheel, like a phone's follows your finger."
         checkable: true
@@ -100,7 +100,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: Devices.hasTouchpad
-        icon: "󰟸"
+        icon: "trackpad_input"
         title: "Touchpad"
         description: "Off, only a mouse moves the pointer. The touchpad key does the same."
         checkable: true
@@ -111,7 +111,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: Devices.hasTouchpad
-        icon: "󰳽"
+        icon: "left_click"
         title: "Tap to click"
         description: "A tap clicks, two fingers right-click, three middle-click."
         checkable: true
@@ -122,7 +122,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: Devices.hasTouchpad
-        icon: "󰌌"
+        icon: "keyboard"
         title: "Off while you type"
         description: "Your palm can't move the pointer while you type."
         checkable: true
@@ -133,7 +133,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: Devices.hasTouchpad
-        icon: "󰍽"
+        icon: "mouse"
         title: "Natural scrolling with the touchpad"
         description: "The page follows your fingers."
         checkable: true
@@ -144,7 +144,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: Devices.hasTouchpad
-        icon: "󰡏"
+        icon: "swipe_vertical"
         title: "Scrolling speed"
         description: "How far two fingers scroll."
 

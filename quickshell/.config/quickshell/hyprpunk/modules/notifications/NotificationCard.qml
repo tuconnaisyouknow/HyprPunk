@@ -255,7 +255,7 @@ Rectangle {
 
     // Closes the card.
     IconButton {
-        icon: ""
+        icon: "close"
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: Metrics.spacing.normal

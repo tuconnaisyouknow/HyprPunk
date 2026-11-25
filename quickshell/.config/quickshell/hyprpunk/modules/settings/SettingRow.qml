@@ -39,14 +39,13 @@ Item {
             spacing: Metrics.spacing.large
 
             // As wide for every icon, so the titles line up.
-            Text {
+            Icon {
                 Layout.alignment: Qt.AlignTop
                 Layout.preferredWidth: 24
                 horizontalAlignment: Text.AlignHCenter
                 text: row.icon
                 color: Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.heading
+                size: Metrics.text.heading
             }
 
             ColumnLayout {

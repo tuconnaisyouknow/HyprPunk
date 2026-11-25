@@ -169,12 +169,11 @@ Item {
                     lit: true
                 }
 
-                Text {
+                Icon {
                     anchors.centerIn: parent
-                    text: ""
+                    text: "check"
                     color: Colors.over(Colors.primary)
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.emphasis
+                    size: Metrics.text.emphasis
                 }
 
             }

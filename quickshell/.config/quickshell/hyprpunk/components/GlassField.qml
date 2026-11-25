@@ -37,7 +37,7 @@ Rectangle {
         focused: field.showsFocus && input.activeFocus
     }
 
-    Text {
+    Icon {
         id: iconLabel
 
         anchors.left: parent.left
@@ -45,8 +45,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         text: field.icon
         color: Colors.primary
-        font.family: Metrics.font
-        font.pixelSize: Metrics.text.title
+        size: Metrics.text.title
     }
 
     TextInput {

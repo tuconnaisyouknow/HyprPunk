@@ -265,7 +265,7 @@ Card {
 
                         AirPodsImage {
                             source: popup.images !== null ? "file://" + popup.images.buds : ""
-                            glyph: popup.headphones ? "󰋋" : "󱡏"
+                            glyph: popup.headphones ? "headphones" : "earbuds"
                         }
 
                         Row {
@@ -346,7 +346,7 @@ Card {
 
             // Closes the card.
             IconButton {
-                icon: ""
+                icon: "close"
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.margins: Metrics.spacing.normal

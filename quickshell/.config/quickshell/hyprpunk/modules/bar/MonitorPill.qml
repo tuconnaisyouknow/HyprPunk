@@ -17,12 +17,12 @@ Pill {
     onClicked: monitorPopup.togglePinned()
 
     IconText {
-        icon: ""
+        icon: "memory_alt"
         text: SystemStats.memoryText
     }
 
     IconText {
-        icon: ""
+        icon: "memory"
         text: Math.round(SystemStats.cpuUsage * 100) + "%"
     }
 

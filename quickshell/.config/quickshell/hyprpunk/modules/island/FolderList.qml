@@ -209,17 +209,16 @@ Item {
                 cursorShape: Qt.PointingHandCursor
             }
 
-            Text {
+            Icon {
                 id: rowIcon
 
                 anchors.left: parent.left
                 anchors.leftMargin: Metrics.spacing.large
                 anchors.verticalCenter: parent.verticalCenter
                 width: Metrics.spacing.section
-                text: row.marked ? "󰄲" : Files.icon(row.modelData)
+                text: row.marked ? "check_box" : Files.icon(row.modelData)
                 color: row.lit ? Colors.primary : Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.title
+                size: Metrics.text.title
             }
 
             Text {

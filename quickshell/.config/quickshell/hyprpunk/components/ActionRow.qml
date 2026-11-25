@@ -57,11 +57,10 @@ ControlBlock {
         anchors.rightMargin: 14
         spacing: 12
 
-        Text {
+        Icon {
             text: action.icon
             color: action.ink
-            font.family: Metrics.font
-            font.pixelSize: 17
+            size: 17
         }
 
         Text {

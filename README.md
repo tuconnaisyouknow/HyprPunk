@@ -582,7 +582,8 @@ customize (see [Philosophy](#-philosophy)): your apps can follow it, not change 
 - 🔒 The lock screen, and the login screen drawn like it, are inspired by the lock screen in [andreumassanet/impasto](https://github.com/andreumassanet/impasto): a big clock with see-through minutes, and the island holding a padlock.
 - 🎧 The AirPods protocol details come from [kavishdevar/librepods](https://github.com/kavishdevar/librepods), and so do the AirPods renders the shell downloads on first use.
 - 😀 The emoji list comes from [rofi-emoji](https://github.com/Mange/rofi-emoji) 4.1.0 by Magnus Bergmark (MIT), generated from the Unicode CLDR data.
-- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock and login screens' clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's and the terminal's cuts are built on your machine under names of their own (`fontsctl.py`), with the [Nerd Fonts](https://www.nerdfonts.com) icons Ioskeley ships.
+- 🔡 The desktop and the login screens are written in [Ioskeley Mono](https://github.com/ahatem/IoskeleyMono) by Ahmed Hatem, built on Iosevka, and the titles and the lock and login screens' clock in [Orbitron](https://github.com/theleagueof/orbitron) by Matt McInerney, both under the SIL Open Font License 1.1. The shell's and the terminal's cuts are built on your machine under names of their own (`fontsctl.py`), the terminal's with the [Nerd Fonts](https://www.nerdfonts.com) icons Ioskeley ships.
+- 🔣 The shell's and the login screen's icons are Google's [Material Symbols](https://github.com/google/material-design-icons) Rounded, under the Apache License 2.0.
 - 💤 The Neovim configuration starts from the [LazyVim starter](https://github.com/LazyVim/starter), under the Apache License 2.0 (`nvim/.config/nvim/LICENSE`).
 
 ---

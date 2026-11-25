@@ -41,7 +41,7 @@ Column {
             smooth: true
         }
 
-        Text {
+        Icon {
             anchors.centerIn: parent
             visible: !preview.showsImage
             text: Files.icon(preview.entry ?? {
@@ -49,9 +49,8 @@ Column {
                 "isDir": true
             })
             color: Colors.primary
-            font.family: Metrics.font
             // The picture's place, filled by its icon.
-            font.pixelSize: frame.width * 0.3
+            size: frame.width * 0.3
         }
 
     }

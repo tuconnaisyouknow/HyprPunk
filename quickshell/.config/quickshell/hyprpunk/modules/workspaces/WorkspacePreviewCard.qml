@@ -83,7 +83,7 @@ ClippingRectangle {
     SwipeArrow {
         anchors.left: parent.left
         anchors.leftMargin: Metrics.spacing.normal
-        icon: "󰅁"
+        icon: "keyboard_arrow_left"
         shown: list.currentIndex > 0
         onTriggered: list.decrementCurrentIndex()
     }
@@ -91,7 +91,7 @@ ClippingRectangle {
     SwipeArrow {
         anchors.right: parent.right
         anchors.rightMargin: Metrics.spacing.normal
-        icon: "󰅂"
+        icon: "keyboard_arrow_right"
         shown: list.currentIndex < list.count - 1
         onTriggered: list.incrementCurrentIndex()
     }
@@ -161,12 +161,11 @@ ClippingRectangle {
         visible: opacity > 0
         scale: arrowMouse.pressed ? 0.88 : 1
 
-        Text {
+        Icon {
             anchors.centerIn: parent
             text: arrow.icon
             color: Colors.primary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.title
+            size: Metrics.text.title
         }
 
         // A MouseArea keeps the click to itself; with a TapHandler the preview

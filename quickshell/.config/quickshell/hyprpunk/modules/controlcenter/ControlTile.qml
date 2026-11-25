@@ -65,13 +65,12 @@ ControlBlock {
 
             }
 
-            Text {
+            Icon {
                 anchors.centerIn: parent
                 text: tile.icon
+                filled: tile.active
                 color: tile.active ? Colors.over(Colors.primary) : Colors.primary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.title
-                font.weight: Font.Bold
+                size: Metrics.text.title
             }
 
             HoverHandler {
@@ -152,12 +151,11 @@ ControlBlock {
 
         }
 
-        Text {
+        Icon {
             visible: tile.expandable
-            text: "󰅂"
+            text: "keyboard_arrow_right"
             color: Colors.secondary
-            font.family: Metrics.font
-            font.pixelSize: Metrics.text.title
+            size: Metrics.text.title
 
             TapHandler {
                 gesturePolicy: TapHandler.ReleaseWithinBounds

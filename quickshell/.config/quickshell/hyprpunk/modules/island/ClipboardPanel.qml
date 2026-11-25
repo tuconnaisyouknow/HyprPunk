@@ -31,7 +31,7 @@ SearchPanel {
     }
 
     panelName: "clipboard"
-    searchIcon: "󰅌"
+    searchIcon: "content_paste"
     placeholder: "Search the clipboard"
     hint: entries.length > 0 ? results.length + " / " + entries.length : ""
     count: results.length

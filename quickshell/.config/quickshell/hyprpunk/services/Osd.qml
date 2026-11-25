@@ -146,7 +146,7 @@ Singleton {
 
         function onMicToggled() {
             if (OsdSettings.shows("microphone") && osd.microphoneInSight.refCount === 0)
-                osd.showLevel(Audio.micMuted ? "󰍭" : "󰍬", "Microphone", !Audio.micMuted);
+                osd.showLevel(Audio.micMuted ? "mic_off" : "mic", "Microphone", !Audio.micMuted);
 
         }
 
@@ -156,19 +156,19 @@ Singleton {
     Connections {
         function onCapsLockToggled(enabled) {
             if (OsdSettings.shows("keys"))
-                osd.showLevel("󰪛", "Caps Lock", enabled);
+                osd.showLevel("keyboard_capslock", "Caps Lock", enabled);
 
         }
 
         function onNumLockToggled(enabled) {
             if (OsdSettings.shows("keys"))
-                osd.showLevel("󰎤", "Num Lock", enabled);
+                osd.showLevel("looks_one", "Num Lock", enabled);
 
         }
 
         function onTouchpadToggled(enabled) {
             if (OsdSettings.shows("keys"))
-                osd.showLevel("󰟸", "Touchpad", enabled);
+                osd.showLevel("trackpad_input", "Touchpad", enabled);
 
         }
 
@@ -180,7 +180,7 @@ Singleton {
 
         function onKeyboardBacklightShown(level, max) {
             if (OsdSettings.shows("brightness"))
-                osd.showLevel("󰌌", "Keyboard light", level > 0, level, max);
+                osd.showLevel("keyboard", "Keyboard light", level > 0, level, max);
 
         }
 

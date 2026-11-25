@@ -208,12 +208,11 @@ ControlPage {
 
                                     }
 
-                                    Text {
+                                    Icon {
                                         anchors.centerIn: parent
-                                        text: "󰏌"
+                                        text: "open_in_new"
                                         color: openArea.containsMouse ? Colors.primary : Colors.secondary
-                                        font.family: Metrics.font
-                                        font.pixelSize: Metrics.text.title
+                                        size: Metrics.text.title
                                     }
 
                                     // A MouseArea takes the click from the row.
@@ -229,13 +228,12 @@ ControlPage {
                                 }
 
                                 // Turns down as the menu unfolds.
-                                Text {
+                                Icon {
                                     visible: app.modelData.hasMenu
-                                    text: "󰅂"
+                                    text: "keyboard_arrow_right"
                                     rotation: app.expanded ? 90 : 0
                                     color: row.hovered || app.expanded ? Colors.primary : Colors.secondary
-                                    font.family: Metrics.font
-                                    font.pixelSize: Metrics.text.emphasis
+                                    size: Metrics.text.emphasis
 
                                     Behavior on rotation {
                                         Anim {

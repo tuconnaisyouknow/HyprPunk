@@ -16,7 +16,7 @@ Singleton {
     property var bookmarks: []
     // [{ "icon", "name", "path" }], a folder only once.
     readonly property var list: [{
-        "icon": "󰋜",
+        "icon": "home",
         "name": "Home",
         "path": home
     }].concat(userDirs, bookmarks.filter((bookmark) => {
@@ -24,7 +24,7 @@ Singleton {
             return place.path === bookmark.path;
         });
     }), [{
-        "icon": "󰋊",
+        "icon": "hard_drive",
         "name": "Computer",
         "path": "/"
     }])
@@ -45,19 +45,19 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const icons = {
-                    "DESKTOP": "󰇄",
-                    "DOCUMENTS": "󰈙",
-                    "DOWNLOAD": "󰉍",
-                    "PICTURES": "󰉏",
-                    "MUSIC": "󱍙",
-                    "VIDEOS": "󰕧"
+                    "DESKTOP": "desktop_windows",
+                    "DOCUMENTS": "description",
+                    "DOWNLOAD": "download",
+                    "PICTURES": "photo_library",
+                    "MUSIC": "library_music",
+                    "VIDEOS": "videocam"
                 };
                 places.userDirs = text.split("\n").filter((line) => {
                     return line !== "";
                 }).map((line) => {
                     const fields = line.split("\t");
                     return {
-                        "icon": icons[fields[0]] || "󰉋",
+                        "icon": icons[fields[0]] || "folder",
                         "name": fields[1].substring(fields[1].lastIndexOf("/") + 1),
                         "path": fields[1]
                     };
@@ -82,7 +82,7 @@ Singleton {
             // Nautilus writes them with a trailing slash.
             const path = decodeURIComponent((space > 0 ? line.substring(0, space) : line).substring(7)).replace(/(.)\/+$/, "$1");
             return {
-                "icon": "󰃀",
+                "icon": "bookmark",
                 "name": space > 0 ? line.substring(space + 1) : path.substring(path.lastIndexOf("/") + 1),
                 "path": path
             };

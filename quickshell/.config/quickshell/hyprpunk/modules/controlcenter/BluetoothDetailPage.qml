@@ -41,7 +41,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: page.device !== null && page.device.connected ? "󰂲" : "󰂱"
+        icon: page.device !== null && page.device.connected ? "bluetooth_disabled" : "bluetooth_connected"
         label: page.device !== null && page.device.connected ? "Disconnect" : "Connect"
         onTriggered: {
             if (page.device.connected)
@@ -53,7 +53,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: "󰆴"
+        icon: "delete"
         label: "Forget This Device"
         confirmLabel: "Click again to forget it"
         destructive: true

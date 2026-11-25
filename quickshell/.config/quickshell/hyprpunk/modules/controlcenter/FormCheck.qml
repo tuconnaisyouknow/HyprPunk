@@ -49,14 +49,12 @@ Item {
 
             }
 
-            Text {
+            Icon {
                 anchors.centerIn: parent
                 visible: check.checked
-                text: ""
+                text: "check"
                 color: Colors.over(Colors.primary)
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.small
-                font.weight: Font.Bold
+                size: Metrics.text.small
             }
 
             BounceAnimation {

@@ -7,9 +7,12 @@ import Quickshell
 // size comes from here, so the whole shell keeps one rhythm. A value missing here is one
 // the design doesn't know about yet: add it with its reason, don't write it by hand.
 Singleton {
-    // Everything you read: Ioskeley Mono, semi-condensed, with the Nerd Font icons the
-    // shell writes in its text. fontsctl.py builds it under this name.
+    // Everything you read: Ioskeley Mono, semi-condensed, which fontsctl.py builds under
+    // this name.
     readonly property string font: "HyprPunk Text"
+    // Every icon, written by its name (Icon): Material Symbols Rounded, variable, so an
+    // icon fills in as it lights up.
+    readonly property string iconFont: "Material Symbols Rounded"
     // A window's titles and the lock's clock, in capitals: Orbitron Bold, which
     // fontsctl.py builds with digits that all take one width.
     readonly property string displayFont: "HyprPunk Display"
