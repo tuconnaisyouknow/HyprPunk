@@ -74,6 +74,11 @@ Scope {
         "icon": "notifications",
         "label": "Notifications"
     }, {
+        "name": "bar",
+        "page": "BarPage.qml",
+        "icon": "toolbar",
+        "label": "Bar"
+    }, {
         "name": "island",
         "page": "IslandPage.qml",
         "icon": "chat_bubble",

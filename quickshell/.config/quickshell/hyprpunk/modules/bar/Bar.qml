@@ -15,6 +15,9 @@ import qs.theme
 // ends, updates and the control pill on the right. A click on a pill opens its card, the
 // workspaces also preview on hover. The island's cards hold the calendar with the
 // notifications waiting, and the player.
+// You keep the pills you want, or only the island (BarSettings): then it opens under the
+// pointer onto your workspaces and the control center's icons (IslandPill), and its
+// cards hold the rest.
 // Drawn in its screen's window (ScreenShell), with the cards.
 Item {
     id: bar
@@ -68,6 +71,8 @@ Item {
     property int recordingElapsed: 0
     // What the pills are drawn in, for the workspace previews' snapshot of the bar.
     readonly property Item content: barContent
+    // Only the island: the pills fly away, and the island holds what they opened.
+    readonly property bool islandOnly: BarSettings.island
     // The island and the control pill themselves, for the cards that show their content
     // while they cover them (PillContent).
     readonly property alias islandItem: island
@@ -116,6 +121,11 @@ Item {
             screenState.claim("osd", 3, !Osd.comesBack(osd));
     }
 
+    // A pill you keep (BarSettings): none but the island when it's alone.
+    function keeps(name) {
+        return !islandOnly && BarSettings.shows(name);
+    }
+
     // Hidden under a card grown out of it: the card's glass would let it through.
     function pillHidden(name) {
         return cards.some((card) => {
@@ -151,13 +161,16 @@ Item {
         readonly property real top: barContent.y + centerGroup.y + island.y
         readonly property real width: island.width
         readonly property real height: island.height
+        readonly property real radius: island.radius
         readonly property real spreadX: island.spreadX
         readonly property real spreadY: island.spreadY
         readonly property bool lit: island.lit
     }
+    // The control pill from its slot, where it waits while you hide it: its card still
+    // opens there.
     readonly property QtObject controlPill: QtObject {
-        readonly property real right: bar.width - barContent.x - rightGroup.x - control.x - control.width
-        readonly property real top: barContent.y + rightGroup.y + control.y
+        readonly property real right: bar.width - barContent.x - rightGroup.x - controlSlot.x - controlSlot.width
+        readonly property real top: barContent.y + rightGroup.y + controlSlot.y
         readonly property real width: control.width
         readonly property real height: control.height
         readonly property real spreadX: control.spreadX
@@ -170,8 +183,9 @@ Item {
     // The bar's own cards, for the screen to watch.
     readonly property var ownCards: [workspaces.popup, monitor.popup, calendar, player]
 
-    // Down to the island showing an OSD, which overhangs the bar's strip.
-    implicitHeight: Metrics.barTop + Metrics.islandOsdHeight
+    // Down to the island at its tallest, open or showing an OSD, which overhangs the
+    // bar's strip.
+    implicitHeight: Metrics.barTop + Math.max(Metrics.islandOsdHeight, Metrics.islandOpenHeight)
 
     Item {
         id: barContent
@@ -188,16 +202,26 @@ Item {
             anchors.topMargin: Metrics.barTop
             spacing: Metrics.spacing.normal
 
-            WorkspacesPill {
-                id: workspaces
+            DropInSlot {
+                shown: bar.keeps("workspaces")
 
-                bar: bar
+                WorkspacesPill {
+                    id: workspaces
+
+                    bar: bar
+                }
+
             }
 
-            MonitorPill {
-                id: monitor
+            DropInSlot {
+                shown: bar.keeps("monitor") && monitor.fits
 
-                bar: bar
+                MonitorPill {
+                    id: monitor
+
+                    bar: bar
+                }
+
             }
 
         }
@@ -265,7 +289,7 @@ Item {
 
             // Package updates waiting: a click runs them in your terminal.
             DropInSlot {
-                shown: Updates.count > 0
+                shown: Updates.count > 0 && bar.keeps("updates")
 
                 Pill {
                     clickable: true
@@ -288,10 +312,17 @@ Item {
 
             }
 
-            ControlPill {
-                id: control
+            DropInSlot {
+                id: controlSlot
 
-                bar: bar
+                shown: bar.keeps("control")
+
+                ControlPill {
+                    id: control
+
+                    bar: bar
+                }
+
             }
 
         }

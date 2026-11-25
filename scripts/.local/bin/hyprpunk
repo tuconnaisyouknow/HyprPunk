@@ -19,6 +19,7 @@
 #   hyprpunk input ...     the mouse and the touchpad (inputctl.sh)
 #   hyprpunk lock ...      what the lock screen shows, and its animation (lockctl.sh)
 #   hyprpunk music ...     the players followed, the equalizer and the wave (musicctl.sh)
+#   hyprpunk bar ...       the bar's layout and the pills it keeps (barctl.sh)
 #   hyprpunk osd ...       what the island shows as it happens (osdctl.sh)
 #   hyprpunk apps ...      the terminal, browser, files and music apps (appsctl.sh)
 #   hyprpunk launcher ...  the launcher's pinned and hidden apps (launcherctl.sh)
@@ -48,6 +49,7 @@ Usage: hyprpunk <command> [arguments]
   input      get, set <key> <value>
   lock       get, set <player|animation> <true|false>
   music      get, set sources <spotify,firefox|"">, set <equalizer|wave> <true|false>
+  bar        get, set layout <bar|island>, set <workspaces|monitor|updates|control> <true|false>
   osd        get, set <change> <true|false>, set duration <short|normal|long>
   apps       get, set <terminal|browser|files|music> <command> [desktop entry]
   launcher   get, pin|unpin|hide|show <desktop entry>
@@ -75,6 +77,7 @@ sound) exec "$LIB_DIR/soundctl.sh" "$@" ;;
 input) exec "$LIB_DIR/inputctl.sh" "$@" ;;
 lock) exec "$LIB_DIR/lockctl.sh" "$@" ;;
 music) exec "$LIB_DIR/musicctl.sh" "$@" ;;
+bar) exec "$LIB_DIR/barctl.sh" "$@" ;;
 osd) exec "$LIB_DIR/osdctl.sh" "$@" ;;
 apps) exec "$LIB_DIR/appsctl.sh" "$@" ;;
 launcher) exec "$LIB_DIR/launcherctl.sh" "$@" ;;

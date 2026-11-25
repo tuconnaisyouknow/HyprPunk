@@ -135,7 +135,7 @@ Card {
     cardWidth: 300
     cardHeight: 120
     // The island's corners: rounder ones would let the island's show under the card.
-    openRadius: island.height / 2
+    openRadius: island.radius
     visible: shown
     pillName: "island"
     covering: shown

@@ -19,13 +19,15 @@ Singleton {
     // How far the bar's pills sit from the screen's sides, in line with the windows'
     // edges (Hyprland's gaps_out), so it isn't on the spacing grid.
     readonly property int barMargin: 10
-    // The strip the bar keeps free of windows, its pills centred in it: Hyprland reserves
-    // it (monitors.lua, keep both alike), and its gaps_out then sets the windows apart
-    // from it like from any edge.
-    readonly property int barHeight: 50
-    readonly property int barTop: (barHeight - pillHeight) / 2
-    // The bar's pills. Every card keeps its pill's round ends as it grows.
-    readonly property int pillHeight: 38
+    // The strip the bar keeps free of windows: Hyprland reserves it (monitors.lua, keep
+    // both alike), and its gaps_out then sets the windows apart from it like from any
+    // edge. The pills sit as far from the screen's top as from the windows under them,
+    // in either layout.
+    readonly property int barHeight: 52
+    readonly property int barTop: (barHeight + barMargin - pillHeight) / 2
+    // The bar's pills, as far from the screen's top and sides as from the windows. Every
+    // card keeps its pill's round ends as it grows.
+    readonly property int pillHeight: 42
     // Room on each side of a pill's content.
     readonly property int pillPadding: spacing.large
     // How far the music's cover and equalizer sit from the island's edges, all around:
@@ -35,6 +37,11 @@ Singleton {
     // takes the same shape, to take over from the bar's without a jump.
     readonly property int islandOsdHeight: pillHeight + spacing.large
     readonly property int islandOsdPadding: spacing.huge
+    // The island alone opens under the pointer (IslandView.open): the time a little bigger
+    // over the date, between two sides of two lines each (IslandSide), every line as tall
+    // as the music's cover.
+    readonly property int islandOpenHeight: 2 * islandBlockHeight + 3 * spacing.normal
+    readonly property int islandBlockHeight: pillHeight - 2 * islandMusicInset
     readonly property real cardRadius: pillHeight / 2
     // A button in a card (GlassButton): shorter than the bar's pills, so a card's
     // buttons never read as more pills.

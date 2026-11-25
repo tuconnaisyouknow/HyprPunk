@@ -18,6 +18,14 @@ RowLayout {
     property color badgeColor: Colors.panel
     // On the bar only: the lock screen gives no way to reach the app.
     property bool showsTrayAttention: false
+    // The icons a card carries out of here for now (Card.carriedIcons), their places kept
+    // empty, and the icons by the same names.
+    property var lifted: []
+    readonly property var icons: ({
+        "network": networkLabel,
+        "caffeine": caffeineLabel,
+        "volume": volumeLabel.iconItem
+    })
 
     function networkIcon() {
         const device = NetworkStatus.device;
@@ -51,6 +59,7 @@ RowLayout {
             id: networkLabel
 
             visible: !NetworkStatus.connecting
+            opacity: status.lifted.includes("network") ? 0 : 1
             text: status.networkIcon()
             size: Metrics.text.title
         }
@@ -154,13 +163,19 @@ RowLayout {
 
     // Caffeine on: the computer stays awake.
     Icon {
+        id: caffeineLabel
+
         size: Metrics.text.title
         visible: ShellState.caffeine
+        opacity: status.lifted.includes("caffeine") ? 0 : 1
         text: "coffee"
     }
 
     IconText {
+        id: volumeLabel
+
         visible: Audio.sink !== null
+        iconOpacity: status.lifted.includes("volume") ? 0 : 1
         icon: Icons.volume(Audio.volume, Audio.muted)
         text: Audio.volume + "%"
         counts: true

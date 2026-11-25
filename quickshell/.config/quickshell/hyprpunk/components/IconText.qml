@@ -17,6 +17,9 @@ Item {
     // The value's font, whose size the icon takes too.
     property alias font: valueLabel.font
     property real iconSize: font.pixelSize
+    // The icon alone, and how much it shows: drawn elsewhere for now, its place kept.
+    readonly property alias iconItem: iconLabel
+    property real iconOpacity: 1
     // The value is a title (Heading): capitals in the display font, smaller than its icon.
     property bool heading: false
     property alias elide: valueLabel.elide
@@ -39,6 +42,7 @@ Item {
             id: iconLabel
 
             visible: iconText.icon !== ""
+            opacity: iconText.iconOpacity
             text: iconText.icon
             color: iconText.color
             size: iconText.iconSize

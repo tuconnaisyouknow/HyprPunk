@@ -20,7 +20,9 @@ Card {
     // The pill it grows from, with the same corners so the pill itself seems to grow.
     required property Item pill
     // The shape it shares with the other cards of its pill (IslandFrame, for the
-    // calendar), drawn in instead of its own.
+    // calendar), drawn in instead of its own. There it holds the island like a panel
+    // (ScreenState), under its panel's name: it takes the island from the card there, a
+    // prompt keeps it shut, and it folds back when something else takes the island.
     property Item frame: null
     readonly property rect frameContent: frame !== null ? frame.contentRect(popup) : Qt.rect(0, 0, 0, 0)
     // The side of the pill the card lines up with: Qt.AlignLeft, Qt.AlignRight or
@@ -38,7 +40,7 @@ Card {
     // left the workspace it was resting on).
     property bool openable: true
     // True and it doesn't open at all, however asked (a prompt holds the island).
-    property bool blocked: false
+    property bool blocked: frame !== null && screenState !== null && screenState.prompting()
     // Its name on its screen (ScreenState), the IPC's, for its shortcut.
     property string panelName: ""
     property var screenState: null
@@ -153,6 +155,9 @@ Card {
         }
         closedOnPurpose = false;
         closeTimer.stop();
+        if (frame !== null)
+            screenState.claim(panelName, 2);
+
         opening();
         followPill();
         expanded = true;
@@ -209,6 +214,11 @@ Card {
             closedOnPurpose = false;
 
     }
+    onExpandedChanged: {
+        if (!expanded && frame !== null)
+            screenState.release(panelName);
+
+    }
     Component.onCompleted: {
         if (panelName !== "")
             screenState?.register(panelName, popup);
@@ -241,6 +251,17 @@ Card {
         }
 
         target: popup.cardLayer
+    }
+
+    Connections {
+        function onIslandOwnerChanged() {
+            if (popup.expanded && popup.screenState.islandOwner !== popup.panelName)
+                popup.close();
+
+        }
+
+        target: popup.screenState
+        enabled: popup.frame !== null
     }
 
     // The pill moves, or the pills before it change width.
@@ -362,13 +383,15 @@ Card {
         }
 
         // The card's own place, inside the pixels its shape starts with from the zoomed
-        // pill: the content sits there, so it stays still while the shape heads to it.
+        // pill: the content sits there, so it stays still while the shape heads to it. In
+        // the island's shape, its place on screen: the shape bounces narrower than the card
+        // as it comes from the wider open island, and the content would slide with its edge.
         Item {
             id: room
 
-            x: popup.align === Qt.AlignRight ? 0 : popup.startX
+            x: popup.frame !== null ? -card.x : popup.align === Qt.AlignRight ? 0 : popup.startX
             y: popup.startY
-            width: parent.width - (popup.align === Qt.AlignHCenter ? 2 : 1) * popup.startX
+            width: popup.frame !== null ? popup.width : parent.width - (popup.align === Qt.AlignHCenter ? 2 : 1) * popup.startX
             height: parent.height - popup.startY
 
             // Where the pill sits under the card: the pointer there keeps the pill lit, and

@@ -20,8 +20,19 @@ Item {
     property real openWidth: 0
     property real openHeight: 0
     property real gap: 8
-    // How much it's there: 0 gone, 1 whole.
-    property real presence: shown ? 1 : 0
+    // Eases to a new size by itself. Off for a part whose size is already eased where it's
+    // given (the time, as the island opens): easing it again here would lag behind.
+    property bool resizes: true
+    // How it comes and goes: in place like the island's faces, or unfolding like a card
+    // for the parts the island opens onto.
+    property var token: Motion.swap
+    // How far it has come, 0 gone, 1 whole, and how much of its place the row leaves it
+    // for now: the music's cover and equalizer make way as the island opens, their own
+    // flying elsewhere (IslandView).
+    property real arrival: shown ? 1 : 0
+    property real room: 1
+    // How much it's there.
+    readonly property real presence: arrival * room
     // Where its own place starts in the row, past its gap.
     readonly property real placeX: x + presence * gap
     default property alias content: face.data
@@ -42,11 +53,11 @@ Item {
         opacity: part.presence * part.presence
     }
 
-    Behavior on presence {
+    Behavior on arrival {
         enabled: part.animated
 
         Anim {
-            token: Motion.swap
+            token: part.token
         }
 
     }
@@ -54,7 +65,7 @@ Item {
     // A count gaining a digit, the recording's time, other words. Closed, it takes its
     // new size at once and opens to it.
     Behavior on openWidth {
-        enabled: part.animated && part.visible
+        enabled: part.animated && part.visible && part.resizes
 
         Anim {
             token: Motion.resize.small

@@ -27,6 +27,10 @@ Item {
     // An island card that carries the music's cover and equalizer out of the island and
     // back (the player), drawn in their place meanwhile.
     property bool carriesMusic: false
+    // An island card that carries some of the island's icons out to their places in it and
+    // back, by name (the control center: "network", "caffeine", "volume"), their places in
+    // the island kept empty meanwhile.
+    property var carriedIcons: []
     // Its size and corners once open.
     property real cardWidth: 0
     property real cardHeight: 0

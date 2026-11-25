@@ -6,7 +6,10 @@ import qs.state
 import qs.theme
 import qs.windows
 
-// The control center, growing out of the bar's right-most pill. Click the pill or
+// The control center, growing out of the bar's right-most pill, or out of the island when
+// it's alone in the bar: one of its cards then, in its shape (IslandFrame), holding the
+// island like a panel. Out of the open island, it carries the network, caffeine and volume
+// icons there to their tiles, and back as it folds. Click the pill, the island's icons, or
 // press Super+C; Escape, a click outside or Super+C closes it, the pill being under it.
 // The keys move through the controls (KeyboardFocus): Enter or Space clicks the one you're
 // on, Shift+Enter its small second button (a tile's icon, a row's details), Backspace or
@@ -17,8 +20,12 @@ Card {
     id: controlCenter
 
     required property var screen
-    // Its screen's bar, whose control pill it grows out of.
+    // Its screen's bar, whose control pill or island it grows out of.
     required property var bar
+    // The island's card shape, which it's drawn in when the island is alone.
+    required property Item islandFrame
+    readonly property bool inIsland: bar.islandOnly
+    readonly property rect frameContent: islandFrame.contentRect(controlCenter)
     // The pages are built once the bar has its first values, or right away if you open
     // the panel before. Kept from then on.
     property bool pagesWanted: false
@@ -30,9 +37,45 @@ Card {
     // Where that pill is.
     readonly property var pill: bar.controlPill
     readonly property Item stack: pagesLoader.item
+    readonly property Item mainPage: stack !== null ? stack.pages["main"] ?? null : null
+    // How far the carried icons have gone, settled before the shape bounces.
+    readonly property real flight: Math.max(0, Math.min(1, unfold.heightProgress / 0.8))
+    readonly property var flights: [networkFlight, caffeineFlight, volumeFlight]
+
+    // Which of the open island's icons it carries, noted as it opens and as it closes: those
+    // shown there and on the main page alike. None on another page, where they aren't, or
+    // when the island isn't open, or won't stay open as it folds back (you've left it).
+    function noteCarried() {
+        const status = bar.islandItem.controlStatus;
+        const islandOpen = opened ? bar.islandItem.open : bar.islandItem.pointed;
+        const carries = inIsland && islandOpen && mainPage !== null && stack.current === "main";
+        carriedIcons = !carries ? [] : flights.filter((flight) => {
+            const from = status.icons[flight.name];
+            const to = mainPage.icons[flight.name];
+            return from.visible && from.text === to.text;
+        }).map((flight) => {
+            return flight.name;
+        });
+        for (const flight of flights) {
+            flight.from = status.icons[flight.name] ?? null;
+            flight.to = mainPage !== null ? mainPage.icons[flight.name] : null;
+            if (carriedIcons.includes(flight.name))
+                flight.measure();
+
+        }
+    }
 
     function close() {
         opened = false;
+    }
+
+    // In the island, it takes it from the card there, and doesn't open while a prompt
+    // holds it.
+    function open() {
+        if (inIsland && !bar.screenState.claim("controlcenter", 2))
+            return ;
+
+        opened = true;
     }
 
     // Keys no control kept for itself (a field its letters, a slider its arrows).
@@ -79,16 +122,19 @@ Card {
     // Its shortcut, through its screen's state.
     function requestAction(action) {
         if (action === "open" || action === "toggle" && !opened)
-            opened = true;
+            open();
         else
             close();
     }
 
     onOpenedChanged: {
+        noteCarried();
         if (opened) {
             pagesWanted = true;
             keyboardFocus.forget();
             panel.forceActiveFocus();
+        } else {
+            bar.screenState.release("controlcenter");
         }
     }
     // It folds back on the page you were on, and only then goes back to the main one.
@@ -98,24 +144,28 @@ Card {
 
     }
     anchors.fill: parent
-    pillName: "control"
+    pillName: inIsland ? "island" : "control"
     covering: unfold.out
-    openRect: Qt.rect(width - pill.right - panelWidth, pill.top, panelWidth, panelMaxHeight)
-    cardRect: Qt.rect(panelSpot.x + glass.x, panelSpot.y + glass.y, glass.width, glass.height)
+    openRect: inIsland ? islandFrame.openRect(controlCenter) : Qt.rect(width - pill.right - panelWidth, pill.top, panelWidth, panelMaxHeight)
+    cardRect: inIsland ? Qt.rect(panelSpot.x + panel.x, panelSpot.y + panel.y, panel.width, panel.height) : Qt.rect(panelSpot.x + glass.x, panelSpot.y + glass.y, glass.width, glass.height)
     cardRadius: panel.radius
+    // Its size in the island's shape, which follows it as a page changes height.
+    cardWidth: panelWidth
+    cardHeight: panel.fullHeight
+    // The island's corners: rounder ones would let the island's show under the card.
+    openRadius: bar.islandPill.radius
     takesKeyboard: opened
     dismissable: opened
     Component.onCompleted: ShellState.forScreen(screen)?.register("controlcenter", controlCenter)
     Component.onDestruction: ShellState.forScreen(screen)?.unregister("controlcenter", controlCenter)
 
-    // Pinned to the pill's top right corner, where the panel grows from.
+    // Pinned to the pill's top right corner, where the panel grows from. In the island,
+    // where the island's shape shows it.
     Item {
         id: panelSpot
 
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.topMargin: controlCenter.pill.top
-        anchors.rightMargin: controlCenter.pill.right
+        x: controlCenter.inIsland ? controlCenter.frameContent.x : controlCenter.width - controlCenter.pill.right - width
+        y: controlCenter.inIsland ? controlCenter.frameContent.y : controlCenter.pill.top
         width: panel.width
         height: panel.height
 
@@ -128,7 +178,8 @@ Card {
             anchors.right: parent.right
             anchors.topMargin: -unfold.lerp(controlCenter.pill.spreadY, 0, unfold.heightProgress)
             anchors.rightMargin: -unfold.lerp(controlCenter.pill.spreadX, 0, unfold.widthProgress)
-            visible: panel.visible
+            // The island's shape draws its own.
+            visible: panel.visible && !controlCenter.inIsland
             width: panel.shapeWidth
             height: panel.shapeHeight
 
@@ -165,14 +216,15 @@ Card {
             anchors.top: parent.top
             anchors.right: parent.right
             // On whole pixels, its size too, or the pages would shake as it grows and bounces
-            // (they're drawn as a picture of its size).
-            anchors.topMargin: -startY
-            anchors.rightMargin: -startX
+            // (they're drawn as a picture of its size). In the island, its content's place in
+            // the island's shape, already on whole pixels.
+            anchors.topMargin: controlCenter.inIsland ? 0 : -startY
+            anchors.rightMargin: controlCenter.inIsland ? 0 : -startX
             visible: controlCenter.covering
-            width: Math.round(shapeWidth)
-            height: Math.round(shapeHeight)
+            width: controlCenter.inIsland ? controlCenter.frameContent.width : Math.round(shapeWidth)
+            height: controlCenter.inIsland ? controlCenter.frameContent.height : Math.round(shapeHeight)
             // The pill's corners: rounder ones would let the pill's show under the panel.
-            radius: controlCenter.pill.height / 2
+            radius: controlCenter.inIsland ? controlCenter.islandFrame.shape.radius : controlCenter.pill.height / 2
             color: "transparent"
             focus: true
             Keys.onPressed: (event) => {
@@ -186,8 +238,10 @@ Card {
 
             // Where the pill sits under the panel: the pointer there keeps the pill lit, so
             // the panel folds back onto it as you'll see it. Open, the panel is all there
-            // is: the pill doesn't answer, and a click there stays in the panel.
+            // is: the pill doesn't answer, and a click there stays in the panel. The island's
+            // shape carries the island's content itself.
             Item {
+                visible: !controlCenter.inIsland
                 anchors.right: parent.right
                 anchors.rightMargin: panel.startX
                 y: panel.startY
@@ -218,10 +272,11 @@ Card {
                 id: pagesLoader
 
                 active: controlCenter.pagesWanted
-                anchors.right: parent.right
+                // On the pill's side, or in the island still on screen around its middle
+                // while the shape grows around them, like the island's panels.
+                x: controlCenter.inIsland ? Math.round(controlCenter.width / 2 + controlCenter.bar.islandPill.centerOffset - controlCenter.panelWidth / 2) - panelSpot.x + controlCenter.padding : panel.width - controlCenter.padding - panel.startX - width
                 anchors.top: parent.top
-                anchors.rightMargin: controlCenter.padding + panel.startX
-                anchors.topMargin: controlCenter.padding + panel.startY
+                anchors.topMargin: controlCenter.padding + (controlCenter.inIsland ? 0 : panel.startY)
                 // The pages take this width, and give the Loader their height.
                 width: controlCenter.pageWidth
                 asynchronous: !controlCenter.opened
@@ -357,10 +412,58 @@ Card {
         onTriggered: controlCenter.pagesWanted = true
     }
 
+    // The carried icons, over everything until they land.
+    component CarriedIcon: IconFlight {
+        required property string name
+
+        z: 1
+        progress: controlCenter.flight
+        bounds: controlCenter.islandFrame.steadyShape
+        visible: controlCenter.covering && controlCenter.flight < 1 && controlCenter.carriedIcons.includes(name)
+    }
+
+    CarriedIcon {
+        id: networkFlight
+
+        name: "network"
+    }
+
+    CarriedIcon {
+        id: caffeineFlight
+
+        name: "caffeine"
+    }
+
+    CarriedIcon {
+        id: volumeFlight
+
+        name: "volume"
+    }
+
+    // Their places on the main page stay empty until they land.
+    Binding {
+        target: controlCenter.mainPage
+        property: "lifted"
+        value: controlCenter.covering && controlCenter.flight < 1 ? controlCenter.carriedIcons : []
+        when: controlCenter.mainPage !== null
+    }
+
     Unfold {
         id: unfold
 
         open: controlCenter.showing
+    }
+
+    // In the island, something else takes it (a panel, a prompt): it folds back.
+    Connections {
+        function onIslandOwnerChanged() {
+            if (controlCenter.opened && controlCenter.bar.screenState.islandOwner !== "controlcenter")
+                controlCenter.close();
+
+        }
+
+        target: controlCenter.bar.screenState
+        enabled: controlCenter.inIsland
     }
 
 }

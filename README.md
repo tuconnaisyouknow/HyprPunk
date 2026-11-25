@@ -65,6 +65,12 @@ The clock's island grows into every panel, the password prompts for admin rights
 | Player and Lyrics | Workspace Preview |
 | ![music](./assets/screenshots/music.png) | ![workspace-preview](./assets/screenshots/workspace-preview.png) |
 
+Keep the bar with the pills you want, or the island alone (`Super + I`, Bar). Alone, it opens under the pointer
+onto the time over the date, the window you're on over your workspaces, and the music over the control center's
+icons, its cover and equalizer flying there from the island's ends; the updates show as a chip beside the time, and
+the control center, the player, the system monitor and the workspace preview grow out of it like the calendar. A
+hidden pill's card still opens with its shortcut.
+
 <details>
 <summary>More shell screenshots</summary>
 
@@ -286,7 +292,7 @@ repository that the update changes, git refuses the pull and nothing changes.
 | `Super + T` | Open the terminal (Kitty, or the one picked in the settings) |
 | `Super + Space` | Open the application launcher, where `>` lists the island's menus |
 | `Super + C` | Open the control center (Wi-Fi, Bluetooth, night light, caffeine, sound, display, background apps…) |
-| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and region, sound, music, battery and power, idle and sleep, lock screen, night light, appearance, notifications, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
+| `Super + I` | Open the settings (displays, mouse and touchpad, keyboard and region, sound, music, battery and power, idle and sleep, lock screen, night light, appearance, notifications, bar, island, default apps, launcher, screenshots, clipboard and history, updates), also from the launcher |
 | `Super + N` | Open the calendar and notifications |
 | `Super + V` | Open the clipboard history |
 | `Super + Q` | Close the focused window |
@@ -515,7 +521,7 @@ Everything you're meant to change lives outside the dotfiles, so an [update](#-u
 without touching your preferences:
 
 - 🎛️ **The shell's settings** (keyboard layout, Vim keys, displays, the mouse and touchpad, glass style, see-through windows, regional formats, when the
-  computer dims, locks and sleeps, which apps' notifications pop up, what the island shows, the default apps, the
+  computer dims, locks and sleeps, which apps' notifications pop up, the bar's layout and pills, what the island shows, the default apps, the
   launcher's pinned and hidden apps, how screenshots and recordings are kept, the clipboard history, the night light,
   the volume limit…) are saved in `~/.local/state/hyprpunk/` as you pick them, in the control center or the settings
   window (`Super + I`).

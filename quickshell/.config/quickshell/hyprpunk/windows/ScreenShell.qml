@@ -236,6 +236,7 @@ Scope {
 
                 screen: shell.screen
                 bar: bar
+                islandFrame: islandFrame
             }
 
             SessionMenu {
@@ -362,15 +363,25 @@ Scope {
             onCleared: window.clickedOutside()
         }
 
-        // The pointer goes through everywhere but the bar and the open cards.
+        // The pointer goes through everywhere but the bar's strip, the island hanging past
+        // it (open, or showing an OSD) and the open cards.
         mask: shell.fullscreen ? noInput : input
 
         Region {
             id: input
 
             width: bar.width
-            height: bar.height
-            regions: cardRegions.instances
+            height: Metrics.barHeight
+            regions: [islandInput].concat(cardRegions.instances)
+        }
+
+        Region {
+            id: islandInput
+
+            x: bar.width / 2 + bar.islandPill.centerOffset - width / 2
+            y: bar.islandPill.top
+            width: bar.islandPill.width
+            height: bar.islandPill.height
         }
 
         Region {
@@ -417,7 +428,15 @@ Scope {
         Region {
             id: cardBlur
 
-            regions: cardBlurShapes.instances
+            regions: [openIslandBlur].concat(cardBlurShapes.instances)
+        }
+
+        // The island open, or on its way, blurred like a card (Pill.blurredAsCard).
+        RoundedRegion {
+            id: openIslandBlur
+
+            box: bar.islandItem.blurredAsCard ? Qt.rect(bar.width / 2 + bar.islandPill.centerOffset - bar.islandPill.width / 2, bar.islandPill.top, bar.islandPill.width, bar.islandPill.height) : Qt.rect(0, 0, 0, 0)
+            cornerRadius: bar.islandPill.radius
         }
 
         Variants {

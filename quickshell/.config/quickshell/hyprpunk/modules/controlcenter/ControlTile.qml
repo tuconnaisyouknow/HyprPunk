@@ -17,6 +17,10 @@ ControlBlock {
     readonly property string detail: name !== "" ? name : subtitle
     property bool active: false
     property bool expandable: false
+    // Its icon, and drawn elsewhere for now, its place kept: carried in from the island
+    // (ControlCenter).
+    readonly property alias iconItem: tileIcon
+    property bool iconLifted: false
 
     signal toggled()
     signal expandRequested()
@@ -66,7 +70,10 @@ ControlBlock {
             }
 
             Icon {
+                id: tileIcon
+
                 anchors.centerIn: parent
+                opacity: tile.iconLifted ? 0 : 1
                 text: tile.icon
                 filled: tile.active
                 color: tile.active ? Colors.over(Colors.primary) : Colors.primary

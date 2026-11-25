@@ -2,9 +2,11 @@ import QtQuick
 import qs.components
 import qs.theme
 
-// A spot in the bar for a pill that comes and goes, like the player or the updates.
+// A spot in the bar for a pill that comes and goes, like the updates or a pill you hide.
 // Room opens up, the pill drops in from above and bounces into place; when it leaves,
 // it flies back up and the room closes behind it. Put the pill inside as its only child.
+// Gone, the pill waits back in its place, out of sight: a card opened with its shortcut
+// grows from there.
 Item {
     id: slot
 
@@ -13,10 +15,14 @@ Item {
     // 0 = no room in the row, 1 = the pill's width.
     property real room: 0
     // How far above its place the pill is, 0 in place.
-    property real lift: Motion.drop.height
+    property real lift: 0
 
     function show() {
         leave.stop();
+        // From above, unless it was still on its way out.
+        if (room === 0)
+            lift = Motion.drop.height;
+
         enter.restart();
     }
 
@@ -31,10 +37,9 @@ Item {
     onShownChanged: shown ? show() : hide()
     // Already there when the shell starts: no drop.
     Component.onCompleted: {
-        if (shown) {
+        if (shown)
             room = 1;
-            lift = 0;
-        }
+
     }
 
     Binding {
@@ -79,6 +84,12 @@ Item {
             property: "room"
             to: 0
             token: Motion.resize.normal
+        }
+
+        PropertyAction {
+            target: slot
+            property: "lift"
+            value: 0
         }
 
     }

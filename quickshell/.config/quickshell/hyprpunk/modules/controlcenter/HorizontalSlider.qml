@@ -16,6 +16,10 @@ Item {
     // Makes the icon a round button inside the fill (mute, on the volume slider),
     // with a glass halo on hover like the player's controls.
     property bool iconButton: false
+    // Its icon, and drawn elsewhere for now, its place kept: carried in from the island
+    // (ControlCenter).
+    readonly property alias iconItem: sliderIcon
+    property bool iconLifted: false
     // Text inside the track after the icon (an app's name in the mixer), dark over the
     // fill and in the secondary color past it, switching color exactly at the fill's edge.
     property string label: ""
@@ -191,7 +195,10 @@ Item {
         }
 
         Icon {
+            id: sliderIcon
+
             anchors.centerIn: parent
+            opacity: control.iconLifted ? 0 : 1
             text: control.icon
             color: control.iconColor
             size: Metrics.text.title

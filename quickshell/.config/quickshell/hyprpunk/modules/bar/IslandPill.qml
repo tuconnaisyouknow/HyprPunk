@@ -5,11 +5,16 @@ import qs.components
 import qs.config
 import qs.modules.island
 import qs.services
+import qs.theme
 
 // The dynamic island in the bar: the time and its chips between the music's cover and
 // equalizer, or an OSD that takes it over (IslandView). A click opens the calendar, the
 // player from the music's ends, or the screenshot or recording an OSD shows. Every card
 // of the island grows out of it (IslandFrame).
+// Alone in the bar, it opens under the pointer onto the window you're on, your
+// workspaces, the music and the control center's icons, whose blocks take the clicks
+// then: the time opens the calendar, the window the workspace preview, the music the
+// player, the icons the control center.
 Pill {
     id: clockPill
 
@@ -25,19 +30,49 @@ Pill {
     property string face: "clock"
     // Where its time starts, from its left edge.
     readonly property real timeX: view.parent.x + view.x + view.timeX
-    // Where the music's cover and equalizer are, the same way.
+    // Where the music's cover and equalizer are, the same way and from its top, the
+    // cover's corners and how round the bars are: the player flies them from there.
     readonly property real coverX: view.parent.x + view.x + view.coverX
+    readonly property real coverY: view.parent.y + view.y + view.coverY
+    readonly property real coverRadius: view.coverRadius
     readonly property real equalizerX: view.parent.x + view.x + view.equalizerX
+    readonly property real equalizerY: view.parent.y + view.y + view.equalizerY
+    readonly property real equalizerRoundness: view.equalizerRoundness
     readonly property real equalizerInset: view.equalizerInset
-    // Between the time and an OSD.
+    // Between the time and an OSD, or opening and closing.
     readonly property bool swapping: view.swapping
+    // The pointer is on it, or left it a moment ago: it opens as soon as the pointer comes,
+    // and doesn't close as you only cross an edge.
+    property bool pointed: false
+    // Covered by a card opened out of it while open: it stays open under the card, which
+    // grows out of it as you saw it. Once the card folds back it's held no more, so the
+    // card folds straight onto the island as it closes, unless you're still on it.
+    property bool held: false
+    // Open while you point at it or it's held, never while the lock has it.
+    readonly property bool open: clockPill.bar.islandOnly && !clockPill.bar.lockShown && (pointed || held)
+    // The control center's icons in it, which the control center carries out.
+    readonly property Item controlStatus: view.controlStatus
 
     // Hidden under the lock, which has it, and covered by its relay as the lock goes
     // (Lock.islandAway).
     opacity: covered || Lock.islandAway ? 0 : 1
     covered: clockPill.bar.pillHidden("island")
-    // Not under the recording chip, which answers the pointer itself.
-    clickable: (face === "clock" && !clockPill.bar.lockShown || face === "osd" && clockPill.bar.osdShown.kind === "screenshot") && !view.stopHovered
+    // Not under a chip that answers the pointer itself, nor open, where its blocks do, but
+    // on the music's ends.
+    clickable: (face === "clock" && !clockPill.bar.lockShown && (!open || view.musicHovered) || face === "osd" && clockPill.bar.osdShown.kind === "screenshot") && !view.chipHovered
+    // Alone in the bar, it opens rather than lighting up, like a card out of it, blurred
+    // like one meanwhile.
+    lights: !clockPill.bar.islandOnly
+    // Open, a card's corners: round ends would cut into its sides' lines.
+    radius: height / 2 - view.openness * (height / 2 - Metrics.cardRadius)
+    blurredAsCard: view.unfolded
+    onCoveredChanged: held = covered && open
+    onHoveredChanged: {
+        if (hovered)
+            pointed = true;
+        else
+            leaving.restart();
+    }
     // A click opens the calendar card, or closes it, or the player from the music's
     // ends, unless an OSD has the island: the screenshot or recording just taken then
     // opens in its viewer. The recording chip keeps its own click, which stops the
@@ -49,8 +84,7 @@ Pill {
             else
                 clockPill.calendar.togglePinned();
         } else {
-            Quickshell.execDetached(["xdg-open", clockPill.bar.osdShown.file]);
-            clockPill.bar.osdTimeline.dismiss();
+            openShot();
         }
     }
     // The view sizes the island, padding included.
@@ -60,10 +94,34 @@ Pill {
     // on a half pixel. Its height the same way.
     Layout.preferredHeight: 2 * Math.round(implicitHeight / 2)
 
+    // The screenshot or recording an OSD shows, in its viewer.
+    function openShot() {
+        Quickshell.execDetached(["xdg-open", clockPill.bar.osdShown.file]);
+        clockPill.bar.osdTimeline.dismiss();
+    }
+
+    Connections {
+        function onOwnerChanged() {
+            if (clockPill.bar.islandFrame.owner === null)
+                clockPill.held = false;
+
+        }
+
+        target: clockPill.bar.islandFrame
+    }
+
+    Timer {
+        id: leaving
+
+        interval: Motion.hoverCloseDelay
+        onTriggered: clockPill.pointed = clockPill.hovered
+    }
+
     Binding {
         target: clockPill
         property: "face"
-        value: clockPill.bar.islandOsdShown ? "osd" : "clock"
+        // Open, the island keeps the time's face and shows the OSD in the time's place.
+        value: clockPill.bar.islandOsdShown && !clockPill.open ? "osd" : "clock"
         when: clockPill.bar.islandFrame.owner === null
         restoreMode: Binding.RestoreNone
     }
@@ -77,7 +135,14 @@ Pill {
         live: clockPill.bar.islandAnimated
         // The player has them while it covers the island.
         musicLifted: clockPill.covered && clockPill.bar.islandFrame.lastOwner !== null && clockPill.bar.islandFrame.lastOwner.carriesMusic
+        controlsLifted: clockPill.covered && clockPill.bar.islandFrame.lastOwner !== null ? clockPill.bar.islandFrame.lastOwner.carriedIcons : []
         date: clock.date
+        open: clockPill.open
+        updatesShown: clockPill.bar.islandOnly && BarSettings.shows("updates")
+        onTimeClicked: clockPill.calendar.togglePinned()
+        onMusicClicked: clockPill.player.togglePinned()
+        onOsdClicked: clockPill.openShot()
+        osdInside: clockPill.open && clockPill.bar.islandOsdShown
 
         // Ticks every second though it shows minutes: its timer stands still
         // during sleep, so on waking it would keep the old time up to a minute.

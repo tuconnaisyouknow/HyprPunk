@@ -7,9 +7,10 @@ import qs.theme
 
 // The player, one of the island's cards: a click on the island's cover or equalizer, or
 // its shortcut, grows it out of the island in the shape the island's cards share
-// (IslandFrame). The cover flies from the island's left end to the artwork's place,
-// squaring off as it grows, and the equalizer from the right end to its place in the
-// card; folding back, both land where they were in the island.
+// (IslandFrame). The cover flies from the island's left end, or from the open island's
+// music line, to the artwork's place, squaring off as it grows, and the equalizer from
+// its place in the island to its place in the card; folding back, both land where they
+// are in the island.
 PillPopup {
     id: playerPopup
 
@@ -46,9 +47,11 @@ PillPopup {
         return Math.round(Math.max(left + edge, Math.min(left + frame.steadyShape.width - edge, start + (end - start) * flight)) - size / 2);
     }
 
-    // Kept off the shape's bottom edge the same way.
-    function flyY(playerY, size) {
-        const y = Metrics.pillHeight / 2 + (playerY - Metrics.pillHeight / 2) * flight;
+    // Kept off the shape's bottom edge the same way, from a slot of the island given from
+    // its top.
+    function flyY(islandY, playerY, size) {
+        const start = islandY + slotSize / 2;
+        const y = start + (playerY - start) * flight;
         const bottom = frame.steadyShape.y + frame.steadyShape.height - frameContent.y;
         return Math.round(Math.min(bottom - Metrics.islandMusicInset - size / 2, y) - size / 2);
     }
@@ -59,8 +62,6 @@ PillPopup {
     frame: bar.islandFrame
     panelName: "player"
     screenState: bar.screenState
-    // A password, a file or a screen to share is being asked for on the island.
-    blocked: bar.screenState.prompting()
     // No player to show while none runs.
     requestable: Music.player !== null
     available: Music.player !== null
@@ -70,14 +71,6 @@ PillPopup {
     // Tall enough for the lyrics: the card grows and shrinks inside it.
     implicitHeight: musicPlayerCard.fullHeight
     cardHeight: musicPlayerCard.height
-    // It takes the island: whatever card was open there folds back.
-    onOpening: bar.screenState.claim("player", 2)
-    onExpandedChanged: {
-        if (!expanded)
-            bar.screenState.release("player");
-
-    }
-
     // Opened with its shortcut: left and right (Vim's too) turn the players' pages, up and
     // down scroll the lyrics.
     onKeyPressed: (key) => {
@@ -90,17 +83,6 @@ PillPopup {
             musicPlayerCard.scrollLyrics(1);
         else if (key === Qt.Key_Up || key === keys[3])
             musicPlayerCard.scrollLyrics(-1);
-    }
-
-    // Something else takes the island (a panel, a prompt): the player folds back.
-    Connections {
-        function onIslandOwnerChanged() {
-            if (playerPopup.expanded && playerPopup.bar.screenState.islandOwner !== "player")
-                playerPopup.close();
-
-        }
-
-        target: playerPopup.bar.screenState
     }
 
     // The last player quit: nothing left to show.
@@ -150,19 +132,19 @@ PillPopup {
             opacity: musicPlayerCard.pageOpacity
             fades: !musicPlayerCard.turning
             rolls: playerPopup.mapped
-            y: playerPopup.flyY(musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size)
+            y: playerPopup.flyY(playerPopup.island.coverY, musicPlayerCard.artMargin + musicPlayerCard.artSize / 2, size)
             width: size
             height: size
-            radius: size / 2 + (musicPlayerCard.artRadius - size / 2) * playerPopup.flight
+            radius: playerPopup.island.coverRadius * playerPopup.zoomY + (musicPlayerCard.artRadius - playerPopup.island.coverRadius * playerPopup.zoomY) * playerPopup.flight
             source: Music.player !== null ? Music.player.trackArtUrl : ""
         }
 
         Equalizer {
             // In its slot, as in the island.
             x: playerPopup.flyX(playerPopup.island.equalizerX, musicPlayerCard.equalizerCenter.x, playerPopup.slotSize) + playerPopup.island.equalizerInset
-            y: playerPopup.flyY(musicPlayerCard.equalizerCenter.y, playerPopup.slotSize) + Math.round((playerPopup.slotSize - height) / 2)
+            y: playerPopup.flyY(playerPopup.island.equalizerY, musicPlayerCard.equalizerCenter.y, playerPopup.slotSize) + Math.round((playerPopup.slotSize - height) / 2)
             scale: playerPopup.zoomY + (1 - playerPopup.zoomY) * playerPopup.flight
-            roundness: 1 - playerPopup.flight
+            roundness: playerPopup.island.equalizerRoundness * (1 - playerPopup.flight)
             playing: Music.playing
             running: playerPopup.mapped && MusicSettings.equalizer
         }

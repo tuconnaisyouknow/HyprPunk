@@ -14,6 +14,15 @@ import qs.theme
 ControlPage {
     id: page
 
+    // The icons the control center carries in from the island for now
+    // (Card.carriedIcons), their places kept empty, and the icons by the same names.
+    property var lifted: []
+    readonly property var icons: ({
+        "network": wifiTile.iconItem,
+        "caffeine": caffeineTile.iconItem,
+        "volume": volumeSlider.iconItem
+    })
+
     // The background apps' page, with this app's menu unfolded (or none).
     signal trayRequested(var item)
 
@@ -92,7 +101,10 @@ ControlPage {
             spacing: Metrics.spacing.large
 
             ControlTile {
+                id: wifiTile
+
                 Layout.fillWidth: true
+                iconLifted: page.lifted.includes("network")
                 icon: Networking.wifiEnabled ? (NetworkStatus.activeWifi !== null ? Icons.wifi(NetworkStatus.activeWifi.signalStrength, Vpn.connection !== null) : "signal_wifi_0_bar") : "signal_wifi_off"
                 title: "Wi-Fi"
                 subtitle: page.wifiSubtitle()
@@ -138,8 +150,11 @@ ControlPage {
             }
 
             ControlTile {
+                id: caffeineTile
+
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                iconLifted: page.lifted.includes("caffeine")
                 icon: "coffee"
                 title: "Caffeine"
                 subtitle: page.caffeineSubtitle()
@@ -213,7 +228,10 @@ ControlPage {
             }
 
             HorizontalSlider {
+                id: volumeSlider
+
                 Layout.fillWidth: true
+                iconLifted: page.lifted.includes("volume")
                 // Muted, the fill keeps its level and turns to the secondary color.
                 value: Audio.volume / 100
                 accent: Audio.muted ? Colors.secondary : Colors.primary

@@ -7,7 +7,8 @@ import qs.modules.workspaces
 import qs.theme
 
 // The workspaces pill: your workspaces as dots, and a preview of the others in a card
-// that grows out of it, on hover or with its shortcut (super+w).
+// that grows out of it, on hover or with its shortcut (super+w). With the island alone in
+// the bar, the preview is one of its cards.
 Pill {
     id: workspacePill
 
@@ -63,8 +64,10 @@ Pill {
         id: workspacePopup
 
         cardLayer: workspacePill.bar.cardLayer
-        pill: workspacePill
-        pillName: "workspaces"
+        pill: workspacePill.bar.islandOnly ? workspacePill.bar.islandItem : workspacePill
+        pillName: workspacePill.bar.islandOnly ? "island" : "workspaces"
+        frame: workspacePill.bar.islandOnly ? workspacePill.bar.islandFrame : null
+        align: workspacePill.bar.islandOnly ? Qt.AlignHCenter : Qt.AlignLeft
         panelName: "workspaces"
         screenState: workspacePill.bar.screenState
         // Nothing to preview while your other workspaces are all empty.

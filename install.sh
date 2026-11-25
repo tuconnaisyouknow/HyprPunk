@@ -629,6 +629,10 @@ configure_music() {
   "$LIB_DIR/musicctl.sh" ensure
 }
 
+configure_bar() {
+  "$LIB_DIR/barctl.sh" ensure
+}
+
 configure_osd() {
   "$LIB_DIR/osdctl.sh" ensure
 }
@@ -922,6 +926,7 @@ converge() {
   run_step "Configuring the mouse and touchpad" configure_input
   run_step "Configuring the lock screen" configure_lock
   run_step "Configuring the music's players, equalizer and wave" configure_music
+  run_step "Configuring the bar's layout and pills" configure_bar
   run_step "Configuring the island's OSD" configure_osd
   run_step "Configuring the default apps" configure_apps
   run_step "Configuring the launcher" configure_launcher

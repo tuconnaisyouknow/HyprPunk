@@ -63,35 +63,13 @@ PillPopup {
     frame: calendarPopup.bar.islandFrame
     panelName: "notifications"
     screenState: calendarPopup.bar.screenState
-    // A password, a file or a screen to share is being asked for on the island.
-    blocked: calendarPopup.bar.screenState.prompting()
     align: Qt.AlignHCenter
     implicitWidth: calendarWidth + notificationWidth
     implicitHeight: calendarBody.y + calendarBody.implicitHeight + inset
-    // It takes the island: an island panel open there folds back. While it
-    // holds it, new notifications land in it instead of popping out of the
-    // island, and the AirPods card waits.
-    onOpening: {
-        monthOffset = 0;
-        calendarPopup.bar.screenState.claim("notifications", 2);
-    }
-    onExpandedChanged: {
-        if (!expanded)
-            calendarPopup.bar.screenState.release("notifications");
-
-    }
-
-    // Something else takes the island (a panel, a prompt): the calendar folds
-    // back.
-    Connections {
-        function onIslandOwnerChanged() {
-            if (calendarPopup.expanded && calendarPopup.bar.screenState.islandOwner !== "notifications")
-                calendarPopup.close();
-
-        }
-
-        target: calendarPopup.bar.screenState
-    }
+    // It holds the island like a panel (PillPopup.frame): while it does, new
+    // notifications land in it instead of popping out of the island, and the AirPods
+    // card waits.
+    onOpening: monthOffset = 0
 
     // The calendar on the right, the notifications on its left.
     Item {

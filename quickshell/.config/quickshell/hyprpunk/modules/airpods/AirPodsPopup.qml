@@ -125,7 +125,7 @@ Card {
     cardWidth: 420
     cardHeight: layout.implicitHeight + 2 * Metrics.spacing.section
     // The island's corners: rounder ones would let the island's show under the card.
-    openRadius: island.height / 2
+    openRadius: island.radius
     visible: shown
     pillName: "island"
     covering: shown

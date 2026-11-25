@@ -34,7 +34,7 @@ Card {
     // Folded, it's the island as you see it, zoomed past its place under the pointer.
     readonly property real targetWidth: owner !== null ? owner.cardWidth : island.width + 2 * island.spreadX
     readonly property real targetHeight: owner !== null ? owner.cardHeight : island.height + 2 * island.spreadY
-    readonly property real targetRadius: owner !== null ? owner.openRadius : island.height / 2 + island.spreadY
+    readonly property real targetRadius: owner !== null ? owner.openRadius : island.radius + island.spreadY
     readonly property real targetTop: owner !== null ? island.top : island.top - island.spreadY
     // The shape it was in when the open card last changed, and how far it has eased from
     // there. It eases from wherever it is, so a card taking over mid-animation never jumps,
