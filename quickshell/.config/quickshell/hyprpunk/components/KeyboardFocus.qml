@@ -157,6 +157,12 @@ Item {
         }).item;
     }
 
+    // The control with the keyboard has another level with it, so left and right have
+    // somewhere to go.
+    function inRow() {
+        return current !== null && (neighbour(-1, 0) !== null || neighbour(1, 0) !== null);
+    }
+
     // The closest column that way with a control to land on.
     function nextColumn(dx) {
         const centre = (column) => {

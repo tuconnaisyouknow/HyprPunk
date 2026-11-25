@@ -6,8 +6,8 @@ import qs.config
 
 // What the keys mean wherever you move through the shell with the keyboard, so every
 // panel answers them the same way: Enter or Space for OK, Backspace to go back, the
-// arrows or the Vim keys to move. Where moving is only up and down, right is OK too
-// and left goes back.
+// arrows or the Vim keys to move. In the control center's pages, on a control alone
+// on its line, right is OK too and left goes back.
 Singleton {
     function plain(event) {
         return !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier));

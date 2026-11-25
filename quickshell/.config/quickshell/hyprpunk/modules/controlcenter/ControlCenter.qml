@@ -41,12 +41,14 @@ Card {
             return ;
 
         const direction = Navigation.direction(event);
-        const grid = stack.current === "main";
-        if (event.key === Qt.Key_Escape || Navigation.backs(event) || (!grid && direction !== null && direction[0] < 0))
+        // In a page's list, a control alone on its line takes right as OK and left as
+        // back; one in a row (hours, choices) moves along it. The main page is a grid.
+        const sideways = stack.current !== "main" && direction !== null && direction[0] !== 0 && !keyboardFocus.inRow();
+        if (event.key === Qt.Key_Escape || Navigation.backs(event) || (sideways && direction[0] < 0))
             stack.back();
         else if (Navigation.accepts(event))
             activate((event.modifiers & Qt.ShiftModifier) !== 0);
-        else if (!grid && direction !== null && direction[0] > 0 && keyboardFocus.current !== null)
+        else if (sideways && direction[0] > 0 && keyboardFocus.current !== null)
             activate(false);
         else if (direction !== null)
             keyboardFocus.move(direction[0], direction[1]);
