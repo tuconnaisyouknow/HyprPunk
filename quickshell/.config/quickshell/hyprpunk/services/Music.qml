@@ -38,9 +38,14 @@ Singleton {
     // Something shows the position: it's asked for every second.
     property int refCount: 0
     readonly property bool running: refCount > 0 && player !== null
-    property real polledPosition: 0
+    // The last answer: where the track was, and when (ms, like Date.now()). One value, so
+    // nothing ever reads a new place with the old time: the position would leap a second
+    // ahead and back, and the player's times would roll twice.
+    property var polled: ({
+        "position": 0,
+        "time": 0
+    })
     property real polledLength: 0
-    property real polledTime: 0
     // How late an answer can be, in seconds: some players (spotifast) only move their
     // position every second or so, and give the last one until then.
     readonly property real answerAge: 1.5
@@ -84,7 +89,7 @@ Singleton {
     // ticking, but only for a second or so: after a sleep it would race ahead by however
     // long the computer slept.
     function positionAt(time) {
-        const position = polledPosition + (playing ? Math.max(0, Math.min(1500, time - polledTime)) / 1000 : 0);
+        const position = polled.position + (playing ? Math.max(0, Math.min(1500, time - polled.time)) / 1000 : 0);
         return length > 0 ? Math.min(length, position) : position;
     }
 
@@ -144,13 +149,19 @@ Singleton {
 
     }
 
+    function place(position, time) {
+        polled = {
+            "position": position,
+            "time": time
+        };
+    }
+
     function seek(seconds) {
         if (player === null || !player.canSeek)
             return ;
 
         player.position = seconds;
-        polledPosition = seconds;
-        polledTime = Date.now();
+        place(seconds, Date.now());
         pollAfterSeek.restart();
     }
 
@@ -179,9 +190,8 @@ Singleton {
                 const first = !music.positionKnown;
                 const drawn = music.positionAt(now);
                 const late = music.playing && !first && state.position < drawn && drawn - state.position < music.answerAge;
-                music.polledPosition = late ? drawn : state.position;
+                music.place(late ? drawn : state.position, now);
                 music.polledLength = state.length;
-                music.polledTime = now;
                 music.positionKnown = true;
                 if (first)
                     lyricsRequest.restart();
@@ -234,8 +244,7 @@ Singleton {
         // The player still reports the old track's position at this point: the new one
         // starts from the beginning until it answers.
         remember(0);
-        polledPosition = 0;
-        polledTime = Date.now();
+        place(0, Date.now());
         trackChangeTime = Date.now();
         trackChanged(direction);
     }
@@ -254,9 +263,8 @@ Singleton {
         loadingPause.stop();
         playing = player !== null && player.isPlaying;
         reset();
-        polledPosition = player !== null ? player.position : 0;
+        place(player !== null ? player.position : 0, Date.now());
         polledLength = 0;
-        polledTime = Date.now();
         if (running)
             poll();
 
@@ -273,10 +281,7 @@ Singleton {
     // from an old answer would leap ahead, and later answers wouldn't take it back.
     onPlayingChanged: {
         const now = Date.now();
-        if (!playing)
-            polledPosition += Math.max(0, Math.min(1500, now - polledTime)) / 1000;
-
-        polledTime = now;
+        place(polled.position + (playing ? 0 : Math.max(0, Math.min(1500, now - polled.time)) / 1000), now);
     }
     onLengthChanged: lyricsRequest.restart()
 

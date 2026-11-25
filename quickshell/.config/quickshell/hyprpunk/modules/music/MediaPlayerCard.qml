@@ -165,7 +165,7 @@ Rectangle {
 
     // A new answer, or a seek: drawn at once, even while paused.
     Connections {
-        function onPolledTimeChanged() {
+        function onPolledChanged() {
             card.now = Date.now();
         }
 
@@ -413,6 +413,9 @@ Rectangle {
         property real lag: 0
         readonly property real ratio: Math.max(0, Math.min(1, target + lag))
         readonly property bool active: progressHover.hovered || card.scrubPosition >= 0
+        // The times sweep with a jump or under your finger: their digits roll only as the
+        // track plays, a second at a time.
+        readonly property bool sweeping: glide.running || card.scrubPosition >= 0
         // The bar's thickness at rest: the item is as tall as it once grabbed.
         readonly property int restHeight: 7
 
@@ -512,28 +515,37 @@ Rectangle {
 
     }
 
-    Text {
+    RollingText {
         id: elapsed
 
         anchors.left: progress.left
         anchors.top: progress.bottom
         anchors.topMargin: Metrics.spacing.small
+        animated: !progress.sweeping
+        bothWays: true
         text: card.formatTime(card.drawnPosition)
         color: Colors.secondary
         font.family: Metrics.font
         font.pixelSize: Metrics.text.small
+        font.weight: Font.Normal
         font.features: {
             "tnum": 1
         }
     }
 
-    Text {
+    // Counts down: its digits roll down as the track plays.
+    RollingText {
         anchors.right: progress.right
         anchors.top: progress.bottom
         anchors.topMargin: Metrics.spacing.small
         // A stream has no end to count down to.
         opacity: card.length > 0 ? 1 : 0
-        text: "-" + card.formatTime(card.length - card.drawnPosition)
+        animated: !progress.sweeping
+        bothWays: true
+        // Counted in the elapsed time's whole seconds, so both turn on the same frame and
+        // always add up to the track's length. From the exact length, the countdown would
+        // turn at its own fraction of a second, up to half a second apart.
+        text: "-" + card.formatTime(Math.floor(card.length) - Math.floor(card.drawnPosition))
 
         Behavior on opacity {
             Anim {
@@ -545,6 +557,7 @@ Rectangle {
         color: Colors.secondary
         font.family: Metrics.font
         font.pixelSize: Metrics.text.small
+        font.weight: Font.Normal
         font.features: {
             "tnum": 1
         }

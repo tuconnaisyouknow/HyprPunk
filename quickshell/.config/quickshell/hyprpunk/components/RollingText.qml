@@ -4,7 +4,7 @@ import qs.theme
 // Text whose characters roll like a counter's: one that changes leaves upward as the next
 // rises from below in its place, the rightmost first and each one to its left a moment
 // later, like a carry. The time is written with it everywhere, and the counts that move
-// a step at a time (the battery, the volume); it takes Label's look.
+// a step at a time (the battery, the volume, the player's times); it takes Label's look.
 Item {
     id: rolling
 
@@ -17,7 +17,8 @@ Item {
     property int wait: 0
     // Its first text is there from the start: only a change rolls.
     property bool settled: false
-    // A number that goes down as well as up: it rolls the other way when it drops. The time
+    // A number that goes down as well as up: it rolls the other way when it drops, its
+    // digits read as one number ("1:05" is 105, a countdown's "-3:20" is 320). The clock
     // only moves on, even past midnight, so it always rises.
     property bool bothWays: false
 
@@ -27,7 +28,7 @@ Item {
         let written = "";
         for (let k = 0; k < cells.count; k++)
             written = (repeater.itemAt(k)?.glyph ?? "") + written;
-        const way = bothWays && parseFloat(text) < parseFloat(written) ? -1 : 1;
+        const way = bothWays && Number(text.replace(/\D/g, "")) < Number(written.replace(/\D/g, "")) ? -1 : 1;
         while (cells.count < text.length)
             cells.append({});
         let rank = 0;
