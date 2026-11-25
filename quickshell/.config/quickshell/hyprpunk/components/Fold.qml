@@ -5,6 +5,8 @@ import qs.theme
 // it opens past its size and back like a card out of its pill (Motion.unfold), folds
 // back the same way, and glides when its content changes size while open. Its content
 // fades in as it opens and out as it folds, while the height is still on its way.
+// Folding, it's leaving: neither the pointer nor the keys can reach it, since what it
+// holds stays in place under its clip, where the keys would find it below what follows.
 Item {
     id: fold
 
@@ -56,6 +58,7 @@ Item {
 
         width: parent.width
         height: childrenRect.height
+        enabled: fold.open
         opacity: fold.open ? 1 : 0
 
         Behavior on opacity {
