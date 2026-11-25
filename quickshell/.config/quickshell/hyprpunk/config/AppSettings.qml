@@ -44,14 +44,27 @@ Singleton {
         }).join(" ");
     }
 
-    // The installed apps in all those categories, by name.
+    // The app's own name, not what it does: the words of its entry's name that name its
+    // program ("Thunar File Manager" is Thunar). GNOME names its apps by their role
+    // ("Files"), so then the program itself (Nautilus).
+    function name(entry) {
+        const program = entry.id.split(".").pop();
+        const identity = (entry.id + " " + (entry.command[0] ?? "").split("/").pop()).toLowerCase();
+        const words = entry.name.split(" ").filter((word) => {
+            return identity.includes(word.toLowerCase());
+        });
+        return words.length > 0 ? words.join(" ") : program.charAt(0).toUpperCase() + program.slice(1);
+    }
+
+    // The installed apps in all those categories, by name. Not the ones that run in a
+    // terminal: a role's command is started on its own, where they'd have no window.
     function candidates(categories) {
         return DesktopEntries.applications.values.filter((entry) => {
-            return !entry.noDisplay && categories.every((category) => {
+            return !entry.noDisplay && !entry.runInTerminal && categories.every((category) => {
                 return entry.categories.includes(category);
             });
         }).sort((a, b) => {
-            return a.name.localeCompare(b.name);
+            return name(a).localeCompare(name(b));
         });
     }
 

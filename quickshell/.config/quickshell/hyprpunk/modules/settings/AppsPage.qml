@@ -41,7 +41,7 @@ SettingsPage {
                         const entry = role.entries.find((candidate) => {
                             return AppSettings.command(candidate) === command;
                         });
-                        return entry ? entry.name : command;
+                        return entry ? AppSettings.name(entry) : command;
                     }
                     onSelected: (command) => {
                         return AppSettings.set(role.modelData.name, role.entries.find((candidate) => {
