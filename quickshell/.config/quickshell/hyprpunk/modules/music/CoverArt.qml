@@ -43,10 +43,14 @@ Item {
     readonly property bool rolling: roll < 1
     // The picture rolling out, what showed when the track changed.
     property Image leaving: null
+    // The front picture rolled out with the track it was the cover of: it doesn't come
+    // back when the roll ends before the next cover has loaded, the note waits instead.
+    // The same album's cover rolls back in.
+    property bool rolledOut: false
     // How far a cover rolls, out of sight with a gap.
     readonly property real rollTravel: width + Metrics.spacing.normal
-    // The front picture shows: rolling in, only once it's the new track's.
-    readonly property bool shown: frontShown && (!rolling || front.source.toString() === source.toString())
+    // The front picture shows unless it rolled out, or the track came back to it.
+    readonly property bool shown: frontShown && (!rolledOut || front.source.toString() === source.toString())
 
     // The cover loaded (or failed to): it comes to the front.
     function take(image) {
@@ -56,6 +60,7 @@ Item {
         const over = frontShown && fades;
         fadesOverBack = shown;
         aFront = !aFront;
+        rolledOut = false;
         fade = over ? 0 : 1;
         if (over)
             fadeIn.restart();
@@ -78,6 +83,7 @@ Item {
     // in on its way once loaded, over the note until then.
     function rollTo(direction) {
         leaving = fade < 1 && fadesOverBack && back.status === Image.Ready ? back : frontShown ? front : null;
+        rolledOut = front.source.toString() !== source.toString();
         fadeIn.stop();
         fade = 1;
         rollDirection = direction;
