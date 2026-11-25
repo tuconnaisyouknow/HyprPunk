@@ -914,7 +914,7 @@ WlSessionLockSurface {
 
                     width: 380
                     lyricsInside: false
-                    tooltips: false
+                    tooltipHost: tips
                     active: player !== null
                     player: LockSettings.player ? Music.player : null
                     backgroundColor: Colors.alpha(Colors.base, 0.55)
@@ -993,6 +993,14 @@ WlSessionLockSurface {
                     target: Lock
                 }
 
+            }
+
+            // The buttons' names, over everything: the surface can't hold the popups the
+            // shell shows them in.
+            Item {
+                id: tips
+
+                anchors.fill: parent
             }
 
         }

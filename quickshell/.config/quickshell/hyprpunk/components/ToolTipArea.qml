@@ -11,12 +11,18 @@ Item {
     required property string text
     // The side it stands on.
     property int edge: Edges.Bottom
+    // Where the name is drawn when the window can't hold a popup (the lock screen's
+    // surface): an item over the whole window. Without it, a popup by the element.
+    property Item host: null
     // From the element to the glass.
     readonly property int gap: Metrics.spacing.normal
     // Room around the glass for its pop past its size, which the window would cut.
     readonly property int pad: Metrics.spacing.small
     readonly property bool vertical: edge === Edges.Top || edge === Edges.Bottom
     property bool shown: false
+    // The element in the host, taken as the name shows: it stays where it popped out
+    // even if the element moves under the pointer, like the popup.
+    property rect spot: Qt.rect(0, 0, 0, 0)
 
     anchors.fill: parent
 
@@ -37,12 +43,20 @@ Item {
         id: showDelay
 
         interval: 500
-        onTriggered: area.shown = true
+        onTriggered: {
+            if (area.host !== null) {
+                const at = area.mapToItem(area.host, 0, 0);
+                area.spot = Qt.rect(at.x, at.y, area.width, area.height);
+            }
+            area.shown = true;
+        }
     }
 
     PopupWindow {
+        id: popup
+
         // Mapped until it has folded back: Hyprland closes popups at once.
-        visible: area.text !== "" && (area.shown || bubble.scale > 0)
+        visible: area.host === null && area.text !== "" && (area.shown || bubble.scale > 0)
         implicitWidth: bubble.width + 2 * area.pad
         implicitHeight: bubble.height + 2 * area.pad
         color: "transparent"
@@ -61,44 +75,72 @@ Item {
             rect.height: area.height + (area.vertical ? area.gap - area.pad : 0)
         }
 
-        // Scaled rather than faded: the blur behind it follows what's drawn, and would
-        // snap off halfway through a fade.
-        Item {
-            id: bubble
-
-            x: area.pad
-            y: area.pad
-            width: label.implicitWidth + 2 * Metrics.spacing.large
-            height: label.implicitHeight + 2 * Metrics.spacing.small
-            scale: area.shown ? 1 : 0
-            transformOrigin: area.edge === Edges.Bottom ? Item.Top : area.edge === Edges.Top ? Item.Bottom : area.edge === Edges.Left ? Item.Right : Item.Left
-
-            GlassSurface {
-                radius: height / 2
-                backgroundColor: Colors.panel
-            }
-
-            Text {
-                id: label
-
-                anchors.centerIn: parent
-                text: area.text
-                color: Colors.secondary
-                font.family: Metrics.font
-                font.pixelSize: Metrics.text.body
-            }
-
-            Behavior on scale {
-                Anim {
-                    token: area.shown ? Motion.pop : Motion.leave.small
-                }
-
-            }
-
-        }
-
         // Click-through: an empty input region.
         mask: Region {
+        }
+
+    }
+
+    // Scaled rather than faded: the blur behind it follows what's drawn, and would snap
+    // off halfway through a fade. In the host, it lies against the element as the popup
+    // would, slid back onto the window along its side.
+    Item {
+        id: bubble
+
+        readonly property real alongX: area.spot.x + (area.spot.width - width) / 2
+        readonly property real alongY: area.spot.y + (area.spot.height - height) / 2
+
+        parent: area.host !== null ? area.host : popup.contentItem
+        visible: area.text !== ""
+        x: {
+            if (area.host === null)
+                return area.pad;
+
+            if (area.edge === Edges.Left)
+                return area.spot.x - area.gap - width;
+
+            if (area.edge === Edges.Right)
+                return area.spot.x + area.spot.width + area.gap;
+
+            return Math.max(0, Math.min(area.host.width - width, alongX));
+        }
+        y: {
+            if (area.host === null)
+                return area.pad;
+
+            if (area.edge === Edges.Top)
+                return area.spot.y - area.gap - height;
+
+            if (area.edge === Edges.Bottom)
+                return area.spot.y + area.spot.height + area.gap;
+
+            return Math.max(0, Math.min(area.host.height - height, alongY));
+        }
+        width: label.implicitWidth + 2 * Metrics.spacing.large
+        height: label.implicitHeight + 2 * Metrics.spacing.small
+        scale: area.shown ? 1 : 0
+        transformOrigin: area.edge === Edges.Bottom ? Item.Top : area.edge === Edges.Top ? Item.Bottom : area.edge === Edges.Left ? Item.Right : Item.Left
+
+        GlassSurface {
+            radius: height / 2
+            backgroundColor: Colors.panel
+        }
+
+        Text {
+            id: label
+
+            anchors.centerIn: parent
+            text: area.text
+            color: Colors.secondary
+            font.family: Metrics.font
+            font.pixelSize: Metrics.text.body
+        }
+
+        Behavior on scale {
+            Anim {
+                token: area.shown ? Motion.pop : Motion.leave.small
+            }
+
         }
 
     }
