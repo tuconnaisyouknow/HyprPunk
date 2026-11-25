@@ -213,6 +213,17 @@ Scope {
 
             anchors.fill: parent
 
+            // A click in a card that takes the keys, while another holds them (the file
+            // chooser opened from the control center), brings them back to it. Seen after
+            // the control under the pointer, which may have taken them itself.
+            TapHandler {
+                onPressedChanged: {
+                    if (pressed)
+                        window.clickedIn(point.scenePosition);
+
+                }
+            }
+
             IslandFrame {
                 id: islandFrame
 
@@ -472,18 +483,28 @@ Scope {
             const holders = cards.filter((card) => {
                 return card.takesKeyboard;
             });
-            const item = bar.Window.activeFocusItem;
-            const held = item !== null && holders.some((card) => {
-                for (let parent = item; parent !== null; parent = parent.parent) {
-                    if (parent === card)
-                        return true;
-
-                }
-                return false;
-            });
-            if (!held && holders.length > 0)
+            if (holders.length > 0 && !holders.some(holdsKeyboard))
                 holders[0].takeKeyboard();
 
+        }
+
+        function clickedIn(position) {
+            const card = cards.find((card) => {
+                const rect = card.cardRect;
+                return card.takesKeyboard && card.covering && position.x >= rect.x && position.x < rect.x + rect.width && position.y >= rect.y && position.y < rect.y + rect.height;
+            });
+            if (card !== undefined && !holdsKeyboard(card))
+                card.takeKeyboard();
+
+        }
+
+        function holdsKeyboard(card) {
+            for (let item = bar.Window.activeFocusItem; item !== null; item = item.parent) {
+                if (item === card)
+                    return true;
+
+            }
+            return false;
         }
 
     }
