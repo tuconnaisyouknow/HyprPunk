@@ -12,11 +12,13 @@ QtObject {
     readonly property string iconFont: "Material Symbols Rounded"
     // The clock, in capitals: Orbitron Bold, built with digits that all take one width.
     readonly property string displayFont: "HyprPunk Display"
-    // How far the pills sit from the screen's sides, and the strip they're centred in.
+    // How far the pills sit from the screen's sides, and the desktop's strip kept free of
+    // windows: the pills sit where the shell's do, as far from the top as from the
+    // windows under the strip.
     readonly property int barMargin: 10
-    readonly property int barHeight: 50
-    readonly property int barTop: (barHeight - pillHeight) / 2
-    readonly property int pillHeight: 38
+    readonly property int barHeight: 52
+    readonly property int barTop: (barHeight + barMargin - pillHeight) / 2
+    readonly property int pillHeight: 42
     // Room on each side of a pill's content.
     readonly property int pillPadding: spacing.large
     readonly property QtObject text: QtObject {
