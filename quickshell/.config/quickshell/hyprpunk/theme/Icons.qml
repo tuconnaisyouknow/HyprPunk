@@ -8,6 +8,9 @@ import Quickshell
 Singleton {
     // Icons that change into one another, by family: Icon goes from one to the other
     // (IconMorph) rather than swapping.
+    // Icons drawn filled whatever their state: outlined, Material's full charging battery
+    // is an empty one.
+    readonly property var solid: ["battery_charging_full"]
     readonly property var family: {
         const families = {
             "volume": ["volume_up", "volume_down", "volume_mute", "volume_off"],

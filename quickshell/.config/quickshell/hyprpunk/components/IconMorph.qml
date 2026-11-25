@@ -12,8 +12,10 @@ import qs.theme
 Item {
     id: morph
 
-    // The icon at rest it draws for.
+    // The icon at rest it draws for, and how far it's filled while it stands for
+    // something on.
     required property Text glyph
+    required property real fill
     // The icon it comes from and the one it goes to, and how far it has gone.
     property string from
     property string to
@@ -30,24 +32,8 @@ Item {
     readonly property string kind: Icons.family[from] ?? ""
     readonly property bool sliding: kind === "volume" && from !== "volume_off" && to !== "volume_off"
 
-    // The top of each battery's charge, measured on the font in its square.
-    readonly property var batteryLevel: ({
-        "battery_0_bar": 800,
-        "battery_1_bar": 720,
-        "battery_2_bar": 640,
-        "battery_3_bar": 560,
-        "battery_4_bar": 480,
-        "battery_5_bar": 400,
-        "battery_6_bar": 320,
-        "battery_full": 240,
-        "battery_charging_20": 722,
-        "battery_charging_30": 644,
-        "battery_charging_50": 560,
-        "battery_charging_60": 480,
-        "battery_charging_80": 400,
-        "battery_charging_90": 320,
-        "battery_charging_full": 800
-    })
+    // The batteries from emptiest to fullest, unplugged then charging.
+    readonly property var batteryCharge: ["battery_0_bar", "battery_1_bar", "battery_2_bar", "battery_3_bar", "battery_4_bar", "battery_5_bar", "battery_6_bar", "battery_full", "battery_charging_20", "battery_charging_30", "battery_charging_50", "battery_charging_60", "battery_charging_80", "battery_charging_90", "battery_charging_full"]
     // Where a Wi-Fi's fill spreads from.
     readonly property point wifiTip: Qt.point(480, 790)
     // A volume icon is its speaker and, past the speaker's mouth, its waves. Material
@@ -159,13 +145,17 @@ Item {
             if (from.includes("charging") !== to.includes("charging"))
                 return around(Qt.point(680, 720), 690);
 
-            // A line rising or falling from one charge to the other.
-            const rising = batteryLevel[to] < batteryLevel[from];
+            // A line sweeping the whole battery up as the charge rises, or down as it
+            // falls: each charge draws its body a touch differently, so all of it changes,
+            // and the charge moves as the line goes through it.
+            const rising = batteryCharge.indexOf(to) > batteryCharge.indexOf(from);
+            const bottom = -920 - pixel();
+            const top = -40 + pixel();
             return {
                 "circular": false,
                 "origin": Qt.point(0, -1),
-                "from": -batteryLevel[from] + (rising ? -pixel() : pixel()),
-                "to": -batteryLevel[to] + (rising ? pixel() : -pixel())
+                "from": rising ? bottom : top,
+                "to": rising ? top : bottom
             };
         }
         if (kind === "wifi") {
@@ -208,7 +198,7 @@ Item {
         onFinished: morph.start = null
     }
 
-    // The icon as the glyph at rest draws it.
+    // The icon as the glyph at rest draws it, filled as that icon is.
     component Glyph: Text {
         property string icon
 
@@ -216,7 +206,12 @@ Item {
         height: morph.glyph.height
         text: morph.running ? icon : ""
         color: morph.glyph.color
-        font: morph.glyph.font
+        font.family: morph.glyph.font.family
+        font.pixelSize: morph.glyph.font.pixelSize
+        font.hintingPreference: morph.glyph.font.hintingPreference
+        font.variableAxes: Object.assign({}, morph.glyph.font.variableAxes, {
+            "FILL": Icons.solid.includes(icon) ? 1 : morph.fill
+        })
         renderType: morph.glyph.renderType
         style: morph.glyph.style
         styleColor: morph.glyph.styleColor

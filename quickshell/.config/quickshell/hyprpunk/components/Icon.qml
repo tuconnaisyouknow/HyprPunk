@@ -48,9 +48,11 @@ Item {
         font.pixelSize: icon.size * 24 / 20
         // Each fill is a font of its own that Qt rasterizes and keeps: in tenths, the fill
         // stays smooth and the fonts few. The grade stays the font's own: off it, a filled
-        // icon's patch no longer covers the hollow it fills, and leaves a sliver open.
+        // icon's patch no longer covers the hollow it fills, and leaves a sliver open. The
+        // few icons Material only draws as meant once filled always are: that's their
+        // drawing, not a state.
         font.variableAxes: ({
-            "FILL": Math.round(icon.fill * 10) / 10,
+            "FILL": Icons.solid.includes(text) ? 1 : Math.round(icon.fill * 10) / 10,
             "opsz": Math.max(20, Math.min(48, icon.size * 24 / 20)),
             "wght": 400
         })
@@ -71,6 +73,7 @@ Item {
 
         sourceComponent: IconMorph {
             glyph: face
+            fill: Math.round(icon.fill * 10) / 10
         }
 
     }
