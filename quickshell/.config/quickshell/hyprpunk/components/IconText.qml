@@ -68,16 +68,22 @@ Item {
                 color: iconText.color
             }
 
-            // The label keeps the value's look and place, and this draws it.
-            RollingText {
+            // The label keeps the value's look and place, and this draws it. Only built for
+            // a count: most values never roll, and a roller was half of what each one cost.
+            Loader {
                 id: count
 
                 anchors.baseline: parent.baseline
-                visible: iconText.counts
-                bothWays: true
-                text: iconText.text
-                font: valueLabel.font
-                color: iconText.color
+                baselineOffset: item?.baselineOffset ?? 0
+                active: iconText.counts
+
+                sourceComponent: RollingText {
+                    bothWays: true
+                    text: iconText.text
+                    font: valueLabel.font
+                    color: iconText.color
+                }
+
             }
 
         }

@@ -16,7 +16,8 @@ import qs.theme
 Scope {
     id: settings
 
-    // In the sidebar's order, each with the file of its page.
+    // In the sidebar's order, each with the file of its page. An icon fills in as its
+    // section is chosen: each is one Material fills cleanly (its rocket breaks apart).
     readonly property var sections: [{
         "name": "displays",
         "page": "DisplaysPage.qml",
@@ -85,7 +86,7 @@ Scope {
     }, {
         "name": "launcher",
         "page": "LauncherPage.qml",
-        "icon": "rocket_launch",
+        "icon": "category",
         "label": "Launcher"
     }, {
         "name": "capture",
