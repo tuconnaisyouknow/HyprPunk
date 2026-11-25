@@ -4,7 +4,7 @@ import qs.components
 import qs.services
 import qs.theme
 
-// The wallpaper and its theme, in the open island over your workspaces (IslandView): its
+// The wallpaper and its theme, in the open island under your workspaces (IslandView): its
 // picture, its title over the theme's name and the colors the whole desktop takes from
 // it. A click opens the wallpaper picker.
 IslandBlock {

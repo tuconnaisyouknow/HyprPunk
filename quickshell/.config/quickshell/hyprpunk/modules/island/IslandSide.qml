@@ -1,24 +1,23 @@
 import QtQuick
 import qs.theme
 
-// One side of the open island (IslandView): a line on what's going on there over a row
-// of what you act on, a faint rule between them. Both sides alike, so the time stays in
-// the middle: the wallpaper over your workspaces, the machine's load over the control
-// center's icons.
+// One side of the open island (IslandView): one block over another, a faint rule between
+// them. Both sides alike, so the time stays in the middle: your workspaces over the
+// wallpaper, the control center's icons over the machine's load.
 IslandPart {
     id: side
 
-    property alias line: lineSlot.data
-    property alias row: rowSlot.data
-    // Where the row starts, under the line and the rule.
-    readonly property real rowY: Metrics.islandBlockHeight + Metrics.spacing.normal
+    property alias upper: upperSlot.data
+    property alias lower: lowerSlot.data
+    // Where the lower block starts, under the upper one and the rule.
+    readonly property real lowerY: Metrics.islandBlockHeight + Metrics.spacing.normal
 
-    openHeight: rowY + Metrics.islandBlockHeight
+    openHeight: lowerY + Metrics.islandBlockHeight
     // It unfolds with the island, like a card.
     token: Motion.unfold.width
 
     Item {
-        id: lineSlot
+        id: upperSlot
 
         width: side.openWidth
         height: Metrics.islandBlockHeight
@@ -33,9 +32,9 @@ IslandPart {
     }
 
     Item {
-        id: rowSlot
+        id: lowerSlot
 
-        y: side.rowY
+        y: side.lowerY
         width: side.openWidth
         height: Metrics.islandBlockHeight
     }

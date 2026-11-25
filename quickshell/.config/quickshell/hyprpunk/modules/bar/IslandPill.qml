@@ -11,8 +11,8 @@ import qs.theme
 // equalizer, or an OSD that takes it over (IslandView). A click opens the calendar, the
 // player from the music's ends, or the screenshot or recording an OSD shows. Every card
 // of the island grows out of it (IslandFrame).
-// Alone in the bar, it opens under the pointer onto the wallpaper, your workspaces, the
-// machine's load and the control center's icons, whose blocks take the clicks then: the
+// Alone in the bar, it opens under the pointer onto your workspaces, the wallpaper, the
+// control center's icons and the machine's load, whose blocks take the clicks then: the
 // time opens the calendar, the wallpaper its picker, the load the system monitor, the
 // icons the control center. The music's ends make way: its shortcut opens the player.
 Pill {

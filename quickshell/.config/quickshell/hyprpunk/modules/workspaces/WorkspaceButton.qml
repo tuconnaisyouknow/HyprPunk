@@ -2,7 +2,7 @@ import QtQuick
 import qs.components
 import qs.theme
 
-// One workspace in the bar, shown as a dot: its place in the row says which one it is.
+// One workspace in the bar or the open island, shown as a dot: its place in the row says which one it is.
 // It always exists, and takes its place only while the row asks for it: it opens up as
 // it's needed and closes as it isn't. The light that shows the one you're on isn't its
 // own (WorkspaceSwitcher): the dot only gives way as it passes, since neon's glass would
@@ -21,16 +21,19 @@ Item {
     required property real lightLeft
     required property real lightRight
     required property real lightOpacity
+    // Smaller, for the open island (WorkspaceSwitcher.compact), and taking the pointer.
+    property bool compact: false
+    property bool interactive: true
     readonly property bool active: workspace !== null && workspace.focused
     readonly property bool occupied: workspace !== null && workspace.toplevels.values.length > 0
     // A window there asks for you.
     readonly property bool urgent: workspace !== null && workspace.urgent && !active
     readonly property bool hovered: shown && mouse.containsMouse
-    readonly property int size: 32
+    readonly property int size: compact ? 24 : 32
     // Room for a dot at rest, for the light once you're on it.
-    readonly property int restWidth: 24
-    readonly property int activeWidth: 36
-    readonly property int dotSize: 10
+    readonly property int restWidth: compact ? 14 : 24
+    readonly property int activeWidth: compact ? 24 : 36
+    readonly property int dotSize: compact ? 8 : 10
     // How much a dot grows under the pointer: the light is that tall, so pointing at a
     // dot already shows the size it would take.
     readonly property real pointedScale: 1.5
@@ -147,7 +150,7 @@ Item {
         id: mouse
 
         anchors.fill: parent
-        enabled: button.shown
+        enabled: button.shown && button.interactive
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: button.activated()

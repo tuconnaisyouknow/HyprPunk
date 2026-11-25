@@ -11,8 +11,8 @@ import qs.theme
 // the time's chips and why a try failed, or an OSD over it as another face (IslandFace).
 // Alone in the bar, it opens under the pointer (open), and the time stays: it grows a
 // little over the date between two sides as wide as each other, so it stays in the middle
-// (IslandSide). On its left the wallpaper and its theme over your workspaces, on its right
-// the machine's load over the control center's icons. The music's ends make way, the chips
+// (IslandSide). On its left your workspaces over the wallpaper and its theme, on its right
+// the control center's icons over the machine's load. The music's ends make way, the chips
 // move under the date, and an OSD takes the time's place there rather than closing it.
 // Its size follows its content as it changes, so the island around it needs no animation
 // of its own. The bar's island and the lock's both draw it, so each picks up the island as
@@ -71,9 +71,9 @@ Item {
     property bool osdInside: false
     // The update packages waiting, as a chip (Bar.islandOnly).
     property bool updatesShown: false
-    // Each side of the open time: room for a title on its line, and for the workspaces
-    // and the icons under it.
-    readonly property real sideWidth: 2 * Math.ceil(Math.max(200, workspaceBars.fullWidth + 2 * Metrics.spacing.large, controlBlock.implicitWidth) / 2)
+    // Each side of the open time: room for the workspaces and the icons, and for a title
+    // under them.
+    readonly property real sideWidth: 2 * Math.ceil(Math.max(200, workspaceSwitcher.fullWidth + 2 * Metrics.spacing.large, controlBlock.implicitWidth) / 2)
     // The cover's and the equalizer's slot, and the cover as it grows in or shrinks away.
     readonly property real musicSlot: Metrics.pillHeight - 2 * Metrics.islandMusicInset
     readonly property real coverSize: musicSlot * coverPart.arrival
@@ -191,18 +191,20 @@ Item {
                 animated: view.animated
                 gap: Metrics.spacing.normal * coverPart.presence
                 openWidth: view.sideWidth
-                line: IslandWallpaperLine {
+                upper: WorkspaceSwitcher {
+                    id: workspaceSwitcher
+
+                    x: Math.round((view.sideWidth - implicitWidth) / 2)
+                    y: (Metrics.islandBlockHeight - implicitHeight) / 2
+                    screen: view.bar.screen
+                    compact: true
+                    interactive: view.interactive && view.open
+                }
+                lower: IslandWallpaperLine {
                     width: view.sideWidth
                     height: Metrics.islandBlockHeight
                     interactive: view.interactive && view.open
                     onClicked: view.bar.screenState.toggle("wallpaper")
-                }
-                row: WorkspaceBars {
-                    id: workspaceBars
-
-                    x: (view.sideWidth - implicitWidth) / 2
-                    screen: view.bar.screen
-                    interactive: view.interactive && view.open
                 }
             }
 
@@ -352,13 +354,7 @@ Item {
                 animated: view.animated
                 gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence)
                 openWidth: view.sideWidth
-                line: IslandStatsLine {
-                    width: view.sideWidth
-                    height: Metrics.islandBlockHeight
-                    interactive: view.interactive && view.open
-                    onClicked: view.bar.screenState.toggle("systemmonitor")
-                }
-                row: IslandControls {
+                upper: IslandControls {
                     id: controlBlock
 
                     width: view.sideWidth
@@ -366,6 +362,12 @@ Item {
                     bar: view.bar
                     interactive: view.interactive && view.open
                     lifted: view.controlsLifted
+                }
+                lower: IslandStatsLine {
+                    width: view.sideWidth
+                    height: Metrics.islandBlockHeight
+                    interactive: view.interactive && view.open
+                    onClicked: view.bar.screenState.toggle("systemmonitor")
                 }
             }
 

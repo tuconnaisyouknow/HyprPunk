@@ -3,7 +3,7 @@ import qs.components
 import qs.services
 import qs.theme
 
-// The machine's load, in the open island over the control center's icons (IslandView):
+// The machine's load, in the open island under the control center's icons (IslandView):
 // the processor over the memory, each a gauge, no figures: the system monitor has them,
 // and a click opens it.
 IslandBlock {

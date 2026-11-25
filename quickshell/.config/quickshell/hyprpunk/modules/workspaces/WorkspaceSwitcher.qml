@@ -3,16 +3,23 @@ import Quickshell.Hyprland
 import qs.components
 import qs.theme
 
-// The bar's workspace buttons: a dot for each workspace from 1 to the last one in use
-// here, all but the ones another screen holds, so a dot's place says which workspace it
-// is. One light shows the
-// one you're on. It's the only thing that travels: it stretches to the next workspace
-// over the dots, while each button only opens or closes its own place. The button under
-// the pointer is passed on to the preview card.
+// The workspace buttons, in the bar's pill or smaller in the open island (IslandView):
+// a dot for each workspace from 1 to the last one in use here, all but the ones another
+// screen holds, so a dot's place says which workspace it is. One light shows the one
+// you're on. It's the only thing that travels: it stretches to the next workspace over
+// the dots, while each button only opens or closes its own place. The button under the
+// pointer is passed on to the preview card.
 Item {
     id: workspaceSwitcher
 
     required property var screen
+    // Smaller, in the open island over the wallpaper, and taking the pointer there only
+    // while it's open.
+    property bool compact: false
+    property bool interactive: true
+    // As wide as with all ten workspaces in use: the island keeps one size however many
+    // you use.
+    readonly property real fullWidth: buttons.count > 0 ? 9 * buttons.itemAt(0).restWidth + buttons.itemAt(0).activeWidth + 10 * Metrics.spacing.hairline - Metrics.spacing.hairline : 0
     // The workspace under the pointer, null when there is none.
     readonly property var hoveredWorkspace: hoveredButton !== null ? hoveredButton.workspace : null
     property Item hoveredButton: null
@@ -170,6 +177,8 @@ Item {
                 }) || null
                 shown: workspaceId <= workspaceSwitcher.last && !workspaceSwitcher.elsewhere.includes(workspaceId)
                 gap: Metrics.spacing.hairline
+                compact: workspaceSwitcher.compact
+                interactive: workspaceSwitcher.interactive
                 lightLeft: light.x - x
                 lightRight: light.x + light.width - x
                 lightOpacity: light.visible ? light.opacity : 0
