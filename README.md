@@ -66,8 +66,8 @@ The clock's island grows into every panel, the password prompts for admin rights
 | ![music](./assets/screenshots/music.png) | ![workspace-preview](./assets/screenshots/workspace-preview.png) |
 
 Keep the bar with the pills you want, or the island alone (`Super + I`, Bar). Alone, it opens under the pointer
-onto the time over the date, the window you're on over your workspaces, and the music over the control center's
-icons, its cover and equalizer flying there from the island's ends; the updates show as a chip beside the time, and
+onto the time over the date, the wallpaper and its theme over your workspaces, and the processor, memory and
+temperature over the control center's icons; the updates show as a chip beside the time, and
 the control center, the player, the system monitor and the workspace preview grow out of it like the calendar. A
 hidden pill's card still opens with its shortcut.
 

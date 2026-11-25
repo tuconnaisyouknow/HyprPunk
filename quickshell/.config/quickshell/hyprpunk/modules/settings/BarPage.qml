@@ -43,7 +43,7 @@ SettingsPage {
         Layout.fillWidth: true
         icon: "toolbar"
         title: "Layout"
-        description: "The bar with its pills, or the island alone: under the pointer it opens onto the window you're on over your workspaces and the music over the control center's icons, and the control center, the system monitor and the workspace preview grow out of it."
+        description: "The bar with its pills, or the island alone: under the pointer it opens onto the wallpaper over your workspaces and the machine's load over the control center's icons, and the control center, the system monitor and the workspace preview grow out of it."
 
         SegmentedControl {
             width: parent.width

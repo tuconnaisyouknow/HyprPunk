@@ -11,10 +11,10 @@ import qs.theme
 // equalizer, or an OSD that takes it over (IslandView). A click opens the calendar, the
 // player from the music's ends, or the screenshot or recording an OSD shows. Every card
 // of the island grows out of it (IslandFrame).
-// Alone in the bar, it opens under the pointer onto the window you're on, your
-// workspaces, the music and the control center's icons, whose blocks take the clicks
-// then: the time opens the calendar, the window the workspace preview, the music the
-// player, the icons the control center.
+// Alone in the bar, it opens under the pointer onto the wallpaper, your workspaces, the
+// machine's load and the control center's icons, whose blocks take the clicks then: the
+// time opens the calendar, the wallpaper its picker, the load the system monitor, the
+// icons the control center. The music's ends make way: its shortcut opens the player.
 Pill {
     id: clockPill
 
@@ -30,14 +30,13 @@ Pill {
     property string face: "clock"
     // Where its time starts, from its left edge.
     readonly property real timeX: view.parent.x + view.x + view.timeX
-    // Where the music's cover and equalizer are, the same way and from its top, the
-    // cover's corners and how round the bars are: the player flies them from there.
+    // Where the music's cover and equalizer are, the same way and from its top, and the
+    // cover's corners: the player flies them from there.
     readonly property real coverX: view.parent.x + view.x + view.coverX
     readonly property real coverY: view.parent.y + view.y + view.coverY
     readonly property real coverRadius: view.coverRadius
     readonly property real equalizerX: view.parent.x + view.x + view.equalizerX
     readonly property real equalizerY: view.parent.y + view.y + view.equalizerY
-    readonly property real equalizerRoundness: view.equalizerRoundness
     readonly property real equalizerInset: view.equalizerInset
     // Between the time and an OSD, or opening and closing.
     readonly property bool swapping: view.swapping
@@ -140,7 +139,6 @@ Pill {
         open: clockPill.open
         updatesShown: clockPill.bar.islandOnly && BarSettings.shows("updates")
         onTimeClicked: clockPill.calendar.togglePinned()
-        onMusicClicked: clockPill.player.togglePinned()
         onOsdClicked: clockPill.openShot()
         osdInside: clockPill.open && clockPill.bar.islandOsdShown
 

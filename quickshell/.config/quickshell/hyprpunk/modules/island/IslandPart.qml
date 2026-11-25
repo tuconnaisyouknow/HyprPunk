@@ -27,8 +27,7 @@ Item {
     // for the parts the island opens onto.
     property var token: Motion.swap
     // How far it has come, 0 gone, 1 whole, and how much of its place the row leaves it
-    // for now: the music's cover and equalizer make way as the island opens, their own
-    // flying elsewhere (IslandView).
+    // for now: the music's ends and the chips make way as the island opens (IslandView).
     property real arrival: shown ? 1 : 0
     property real room: 1
     // How much it's there.

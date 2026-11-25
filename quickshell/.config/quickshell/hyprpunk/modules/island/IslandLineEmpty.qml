@@ -2,7 +2,7 @@ import QtQuick
 import qs.components
 import qs.theme
 
-// A line of the open island with nothing to show (IslandMusicLine, IslandWindowLine):
+// A line of the open island with nothing to show (IslandWallpaperLine):
 // an empty square where the picture would be, and why.
 Item {
     id: empty

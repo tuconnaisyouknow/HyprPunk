@@ -13,13 +13,6 @@ IslandPanel {
     readonly property int cardPadding: Metrics.spacing.large
     readonly property var centre: carousel.centreIndex >= 0 ? carousel.items[carousel.centreIndex] : null
 
-    // The file's name, as a title: last-light-at-the-seaside-station.png gives
-    // "Last light at the seaside station".
-    function titleOf(path) {
-        const name = path.split("/").pop().replace(/\.[^.]*$/, "").replace(/[-_]+/g, " ");
-        return name.charAt(0).toUpperCase() + name.slice(1);
-    }
-
     function showList() {
         carousel.setItems(Wallpapers.list.map((wallpaper) => {
             return {
@@ -93,7 +86,7 @@ IslandPanel {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: picker.centre ? picker.titleOf(picker.centre.id) : ""
+            text: picker.centre ? Wallpapers.title(picker.centre.id) : ""
             color: Colors.primary
             font.family: Metrics.font
             font.pixelSize: Metrics.text.emphasis

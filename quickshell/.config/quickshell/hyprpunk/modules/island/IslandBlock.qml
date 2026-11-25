@@ -3,7 +3,7 @@ import qs.components
 import qs.theme
 
 // A block of the open island (IslandView): the time with the date, the control center's
-// icons, the music or the window you're on. It lights up a little under the pointer, and a
+// icons, the wallpaper or the machine's load. It lights up a little under the pointer, and a
 // click on it does its one thing.
 Item {
     id: block

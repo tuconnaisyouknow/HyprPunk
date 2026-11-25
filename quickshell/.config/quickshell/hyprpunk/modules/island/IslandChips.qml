@@ -19,10 +19,6 @@ Row {
     // The update packages waiting, which have no pill of their own then (Bar.islandOnly).
     property bool updatesShown: false
     property bool animated: true
-    // How much of their places the row leaves them for now (IslandPart.room): the open
-    // island has none, and closing, it counts them from the start, so the time heads
-    // straight to its place beside them rather than being pushed aside as they come back.
-    property real room: 1
     // In the bar, a click on the recording stops it, one on the updates runs them. The lock
     // only shows them.
     property bool interactive: true
@@ -36,14 +32,12 @@ Row {
     // Each chip brings its own gap before it, as much as something is open before it: a
     // gap only parts two things, so the island stays centred on whatever is left in it
     // (IslandPart).
-    anchors.verticalCenter: parent.verticalCenter
 
     // Privacy: a dot while something is listening or watching, green for the camera,
     // orange for the microphone alone.
     IslandPart {
         id: privacyChip
 
-        room: chips.room
         shown: chips.shown && (Privacy.cameraInUse || Privacy.microphoneInUse)
         animated: chips.animated
         openWidth: 8
@@ -67,7 +61,6 @@ Row {
     IslandPart {
         id: recordingChip
 
-        room: chips.room
         shown: chips.shown && Screenshot.recording
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence)
@@ -170,7 +163,6 @@ Row {
     IslandPart {
         id: notificationChip
 
-        room: chips.room
         shown: chips.notificationsShown && chips.bar.notificationCount > 0
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence + recordingChip.presence)
@@ -236,7 +228,6 @@ Row {
     IslandPart {
         id: updatesChip
 
-        room: chips.room
         shown: chips.updatesShown && Updates.count > 0
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence + recordingChip.presence + notificationChip.presence)

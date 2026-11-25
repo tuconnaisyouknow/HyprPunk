@@ -1,7 +1,6 @@
 import QtQuick
 import qs.components
 import qs.config
-import qs.modules.music
 import qs.modules.workspaces
 import qs.services
 import qs.theme
@@ -12,10 +11,9 @@ import qs.theme
 // the time's chips and why a try failed, or an OSD over it as another face (IslandFace).
 // Alone in the bar, it opens under the pointer (open), and the time stays: it grows a
 // little over the date between two sides as wide as each other, so it stays in the middle
-// (IslandSide). On its left the window you're on over your workspaces, on its right the
-// music over the control center's icons: the cover and the equalizer fly there from the
-// island's ends. The chips make way, and an OSD takes the time's place there rather than
-// closing it.
+// (IslandSide). On its left the wallpaper and its theme over your workspaces, on its right
+// the machine's load over the control center's icons. The music's ends make way, the chips
+// move under the date, and an OSD takes the time's place there rather than closing it.
 // Its size follows its content as it changes, so the island around it needs no animation
 // of its own. The bar's island and the lock's both draw it, so each picks up the island as
 // it is.
@@ -62,11 +60,11 @@ Item {
     property bool open: false
     property real openWidthShare: open ? 1 : 0
     property real openness: open ? 1 : 0
-    // How far the cover and the equalizer have flown across and down, between their place
-    // in the island's ends and on the music's line, never past either: the island going
-    // past its size moves those places, which they ride, but their own way doesn't go past.
-    readonly property real flightAcross: Math.max(0, Math.min(1, openWidthShare))
-    readonly property real flightDown: Math.max(0, Math.min(1, openness))
+    // How far the chips have gone from their place in the row to theirs under the date,
+    // across and down, never past either: the island going past its size doesn't move
+    // the time they sit under.
+    readonly property real chipsAcross: Math.max(0, Math.min(1, openWidthShare))
+    readonly property real chipsDown: Math.max(0, Math.min(1, openness))
     // Open, or on its way open or closed.
     readonly property bool unfolded: open || openingWidth.running || opening.running
     // An OSD while the island is open: in the time's place, the island staying open.
@@ -76,17 +74,17 @@ Item {
     // Each side of the open time: room for a title on its line, and for the workspaces
     // and the icons under it.
     readonly property real sideWidth: 2 * Math.ceil(Math.max(200, workspaceBars.fullWidth + 2 * Metrics.spacing.large, controlBlock.implicitWidth) / 2)
-    // The cover's and the equalizer's slot.
+    // The cover's and the equalizer's slot, and the cover as it grows in or shrinks away.
     readonly property real musicSlot: Metrics.pillHeight - 2 * Metrics.islandMusicInset
+    readonly property real coverSize: musicSlot * coverPart.arrival
     // How much bigger the time is, open.
     readonly property real timeScale: 1 + openness * (Metrics.text.heading / Metrics.text.title - 1)
     // The time's place at rest, even, eased as the minutes change its ink. Open, its block
     // around the time and the date, even too.
     property real timeWidth: 2 * Math.ceil(timeInk.tightBoundingRect.width / 2)
-    readonly property real openTimeWidth: 2 * Math.ceil(Math.max(timeInk.tightBoundingRect.width * Metrics.text.heading / Metrics.text.title, dateLabel.implicitWidth) / 2) + 2 * Metrics.spacing.large
+    readonly property real openTimeWidth: 2 * Math.ceil(Math.max(timeInk.tightBoundingRect.width * Metrics.text.heading / Metrics.text.title, dateLabel.implicitWidth, chips.width) / 2) + 2 * Metrics.spacing.large
 
     signal timeClicked()
-    signal musicClicked()
     // A click on the screenshot an OSD shows in the open island.
     signal osdClicked()
     // The time, where the lock's clock leaves from.
@@ -95,15 +93,13 @@ Item {
     readonly property bool swapping: clockFace.moving || osdFace.moving || openingWidth.running || opening.running
     // Where the time starts, from the view's left edge.
     readonly property real timeX: clockFace.x + timePart.placeX
-    // Where the cover and the equalizer's slot are, from the view's corner, as you see them:
-    // in the island's ends, on the music's line, or on their way. The cover's corners, and
-    // how round the equalizer's bars are, to fit its round end.
-    readonly property real coverX: clockFace.x + flyingCover.x
-    readonly property real coverY: clockFace.y + flyingCover.y
-    readonly property real coverRadius: flyingCover.radius
-    readonly property real equalizerX: clockFace.x + flyingEqualizer.x
-    readonly property real equalizerY: clockFace.y + flyingEqualizer.y
-    readonly property real equalizerRoundness: flyingBars.roundness
+    // Where the cover and the equalizer's slot are in the island's ends, from the view's
+    // corner, and the cover's corners.
+    readonly property real coverX: clockFace.x + clockRow.x + coverPart.placeX + (coverPart.presence * musicSlot - coverSize) / 2
+    readonly property real coverY: clockFace.y + clockRow.y + (clockRow.height - coverSize) / 2
+    readonly property real coverRadius: coverSize / 2
+    readonly property real equalizerX: clockFace.x + clockRow.x + equalizerPart.placeX + (equalizerPart.presence - 1) * musicSlot / 2
+    readonly property real equalizerY: clockFace.y + clockRow.y + (clockRow.height - musicSlot) / 2
     // Where the equalizer's bars sit in its slot.
     readonly property real equalizerInset: equalizerPart.slack
     // The pointer is on a chip with its own click (the recording, the updates).
@@ -112,19 +108,12 @@ Item {
     readonly property bool musicHovered: coverHover.hovered || equalizerHover.hovered
     readonly property real presence: clockFace.presence + osdFace.presence
 
-    // How far down something in the island's middle is on its way to a place on the music's
-    // line (given from the line's top), as the island opens: both in the clock's row.
-    function flightY(lineY) {
-        const middle = clockRow.height / 2;
-        const onLine = musicSide.y + musicSide.openHeight / 2 + (lineY - musicSide.openHeight / 2) * musicSide.presence;
-        return middle + (onLine - middle) * flightDown;
-    }
-
     // Each face's size, weighed by how much it's there. The width grows two pixels at a
     // time, the one thing rounded here: centred on the island's middle, a whole pixel, it
     // stays on whole pixels, and the faces inside follow their exact place.
     implicitWidth: 2 * Math.round((clockFace.presence * clockFace.islandWidth + osdFace.presence * osdFace.islandWidth) / Math.max(presence, 0.001) / 2)
     implicitHeight: (clockFace.presence * clockFace.islandHeight + osdFace.presence * osdFace.islandHeight) / Math.max(presence, 0.001)
+
 
     Behavior on openWidthShare {
         enabled: view.animated
@@ -178,14 +167,13 @@ Item {
 
             anchors.centerIn: parent
 
-            // Out of the way while the island is open, the cover flown to the music's line.
             IslandCover {
                 id: coverPart
 
                 shown: view.musicShown
                 room: 1 - view.openWidthShare
                 animated: view.animated
-                lifted: view.musicLifted || view.unfolded
+                lifted: view.musicLifted
                 gap: 0
 
                 HoverHandler {
@@ -197,18 +185,17 @@ Item {
             }
 
             IslandSide {
-                id: windowSide
+                id: wallpaperSide
 
                 shown: view.open
                 animated: view.animated
                 gap: Metrics.spacing.normal * coverPart.presence
                 openWidth: view.sideWidth
-                line: IslandWindowLine {
+                line: IslandWallpaperLine {
                     width: view.sideWidth
                     height: Metrics.islandBlockHeight
-                    screen: view.bar.screen
                     interactive: view.interactive && view.open
-                    onClicked: view.bar.screenState.toggle("workspaces")
+                    onClicked: view.bar.screenState.toggle("wallpaper")
                 }
                 row: WorkspaceBars {
                     id: workspaceBars
@@ -224,14 +211,14 @@ Item {
 
                 shown: view.timeShown && !view.osdInside
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + windowSide.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence)
                 // Its place is the time's ink, so the gaps on both sides are measured from
                 // what's drawn: the digits fill their cells unevenly (a 1 leaves far more
                 // room on its right than a 0), and the cover and the equalizer sat unevenly
                 // around it, differently from one minute to the next.
                 // Rounded up to an even width, the ink in its middle. Open, its block's.
                 openWidth: view.timeWidth + view.openWidthShare * (view.openTimeWidth - view.timeWidth)
-                openHeight: timeLabel.implicitHeight * view.timeScale + view.openness * dateLabel.implicitHeight
+                openHeight: timeLabel.implicitHeight * view.timeScale + view.openness * (dateLabel.implicitHeight + chips.presence * (Metrics.spacing.small + chips.height))
                 resizes: false
 
                 // Lit under the pointer once open: a click opens the calendar.
@@ -290,7 +277,7 @@ Item {
 
                 shown: view.osdInside
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + windowSide.presence + timePart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence)
                 openWidth: 2 * Math.ceil(osdInside.implicitWidth / 2) + 2 * Metrics.spacing.large
                 openHeight: Metrics.islandBlockHeight
 
@@ -317,7 +304,7 @@ Item {
 
                 shown: view.padlock
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + windowSide.presence + timePart.presence + osdPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence)
                 // A whole, even number of pixels, the glyph on a whole pixel inside: its cell
                 // is a fraction wide, and alone in the island's circle it would be drawn a
                 // pixel to the left of the middle.
@@ -343,37 +330,33 @@ Item {
                 checking: view.checking
                 alert: view.lockError !== "" && view.typed === 0
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + windowSide.presence + timePart.presence + osdPart.presence + padlockPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence)
             }
 
-            IslandChips {
-                id: chips
+            // The chips' place in the row, which they leave for theirs under the date as
+            // the island opens.
+            Item {
+                id: chipsPlace
 
-                bar: view.bar
-                shown: view.chipsShown
-                notificationsShown: view.chipsShown && view.timeShown
-                updatesShown: view.updatesShown
-                room: 1 - view.openWidthShare
-                animated: view.animated
-                interactive: view.interactive && clockFace.shown
-                lead: Math.min(1, coverPart.presence + windowSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence)
+                readonly property real presence: chips.presence * (1 - view.chipsAcross)
+
+                width: chips.width * (1 - view.chipsAcross)
+                height: chips.height
+                anchors.verticalCenter: parent.verticalCenter
             }
 
             IslandSide {
-                id: musicSide
+                id: statsSide
 
                 shown: view.open
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + windowSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chips.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence)
                 openWidth: view.sideWidth
-                line: IslandMusicLine {
-                    id: musicLine
-
+                line: IslandStatsLine {
                     width: view.sideWidth
                     height: Metrics.islandBlockHeight
-                    presence: coverPart.arrival
-                    interactive: view.interactive && view.open && Music.player !== null
-                    onClicked: view.musicClicked()
+                    interactive: view.interactive && view.open
+                    onClicked: view.bar.screenState.toggle("systemmonitor")
                 }
                 row: IslandControls {
                     id: controlBlock
@@ -392,9 +375,9 @@ Item {
                 shown: view.musicShown
                 room: 1 - view.openWidthShare
                 animated: view.animated
-                lifted: view.musicLifted || view.unfolded
+                lifted: view.musicLifted
                 live: view.live
-                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + windowSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chips.presence + musicSide.presence)
+                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence)
 
                 HoverHandler {
                     id: equalizerHover
@@ -407,64 +390,32 @@ Item {
             LockWords {
                 label: view.lockError
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + windowSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chips.presence + musicSide.presence + equalizerPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + equalizerPart.presence)
             }
 
         }
 
-        // The cover and the equalizer while the island opens, is open or closes: each flies
-        // from its end of the island to its place on the music's line, across with the
-        // island's width and down with its height, the cover squaring off and the bars
-        // standing up straight on the way. The ends keep them otherwise.
-        CoverArt {
-            id: flyingCover
+        // After the time in the row, or centred under the date in the open island: the same
+        // chips going from one place to the other, the updates and the notifications kept
+        // in sight. An OSD in the open island has the time's place, and they leave it.
+        IslandChips {
+            id: chips
 
-            readonly property real size: view.musicSlot * coverPart.arrival
-            readonly property real restX: coverPart.placeX + coverPart.presence * view.musicSlot / 2
-            readonly property real lineX: musicSide.placeX + musicSide.presence * (musicLine.coverX + view.musicSlot / 2)
+            readonly property real restX: clockRow.x + chipsPlace.x
+            readonly property real restY: clockRow.y + (clockRow.height - height) / 2
+            readonly property real openX: clockRow.x + (clockRow.width - width) / 2
+            readonly property real openY: clockRow.y + timePart.y + timeLabel.implicitHeight * view.timeScale + dateLabel.implicitHeight + Metrics.spacing.small
 
-            x: clockRow.x + restX + (lineX - restX) * view.flightAcross - size / 2
-            y: clockRow.y + view.flightY(view.musicSlot / 2) - size / 2
-            width: size
-            height: size
-            radius: size / 2 + (musicLine.radius - size / 2) * view.flightDown
-            visible: view.unfolded && !view.musicLifted && size > 0
-            decodeSize: 2 * Math.ceil(view.musicSlot)
-            rolls: view.animated && visible
-
-            // The last cover stays while it goes after the player quits.
-            Binding on source {
-                when: Music.player !== null
-                value: Music.player?.trackArtUrl ?? ""
-                restoreMode: Binding.RestoreNone
-            }
-
-        }
-
-        Item {
-            id: flyingEqualizer
-
-            readonly property real restX: equalizerPart.placeX + equalizerPart.presence * view.musicSlot / 2
-            readonly property real lineX: musicSide.placeX + musicSide.presence * (musicLine.equalizerX + view.musicSlot / 2)
-
-            x: clockRow.x + restX + (lineX - restX) * view.flightAcross - width / 2
-            y: clockRow.y + view.flightY(view.musicSlot / 2) - height / 2
-            width: view.musicSlot
-            height: view.musicSlot
-            visible: view.unfolded && !view.musicLifted && equalizerPart.arrival > 0
-
-            // In its slot as in the island's end (IslandEqualizer).
-            Equalizer {
-                id: flyingBars
-
-                x: 2 * Math.round((parent.width - width) / 4)
-                y: (parent.height - height) / 2
-                scale: equalizerPart.arrival
-                roundness: 1 - view.flightDown
-                playing: Music.playing
-                running: view.live && flyingEqualizer.visible && MusicSettings.equalizer
-            }
-
+            x: restX + (openX - restX) * view.chipsAcross
+            y: restY + (openY - restY) * view.chipsDown
+            bar: view.bar
+            shown: view.chipsShown && !view.osdInside
+            notificationsShown: view.chipsShown && view.timeShown && !view.osdInside
+            updatesShown: view.updatesShown && !view.osdInside
+            animated: view.animated
+            interactive: view.interactive && clockFace.shown
+            // Under the date, nothing before them to part them from.
+            lead: Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence) * (1 - view.chipsAcross)
         }
 
     }

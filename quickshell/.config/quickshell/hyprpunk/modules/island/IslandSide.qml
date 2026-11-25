@@ -3,7 +3,7 @@ import qs.theme
 
 // One side of the open island (IslandView): a line on what's going on there over a row
 // of what you act on, a faint rule between them. Both sides alike, so the time stays in
-// the middle: the window you're on over your workspaces, the music over the control
+// the middle: the wallpaper over your workspaces, the machine's load over the control
 // center's icons.
 IslandPart {
     id: side

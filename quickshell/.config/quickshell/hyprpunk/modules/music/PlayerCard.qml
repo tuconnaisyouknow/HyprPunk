@@ -7,10 +7,9 @@ import qs.theme
 
 // The player, one of the island's cards: a click on the island's cover or equalizer, or
 // its shortcut, grows it out of the island in the shape the island's cards share
-// (IslandFrame). The cover flies from the island's left end, or from the open island's
-// music line, to the artwork's place, squaring off as it grows, and the equalizer from
-// its place in the island to its place in the card; folding back, both land where they
-// are in the island.
+// (IslandFrame). The cover flies from the island's left end to the artwork's place,
+// squaring off as it grows, and the equalizer from the right end to its place in the
+// card; folding back, both land in the island's ends.
 PillPopup {
     id: playerPopup
 
@@ -145,7 +144,7 @@ PillPopup {
             x: playerPopup.flyX(playerPopup.island.equalizerX, musicPlayerCard.equalizerCenter.x, playerPopup.slotSize) + playerPopup.island.equalizerInset
             y: playerPopup.flyY(playerPopup.island.equalizerY, musicPlayerCard.equalizerCenter.y, playerPopup.slotSize) + Math.round((playerPopup.slotSize - height) / 2)
             scale: playerPopup.zoomY + (1 - playerPopup.zoomY) * playerPopup.flight
-            roundness: playerPopup.island.equalizerRoundness * (1 - playerPopup.flight)
+            roundness: 1 - playerPopup.flight
             playing: Music.playing
             running: playerPopup.mapped && MusicSettings.equalizer
         }

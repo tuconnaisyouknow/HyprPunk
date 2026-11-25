@@ -41,6 +41,13 @@ Singleton {
         } : saved;
     })
 
+    // A wallpaper's file name as a title: last-light-at-the-seaside-station.png gives
+    // "Last light at the seaside station".
+    function title(path) {
+        const name = path.split("/").pop().replace(/\.[^.]*$/, "").replace(/[-_]+/g, " ");
+        return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+
     function read() {
         lister.running = true;
         themeLister.running = true;
