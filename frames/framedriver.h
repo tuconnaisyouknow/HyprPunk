@@ -7,12 +7,19 @@
 #include <QTimer>
 
 class QQuickWindow;
+class QScreen;
 
 class FrameDriver : public QAnimationDriver {
 public:
     explicit FrameDriver(QObject* parent = nullptr);
 
     static void installOnce();
+
+    static constexpr qint64 Second = 1'000'000'000;
+    static constexpr qint64 Millisecond = 1'000'000;
+    // A screen's beat, and the fastest one's, in nanoseconds
+    static qint64 intervalOf(const QScreen* screen);
+    static qint64 fastestInterval();
 
     qint64 elapsed() const override;
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -34,7 +41,6 @@ private:
     void frameEnded(QQuickWindow* window);
     void tick(qint64 time);
     static qint64 now();
-    static qint64 fastestInterval();
 
     qint64 mStart = 0;
     qint64 mClock = 0;

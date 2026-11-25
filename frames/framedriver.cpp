@@ -9,6 +9,8 @@
 //                                                 frame time, clock (µs), window size
 #include "framedriver.h"
 
+#include "frameincubator.h"
+
 #include <chrono>
 
 #include <QEvent>
@@ -22,15 +24,10 @@
 
 Q_LOGGING_CATEGORY(lcFrames, "hyprpunk.frames", QtWarningMsg)
 
-namespace {
-constexpr qint64 Second = 1'000'000'000;
-constexpr qint64 Millisecond = 1'000'000;
-
-qint64 intervalOf(const QScreen* screen) {
+qint64 FrameDriver::intervalOf(const QScreen* screen) {
     const qreal rate = screen ? screen->refreshRate() : 0;
     return rate > 1 ? qint64(Second / rate) : Second / 60;
 }
-} // namespace
 
 FrameDriver::FrameDriver(QObject* parent)
     : QAnimationDriver(parent) {
@@ -186,6 +183,9 @@ void FrameDriver::frameEnded(QQuickWindow* window) {
         state->wantsNext = false;
         state.key()->requestUpdate();
     }
+
+    // What's built in the background takes its slice now, a whole beat before the next frame
+    FrameIncubator::frameEnded(intervalOf(window->screen()));
 }
 
 // The clock never goes back: another screen may already have moved it a little further

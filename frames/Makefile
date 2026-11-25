@@ -16,8 +16,8 @@ PRIVATE := $(foreach m,QtCore QtGui QtQml QtQuick,-I/usr/include/qt6/$(m)/$(QT_V
 CXXFLAGS := -std=c++20 -O2 -fPIC -Wall -Wextra $(shell pkg-config --cflags $(QT_MODULES)) $(PRIVATE) -I$(BUILD)
 LDLIBS := $(shell pkg-config --libs $(QT_MODULES))
 
-$(TARGET): framedriver.cpp framedriver.h plugin.cpp $(BUILD)/plugin.moc
-	$(CXX) $(CXXFLAGS) -shared -o $@ framedriver.cpp plugin.cpp $(LDLIBS)
+$(TARGET): framedriver.cpp framedriver.h frameincubator.cpp frameincubator.h plugin.cpp $(BUILD)/plugin.moc
+	$(CXX) $(CXXFLAGS) -shared -o $@ framedriver.cpp frameincubator.cpp plugin.cpp $(LDLIBS)
 
 $(BUILD)/plugin.moc: plugin.cpp
 	@mkdir -p $(BUILD)

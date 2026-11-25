@@ -386,7 +386,7 @@ from other people's nearby.
 ├── btop/                # Btop configuration
 ├── cava/                # Audio visualizer configuration
 ├── fastfetch/           # Fastfetch configuration and logos
-├── frames/              # The shell's animation clock, a Qt plugin built by the installer for each Qt version
+├── frames/              # The shell's animation clock and background building, a Qt plugin built by the installer for each Qt version
 ├── fontconfig/          # The terminal's font for whatever asks for a monospace font
 ├── grub/                # CyberEXS GRUB theme installed system-wide
 ├── gtk3/                # GTK 3 settings, and the HyprPunk theme that takes matugen's colors
