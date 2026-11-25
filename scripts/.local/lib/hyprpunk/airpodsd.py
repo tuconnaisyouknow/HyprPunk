@@ -73,6 +73,10 @@ POPUP_COOLDOWN = 8
 AUTO_CONNECT_COOLDOWN = 20
 PAIRING_SCAN_SECONDS = 30
 PAIRING_IGNORE_SECONDS = 120
+# The AirPods answer one AAP session at a time: a channel opened while another is
+# still live (the daemon of a shell restarting) stays mute for good, so one that
+# isn't answered by then is reopened.
+AAP_ANSWER_MS = 3000
 
 AAP_HANDSHAKE = bytes.fromhex("00000400010002000000000000000000")
 AAP_SET_FEATURES = bytes.fromhex("040004004d00d700000000000000")
@@ -256,6 +260,7 @@ class AapSession:
         self.sock = None
         self.watch = None
         self.ready = False
+        self.answer_timer = None
         self.attempts = 0
         self.primary = "left"
         self.ear = None
@@ -302,9 +307,16 @@ class AapSession:
             self.sock.fileno(), GLib.IO_IN | GLib.IO_ERR | GLib.IO_HUP, self.on_readable
         )
         self.send(AAP_HANDSHAKE)
+        self.answer_timer = GLib.timeout_add(AAP_ANSWER_MS, self.on_mute)
         # Not every model acknowledges the features packet.
         GLib.timeout_add(1500, self.request_notifications)
         return False
+
+    def on_mute(self):
+        self.answer_timer = None
+        log("aap no answer", self.address)
+        self.ready = False
+        return self.retry()
 
     def send(self, packet):
         try:
@@ -337,6 +349,9 @@ class AapSession:
 
     def handle(self, packet):
         if packet.startswith(AAP_HANDSHAKE_ACK):
+            if self.answer_timer is not None:
+                GLib.source_remove(self.answer_timer)
+                self.answer_timer = None
             self.send(AAP_SET_FEATURES)
         elif packet.startswith(AAP_FEATURES_ACK):
             self.request_notifications()
@@ -428,6 +443,9 @@ class AapSession:
             self.daemon.store_keys(self.address, keys)
 
     def drop_socket(self):
+        if self.answer_timer is not None:
+            GLib.source_remove(self.answer_timer)
+            self.answer_timer = None
         if self.watch is not None:
             GLib.source_remove(self.watch)
             self.watch = None
