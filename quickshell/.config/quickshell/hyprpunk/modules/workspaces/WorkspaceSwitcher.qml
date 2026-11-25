@@ -56,8 +56,8 @@ Item {
     Light {
         id: light
 
-        // The dot stretched, as thick as the dots.
-        readonly property int thickness: target !== null ? target.dotSize : 0
+        // The dot stretched, as thick as a dot under the pointer.
+        readonly property real thickness: target !== null ? target.dotSize * target.pointedScale : 0
 
         // The button it's on or going to.
         property Item target: null
@@ -115,7 +115,8 @@ Item {
 
         x: leftEdge
         width: rightEdge - leftEdge
-        y: target !== null ? (target.size - thickness) / 2 : 0
+        // On a whole pixel, or its edges blur.
+        y: target !== null ? Math.round((target.size - thickness) / 2) : 0
         z: 1
         height: thickness
         visible: target !== null

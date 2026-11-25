@@ -28,9 +28,12 @@ Item {
     readonly property bool hovered: shown && mouse.containsMouse
     readonly property int size: 32
     // Room for a dot at rest, for the light once you're on it.
-    readonly property int restWidth: 20
-    readonly property int activeWidth: 28
-    readonly property int dotSize: 8
+    readonly property int restWidth: 24
+    readonly property int activeWidth: 36
+    readonly property int dotSize: 10
+    // How much a dot grows under the pointer: the light is that tall, so pointing at a
+    // dot already shows the size it would take.
+    readonly property real pointedScale: 1.5
     // Its place in the row, from none to a dot's, and what being active adds to it. Both
     // take the same time both ways, so one closing as another opens leaves the pill's
     // width alone.
@@ -39,7 +42,7 @@ Item {
     // The shape the light takes on it.
     readonly property real shapeWidth: reveal * restWidth + extra
     // The dot grows under the pointer.
-    property real grow: hovered ? 1.5 : 1
+    property real grow: hovered ? pointedScale : 1
 
     // The dot, cut where the light's edge stands: the part outside stays, the part under
     // it goes out with the light. Neon's glass would show it through.
