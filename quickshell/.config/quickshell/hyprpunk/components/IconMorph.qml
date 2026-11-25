@@ -66,9 +66,11 @@ Item {
         };
     }
     // Where the new icon shows, in the font's square: a band across a direction or around
-    // a point, from where it starts to how far it has gone.
+    // a point, from where it starts to how far it has gone. None between an icon and
+    // itself: go() sets the two ends one after the other, and in between they're the same
+    // (the Wi-Fi off, which has no level to measure).
     readonly property var band: {
-        if (!running || sliding)
+        if (!running || sliding || from === to)
             return null;
 
         const whole = spread(from, to);
