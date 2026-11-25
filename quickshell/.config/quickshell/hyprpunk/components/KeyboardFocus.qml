@@ -114,7 +114,8 @@ Item {
     // with the current one takes the keys, so down from a tile goes to the one under
     // it. Those centred under it are all in line, and the first of them wins: down from a
     // header onto a row of icons lands on the first. Left and right, only the controls
-    // level with the current one count.
+    // level with the current one count. Level means overlapping: entries stacked edge to
+    // edge, like a menu's, would otherwise make one row, and up would skip one.
     function neighbour(dx, dy) {
         const sign = dx + dy;
         const span = (r, horizontal) => {
@@ -122,6 +123,9 @@ Item {
         };
         const gap = (a, b) => {
             return Math.max(0, Math.max(a[0], b[0]) - Math.min(a[1], b[1]));
+        };
+        const overlap = (a, b) => {
+            return Math.min(a[1], b[1]) > Math.max(a[0], b[0]);
         };
         const middle = (s) => {
             return (s[0] + s[1]) / 2;
@@ -137,12 +141,13 @@ Item {
             return {
                 "item": item,
                 "along": along,
+                "across": across,
                 "distance": (middle(along) - fromAlong[sign > 0 ? 1 : 0]) * sign,
                 "gap": gap(across, fromAcross),
                 "offset": gap([middle(across), middle(across)], fromAcross)
             };
         }).filter((entry) => {
-            return entry.distance > 0 && (dx === 0 || entry.gap === 0);
+            return entry.distance > 0 && (dx === 0 || overlap(entry.across, fromAcross));
         });
         if (past.length === 0)
             return null;
@@ -151,7 +156,7 @@ Item {
             return b.distance < a.distance ? b : a;
         });
         return past.filter((entry) => {
-            return gap(entry.along, closest.along) === 0;
+            return overlap(entry.along, closest.along);
         }).reduce((a, b) => {
             return ((b.gap - a.gap) || (b.offset - a.offset)) < 0 ? b : a;
         }).item;
