@@ -193,8 +193,13 @@ RowLayout {
                 size: Metrics.text.emphasis
             }
 
+            // Centred on its digits' ink rather than its line, which sits them half a
+            // pixel high next to the bell.
             Text {
+                id: notificationCount
+
                 anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: implicitHeight / 2 - baselineOffset - digits.tightBoundingRect.y - digits.tightBoundingRect.height / 2
                 text: chips.bar.notificationCount
                 color: ShellState.doNotDisturb ? Colors.secondary : Colors.primary
                 font.family: Metrics.font
@@ -203,6 +208,14 @@ RowLayout {
                 font.features: {
                     "tnum": 1
                 }
+
+                TextMetrics {
+                    id: digits
+
+                    font: notificationCount.font
+                    text: "0123456789"
+                }
+
             }
 
         }
