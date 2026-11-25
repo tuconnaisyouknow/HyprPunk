@@ -661,8 +661,8 @@ WlSessionLockSurface {
                 // (Motion.impact).
                 property real impact: 0
 
-                // Even, like the bar's, so its content lands on the same pixels.
-                width: 2 * Math.round(implicitWidth / 2)
+                // Its view grows two pixels at a time, like the bar's: its content lands on the
+                // same pixels. Its height the same way.
                 height: 2 * Math.round(implicitHeight / 2)
                 x: surface.between(startCenter, surface.width / 2) - width / 2 + shake
                 // Hung from the bar's line, like the bar's island: it grows downwards.

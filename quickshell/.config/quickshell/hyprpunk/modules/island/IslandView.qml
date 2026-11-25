@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import qs.components
 import qs.config
 import qs.services
@@ -8,9 +7,10 @@ import qs.theme
 // What the island shows: one row of parts that open and close in place (IslandPart), the
 // time between the music's cover and equalizer at its round ends, or the padlock in its
 // place while the lock has it, the password's squares in the padlock's place as you type,
-// the time's chips and why a try failed, or an OSD over it as another face (IslandFace). Its size follows its content as it changes, so
-// the island around it needs no animation of its own. The bar's island and the lock's
-// both draw it, so each picks up the island as it is.
+// the time's chips and why a try failed, or an OSD over it as another face (IslandFace).
+// Its size follows its content as it changes, so the island around it needs no animation
+// of its own. The bar's island and the lock's both draw it, so each picks up the island as
+// it is.
 Item {
     id: view
 
@@ -48,17 +48,21 @@ Item {
     // Between two faces.
     readonly property bool swapping: clockFace.moving || osdFace.moving
     // Where the time starts, from the view's left edge.
-    readonly property real timeX: clockFace.x + timePart.x
+    readonly property real timeX: clockFace.x + timePart.placeX
     // Where the cover and the equalizer's slot are, the same way.
-    readonly property real coverX: clockFace.x + coverPart.x
-    readonly property real equalizerX: clockFace.x + equalizerPart.x
+    readonly property real coverX: clockFace.x + coverPart.placeX
+    readonly property real equalizerX: clockFace.x + equalizerPart.placeX
+    // Where the equalizer's bars sit in its slot.
+    readonly property real equalizerInset: equalizerPart.slack
     readonly property bool stopHovered: chips.stopHovered
     // The pointer is on the cover or the equalizer, where a click opens the player.
     readonly property bool musicHovered: coverHover.hovered || equalizerHover.hovered
     readonly property real presence: clockFace.presence + osdFace.presence
 
-    // Each face's size, weighed by how much it's there.
-    implicitWidth: (clockFace.presence * clockFace.islandWidth + osdFace.presence * osdFace.islandWidth) / Math.max(presence, 0.001)
+    // Each face's size, weighed by how much it's there. The width grows two pixels at a
+    // time, the one thing rounded here: centred on the island's middle, a whole pixel, it
+    // stays on whole pixels, and the faces inside follow their exact place.
+    implicitWidth: 2 * Math.round((clockFace.presence * clockFace.islandWidth + osdFace.presence * osdFace.islandWidth) / Math.max(presence, 0.001) / 2)
     implicitHeight: (clockFace.presence * clockFace.islandHeight + osdFace.presence * osdFace.islandHeight) / Math.max(presence, 0.001)
 
     IslandFace {
@@ -77,11 +81,10 @@ Item {
         // time's, the squares in the padlock's. Each parts itself from what's before it by as
         // much as something is open there, so the island stays centred on what's left: the
         // same gap between any two, from what one draws to what the next does.
-        RowLayout {
+        Row {
             id: clockRow
 
             anchors.centerIn: parent
-            spacing: 0
 
             IslandCover {
                 id: coverPart
@@ -109,13 +112,14 @@ Item {
                 // what's drawn: the digits fill their cells unevenly (a 1 leaves far more
                 // room on its right than a 0), and the cover and the equalizer sat unevenly
                 // around it, differently from one minute to the next.
-                openWidth: timeInk.tightBoundingRect.width
+                // Rounded up to an even width, the ink in its middle.
+                openWidth: 2 * Math.ceil(timeInk.tightBoundingRect.width / 2)
                 openHeight: timeLabel.implicitHeight
 
                 RollingText {
                     id: timeLabel
 
-                    x: -timeInk.tightBoundingRect.x
+                    x: (timePart.openWidth - timeInk.tightBoundingRect.width) / 2 - timeInk.tightBoundingRect.x
                     opacity: view.timeLifted ? 0 : 1
                     animated: view.animated
                     text: Session.shortTime(view.date)

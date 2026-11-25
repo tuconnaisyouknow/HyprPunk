@@ -159,7 +159,7 @@ PillPopup {
 
         Equalizer {
             // In its slot, as in the island.
-            x: playerPopup.flyX(playerPopup.island.equalizerX, musicPlayerCard.equalizerCenter.x, playerPopup.slotSize) + Math.round((playerPopup.slotSize - width) / 2)
+            x: playerPopup.flyX(playerPopup.island.equalizerX, musicPlayerCard.equalizerCenter.x, playerPopup.slotSize) + playerPopup.island.equalizerInset
             y: playerPopup.flyY(musicPlayerCard.equalizerCenter.y, playerPopup.slotSize) + Math.round((playerPopup.slotSize - height) / 2)
             scale: playerPopup.zoomY + (1 - playerPopup.zoomY) * playerPopup.flight
             roundness: 1 - playerPopup.flight

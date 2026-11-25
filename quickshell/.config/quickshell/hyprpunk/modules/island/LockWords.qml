@@ -13,7 +13,8 @@ IslandPart {
     property string shownLabel: label
 
     shown: label !== ""
-    openWidth: wordsText.implicitWidth
+    // Even, like every part's place.
+    openWidth: 2 * Math.ceil(wordsText.implicitWidth / 2)
     openHeight: wordsText.implicitHeight
     onLabelChanged: {
         if (label !== "")

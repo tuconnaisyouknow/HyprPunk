@@ -21,11 +21,12 @@ IslandPart {
     openHeight: openWidth
 
     // On a whole pixel in its slot, as it is in the player: centred, its thin bars would
-    // sit across half pixels.
+    // sit across half pixels. An even number of pixels in, so its place, the gap before
+    // the bars included, stays even (IslandPart).
     Equalizer {
         id: bars
 
-        x: Math.round((parent.width - width) / 2)
+        x: 2 * Math.round((parent.width - width) / 4)
         anchors.verticalCenter: parent.verticalCenter
         opacity: part.lifted ? 0 : 1
         playing: Music.playing

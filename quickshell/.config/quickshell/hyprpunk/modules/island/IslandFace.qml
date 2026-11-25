@@ -25,7 +25,10 @@ Item {
     // Coming or going.
     readonly property bool moving: swap.running
 
-    anchors.centerIn: parent
+    // Its exact middle, never rounded: the view's width alone steps by whole pixels, and a
+    // face snapped on its own would step back and forth against it.
+    x: (parent.width - width) / 2
+    anchors.verticalCenter: parent.verticalCenter
     width: contentWidth
     height: contentHeight
     visible: presence > 0

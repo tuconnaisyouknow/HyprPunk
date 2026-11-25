@@ -28,6 +28,7 @@ Pill {
     // Where the music's cover and equalizer are, the same way.
     readonly property real coverX: view.parent.x + view.x + view.coverX
     readonly property real equalizerX: view.parent.x + view.x + view.equalizerX
+    readonly property real equalizerInset: view.equalizerInset
     // Between the time and an OSD.
     readonly property bool swapping: view.swapping
 
@@ -55,9 +56,8 @@ Pill {
     // The view sizes the island, padding included.
     horizontalPadding: 0
     implicitHeight: view.implicitHeight
-    // Grows two pixels at a time, so centring it on the bar and its content in it
-    // never lands on a half pixel and the content stops shaking as it resizes.
-    Layout.preferredWidth: 2 * Math.round(implicitWidth / 2)
+    // The view grows two pixels at a time, so centred on the bar the island never lands
+    // on a half pixel. Its height the same way.
     Layout.preferredHeight: 2 * Math.round(implicitHeight / 2)
 
     Binding {

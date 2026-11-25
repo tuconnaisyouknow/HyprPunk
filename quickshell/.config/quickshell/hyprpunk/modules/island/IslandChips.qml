@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import qs.components
 import qs.theme
 import qs.state
@@ -9,7 +8,7 @@ import qs.services
 // notifications waiting. The bar's island and the lock screen's both use it: the lock
 // starts from the island as it was and keeps the privacy dot and the recording once the
 // time has left with the notifications.
-RowLayout {
+Row {
     id: chips
 
     required property var bar
@@ -30,7 +29,7 @@ RowLayout {
     // Each chip brings its own gap before it, as much as something is open before it: a
     // gap only parts two things, so the island stays centred on whatever is left in it
     // (IslandPart).
-    spacing: 0
+    anchors.verticalCenter: parent.verticalCenter
 
     // Privacy: a dot while something is listening or watching, green for the camera,
     // orange for the microphone alone.
@@ -63,7 +62,8 @@ RowLayout {
         shown: chips.shown && Screenshot.recording
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence)
-        openWidth: recordingRow.implicitWidth + 16
+        // Even, like every part's place.
+        openWidth: 2 * Math.ceil(recordingRow.implicitWidth / 2) + 16
         openHeight: 24
 
         Rectangle {
@@ -164,7 +164,7 @@ RowLayout {
         shown: chips.notificationsShown && chips.bar.notificationCount > 0
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence + recordingChip.presence)
-        openWidth: notificationBadgeRow.implicitWidth + 14
+        openWidth: 2 * Math.ceil(notificationBadgeRow.implicitWidth / 2) + 14
         openHeight: 24
 
         Rectangle {
