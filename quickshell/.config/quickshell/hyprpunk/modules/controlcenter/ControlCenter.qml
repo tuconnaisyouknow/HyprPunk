@@ -7,7 +7,7 @@ import qs.theme
 import qs.windows
 
 // The control center, growing out of the bar's right-most pill. Click the pill or
-// press Super+C; Escape, a click outside or the pill again closes it.
+// press Super+C; Escape, a click outside or Super+C closes it, the pill being under it.
 // The keys move through the controls (KeyboardFocus): Enter or Space clicks the one you're
 // on, Shift+Enter its small second button (a tile's icon, a row's details), Backspace or
 // Escape goes back a page. The main page is a grid the arrows move around; on the other
@@ -184,10 +184,9 @@ Card {
                 gesturePolicy: TapHandler.ReleaseWithinBounds
             }
 
-            // Where the pill sits under the panel: a click there closes it, like on the
-            // pill, and the pointer there keeps the pill lit, folding back too. Under the
-            // pages, so it only gets the clicks no control keeps (their TapHandlers take the
-            // click on press).
+            // Where the pill sits under the panel: the pointer there keeps the pill lit, so
+            // the panel folds back onto it as you'll see it. Open, the panel is all there
+            // is: the pill doesn't answer, and a click there stays in the panel.
             Item {
                 anchors.right: parent.right
                 anchors.rightMargin: panel.startX
@@ -197,18 +196,12 @@ Card {
 
                 HoverHandler {
                     id: spotHover
-
-                    cursorShape: Qt.PointingHandCursor
                 }
 
                 Binding {
                     target: controlCenter.bar
                     property: "controlSpotHovered"
                     value: spotHover.hovered
-                }
-
-                TapHandler {
-                    onTapped: controlCenter.close()
                 }
 
                 PillContent {

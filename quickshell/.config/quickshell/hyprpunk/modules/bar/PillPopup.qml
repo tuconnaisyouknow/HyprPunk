@@ -6,7 +6,8 @@ import qs.windows
 
 // A card that grows out of one of the bar's pills: the workspace preview, the system
 // monitor, the calendar and the player. A click on the pill or its shortcut opens it,
-// and it stays until Escape or Backspace, a click outside, the shortcut or the pill again.
+// and it stays until Escape or Backspace, a click outside or the shortcut: the pill is
+// under it, out of reach.
 // The workspace preview also opens on hover, for a glance: resting on the pill a moment
 // opens it, and leaving both the pill and the card folds it back.
 // Its content is laid out at full size, uncovered as the card grows, and fades in as the
@@ -370,10 +371,10 @@ Card {
             width: parent.width - (popup.align === Qt.AlignHCenter ? 2 : 1) * popup.startX
             height: parent.height - popup.startY
 
-            // Where the pill sits under the card: a click there still keeps a preview
-            // open, or closes the card once kept, and the pointer there keeps the pill lit.
-            // Under the content, so it only gets the clicks no control keeps (their
-            // TapHandlers take the click on press).
+            // Where the pill sits under the card: the pointer there keeps the pill lit, and
+            // a click keeps a preview open or catches the card folding back. Kept open, the
+            // card is all there is: the pill doesn't answer. Under the content, so it only
+            // gets the clicks no control keeps (their TapHandlers take the click on press).
             Item {
                 x: popup.align === Qt.AlignRight ? parent.width - width : popup.align === Qt.AlignHCenter ? Math.round((parent.width - width) / 2) : 0
                 width: popup.pill.width
@@ -382,7 +383,7 @@ Card {
                 HoverHandler {
                     id: spotHover
 
-                    cursorShape: Qt.PointingHandCursor
+                    cursorShape: popup.pinned ? Qt.ArrowCursor : Qt.PointingHandCursor
                 }
 
                 Binding {
@@ -392,6 +393,7 @@ Card {
                 }
 
                 TapHandler {
+                    enabled: !popup.pinned
                     onTapped: popup.togglePinned()
                 }
 
