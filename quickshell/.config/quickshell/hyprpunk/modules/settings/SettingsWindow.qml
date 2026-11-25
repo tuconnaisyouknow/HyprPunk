@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import qs.components
 import qs.services
 import qs.state
@@ -11,7 +12,7 @@ import qs.theme
 // closes it when it's the window you're on, and brings it to you from anywhere else.
 // The keys move through the controls (KeyboardFocus), Escape closes it.
 // The window only exists while it's open: one closed by Hyprland (Super+Q) can't be
-// shown again, so every way of closing it unloads it, and opening builds a new one.
+// shown again, so every way of closing it unloads it, and opening builds one if there's none.
 Scope {
     id: settings
 
@@ -102,22 +103,27 @@ Scope {
         "icon": "update",
         "label": "Updates"
     }]
+    // How Hyprland knows the window (rules.lua floats it).
+    readonly property string windowTitle: "HyprPunk Settings"
     // Kept between openings.
     property string section: "displays"
     readonly property var current: sections.find((item) => {
         return item.name === section;
     })
 
-    // Built again rather than raised: a new window opens where you are.
+    // An open window moves to the workspace you're on and takes the focus, rather than
+    // being built again: rebuilding it would close and reopen it under your eyes.
     function open() {
-        if (loader.active) {
-            loader.active = false;
-            Qt.callLater(() => {
-                return loader.active = true;
-            });
-        } else {
+        if (!loader.active) {
             loader.active = true;
+            return ;
         }
+        const selector = JSON.stringify("title:^" + windowTitle + "$");
+        const workspace = Hyprland.focusedMonitor?.activeWorkspace?.id;
+        if (workspace !== undefined)
+            Hyprland.dispatch("hl.dsp.window.move({ workspace = " + workspace + ", window = " + selector + ", follow = false })");
+
+        Hyprland.dispatch("hl.dsp.focus({ window = " + selector + " })");
     }
 
     function close() {
@@ -168,7 +174,7 @@ Scope {
                 event.accepted = true;
             }
 
-            title: "HyprPunk Settings"
+            title: settings.windowTitle
             implicitWidth: 1080
             implicitHeight: 840
             color: Colors.base
