@@ -48,6 +48,12 @@ Item {
     function clickedOutside() {
     }
 
+    // Given the keyboard back once a card it was lent to closes (a file chooser opened
+    // from it): to where its keys were.
+    function takeKeyboard() {
+        forceActiveFocus();
+    }
+
     function close() {
     }
 

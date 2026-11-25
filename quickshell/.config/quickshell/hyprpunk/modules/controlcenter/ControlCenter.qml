@@ -71,6 +71,11 @@ Card {
         close();
     }
 
+    // Back on the control you were on, or the panel if you'd only clicked.
+    function takeKeyboard() {
+        keyboardFocus.settle();
+    }
+
     // Its shortcut, through its screen's state.
     function requestAction(action) {
         if (action === "open" || action === "toggle" && !opened)

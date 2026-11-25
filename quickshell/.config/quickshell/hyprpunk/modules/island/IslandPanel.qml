@@ -113,6 +113,10 @@ Card {
         card.forceActiveFocus();
     }
 
+    function takeKeyboard() {
+        focusCard();
+    }
+
     // Given the island, or no longer: the panel sets itself up before the card grows,
     // and may hand the keyboard on to a field of its own then.
     onOwnsChanged: {

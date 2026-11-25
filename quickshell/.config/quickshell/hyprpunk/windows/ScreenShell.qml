@@ -394,6 +394,12 @@ Scope {
                     window.makeRoom(modelData);
                 }
 
+                function onTakesKeyboardChanged() {
+                    if (!modelData.takesKeyboard)
+                        Qt.callLater(window.settleKeyboard);
+
+                }
+
                 target: modelData
             }
 
@@ -457,6 +463,27 @@ Scope {
                     card.clickedOutside();
 
             }
+        }
+
+        // The keys always land in a card that takes them: one that closes with them (a
+        // file chooser opened from the control center) hands them back to one still open.
+        // Once the card that's opening, if any, has taken them first.
+        function settleKeyboard() {
+            const holders = cards.filter((card) => {
+                return card.takesKeyboard;
+            });
+            const item = bar.Window.activeFocusItem;
+            const held = item !== null && holders.some((card) => {
+                for (let parent = item; parent !== null; parent = parent.parent) {
+                    if (parent === card)
+                        return true;
+
+                }
+                return false;
+            });
+            if (!held && holders.length > 0)
+                holders[0].takeKeyboard();
+
         }
 
     }

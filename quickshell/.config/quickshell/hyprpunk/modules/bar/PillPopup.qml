@@ -168,6 +168,10 @@ Card {
         close();
     }
 
+    function takeKeyboard() {
+        keys.forceActiveFocus();
+    }
+
     // Hangs from the pill, kept on the screen. From where the pill rests in its row: its
     // zoom under the pointer is only drawn, and would leave the card off once it settles.
     function followPill() {
