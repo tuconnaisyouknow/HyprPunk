@@ -128,7 +128,7 @@ ControlPage {
             ControlTile {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                icon: "lightbulb"
+                icon: "nightlight"
                 title: "Night light"
                 subtitle: page.nightLightSubtitle()
                 active: NightLight.active

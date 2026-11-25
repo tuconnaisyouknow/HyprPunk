@@ -159,7 +159,7 @@ IslandPanel {
             spacing: Metrics.spacing.normal
 
             Icon {
-                text: "screenshot_monitor"
+                text: "screen_share"
                 color: Colors.primary
                 size: Metrics.text.emphasis
             }
@@ -354,7 +354,7 @@ IslandPanel {
 
             // The app can share the same thing again next time without asking.
             GlassButton {
-                icon: "settings_backup_restore"
+                icon: "history"
                 label: "Remember"
                 active: picker.remember
                 onClicked: picker.remember = !picker.remember

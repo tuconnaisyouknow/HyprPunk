@@ -25,7 +25,7 @@ ControlPage {
         "label": "Input"
     }, {
         "value": "apps",
-        "icon": "music_note",
+        "icon": "apps",
         "label": "Apps"
     }, {
         "value": "devices",
@@ -250,7 +250,7 @@ ControlPage {
                 Icon {
                     anchors.centerIn: parent
                     visible: !appIcon.visible
-                    text: "music_note"
+                    text: "apps"
                     color: Colors.primary
                     size: Metrics.text.title
                 }

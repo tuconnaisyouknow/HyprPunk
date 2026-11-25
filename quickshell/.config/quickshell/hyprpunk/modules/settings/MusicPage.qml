@@ -95,7 +95,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "music_note"
+        icon: "equalizer"
         title: "Equalizer"
         description: "The bars at the island's end, dancing while the music plays. Moving, they keep the screen redrawing, which costs a laptop's battery and smoothness. Off, they stand still."
         checkable: true
@@ -105,7 +105,7 @@ SettingsPage {
 
     SettingRow {
         Layout.fillWidth: true
-        icon: "equalizer"
+        icon: "waves"
         title: "Wave"
         description: "The wave at the bottom of the desktop and the lock screen, moving with the music. Like the equalizer, it keeps the screen redrawing."
         checkable: true

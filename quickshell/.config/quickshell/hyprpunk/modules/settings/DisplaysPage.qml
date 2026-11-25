@@ -579,7 +579,7 @@ SettingsPage {
     SettingRow {
         Layout.fillWidth: true
         visible: page.selected !== null
-        icon: "screenshot_monitor"
+        icon: "aspect_ratio"
         title: "Resolution"
         description: page.selected ? page.selected.description : ""
 
@@ -710,7 +710,7 @@ SettingsPage {
 
             ActionRow {
                 Layout.fillWidth: true
-                icon: "refresh"
+                icon: "settings_backup_restore"
                 label: "Reset every screen's settings"
                 destructive: true
                 onTriggered: Displays.apply(["reset"], false)

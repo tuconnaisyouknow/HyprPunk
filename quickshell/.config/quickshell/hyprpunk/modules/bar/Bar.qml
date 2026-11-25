@@ -272,7 +272,7 @@ Item {
                     onClicked: Updates.upgrade()
 
                     IconText {
-                        icon: "cloud_download"
+                        icon: "package_2"
 
                         // Keeps the last count while the pill flies away.
                         Binding on text {

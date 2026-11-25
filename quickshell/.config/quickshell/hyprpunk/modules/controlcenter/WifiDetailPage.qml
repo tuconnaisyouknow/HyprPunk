@@ -82,7 +82,7 @@ ControlPage {
 
     ActionRow {
         Layout.fillWidth: true
-        icon: page.network !== null && page.network.connected ? "wifi_off" : "signal_wifi_4_bar"
+        icon: page.network !== null && page.network.connected ? "signal_wifi_off" : "signal_wifi_4_bar"
         label: page.network !== null && page.network.connected ? "Disconnect" : "Connect"
         onTriggered: {
             if (page.network.connected)
