@@ -58,11 +58,11 @@ SettingsPage {
                 RowLayout {
                     id: app
 
-                    // Its desktop entry, or the name it sends (NotificationSettings).
+                    // Its desktop entry's id (NotificationSettings).
                     required property string modelData
                     readonly property bool muted: NotificationSettings.muted(modelData)
-                    // Its icon and proper name.
-                    readonly property var entry: DesktopEntries.byId(modelData) ?? DesktopEntries.heuristicLookup(modelData)
+                    // Its icon and proper name, unless it was uninstalled since.
+                    readonly property var entry: DesktopEntries.byId(modelData)
                     readonly property string iconPath: entry !== null ? Quickshell.iconPath(entry.icon, true) : ""
 
                     width: parent.width

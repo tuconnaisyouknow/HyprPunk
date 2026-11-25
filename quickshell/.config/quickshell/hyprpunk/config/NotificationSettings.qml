@@ -6,8 +6,9 @@ import Quickshell
 // How notifications behave, saved by notificationctl.sh: how long they stay when an
 // app doesn't say, and which apps pop up out of the island. Every app that has sent one
 // is listed, so you can mute it; a muted app's notifications go straight to the center.
-// An app goes by its desktop entry when the notification names one, which stays the
-// same whatever name it sends (a browser's profile in it), or by that name otherwise.
+// An app is the installed app it comes from, by its desktop entry's id: the same one
+// whatever name it sends (Discord or discord, a browser's profile). What isn't an app
+// (notify-send from a script or a terminal) has none, so it's never listed nor muted.
 Singleton {
     id: notificationSettings
 
@@ -19,7 +20,14 @@ Singleton {
     property var mutedApps: []
 
     function identity(notification) {
-        return notification.desktopEntry || notification.appName;
+        const entry = lookup(notification.desktopEntry) ?? lookup(notification.appName);
+        return entry?.id ?? "";
+    }
+
+    // By its id, whatever its case. Not heuristicLookup: it guesses, and would take
+    // notify-send for some other app.
+    function lookup(name) {
+        return name === "" ? null : DesktopEntries.byId(name) ?? DesktopEntries.byId(name.toLowerCase());
     }
 
     function muted(app) {
