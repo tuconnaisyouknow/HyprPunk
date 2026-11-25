@@ -163,6 +163,7 @@ RowLayout {
         visible: Audio.sink !== null
         icon: Icons.volume(Audio.volume, Audio.muted)
         text: Audio.volume + "%"
+        counts: true
     }
 
     IconText {
@@ -173,6 +174,7 @@ RowLayout {
         color: Battery.onBattery && Battery.percent <= BatterySettings.low ? Colors.red : Colors.primary
         icon: Icons.battery(Battery.device.percentage, Battery.onBattery)
         text: Battery.percent + "%"
+        counts: true
 
         // Pulses once it's critical.
         SequentialAnimation on opacity {

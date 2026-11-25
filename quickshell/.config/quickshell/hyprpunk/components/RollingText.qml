@@ -3,7 +3,8 @@ import qs.theme
 
 // Text whose characters roll like a counter's: one that changes leaves upward as the next
 // rises from below in its place, the rightmost first and each one to its left a moment
-// later, like a carry. The time is written with it everywhere; it takes Label's look.
+// later, like a carry. The time is written with it everywhere, and the counts that move
+// a step at a time (the battery, the volume); it takes Label's look.
 Item {
     id: rolling
 
@@ -16,10 +17,17 @@ Item {
     property int wait: 0
     // Its first text is there from the start: only a change rolls.
     property bool settled: false
+    // A number that goes down as well as up: it rolls the other way when it drops. The time
+    // only moves on, even past midnight, so it always rises.
+    property bool bothWays: false
 
     // Brings each cell to its new character, counted from the right: a longer text grows
     // on the left, and a cell left empty folds to nothing.
     function update() {
+        let written = "";
+        for (let k = 0; k < cells.count; k++)
+            written = (repeater.itemAt(k)?.glyph ?? "") + written;
+        const way = bothWays && parseFloat(text) < parseFloat(written) ? -1 : 1;
         while (cells.count < text.length)
             cells.append({});
         let rank = 0;
@@ -28,7 +36,7 @@ Item {
             const at = text.length - 1 - k;
             const glyph = at >= 0 ? text[at] : "";
             if (cell !== null && cell.glyph !== glyph)
-                cell.roll(glyph, settled && animated ? wait + rank++ * Motion.stagger : -1);
+                cell.roll(glyph, settled && animated ? wait + rank++ * Motion.stagger : -1, way);
 
         }
     }
@@ -89,14 +97,17 @@ Item {
                 property string previous
                 // 0 with the old character in place, 1 with the new one.
                 property real progress: 1
+                // 1 when the new one rises from below, -1 when it falls from above.
+                property int way: 1
 
                 // What's showing leaves: the old character if the roll hasn't started yet,
                 // the one on its way otherwise.
-                function roll(next, after) {
+                function roll(next, after, way) {
                     if (progress > 0)
                         previous = glyph;
 
                     glyph = next;
+                    cell.way = way;
                     turn.stop();
                     if (after < 0) {
                         progress = 1;
@@ -127,7 +138,7 @@ Item {
                     Text {
                         id: was
 
-                        y: -window.y - window.height * cell.progress
+                        y: -window.y - window.height * cell.progress * cell.way
                         visible: cell.progress < 1
                         text: cell.previous
                         font: rolling.font
@@ -137,7 +148,7 @@ Item {
                     Text {
                         id: now
 
-                        y: -window.y + window.height * (1 - cell.progress)
+                        y: -window.y + window.height * (1 - cell.progress) * cell.way
                         text: cell.glyph
                         font: rolling.font
                         color: rolling.color

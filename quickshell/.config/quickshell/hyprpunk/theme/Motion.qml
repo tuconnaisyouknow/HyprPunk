@@ -171,8 +171,9 @@ Singleton {
         })
     }
 
-    // A character of the time turning to the next (RollingText): the new one rises from
-    // below and lands a touch past its place.
+    // A character of the time or a count turning to the next (RollingText): the new one
+    // comes in from below, or from above for a count that drops, and lands a touch past
+    // its place.
     readonly property var roll: ({
         "duration": 450,
         "easing": Easing.OutBack,
