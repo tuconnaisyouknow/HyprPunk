@@ -20,7 +20,8 @@ IslandPart {
     property int shownCount: 0
 
     shown: count > 0 || checking
-    openWidth: Math.max(1, Math.min(shownCount, most)) * (side + spacing) - spacing
+    // Even, like every part's place: an odd count leaves a pixel after the last square.
+    openWidth: 2 * Math.ceil((Math.max(1, Math.min(shownCount, most)) * (side + spacing) - spacing) / 2)
     openHeight: side
     onCountChanged: {
         if (count > 0)

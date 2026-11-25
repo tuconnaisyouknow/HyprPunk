@@ -355,79 +355,96 @@ Rectangle {
 
             property real shake: 0
 
-            // Even, so its content lands on whole pixels around the middle, and never
-            // narrower than tall: around the padlock alone, a circle.
-            width: Math.max(2 * Math.round(implicitWidth / 2), height)
+            // Never narrower than tall: around the padlock alone, a circle.
+            width: Math.max(implicitWidth, height)
             x: (bar.width - width) / 2 + shake
             lift: Motion.drop.height
             backdrop: barBlur
             spacing: 0
 
-            // Each part opens in the place of the one before it closes, and parts itself
-            // from it by as much as it's still there.
-            IslandPart {
-                id: padlockPart
+            // Grows two pixels at a time, the one thing rounded in the island: centred on
+            // the screen, its content lands on whole pixels, and the parts follow their
+            // exact place inside, so they glide instead of stepping back and forth.
+            Item {
+                implicitWidth: 2 * Math.round(islandRow.implicitWidth / 2)
+                implicitHeight: islandRow.implicitHeight
 
-                shown: input.text === "" && !root.checking
-                openWidth: 2 * Math.round(padlock.implicitWidth / 2)
-                openHeight: padlock.implicitHeight
+                // Each part opens in the place of the one before it closes, and parts itself
+                // from it by as much as it's still there.
+                Row {
+                    id: islandRow
 
-                Icon {
-                    id: padlock
+                    x: (parent.width - width) / 2
+                    anchors.verticalCenter: parent.verticalCenter
 
-                    x: Math.round((parent.width - implicitWidth) / 2)
-                    text: "lock"
-                }
+                    IslandPart {
+                        id: padlockPart
 
-            }
+                        shown: input.text === "" && !root.checking
+                        openWidth: 2 * Math.round(padlock.implicitWidth / 2)
+                        openHeight: padlock.implicitHeight
 
-            PasswordSquares {
-                id: squaresPart
+                        Icon {
+                            id: padlock
 
-                gap: Metrics.spacing.normal * padlockPart.presence
-                count: input.text.length
-                checking: root.checking
-                alert: root.error !== "" && input.text === ""
-            }
-
-            // Why the try failed, in the machine's capitals: decoded once the shake is
-            // over, and kept while its place closes.
-            IslandPart {
-                id: words
-
-                property string label: ""
-
-                gap: Metrics.spacing.normal * Math.min(1, padlockPart.presence + squaresPart.presence)
-                shown: root.error !== ""
-                openWidth: wordsText.implicitWidth
-                openHeight: wordsText.implicitHeight
-
-                Connections {
-                    function onErrorChanged() {
-                        if (root.error !== "")
-                            words.label = root.error;
+                            x: Math.round((parent.width - implicitWidth) / 2)
+                            text: "lock"
+                        }
 
                     }
 
-                    target: root
-                }
+                    PasswordSquares {
+                        id: squaresPart
 
-                Text {
-                    id: wordsText
+                        gap: Metrics.spacing.normal * padlockPart.presence
+                        count: input.text.length
+                        checking: root.checking
+                        alert: root.error !== "" && input.text === ""
+                    }
 
-                    text: words.label
-                    color: decode.running ? "transparent" : Colors.red
-                    font.family: Metrics.font
-                    font.pixelSize: Metrics.text.body
-                    font.weight: Font.Bold
-                    font.capitalization: Font.AllUppercase
-                    font.letterSpacing: 1
+                    // Why the try failed, in the machine's capitals: decoded once the shake is
+                    // over, and kept while its place closes.
+                    IslandPart {
+                        id: words
 
-                    Decode {
-                        id: decode
+                        property string label: ""
 
-                        color: Colors.red
-                        wait: Motion.shake.duration
+                        gap: Metrics.spacing.normal * Math.min(1, padlockPart.presence + squaresPart.presence)
+                        shown: root.error !== ""
+                        // Even, like every part's place.
+                        openWidth: 2 * Math.ceil(wordsText.implicitWidth / 2)
+                        openHeight: wordsText.implicitHeight
+
+                        Connections {
+                            function onErrorChanged() {
+                                if (root.error !== "")
+                                    words.label = root.error;
+
+                            }
+
+                            target: root
+                        }
+
+                        Text {
+                            id: wordsText
+
+                            text: words.label
+                            color: decode.running ? "transparent" : Colors.red
+                            font.family: Metrics.font
+                            font.pixelSize: Metrics.text.body
+                            font.weight: Font.Bold
+                            font.capitalization: Font.AllUppercase
+                            font.letterSpacing: 1
+
+                            Decode {
+                                id: decode
+
+                                color: Colors.red
+                                wait: Motion.shake.duration
+                            }
+
+                        }
+
                     }
 
                 }

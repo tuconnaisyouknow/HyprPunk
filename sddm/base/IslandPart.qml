@@ -1,10 +1,13 @@
 import QtQuick
-import QtQuick.Layouts
 
-// A part of the island that comes and goes beside the others, as in the shell's: the
-// padlock, the password's squares, why a try failed. Its place in the row opens and closes,
-// and the part grows out of its own middle at the same rate, so it always fills that place
-// whole: it shrinks into itself as it goes, never cut by an edge.
+// A part of the island that comes and goes beside the others in a Row, as in the shell's:
+// the padlock, the password's squares, why a try failed. Its place, its gap included,
+// opens and closes, and the part grows out of that place's middle at the same rate, so it
+// always fills it whole: it shrinks into itself as it goes, never cut by an edge.
+// Nothing in here is rounded: the island alone sits on whole pixels, and the part follows
+// its exact place, so it glides as the island resizes instead of stepping a pixel back and
+// forth. Its place at rest is a whole, even number of pixels, so it lands on whole pixels
+// by itself.
 Item {
     id: part
 
@@ -18,14 +21,14 @@ Item {
     default property alias content: face.data
 
     visible: presence > 0
-    Layout.preferredWidth: presence * openWidth
-    Layout.leftMargin: presence * gap
-    implicitHeight: openHeight
+    width: presence * (gap + openWidth)
+    height: openHeight
+    anchors.verticalCenter: parent ? parent.verticalCenter : undefined
 
     Item {
         id: face
 
-        anchors.centerIn: parent
+        x: part.presence * part.gap + (part.presence - 1) * part.openWidth / 2
         width: part.openWidth
         height: part.openHeight
         scale: part.presence
