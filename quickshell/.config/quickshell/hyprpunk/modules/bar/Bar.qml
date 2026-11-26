@@ -194,13 +194,14 @@ Item {
         anchors.leftMargin: Metrics.barMargin
         anchors.rightMargin: Metrics.barMargin
 
-        RowLayout {
+        // Each pill brings its own gap (DropInSlot), and nothing is rounded: a pill making
+        // room for another glides rather than stepping a pixel at a time.
+        Row {
             id: leftGroup
 
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.topMargin: Metrics.barTop
-            spacing: Metrics.spacing.normal
 
             DropInSlot {
                 shown: bar.keeps("workspaces")
@@ -279,17 +280,17 @@ Item {
 
         }
 
-        RowLayout {
+        Row {
             id: rightGroup
 
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.topMargin: Metrics.barTop
-            spacing: Metrics.spacing.normal
 
             // Package updates waiting: a click runs them in your terminal.
             DropInSlot {
                 shown: Updates.count > 0 && bar.keeps("updates")
+                gapAfter: false
 
                 Pill {
                     clickable: true
@@ -316,6 +317,7 @@ Item {
                 id: controlSlot
 
                 shown: bar.keeps("control")
+                gapAfter: false
 
                 ControlPill {
                     id: control
