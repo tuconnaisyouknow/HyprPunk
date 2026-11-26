@@ -403,7 +403,11 @@ Item {
         IslandChips {
             id: chips
 
-            readonly property real restX: clockRow.x + chipsPlace.x
+            // Their place in the row, as if the time kept its size: the time's block widens
+            // as the island opens, and riding its edge they went the wrong way first and,
+            // closing, past their place. The island stays centred, so the edge moves half as
+            // far as the block widens.
+            readonly property real restX: clockRow.x + chipsPlace.x - timePart.presence * (timePart.openWidth - view.timeWidth) / 2
             readonly property real restY: clockRow.y + (clockRow.height - height) / 2
             readonly property real openX: clockRow.x + (clockRow.width - width) / 2
             readonly property real openY: clockRow.y + timePart.y + timeLabel.implicitHeight * view.timeScale + dateLabel.implicitHeight + Metrics.spacing.small
