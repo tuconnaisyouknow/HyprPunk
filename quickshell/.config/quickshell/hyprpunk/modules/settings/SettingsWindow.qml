@@ -182,7 +182,8 @@ Scope {
 
             title: settings.windowTitle
             implicitWidth: 1080
-            implicitHeight: 840
+            // Tall enough for every section in the sidebar, which has no scroll of its own.
+            implicitHeight: Math.max(840, sidebar.implicitHeight + 2 * Metrics.spacing.section)
             color: Colors.base
             onClosed: settings.close()
 
