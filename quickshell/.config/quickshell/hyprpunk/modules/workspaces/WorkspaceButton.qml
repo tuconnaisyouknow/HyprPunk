@@ -28,7 +28,7 @@ Item {
     readonly property bool occupied: workspace !== null && workspace.toplevels.values.length > 0
     // A window there asks for you.
     readonly property bool urgent: workspace !== null && workspace.urgent && !active
-    readonly property bool hovered: shown && mouse.containsMouse
+    readonly property bool hovered: shown && hover.hovered
     readonly property int size: compact ? 24 : 32
     // Room for a dot at rest, for the light once you're on it.
     readonly property int restWidth: compact ? 14 : 24
@@ -145,15 +145,21 @@ Item {
 
     }
 
-    // The gap after it is its own too, so the row has no dead spot.
-    MouseArea {
-        id: mouse
 
-        anchors.fill: parent
+    // The gap after it is its own too, so the row has no dead spot: the button is all of
+    // its room. Handlers rather than a MouseArea, like the island's blocks: inside the
+    // island, a MouseArea saw the pointer but never got the press.
+    HoverHandler {
+        id: hover
+
         enabled: button.shown && button.interactive
-        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: button.activated()
+    }
+
+    TapHandler {
+        enabled: button.shown && button.interactive
+        gesturePolicy: TapHandler.ReleaseWithinBounds
+        onTapped: button.activated()
     }
 
     Behavior on reveal {
