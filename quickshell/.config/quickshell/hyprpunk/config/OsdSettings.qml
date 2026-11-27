@@ -4,7 +4,7 @@ import QtQuick
 import Quickshell
 
 // What the island tells you as it happens, saved by osdctl.sh: which changes show
-// (Bar.qml asks shows() before each), and how long they stay. The battery's warnings
+// (Osd and the island ask shows() before each), and how long they stay. The battery's warnings
 // always show.
 Singleton {
     // How much longer or shorter than usual each one stays.
@@ -14,7 +14,8 @@ Singleton {
     })[file.values.duration] || 1
     readonly property string duration: file.values.duration || "normal"
 
-    // "volume", "microphone", "brightness", "keys", "power", "airpods" or "screenshots".
+    // "volume", "microphone", "brightness", "keys", "power", "airpods", "screenshots" or
+    // "workspaces".
     function shows(change) {
         return file.values[change] !== "false";
     }

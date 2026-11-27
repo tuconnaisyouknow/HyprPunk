@@ -3,44 +3,59 @@ import Quickshell.Hyprland
 import qs.components
 import qs.theme
 
-// The workspace buttons, in the bar's pill or smaller in the open island (IslandView):
-// a dot for each workspace from 1 to the last one in use here, all but the ones another
-// screen holds, so a dot's place says which workspace it is. One light shows the one
+// The workspace buttons, in the bar's pill or smaller in the island (IslandView):
+// a dot for each workspace from 1 to the last one in use here, five at least, all but the
+// ones another screen holds, so a dot's place says which workspace it is. One light shows the one
 // you're on. It's the only thing that travels: it stretches to the next workspace over
 // the dots, while each button only opens or closes its own place. The button under the
-// pointer is passed on to the preview card.
+// pointer is passed on to the preview card, empty or not.
 Item {
     id: workspaceSwitcher
 
     required property var screen
-    // Smaller, in the open island over the wallpaper, and taking the pointer there only
-    // while it's open.
+    // Smaller, in the island, and taking the pointer there only while it's open.
     property bool compact: false
     property bool interactive: true
     // As wide as with all ten workspaces in use: the island keeps one size however many
     // you use.
     readonly property real fullWidth: buttons.count > 0 ? 9 * buttons.itemAt(0).restWidth + buttons.itemAt(0).activeWidth + 10 * Metrics.spacing.hairline - Metrics.spacing.hairline : 0
-    // The workspace under the pointer, null when there is none.
-    readonly property var hoveredWorkspace: hoveredButton !== null ? hoveredButton.workspace : null
+    // The workspace under the pointer, by id, 0 when there is none.
+    readonly property int hoveredId: hoveredButton !== null ? hoveredButton.workspaceId : 0
     property Item hoveredButton: null
     readonly property var hyprlandMonitor: Hyprland.monitorFor(screen)
     readonly property var workspaces: Hyprland.workspaces.values.filter((workspace) => {
         return workspace.id > 0 && workspace.id <= 10 && workspace.monitor === workspaceSwitcher.hyprlandMonitor && (workspace.active || workspace.toplevels.values.length > 0);
     })
-    // The row ends there, on the workspace you're on if it's further.
+    // The row ends there, on the workspace you're on if it's further, and never before
+    // the fifth: you always have empty ones to go to.
     readonly property int last: workspaces.reduce((highest, workspace) => {
         return Math.max(highest, workspace.id);
-    }, 0)
+    }, 5)
     // The workspaces other screens hold, by id: their dots make way.
     readonly property var elsewhere: Hyprland.workspaces.values.filter((workspace) => {
         return workspace.id > 0 && workspace.id <= 10 && workspace.monitor !== workspaceSwitcher.hyprlandMonitor;
     }).map((workspace) => {
         return workspace.id;
     })
+    // The workspaces with a dot here, by id, in order.
+    readonly property var shownIds: {
+        const ids = [];
+        for (let id = 1; id <= last; id++) {
+            if (!elsewhere.includes(id))
+                ids.push(id);
+
+        }
+        return ids;
+    }
     // The one you're on, null while you're on another screen.
     readonly property var focusedWorkspace: workspaces.find((workspace) => {
         return workspace.focused;
     }) || null
+    // The last one you were on here: coming back from another screen to it isn't a switch.
+    property var lastFocused: null
+
+    // You went from one of this screen's workspaces to another (the island shows its dots).
+    signal switched()
 
     function followFocus() {
         if (focusedWorkspace !== null)
@@ -51,7 +66,16 @@ Item {
     // The last gap is nobody's.
     implicitWidth: workspaceRow.implicitWidth - Metrics.spacing.hairline
     implicitHeight: workspaceRow.implicitHeight
-    onFocusedWorkspaceChanged: followFocus()
+    onFocusedWorkspaceChanged: {
+        followFocus();
+        if (focusedWorkspace === null)
+            return ;
+
+        if (lastFocused !== null && focusedWorkspace !== lastFocused)
+            switched();
+
+        lastFocused = focusedWorkspace;
+    }
     Component.onCompleted: followFocus()
 
     // It rests on the button of the workspace you're on, and goes out where it stands
@@ -175,7 +199,7 @@ Item {
                 workspace: workspaceSwitcher.workspaces.find((workspace) => {
                     return workspace.id === workspaceId;
                 }) || null
-                shown: workspaceId <= workspaceSwitcher.last && !workspaceSwitcher.elsewhere.includes(workspaceId)
+                shown: workspaceSwitcher.shownIds.includes(workspaceId)
                 gap: Metrics.spacing.hairline
                 compact: workspaceSwitcher.compact
                 interactive: workspaceSwitcher.interactive

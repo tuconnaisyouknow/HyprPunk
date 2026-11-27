@@ -12,7 +12,8 @@ SettingsPage {
     title: "Island"
     description: "What the island shows you as it happens. Notifications have their own page."
 
-    // Each change the island can show, as osdctl.sh names it.
+    // Each change the island can show, as osdctl.sh names it. The workspaces only while
+    // the island is alone in the bar: otherwise their pill shows them.
     readonly property var changes: [{
         "name": "volume",
         "icon": "volume_up",
@@ -48,6 +49,12 @@ SettingsPage {
         "icon": "screenshot_monitor",
         "title": "Screenshots and recordings",
         "description": "A preview of what you just took, to open it."
+    }, {
+        "name": "workspaces",
+        "icon": "view_week",
+        "title": "Workspaces",
+        "description": "The app and number of the one you go to.",
+        "islandOnly": true
     }]
 
     SettingRow {
@@ -85,6 +92,7 @@ SettingsPage {
         SettingRow {
             required property var modelData
 
+            visible: !modelData.islandOnly || BarSettings.island
             Layout.fillWidth: true
             icon: modelData.icon
             title: modelData.title

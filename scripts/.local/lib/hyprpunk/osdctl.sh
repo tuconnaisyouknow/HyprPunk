@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Saves what the island tells you as it happens (the OSD): which changes show, and how
 # long they stay. The battery's warnings always show. The shell watches the file
-# (Bar.qml); its settings window and `hyprpunk osd` come here.
+# (OsdSettings.qml); its settings window and `hyprpunk osd` come here.
 #   osdctl.sh get                              every setting, as key=value
 #   osdctl.sh set <change> <true|false>        volume, microphone, brightness, keys,
-#                                              power, airpods or screenshots
+#                                              power, airpods, screenshots or workspaces
 #   osdctl.sh set duration <short|normal|long>
 #   osdctl.sh ensure                           fills in what's missing (install.sh)
 set -euo pipefail
@@ -23,9 +23,10 @@ declare -A DEFAULTS=(
   [power]=true
   [airpods]=true
   [screenshots]=true
+  [workspaces]=true
   [duration]=normal
 )
-KEYS=(volume microphone brightness keys power airpods screenshots duration)
+KEYS=(volume microphone brightness keys power airpods screenshots workspaces duration)
 
 valid() {
   case "$1" in

@@ -15,6 +15,8 @@ import qs.theme
 // control center's icons and the machine's load, whose blocks take the clicks then: the
 // time opens the calendar, the wallpaper its picker, the load the system monitor, the
 // icons the control center. The music's ends make way: its shortcut opens the player.
+// As you go from one workspace to another, it opens at both ends for a moment onto the
+// workspace's app and number.
 Pill {
     id: clockPill
 
@@ -51,6 +53,10 @@ Pill {
     readonly property bool open: clockPill.bar.islandOnly && !clockPill.bar.lockShown && (pointed || held)
     // The control center's icons in it, which the control center carries out.
     readonly property Item controlStatus: view.controlStatus
+    // The workspace you went to at its ends for a moment: alone in the bar, nothing else
+    // shows it. Not over an OSD or under a card, which have the island, and gone once it
+    // opens, where your workspaces are on its side.
+    property bool peeking: false
 
     // Hidden under the lock, which has it, and covered by its relay as the lock goes
     // (Lock.islandAway).
@@ -109,6 +115,14 @@ Pill {
         target: clockPill.bar.islandFrame
     }
 
+    // Going on from one workspace to the next keeps it open, and starts its time again.
+    Timer {
+        id: peekTime
+
+        interval: Osd.time(1200)
+        onTriggered: clockPill.peeking = false
+    }
+
     Timer {
         id: leaving
 
@@ -141,6 +155,14 @@ Pill {
         onTimeClicked: clockPill.calendar.togglePinned()
         onOsdClicked: clockPill.openShot()
         osdInside: clockPill.open && clockPill.bar.islandOsdShown
+        peek: clockPill.peeking && !clockPill.open
+        onWorkspaceSwitched: {
+            if (!clockPill.bar.islandOnly || !OsdSettings.shows("workspaces") || clockPill.open || clockPill.covered || clockPill.face !== "clock" || clockPill.bar.lockShown)
+                return ;
+
+            clockPill.peeking = true;
+            peekTime.restart();
+        }
 
         // Ticks every second though it shows minutes: its timer stands still
         // during sleep, so on waking it would keep the old time up to a minute.

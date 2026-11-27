@@ -1,24 +1,25 @@
 import QtQuick
+import Quickshell.Hyprland
 import Quickshell.Widgets
 import qs.components
 import qs.theme
 
-// A peek at your other workspaces, one at a time. Swipe through them with the arrows,
+// A peek at your other workspaces, one at a time, the empty ones as the bare wallpaper. Swipe through them with the arrows,
 // a drag or the touchpad, the dots show where you are, and a click takes you there.
 ClippingRectangle {
     id: card
 
-    // HyprlandWorkspaces, in order.
-    required property var workspaces
-    // The one shown first.
-    property var initialWorkspace: null
+    // Their ids, in order.
+    required property var workspaceIds
+    // The one shown first, 0 for the first.
+    property int initialId: 0
     property var monitor: null
     property string wallpaper: ""
     property url barImage
     property rect barRect
-    readonly property var currentWorkspace: list.currentIndex >= 0 && list.currentIndex < workspaces.length ? workspaces[list.currentIndex] : null
+    readonly property int currentId: list.currentIndex >= 0 && list.currentIndex < workspaceIds.length ? workspaceIds[list.currentIndex] : 0
 
-    signal workspaceChosen(var workspace)
+    signal workspaceChosen(int id)
 
     // The keyboard's way through, once the card is opened with its shortcut.
     function step(delta) {
@@ -29,8 +30,8 @@ ClippingRectangle {
     }
 
     function choose() {
-        if (currentWorkspace !== null)
-            workspaceChosen(currentWorkspace);
+        if (currentId !== 0)
+            workspaceChosen(currentId);
 
     }
 
@@ -42,7 +43,7 @@ ClippingRectangle {
 
         anchors.fill: parent
         orientation: ListView.Horizontal
-        model: card.workspaces
+        model: card.workspaceIds
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
         highlightMoveDuration: 320
@@ -51,7 +52,7 @@ ClippingRectangle {
         cacheBuffer: width * 10
         clip: true
         Component.onCompleted: {
-            currentIndex = Math.max(0, card.workspaces.indexOf(card.initialWorkspace));
+            currentIndex = Math.max(0, card.workspaceIds.indexOf(card.initialId));
             positionViewAtIndex(currentIndex, ListView.Beginning);
         }
 
@@ -61,7 +62,10 @@ ClippingRectangle {
             width: list.width
             height: list.height
             radius: 0
-            workspace: modelData
+            // Null while it's empty and nobody's on it.
+            workspace: Hyprland.workspaces.values.find((workspace) => {
+                return workspace.id === modelData;
+            }) || null
             monitor: card.monitor
             wallpaper: card.wallpaper
             barImage: card.barImage

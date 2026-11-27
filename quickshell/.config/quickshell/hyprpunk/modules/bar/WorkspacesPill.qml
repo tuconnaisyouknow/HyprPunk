@@ -14,17 +14,16 @@ Pill {
 
     required property var bar
     readonly property alias popup: workspacePopup
-    // Which of your other workspaces the preview card opens on.
-    property var previewWorkspace: null
-    readonly property var previewWorkspaces: workspaceSwitcher.workspaces.filter((workspace) => {
-        return !workspace.focused;
-    }).sort((a, b) => {
-        return a.id - b.id;
+    // Your other workspaces, by id, every one with a dot, empty or not, and which one the
+    // preview card opens on (0 for the first).
+    readonly property var previewIds: workspaceSwitcher.shownIds.filter((id) => {
+        return workspaceSwitcher.focusedWorkspace === null || id !== workspaceSwitcher.focusedWorkspace.id;
     })
+    property int previewId: 0
     // The workspace you were on before this one, which the preview opens on when you
     // ask for it with the keyboard: the one you most likely want back.
-    property var lastWorkspace: null
-    property var shownWorkspace: null
+    property int lastId: 0
+    property int shownId: 0
     readonly property var activeWorkspace: workspaceSwitcher.hyprlandMonitor !== null ? workspaceSwitcher.hyprlandMonitor.activeWorkspace : null
     // A snapshot of the bar for the previews (keeping grabToImage's result keeps it alive).
     property var barSnapshot: null
@@ -36,8 +35,8 @@ Pill {
     }
 
     onActiveWorkspaceChanged: {
-        lastWorkspace = shownWorkspace;
-        shownWorkspace = activeWorkspace;
+        lastId = shownId;
+        shownId = activeWorkspace !== null ? activeWorkspace.id : 0;
     }
     covered: workspacePill.bar.pillHidden("workspaces")
 
@@ -52,8 +51,8 @@ Pill {
 
         screen: workspacePill.bar.screen
         // Waits like the other pills. No need to preview the workspace you're on.
-        onHoveredWorkspaceChanged: {
-            if (hoveredWorkspace !== null && !hoveredWorkspace.focused && !workspacePopup.mapped)
+        onHoveredIdChanged: {
+            if (workspacePill.previewIds.includes(hoveredId) && !workspacePopup.mapped)
                 workspacePopup.hoverStarted();
             else
                 workspacePopup.cancelOpen();
@@ -70,10 +69,10 @@ Pill {
         align: workspacePill.bar.islandOnly ? Qt.AlignHCenter : Qt.AlignLeft
         panelName: "workspaces"
         screenState: workspacePill.bar.screenState
-        // Nothing to preview while your other workspaces are all empty.
-        requestable: workspacePill.previewWorkspaces.length > 0
+        // Nothing to preview while other screens hold every other workspace.
+        requestable: workspacePill.previewIds.length > 0
         opensOnHover: true
-        openable: workspaceSwitcher.hoveredWorkspace !== null
+        openable: workspaceSwitcher.hoveredId !== 0
         implicitWidth: workspacePill.previewWidth + 2 * Metrics.spacing.large
         implicitHeight: workspacePill.previewHeight + 2 * Metrics.spacing.large
         // Ask Hyprland where the windows are (it only says when asked), and
@@ -83,10 +82,10 @@ Pill {
             workspacePill.bar.content.grabToImage((result) => {
                 workspacePill.barSnapshot = result;
             });
-            if (workspaceSwitcher.hoveredWorkspace !== null)
-                workspacePill.previewWorkspace = workspaceSwitcher.hoveredWorkspace;
+            if (workspaceSwitcher.hoveredId !== 0)
+                workspacePill.previewId = workspaceSwitcher.hoveredId;
             else
-                workspacePill.previewWorkspace = workspacePill.previewWorkspaces.includes(workspacePill.lastWorkspace) ? workspacePill.lastWorkspace : null;
+                workspacePill.previewId = workspacePill.previewIds.includes(workspacePill.lastId) ? workspacePill.lastId : 0;
         }
         // Opened with its shortcut: the arrows (Vim's too) or Tab go through
         // the workspaces, Enter takes you there.
@@ -115,14 +114,15 @@ Pill {
             opacity: workspacePopup.showing ? 1 : 0
 
             sourceComponent: WorkspacePreviewCard {
-                workspaces: workspacePill.previewWorkspaces
-                initialWorkspace: workspacePill.previewWorkspace
+                workspaceIds: workspacePill.previewIds
+                initialId: workspacePill.previewId
                 monitor: workspaceSwitcher.hyprlandMonitor
                 wallpaper: Session.wallpaper
                 barImage: workspacePill.barSnapshot !== null ? workspacePill.barSnapshot.url : ""
                 barRect: Qt.rect(workspacePill.bar.content.x, workspacePill.bar.content.y, workspacePill.bar.content.width, workspacePill.bar.content.height)
-                onWorkspaceChosen: (workspace) => {
-                    workspace.activate();
+                // An empty workspace has nothing to activate yet: Hyprland makes it.
+                onWorkspaceChosen: (id) => {
+                    Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
                     workspacePopup.close();
                 }
             }

@@ -14,6 +14,8 @@ import qs.theme
 // (IslandSide). On its left your workspaces over the wallpaper and its theme, on its right
 // the control center's icons over the machine's load. The music's ends make way, the chips
 // move under the date, and an OSD takes the time's place there rather than closing it.
+// As you go from one workspace to another, the island opens at both ends for a moment
+// (peek): the workspace's number on the left, its app on the right, rolling the way you go.
 // Its size follows its content as it changes, so the island around it needs no animation
 // of its own. The bar's island and the lock's both draw it, so each picks up the island as
 // it is.
@@ -71,6 +73,10 @@ Item {
     property bool osdInside: false
     // The update packages waiting, as a chip (Bar.islandOnly).
     property bool updatesShown: false
+    // The workspace you went to at both ends for a moment (IslandPill).
+    property bool peek: false
+    // Both ends as wide as each other, so what's between them stays in the middle.
+    readonly property real peekWidth: 2 * Math.ceil(Math.max(workspaceApp.implicitWidth, workspaceNumber.implicitWidth) / 2)
     // Each side of the open time: room for the workspaces and the icons, and for a title
     // under them.
     readonly property real sideWidth: 2 * Math.ceil(Math.max(200, workspaceSwitcher.fullWidth + 2 * Metrics.spacing.large, controlBlock.implicitWidth) / 2)
@@ -87,6 +93,8 @@ Item {
     signal timeClicked()
     // A click on the screenshot an OSD shows in the open island.
     signal osdClicked()
+    // You went from one of this screen's workspaces to another.
+    signal workspaceSwitched()
     // The time, where the lock's clock leaves from.
     readonly property Item timeItem: timeLabel
     // Between two faces.
@@ -184,12 +192,52 @@ Item {
 
             }
 
+            // The workspace you went to, at both ends for a moment: its number here, on the
+            // side where your workspaces are, and the app you were last on there at the other
+            // end.
+            IslandPart {
+                id: workspaceNumberPart
+
+                shown: view.peek
+                animated: view.animated
+                gap: Metrics.spacing.normal * coverPart.presence
+                openWidth: view.peekWidth
+                openHeight: workspaceNumber.implicitHeight
+
+                // Its number, rolling the way you go, out of the last one with a dot.
+                Row {
+                    id: workspaceNumber
+
+                    x: (parent.width - implicitWidth) / 2
+
+                    RollingText {
+                        id: workspaceNumberText
+
+                        text: workspaceSwitcher.lastFocused !== null ? String(workspaceSwitcher.lastFocused.id) : ""
+                        bothWays: true
+                        animated: view.animated
+                        font.pixelSize: Metrics.text.emphasis
+                        font.weight: Font.Bold
+                    }
+
+                    Text {
+                        anchors.baseline: workspaceNumberText.baseline
+                        text: "/" + workspaceSwitcher.last
+                        color: Colors.secondary
+                        font.family: Metrics.font
+                        font.pixelSize: Metrics.text.small
+                    }
+
+                }
+
+            }
+
             IslandSide {
                 id: wallpaperSide
 
                 shown: view.open
                 animated: view.animated
-                gap: Metrics.spacing.normal * coverPart.presence
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence)
                 openWidth: view.sideWidth
                 upper: WorkspaceSwitcher {
                     id: workspaceSwitcher
@@ -199,6 +247,7 @@ Item {
                     screen: view.bar.screen
                     compact: true
                     interactive: view.interactive && view.open
+                    onSwitched: view.workspaceSwitched()
                 }
                 lower: IslandWallpaperLine {
                     width: view.sideWidth
@@ -213,7 +262,7 @@ Item {
 
                 shown: view.timeShown && !view.osdInside
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence)
                 // Its place is the time's ink, so the gaps on both sides are measured from
                 // what's drawn: the digits fill their cells unevenly (a 1 leaves far more
                 // room on its right than a 0), and the cover and the equalizer sat unevenly
@@ -279,7 +328,7 @@ Item {
 
                 shown: view.osdInside
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence)
                 openWidth: 2 * Math.ceil(osdInside.implicitWidth / 2) + 2 * Metrics.spacing.large
                 openHeight: Metrics.islandBlockHeight
 
@@ -306,7 +355,7 @@ Item {
 
                 shown: view.padlock
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence)
                 // A whole, even number of pixels, the glyph on a whole pixel inside: its cell
                 // is a fraction wide, and alone in the island's circle it would be drawn a
                 // pixel to the left of the middle.
@@ -332,7 +381,7 @@ Item {
                 checking: view.checking
                 alert: view.lockError !== "" && view.typed === 0
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence)
             }
 
             // The chips' place in the row, which they leave for theirs under the date as
@@ -352,7 +401,7 @@ Item {
 
                 shown: view.open
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence)
                 openWidth: view.sideWidth
                 upper: IslandControls {
                     id: controlBlock
@@ -371,6 +420,25 @@ Item {
                 }
             }
 
+            IslandPart {
+                id: workspaceAppPart
+
+                shown: view.peek
+                animated: view.animated
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence)
+                openWidth: view.peekWidth
+                openHeight: workspaceApp.implicitHeight
+
+                WorkspaceApp {
+                    id: workspaceApp
+
+                    x: (parent.width - width) / 2
+                    workspace: workspaceSwitcher.lastFocused
+                    animated: view.animated
+                }
+
+            }
+
             IslandEqualizer {
                 id: equalizerPart
 
@@ -379,7 +447,7 @@ Item {
                 animated: view.animated
                 lifted: view.musicLifted
                 live: view.live
-                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence)
+                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + workspaceAppPart.presence)
 
                 HoverHandler {
                     id: equalizerHover
@@ -392,7 +460,7 @@ Item {
             LockWords {
                 label: view.lockError
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + equalizerPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + workspaceAppPart.presence + equalizerPart.presence)
             }
 
         }
@@ -421,7 +489,7 @@ Item {
             animated: view.animated
             interactive: view.interactive && clockFace.shown
             // Under the date, nothing before them to part them from.
-            lead: Math.min(1, coverPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence) * (1 - view.chipsAcross)
+            lead: Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence) * (1 - view.chipsAcross)
         }
 
     }
