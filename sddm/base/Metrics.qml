@@ -16,9 +16,9 @@ QtObject {
     // windows: the pills sit where the shell's do, as far from the top as from the
     // windows under the strip.
     readonly property int barMargin: 10
-    readonly property int barHeight: 52
+    readonly property int barHeight: 56
     readonly property int barTop: (barHeight + barMargin - pillHeight) / 2
-    readonly property int pillHeight: 42
+    readonly property int pillHeight: 50
     // Room on each side of a pill's content.
     readonly property int pillPadding: spacing.large
     readonly property QtObject text: QtObject {

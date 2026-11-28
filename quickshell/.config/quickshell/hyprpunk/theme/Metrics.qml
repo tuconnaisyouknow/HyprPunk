@@ -23,25 +23,25 @@ Singleton {
     // both alike), and its gaps_out then sets the windows apart from it like from any
     // edge. The pills sit as far from the screen's top as from the windows under them,
     // in either layout.
-    readonly property int barHeight: 52
+    readonly property int barHeight: 56
     readonly property int barTop: (barHeight + barMargin - pillHeight) / 2
     // The bar's pills, as far from the screen's top and sides as from the windows. Every
     // card keeps its pill's round ends as it grows.
-    readonly property int pillHeight: 42
+    readonly property int pillHeight: 50
     // Room on each side of a pill's content.
     readonly property int pillPadding: spacing.large
-    // How far the music's cover and equalizer sit from the island's edges, all around:
-    // they hug its round ends, like the cover in a phone's island.
-    readonly property int islandMusicInset: spacing.small
+    // How far the music's cover and equalizer sit from the island's edges, all around: as
+    // far as any two of its parts sit from each other, so the island keeps one spacing.
+    readonly property int islandMusicInset: spacing.normal
     // The island grows while an OSD takes it over, so you notice it. The lock's island
     // takes the same shape, to take over from the bar's without a jump.
     readonly property int islandOsdHeight: pillHeight + spacing.large
     readonly property int islandOsdPadding: spacing.huge
     // The island alone opens under the pointer (IslandView.open): the time a little bigger
     // over the date, between two sides of two lines each (IslandSide), every line as tall
-    // as the music's cover.
+    // as the inside of a pill.
     readonly property int islandOpenHeight: 2 * islandBlockHeight + 3 * spacing.normal
-    readonly property int islandBlockHeight: pillHeight - 2 * islandMusicInset
+    readonly property int islandBlockHeight: pillHeight - 2 * spacing.small
     readonly property real cardRadius: pillHeight / 2
     // A button in a card (GlassButton): shorter than the bar's pills, so a card's
     // buttons never read as more pills.

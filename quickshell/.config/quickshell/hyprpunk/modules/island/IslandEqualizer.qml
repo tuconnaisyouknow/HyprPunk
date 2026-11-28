@@ -5,7 +5,8 @@ import qs.services
 import qs.theme
 
 // The music's equalizer at the island's right end (IslandView), in a slot as wide as the
-// cover at the other end, so the island stays even around the time.
+// cover at the other end, so the island stays even around the time. Its bars sit closer
+// than in the player, so the four of them fit the cover's circle.
 IslandPart {
     id: part
 
@@ -32,6 +33,7 @@ IslandPart {
         playing: Music.playing
         running: part.live && part.visible && MusicSettings.equalizer
         roundness: 1
+        spacing: Metrics.spacing.hairline
     }
 
 }

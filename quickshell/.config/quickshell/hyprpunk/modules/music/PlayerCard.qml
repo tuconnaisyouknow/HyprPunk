@@ -145,6 +145,8 @@ PillPopup {
             y: playerPopup.flyY(playerPopup.island.equalizerY, musicPlayerCard.equalizerCenter.y, playerPopup.slotSize) + Math.round((playerPopup.slotSize - height) / 2)
             scale: playerPopup.zoomY + (1 - playerPopup.zoomY) * playerPopup.flight
             roundness: 1 - playerPopup.flight
+            // From the island's tighter bars to the player's, a whole pixel at a time.
+            spacing: Math.round(Metrics.spacing.hairline + (Metrics.spacing.small - Metrics.spacing.hairline) * playerPopup.flight)
             playing: Music.playing
             running: playerPopup.mapped && MusicSettings.equalizer
         }
