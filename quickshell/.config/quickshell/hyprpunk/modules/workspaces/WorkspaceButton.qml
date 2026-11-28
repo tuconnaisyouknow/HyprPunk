@@ -29,11 +29,11 @@ Item {
     // A window there asks for you.
     readonly property bool urgent: workspace !== null && workspace.urgent && !active
     readonly property bool hovered: shown && hover.hovered
-    readonly property int size: compact ? 24 : 32
+    readonly property int size: compact ? 24 : Metrics.pill.size(32)
     // Room for a dot at rest, for the light once you're on it.
-    readonly property int restWidth: compact ? 14 : 24
-    readonly property int activeWidth: compact ? 24 : 36
-    readonly property int dotSize: compact ? 8 : 10
+    readonly property int restWidth: compact ? 14 : Metrics.pill.size(24)
+    readonly property int activeWidth: compact ? 24 : Metrics.pill.size(36)
+    readonly property int dotSize: compact ? 8 : Metrics.pill.size(10)
     // How much a dot grows under the pointer: the light is that tall, so pointing at a
     // dot already shows the size it would take.
     readonly property real pointedScale: 1.5

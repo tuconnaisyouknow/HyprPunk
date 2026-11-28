@@ -20,11 +20,13 @@ Pill {
 
     IconText {
         icon: "memory_alt"
+        font.pixelSize: Metrics.pill.label
         text: SystemStats.memoryText
     }
 
     IconText {
         icon: "memory"
+        font.pixelSize: Metrics.pill.label
         text: Math.round(SystemStats.cpuUsage * 100) + "%"
     }
 

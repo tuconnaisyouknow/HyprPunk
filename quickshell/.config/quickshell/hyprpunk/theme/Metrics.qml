@@ -23,11 +23,11 @@ Singleton {
     // both alike), and its gaps_out then sets the windows apart from it like from any
     // edge. The pills sit as far from the screen's top as from the windows under them,
     // in either layout.
-    readonly property int barHeight: 56
+    readonly property int barHeight: 52
     readonly property int barTop: (barHeight + barMargin - pillHeight) / 2
     // The bar's pills, as far from the screen's top and sides as from the windows. Every
     // card keeps its pill's round ends as it grows.
-    readonly property int pillHeight: 50
+    readonly property int pillHeight: 46
     // Room on each side of a pill's content.
     readonly property int pillPadding: spacing.large
     // How far the music's cover and equalizer sit from the island's edges, all around: as
@@ -54,6 +54,28 @@ Singleton {
         readonly property int emphasis: 15
         readonly property int title: 17
         readonly property int heading: 21
+    }
+
+    // What the bar's pills hold, drawn for 42 px pills and grown with them, so the pills'
+    // height alone sets the bar's size. Whole pixels: text between two sizes blurs.
+    readonly property QtObject pill: QtObject {
+        readonly property real scale: pillHeight / 42
+
+        function size(base) {
+            return Math.round(base * scale);
+        }
+
+        // The time, the status icons and their values.
+        readonly property int label: size(text.title)
+        // The time in the open island, a heading.
+        readonly property int openTime: size(text.heading)
+        // The chips' words and numbers, and their icons.
+        readonly property int chipLabel: size(text.body)
+        readonly property int chipIcon: size(text.emphasis)
+        // Even, so their words sit on a whole pixel in their middle.
+        readonly property int chipHeight: 2 * Math.round(12 * scale)
+        // An app's own icon, as tall as the open time, its picture keeping a margin of its own.
+        readonly property int appIcon: openTime
     }
 
     // Gaps and insets, on a 4 px grid so everything lines up.

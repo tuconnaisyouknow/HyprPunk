@@ -82,11 +82,11 @@ Item {
     readonly property real musicSlot: Metrics.pillHeight - 2 * Metrics.islandMusicInset
     readonly property real coverSize: musicSlot * coverPart.arrival
     // How much bigger the time is, open.
-    readonly property real timeScale: 1 + openness * (Metrics.text.heading / Metrics.text.title - 1)
+    readonly property real timeScale: 1 + openness * (Metrics.pill.openTime / Metrics.pill.label - 1)
     // The time's place at rest, even, eased as the minutes change its ink. Open, its block
     // around the time and the date, even too.
     property real timeWidth: 2 * Math.ceil(timeInk.tightBoundingRect.width / 2)
-    readonly property real openTimeWidth: 2 * Math.ceil(Math.max(timeInk.tightBoundingRect.width * Metrics.text.heading / Metrics.text.title, dateLabel.implicitWidth, chips.width) / 2) + 2 * Metrics.spacing.large
+    readonly property real openTimeWidth: 2 * Math.ceil(Math.max(timeInk.tightBoundingRect.width * Metrics.pill.openTime / Metrics.pill.label, dateLabel.implicitWidth, chips.width) / 2) + 2 * Metrics.spacing.large
 
     signal timeClicked()
     // A click on the screenshot an OSD shows in the open island.
@@ -223,7 +223,7 @@ Item {
                         bothWays: true
                         // Only while it's in sight: as it comes, its growing is the change.
                         animated: view.animated && workspaceNumberPart.visible
-                        font.pixelSize: Metrics.text.emphasis
+                        font.pixelSize: Metrics.pill.label
                         font.weight: Font.Bold
                     }
 
@@ -234,7 +234,7 @@ Item {
                         text: "/" + workspaceSwitcher.last
                         color: Colors.secondary
                         font.family: Metrics.font
-                        font.pixelSize: Metrics.text.small
+                        font.pixelSize: Metrics.pill.chipLabel
                     }
 
                 }
@@ -313,6 +313,7 @@ Item {
                     text: Session.shortTime(view.date)
                     transformOrigin: Item.TopLeft
                     scale: view.timeScale
+                    font.pixelSize: Metrics.pill.label
                     font.features: {
                         "tnum": 1
                     }
@@ -392,7 +393,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "lock"
                     color: Colors.primary
-                    size: Metrics.text.title
+                    size: Metrics.pill.label
                 }
 
             }
@@ -459,6 +460,7 @@ Item {
                     x: (parent.width - inkWidth) / 2 - inkLeft
                     workspace: workspaceSwitcher.lastFocused
                     animated: view.animated && workspaceAppPart.visible
+                    size: Metrics.pill.appIcon
                 }
 
             }

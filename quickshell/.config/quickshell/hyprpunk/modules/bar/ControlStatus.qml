@@ -52,7 +52,7 @@ RowLayout {
 
     // Spinner in place of the icon while NetworkManager connects (VPN included).
     Item {
-        implicitWidth: NetworkStatus.connecting ? 16 : networkLabel.implicitWidth
+        implicitWidth: NetworkStatus.connecting ? Metrics.pill.size(16) : networkLabel.implicitWidth
         implicitHeight: networkLabel.implicitHeight
 
         Icon {
@@ -61,7 +61,7 @@ RowLayout {
             visible: !NetworkStatus.connecting
             opacity: status.lifted.includes("network") ? 0 : 1
             text: status.networkIcon()
-            size: Metrics.text.title
+            size: Metrics.pill.label
         }
 
         Shape {
@@ -71,8 +71,8 @@ RowLayout {
 
             visible: NetworkStatus.connecting
             anchors.centerIn: parent
-            width: 14
-            height: 14
+            width: Metrics.pill.size(14)
+            height: width
             preferredRendererType: Shape.CurveRenderer
 
             ShapePath {
@@ -165,7 +165,7 @@ RowLayout {
     Icon {
         id: caffeineLabel
 
-        size: Metrics.text.title
+        size: Metrics.pill.label
         visible: ShellState.caffeine
         opacity: status.lifted.includes("caffeine") ? 0 : 1
         text: "coffee"
@@ -177,6 +177,7 @@ RowLayout {
         visible: Audio.sink !== null
         iconOpacity: status.lifted.includes("volume") ? 0 : 1
         icon: Icons.volume(Audio.volume, Audio.muted)
+        font.pixelSize: Metrics.pill.label
         text: Audio.volume + "%"
         counts: true
     }
@@ -188,6 +189,7 @@ RowLayout {
         // Red only when it's running out (the settings' low level), not while charging.
         color: Battery.onBattery && Battery.percent <= BatterySettings.low ? Colors.red : Colors.primary
         icon: Icons.battery(Battery.device.percentage, Battery.onBattery)
+        font.pixelSize: Metrics.pill.label
         text: Battery.percent + "%"
         counts: true
 

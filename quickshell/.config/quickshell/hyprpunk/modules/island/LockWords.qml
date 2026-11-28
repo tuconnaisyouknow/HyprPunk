@@ -30,7 +30,7 @@ IslandPart {
         ink: Colors.red
         // The refusal first (the shake, the glitch behind), then what it says.
         wait: Motion.shake.swings.length * Motion.shake.swingDuration
-        font.pixelSize: Metrics.text.body
+        font.pixelSize: Metrics.pill.chipLabel
         font.weight: Font.Bold
     }
 

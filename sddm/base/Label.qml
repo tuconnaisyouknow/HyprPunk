@@ -4,7 +4,7 @@ import QtQuick
 Text {
     color: Colors.primary
     font.family: Metrics.font
-    font.pixelSize: Metrics.text.title
+    font.pixelSize: Metrics.pill.label
     font.weight: Font.DemiBold
     verticalAlignment: Text.AlignVCenter
 }

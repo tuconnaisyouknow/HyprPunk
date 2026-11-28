@@ -65,8 +65,8 @@ Row {
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence)
         // Even, like every part's place.
-        openWidth: 2 * Math.ceil(recordingRow.implicitWidth / 2) + 16
-        openHeight: 24
+        openWidth: 2 * Math.ceil(recordingRow.implicitWidth / 2) + 2 * Metrics.spacing.large
+        openHeight: Metrics.pill.chipHeight
 
         Rectangle {
             anchors.fill: parent
@@ -83,7 +83,7 @@ Row {
             id: recordingRow
 
             anchors.verticalCenter: parent.verticalCenter
-            x: 8
+            x: Metrics.spacing.large
             spacing: Metrics.spacing.normal
 
             // The stop square on hover, the dot otherwise.
@@ -133,7 +133,7 @@ Row {
                 text: Osd.formatDuration(chips.bar.recordingElapsed)
                 color: Colors.red
                 font.family: Metrics.font
-                font.pixelSize: Metrics.text.body
+                font.pixelSize: Metrics.pill.chipLabel
                 font.weight: Font.Bold
                 font.features: {
                     "tnum": 1
@@ -166,8 +166,8 @@ Row {
         shown: chips.notificationsShown && chips.bar.notificationCount > 0
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence + recordingChip.presence)
-        openWidth: 2 * Math.ceil(notificationBadgeRow.implicitWidth / 2) + 14
-        openHeight: 24
+        openWidth: 2 * Math.ceil(notificationBadgeRow.implicitWidth / 2) + 2 * Metrics.spacing.large
+        openHeight: Metrics.pill.chipHeight
 
         Rectangle {
             anchors.fill: parent
@@ -184,7 +184,7 @@ Row {
             id: notificationBadgeRow
 
             anchors.verticalCenter: parent.verticalCenter
-            x: 7
+            x: Metrics.spacing.large
             spacing: Metrics.spacing.small
             opacity: ShellState.doNotDisturb ? 0.5 : 1
 
@@ -192,7 +192,7 @@ Row {
                 anchors.verticalCenter: parent.verticalCenter
                 text: ShellState.doNotDisturb ? "notifications_off" : "notifications"
                 color: ShellState.doNotDisturb ? Colors.secondary : Colors.primary
-                size: Metrics.text.emphasis
+                size: Metrics.pill.chipIcon
             }
 
             // Centred on its digits' ink rather than its line, which sits them half a
@@ -205,7 +205,7 @@ Row {
                 text: chips.bar.notificationCount
                 color: ShellState.doNotDisturb ? Colors.secondary : Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: Metrics.text.body
+                font.pixelSize: Metrics.pill.chipLabel
                 font.weight: Font.Bold
                 font.features: {
                     "tnum": 1
@@ -231,8 +231,8 @@ Row {
         shown: chips.updatesShown && Updates.count > 0
         animated: chips.animated
         gap: Metrics.spacing.normal * Math.min(1, chips.lead + privacyChip.presence + recordingChip.presence + notificationChip.presence)
-        openWidth: 2 * Math.ceil(updatesRow.implicitWidth / 2) + 14
-        openHeight: 24
+        openWidth: 2 * Math.ceil(updatesRow.implicitWidth / 2) + 2 * Metrics.spacing.large
+        openHeight: Metrics.pill.chipHeight
 
         Rectangle {
             anchors.fill: parent
@@ -249,14 +249,14 @@ Row {
             id: updatesRow
 
             anchors.verticalCenter: parent.verticalCenter
-            x: 7
+            x: Metrics.spacing.large
             spacing: Metrics.spacing.small
 
             Icon {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "package_2"
                 color: Colors.primary
-                size: Metrics.text.emphasis
+                size: Metrics.pill.chipIcon
             }
 
             Text {
@@ -265,7 +265,7 @@ Row {
                 text: updatesCount.value
                 color: Colors.primary
                 font.family: Metrics.font
-                font.pixelSize: Metrics.text.body
+                font.pixelSize: Metrics.pill.chipLabel
                 font.weight: Font.Bold
                 font.features: {
                     "tnum": 1

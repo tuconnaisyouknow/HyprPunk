@@ -299,6 +299,7 @@ Item {
 
                     IconText {
                         icon: "package_2"
+                        font.pixelSize: Metrics.pill.label
 
                         // Keeps the last count while the pill flies away.
                         Binding on text {

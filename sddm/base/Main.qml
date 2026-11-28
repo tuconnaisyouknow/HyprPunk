@@ -431,7 +431,7 @@ Rectangle {
                             text: words.label
                             color: decode.running ? "transparent" : Colors.red
                             font.family: Metrics.font
-                            font.pixelSize: Metrics.text.body
+                            font.pixelSize: Metrics.pill.chipLabel
                             font.weight: Font.Bold
                             font.capitalization: Font.AllUppercase
                             font.letterSpacing: 1

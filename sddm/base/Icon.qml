@@ -4,7 +4,7 @@ import QtQuick
 // shell's (its components/Icon.qml). Keep both alike.
 Text {
     // The size of what's drawn: Material draws in the middle 20 px of a 24 px square
-    property real size: Metrics.text.title
+    property real size: Metrics.pill.label
 
     color: Colors.primary
     font.family: Metrics.iconFont
