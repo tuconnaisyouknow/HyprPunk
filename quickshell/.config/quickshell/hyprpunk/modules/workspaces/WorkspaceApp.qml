@@ -26,6 +26,12 @@ Item {
     property var rolledTo: null
     property real progress: 1
     property int way: 1
+    // What the icon showing leaves empty on each side of its box, and what it draws: apps'
+    // icons come with a margin of their own, and the island measures its gaps from what's
+    // drawn. The outline fills its box.
+    property real inkLeft: 0
+    property real inkRight: 0
+    readonly property real inkWidth: width - inkLeft - inkRight
 
     function iconOf(workspace) {
         if (workspace === null)
@@ -43,8 +49,10 @@ Item {
         return Quickshell.iconPath(entry !== null ? entry.icon : "", "application-x-executable");
     }
 
-    implicitWidth: size
-    implicitHeight: size
+    // A whole, even number of pixels, the outline on a whole pixel inside: in the island's
+    // middle it lands on whole pixels, where the glyph, drawn snapped to them, holds still.
+    implicitWidth: 2 * Math.round(size / 2)
+    implicitHeight: implicitWidth
     onWorkspaceChanged: {
         const from = rolledTo;
         previous = current;
@@ -90,6 +98,54 @@ Item {
 
     }
 
+    // Measures the icon's margins once per icon, drawn out of sight at its size: the first
+    // and last columns with anything in them.
+    Canvas {
+        id: inkProbe
+
+        readonly property string icon: app.current
+
+        function measure() {
+            if (icon === "") {
+                app.inkLeft = 0;
+                app.inkRight = 0;
+            } else if (isImageLoaded(icon)) {
+                requestPaint();
+            } else {
+                loadImage(icon);
+            }
+        }
+
+        width: app.width
+        height: app.height
+        opacity: 0
+        onIconChanged: measure()
+        onImageLoaded: measure()
+        onPaint: {
+            if (icon === "" || !isImageLoaded(icon))
+                return ;
+
+            const context = getContext("2d");
+            context.clearRect(0, 0, width, height);
+            context.drawImage(icon, 0, 0, width, height);
+            const pixels = context.getImageData(0, 0, width, height).data;
+            let first = width;
+            let last = -1;
+            for (let x = 0; x < width; x++) {
+                for (let y = 0; y < height; y++) {
+                    // Nearly transparent pixels are the edges' softening, not ink.
+                    if (pixels[(y * width + x) * 4 + 3] > 24) {
+                        first = Math.min(first, x);
+                        last = x;
+                        break;
+                    }
+                }
+            }
+            app.inkLeft = last < 0 ? 0 : first;
+            app.inkRight = last < 0 ? 0 : width - 1 - last;
+        }
+    }
+
     Anim {
         id: turn
 
@@ -103,22 +159,26 @@ Item {
     component AppGlyph: Item {
         property string source
 
-        width: app.size
-        height: app.size
+        width: app.width
+        height: app.height
 
         IconImage {
             anchors.fill: parent
             visible: parent.source !== ""
             source: parent.source
-            implicitSize: app.size
+            implicitSize: app.width
         }
 
+        // Placed by hand: centerIn rounds as it goes, and the glyph would step a pixel as the
+        // island grows around it.
         Icon {
-            anchors.centerIn: parent
+            x: Math.round((parent.width - implicitWidth) / 2)
+            y: Math.round((parent.height - implicitHeight) / 2)
             visible: parent.source === ""
             text: "desktop_windows"
             color: Colors.alpha(Colors.secondary, 0.5)
-            size: app.size
+            // Material draws it across the whole size it's given.
+            size: app.width
         }
 
     }

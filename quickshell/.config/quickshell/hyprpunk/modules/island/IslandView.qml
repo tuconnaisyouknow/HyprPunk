@@ -75,8 +75,6 @@ Item {
     property bool updatesShown: false
     // The workspace you went to at both ends for a moment (IslandPill).
     property bool peek: false
-    // Both ends as wide as each other, so what's between them stays in the middle.
-    readonly property real peekWidth: 2 * Math.ceil(Math.max(workspaceApp.implicitWidth, workspaceNumber.implicitWidth) / 2)
     // Each side of the open time: room for the workspaces and the icons, and for a title
     // under them.
     readonly property real sideWidth: 2 * Math.ceil(Math.max(200, workspaceSwitcher.fullWidth + 2 * Metrics.spacing.large, controlBlock.implicitWidth) / 2)
@@ -194,33 +192,44 @@ Item {
 
             // The workspace you went to, at both ends for a moment: its number here, on the
             // side where your workspaces are, and the app you were last on there at the other
-            // end.
+            // end. Each rolls to the next only if you switch again while they're out. Each end
+            // is as wide as what it draws, so every gap is the same: the rest moves off the
+            // middle by half their difference, a pixel or two.
             IslandPart {
                 id: workspaceNumberPart
 
                 shown: view.peek
                 animated: view.animated
                 gap: Metrics.spacing.normal * coverPart.presence
-                openWidth: view.peekWidth
+                // Its place is its ink, like the time's: the same gap on both sides, from
+                // what's drawn. Rounded to the nearest even width, the ink in its middle:
+                // rounding up would leave up to a pixel more on each side.
+                openWidth: 2 * Math.round(workspaceNumber.inkWidth / 2)
                 openHeight: workspaceNumber.implicitHeight
 
                 // Its number, rolling the way you go, out of the last one with a dot.
                 Row {
                     id: workspaceNumber
 
-                    x: (parent.width - implicitWidth) / 2
+                    // From the number's first ink to the total's last.
+                    readonly property real inkWidth: workspaceNumberInk.advanceWidth - workspaceNumberInk.tightBoundingRect.x + workspaceTotalInk.tightBoundingRect.x + workspaceTotalInk.tightBoundingRect.width
+
+                    x: (parent.width - inkWidth) / 2 - workspaceNumberInk.tightBoundingRect.x
 
                     RollingText {
                         id: workspaceNumberText
 
                         text: workspaceSwitcher.lastFocused !== null ? String(workspaceSwitcher.lastFocused.id) : ""
                         bothWays: true
-                        animated: view.animated
+                        // Only while it's in sight: as it comes, its growing is the change.
+                        animated: view.animated && workspaceNumberPart.visible
                         font.pixelSize: Metrics.text.emphasis
                         font.weight: Font.Bold
                     }
 
                     Text {
+                        id: workspaceTotal
+
                         anchors.baseline: workspaceNumberText.baseline
                         text: "/" + workspaceSwitcher.last
                         color: Colors.secondary
@@ -228,6 +237,20 @@ Item {
                         font.pixelSize: Metrics.text.small
                     }
 
+                }
+
+                TextMetrics {
+                    id: workspaceNumberInk
+
+                    font: workspaceNumberText.font
+                    text: workspaceNumberText.text
+                }
+
+                TextMetrics {
+                    id: workspaceTotalInk
+
+                    font: workspaceTotal.font
+                    text: workspaceTotal.text
                 }
 
             }
@@ -426,15 +449,16 @@ Item {
                 shown: view.peek
                 animated: view.animated
                 gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence)
-                openWidth: view.peekWidth
+                // Its place is the icon's ink, like the number's.
+                openWidth: 2 * Math.round(workspaceApp.inkWidth / 2)
                 openHeight: workspaceApp.implicitHeight
 
                 WorkspaceApp {
                     id: workspaceApp
 
-                    x: (parent.width - width) / 2
+                    x: (parent.width - inkWidth) / 2 - inkLeft
                     workspace: workspaceSwitcher.lastFocused
-                    animated: view.animated
+                    animated: view.animated && workspaceAppPart.visible
                 }
 
             }
