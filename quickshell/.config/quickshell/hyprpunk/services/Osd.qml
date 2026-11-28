@@ -5,18 +5,19 @@ import Quickshell
 import qs.config
 import qs.theme
 
-// What the island briefly shows as things happen: a level (volume, brightness), an on/off
-// switch, the screenshot just taken, the battery and the AirPods. Decided once for the
-// whole shell and announced to every island, which shows it for as long as it says when
-// it's meant for every screen or for its own (OsdTimeline). Always on: the changes come
-// whether or not you look.
+// What the island briefly shows as things happen: a level (volume, brightness), the
+// screenshot just taken, the battery and the AirPods take it over (OsdTimeline); a switch
+// you turn (the microphone, Caps Lock, Num Lock, the touchpad) only opens its ends, around
+// the time (IslandView.glance). Decided once for the whole shell and announced to every
+// island, which shows it for as long as it says when it's meant for every screen or for
+// its own. Always on: the changes come whether or not you look.
 Singleton {
     id: osd
 
     // Every field an OSD has, empty: what the islands draw before the first one.
     // {kind, screen, icon, label, enabled, level, maxLevel, image, title, file, ringLevel,
-    // ringCharging}. kind is "" for a level or a switch, "battery", "screenshot" or
-    // "airpods"; screen is "" for every screen.
+    // ringCharging}. kind is "" for a level, "battery", "screenshot" or "airpods"; screen
+    // is "" for every screen.
     readonly property var blank: ({
         "kind": "",
         "screen": "",
@@ -47,6 +48,9 @@ Singleton {
 
     // An OSD, whole, and how long it stays in ms (-1 until something replaces it).
     signal announced(var content, int duration)
+    // A switch at the island's ends, and how long they stay out: {kind: "switch", screen,
+    // icon, enabled}.
+    signal glanced(var content, int duration)
 
     // How long an OSD stays, its usual time stretched as the settings ask (OsdSettings).
     function time(milliseconds) {
@@ -80,14 +84,23 @@ Singleton {
         return (hours > 0 ? hours + ":" + pad(minutes) : minutes) + ":" + pad(seconds % 60);
     }
 
-    // With maxLevel > 0, a gauge of level / maxLevel replaces the On/Off badge.
+    // A gauge of level / maxLevel: segments up to ten, a bar past that.
     function showLevel(icon, label, enabled, level, maxLevel) {
         show({
             "icon": icon,
             "label": label,
             "enabled": enabled,
-            "level": level || 0,
-            "maxLevel": maxLevel || 0
+            "level": level,
+            "maxLevel": maxLevel
+        }, time(1500));
+    }
+
+    function showSwitch(icon, enabled) {
+        glanced({
+            "kind": "switch",
+            "screen": "",
+            "icon": icon,
+            "enabled": enabled
         }, time(1500));
     }
 
@@ -146,7 +159,7 @@ Singleton {
 
         function onMicToggled() {
             if (OsdSettings.shows("microphone") && osd.microphoneInSight.refCount === 0)
-                osd.showLevel(Audio.micMuted ? "mic_off" : "mic", "Microphone", !Audio.micMuted);
+                osd.showSwitch(Audio.micMuted ? "mic_off" : "mic", !Audio.micMuted);
 
         }
 
@@ -156,19 +169,19 @@ Singleton {
     Connections {
         function onCapsLockToggled(enabled) {
             if (OsdSettings.shows("keys"))
-                osd.showLevel("keyboard_capslock", "Caps Lock", enabled);
+                osd.showSwitch("keyboard_capslock", enabled);
 
         }
 
         function onNumLockToggled(enabled) {
             if (OsdSettings.shows("keys"))
-                osd.showLevel("looks_one", "Num Lock", enabled);
+                osd.showSwitch("looks_one", enabled);
 
         }
 
         function onTouchpadToggled(enabled) {
             if (OsdSettings.shows("keys"))
-                osd.showLevel("trackpad_input", "Touchpad", enabled);
+                osd.showSwitch("trackpad_input", enabled);
 
         }
 

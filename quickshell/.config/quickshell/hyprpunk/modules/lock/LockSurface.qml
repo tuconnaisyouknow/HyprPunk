@@ -682,6 +682,8 @@ WlSessionLockSurface {
 
                         bar: surface.bar
                         face: surface.osdShown ? "osd" : "clock"
+                        // Caps Lock as you type your password, around the padlock.
+                        glances: !surface.osdShown
                         // Its place opens again as you're let in, the clock flying home to it.
                         timeShown: !surface.timeAway || Lock.unlocking
                         chipsShown: true

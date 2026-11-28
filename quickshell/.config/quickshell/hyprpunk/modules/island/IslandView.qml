@@ -14,8 +14,10 @@ import qs.theme
 // (IslandSide). On its left your workspaces over the wallpaper and its theme, on its right
 // the control center's icons over the machine's load. The music's ends make way, the chips
 // move under the date, and an OSD takes the time's place there rather than closing it.
-// As you go from one workspace to another, the island opens at both ends for a moment
-// (peek): the workspace's number on the left, its app on the right, rolling the way you go.
+// A change you only need to glance at opens it at both ends for a moment, around the time
+// (glance): the workspace you go to, its number on the left and its app on the right, or a
+// switch you turn (the microphone, Caps Lock...), its icon on the left and on or off on
+// the right.
 // Its size follows its content as it changes, so the island around it needs no animation
 // of its own. The bar's island and the lock's both draw it, so each picks up the island as
 // it is.
@@ -73,8 +75,16 @@ Item {
     property bool osdInside: false
     // The update packages waiting, as a chip (Bar.islandOnly).
     property bool updatesShown: false
-    // The workspace you went to at both ends for a moment (IslandPill).
-    property bool peek: false
+    // The ends may open for a glance: at rest on the time, nothing over it (IslandPill, the
+    // lock). One that comes meanwhile is gone, as an OSD that couldn't show.
+    property bool glances: false
+    // The glance at the ends, kept as it was while they close: "workspace", or a switch as
+    // Osd gives it ({kind: "switch", icon, enabled}).
+    property var glance: ({
+        "kind": "workspace"
+    })
+    property bool glancing: false
+    readonly property bool glanceShown: glancing && glances
     // Each side of the open time: room for the workspaces and the icons, and for a title
     // under them.
     readonly property real sideWidth: 2 * Math.ceil(Math.max(200, workspaceSwitcher.fullWidth + 2 * Metrics.spacing.large, controlBlock.implicitWidth) / 2)
@@ -91,8 +101,17 @@ Item {
     signal timeClicked()
     // A click on the screenshot an OSD shows in the open island.
     signal osdClicked()
-    // You went from one of this screen's workspaces to another.
-    signal workspaceSwitched()
+
+    // Another glance while the ends are out takes their place, and their time starts again.
+    function showGlance(content, duration) {
+        if (!glances)
+            return ;
+
+        glance = content;
+        glancing = true;
+        glanceTime.interval = duration;
+        glanceTime.restart();
+    }
     // The time, where the lock's clock leaves from.
     readonly property Item timeItem: timeLabel
     // Between two faces.
@@ -120,6 +139,22 @@ Item {
     implicitWidth: 2 * Math.round((clockFace.presence * clockFace.islandWidth + osdFace.presence * osdFace.islandWidth) / Math.max(presence, 0.001) / 2)
     implicitHeight: (clockFace.presence * clockFace.islandHeight + osdFace.presence * osdFace.islandHeight) / Math.max(presence, 0.001)
 
+
+    Timer {
+        id: glanceTime
+
+        onTriggered: view.glancing = false
+    }
+
+    Connections {
+        function onGlanced(content, duration) {
+            if (content.screen === "" || content.screen === view.bar.screen.name)
+                view.showGlance(content, duration);
+
+        }
+
+        target: Osd
+    }
 
     Behavior on openWidthShare {
         enabled: view.animated
@@ -190,22 +225,24 @@ Item {
 
             }
 
-            // The workspace you went to, at both ends for a moment: its number here, on the
-            // side where your workspaces are, and the app you were last on there at the other
-            // end. Each rolls to the next only if you switch again while they're out. Each end
-            // is as wide as what it draws, so every gap is the same: the rest moves off the
-            // middle by half their difference, a pixel or two.
+            // A glance's first end: the workspace's number, on the side where your workspaces
+            // are, or the switch's icon. Each end is as wide as what it draws, so every gap is
+            // the same: the rest moves off the middle by half their difference, a pixel or two.
+            // What's in them rolls to the next only if it changes while they're out.
             IslandPart {
-                id: workspaceNumberPart
+                id: glanceStartPart
 
-                shown: view.peek
+                readonly property bool workspace: view.glance.kind === "workspace"
+
+                shown: view.glanceShown
                 animated: view.animated
                 gap: Metrics.spacing.normal * coverPart.presence
                 // Its place is its ink, like the time's: the same gap on both sides, from
                 // what's drawn. Rounded to the nearest even width, the ink in its middle:
-                // rounding up would leave up to a pixel more on each side.
-                openWidth: 2 * Math.round(workspaceNumber.inkWidth / 2)
-                openHeight: workspaceNumber.implicitHeight
+                // rounding up would leave up to a pixel more on each side. An icon draws
+                // as wide as its size.
+                openWidth: 2 * Math.round((workspace ? workspaceNumber.inkWidth : switchIcon.size) / 2)
+                openHeight: workspace ? workspaceNumber.implicitHeight : switchIcon.implicitHeight
 
                 // Its number, rolling the way you go, out of the last one with a dot.
                 Row {
@@ -215,6 +252,7 @@ Item {
                     readonly property real inkWidth: workspaceNumberInk.advanceWidth - workspaceNumberInk.tightBoundingRect.x + workspaceTotalInk.tightBoundingRect.x + workspaceTotalInk.tightBoundingRect.width
 
                     x: (parent.width - inkWidth) / 2 - workspaceNumberInk.tightBoundingRect.x
+                    visible: glanceStartPart.workspace
 
                     RollingText {
                         id: workspaceNumberText
@@ -222,7 +260,7 @@ Item {
                         text: workspaceSwitcher.lastFocused !== null ? String(workspaceSwitcher.lastFocused.id) : ""
                         bothWays: true
                         // Only while it's in sight: as it comes, its growing is the change.
-                        animated: view.animated && workspaceNumberPart.visible
+                        animated: view.animated && glanceStartPart.visible
                         font.pixelSize: Metrics.pill.label
                         font.weight: Font.Bold
                     }
@@ -253,6 +291,17 @@ Item {
                     text: workspaceTotal.text
                 }
 
+                // Placed by hand, on a whole pixel: centerIn rounds as the island grows.
+                Icon {
+                    id: switchIcon
+
+                    x: Math.round((parent.width - implicitWidth) / 2)
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: !glanceStartPart.workspace
+                    text: view.glance.icon || ""
+                    size: Metrics.pill.label
+                }
+
             }
 
             IslandSide {
@@ -260,7 +309,7 @@ Item {
 
                 shown: view.open
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence)
                 openWidth: view.sideWidth
                 upper: WorkspaceSwitcher {
                     id: workspaceSwitcher
@@ -270,7 +319,14 @@ Item {
                     screen: view.bar.screen
                     compact: true
                     interactive: view.interactive && view.open
-                    onSwitched: view.workspaceSwitched()
+                    // Alone in the bar, nothing else shows it.
+                    onSwitched: {
+                        if (view.bar.islandOnly && OsdSettings.shows("workspaces"))
+                            view.showGlance({
+                            "kind": "workspace"
+                        }, Osd.time(1200));
+
+                    }
                 }
                 lower: IslandWallpaperLine {
                     width: view.sideWidth
@@ -285,7 +341,7 @@ Item {
 
                 shown: view.timeShown && !view.osdInside
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence)
                 // Its place is the time's ink, so the gaps on both sides are measured from
                 // what's drawn: the digits fill their cells unevenly (a 1 leaves far more
                 // room on its right than a 0), and the cover and the equalizer sat unevenly
@@ -352,7 +408,7 @@ Item {
 
                 shown: view.osdInside
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence)
                 openWidth: 2 * Math.ceil(osdInside.implicitWidth / 2) + 2 * Metrics.spacing.large
                 openHeight: Metrics.islandBlockHeight
 
@@ -379,7 +435,7 @@ Item {
 
                 shown: view.padlock
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence)
                 // A whole, even number of pixels, the glyph on a whole pixel inside: its cell
                 // is a fraction wide, and alone in the island's circle it would be drawn a
                 // pixel to the left of the middle.
@@ -405,7 +461,7 @@ Item {
                 checking: view.checking
                 alert: view.lockError !== "" && view.typed === 0
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence)
             }
 
             // The chips' place in the row, which they leave for theirs under the date as
@@ -425,7 +481,7 @@ Item {
 
                 shown: view.open
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence)
                 openWidth: view.sideWidth
                 upper: IslandControls {
                     id: controlBlock
@@ -444,23 +500,57 @@ Item {
                 }
             }
 
+            // A glance's other end: the app you were last on in that workspace, or whether
+            // the switch is on.
             IslandPart {
-                id: workspaceAppPart
+                id: glanceEndPart
 
-                shown: view.peek
+                readonly property bool workspace: view.glance.kind === "workspace"
+
+                shown: view.glanceShown
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence)
-                // Its place is the icon's ink, like the number's.
-                openWidth: 2 * Math.round(workspaceApp.inkWidth / 2)
-                openHeight: workspaceApp.implicitHeight
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence)
+                // Its place is the icon's ink, like the number's, or the state's chip.
+                openWidth: workspace ? 2 * Math.round(workspaceApp.inkWidth / 2) : switchState.width
+                openHeight: workspace ? workspaceApp.implicitHeight : switchState.height
 
                 WorkspaceApp {
                     id: workspaceApp
 
                     x: (parent.width - inkWidth) / 2 - inkLeft
+                    visible: glanceEndPart.workspace
                     workspace: workspaceSwitcher.lastFocused
-                    animated: view.animated && workspaceAppPart.visible
+                    animated: view.animated && glanceEndPart.visible
                     size: Metrics.pill.appIcon
+                }
+
+                // On, a light; off, a plain chip, like the time's chips.
+                Rectangle {
+                    id: switchState
+
+                    visible: !glanceEndPart.workspace
+                    width: 2 * Math.ceil(switchWord.implicitWidth / 2) + 2 * Metrics.spacing.large
+                    height: Metrics.pill.chipHeight
+                    radius: height / 2
+                    color: Colors.alpha(Colors.secondary, view.glance.enabled ? 0 : 0.16)
+
+                    Light {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        opacity: view.glance.enabled ? 1 : 0
+                    }
+
+                    Readout {
+                        id: switchWord
+
+                        x: (parent.width - implicitWidth) / 2
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: view.glance.enabled ? "On" : "Off"
+                        ink: view.glance.enabled ? Colors.over(Colors.primary) : Colors.secondary
+                        font.pixelSize: Metrics.pill.chipLabel
+                        font.weight: Font.Bold
+                    }
+
                 }
 
             }
@@ -473,7 +563,7 @@ Item {
                 animated: view.animated
                 lifted: view.musicLifted
                 live: view.live
-                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + workspaceAppPart.presence)
+                gap: (Metrics.spacing.normal - slack) * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + glanceEndPart.presence)
 
                 HoverHandler {
                     id: equalizerHover
@@ -486,7 +576,7 @@ Item {
             LockWords {
                 label: view.lockError
                 animated: view.animated
-                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + workspaceAppPart.presence + equalizerPart.presence)
+                gap: Metrics.spacing.normal * Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence + chipsPlace.presence + statsSide.presence + glanceEndPart.presence + equalizerPart.presence)
             }
 
         }
@@ -515,7 +605,7 @@ Item {
             animated: view.animated
             interactive: view.interactive && clockFace.shown
             // Under the date, nothing before them to part them from.
-            lead: Math.min(1, coverPart.presence + workspaceNumberPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence) * (1 - view.chipsAcross)
+            lead: Math.min(1, coverPart.presence + glanceStartPart.presence + wallpaperSide.presence + timePart.presence + osdPart.presence + padlockPart.presence + squaresPart.presence) * (1 - view.chipsAcross)
         }
 
     }

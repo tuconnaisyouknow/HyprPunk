@@ -6,8 +6,9 @@ import qs.services
 import qs.components
 import qs.theme
 
-// Everything the island can briefly show (Osd): a level (volume, brightness), an on/off
-// switch, the screenshot you just took, battery alerts and the AirPods. The bar's island
+// Everything that takes the island over for a moment (Osd): a level (volume, brightness),
+// the screenshot you just took, battery alerts and the AirPods. A switch only opens its
+// ends (IslandView.glance). The bar's island
 // and the lock screen's both draw it.
 RowLayout {
     id: view
@@ -56,30 +57,6 @@ RowLayout {
         font.family: Metrics.font
         font.pixelSize: Metrics.text.emphasis
         font.weight: Font.Bold
-    }
-
-    Rectangle {
-        visible: view.shown && view.content.kind === "" && view.content.maxLevel <= 0
-        implicitWidth: statusOsdStateText.implicitWidth + 16
-        implicitHeight: 24
-        radius: Metrics.radius.normal
-        color: view.content.enabled ? "transparent" : Colors.surface1
-
-        Light {
-            anchors.fill: parent
-            visible: view.content.enabled
-            radius: parent.radius
-        }
-
-        Readout {
-            id: statusOsdStateText
-
-            anchors.centerIn: parent
-            text: view.content.enabled ? "On" : "Off"
-            ink: view.content.enabled ? Colors.over(Colors.primary) : Colors.secondary
-            font.weight: Font.Bold
-        }
-
     }
 
     Row {

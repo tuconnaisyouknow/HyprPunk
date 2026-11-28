@@ -33,9 +33,10 @@ Singleton {
     // How far the music's cover and equalizer sit from the island's edges, all around: as
     // far as any two of its parts sit from each other, so the island keeps one spacing.
     readonly property int islandMusicInset: spacing.normal
-    // The island grows while an OSD takes it over, so you notice it. The lock's island
-    // takes the same shape, to take over from the bar's without a jump.
-    readonly property int islandOsdHeight: pillHeight + spacing.large
+    // An OSD takes the island over at its own height, only wider: the change is enough to
+    // notice it. The lock's island takes the same shape, to take over from the bar's
+    // without a jump.
+    readonly property int islandOsdHeight: pillHeight
     readonly property int islandOsdPadding: spacing.huge
     // The island alone opens under the pointer (IslandView.open): the time a little bigger
     // over the date, between two sides of two lines each (IslandSide), every line as tall
